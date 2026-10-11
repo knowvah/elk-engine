@@ -27,3 +27,32 @@ Planning-time notes are in `conformance-corpus-planning.md`.
 - **Impact**: Scope changes can invalidate fixtures that name concrete bundles; check before
   widening scope again.
 - **Confidence**: High
+
+## Observation: concurrent oracle runs share `harness-classes`
+- **Context**: Batch 2, T4 census and T5 harness edits in parallel.
+- **Finding**: `run.sh` recompiles `tools/oracle/harness/*.java` (when any source is newer) into
+  `$ELK_ORACLE_DIR/harness-classes`. Two tasks editing and running the harness in one tree
+  interfere. A worktree plus a private `ELK_ORACLE_DIR` holding only a copy of `oracle-build.json`
+  (absolute jar paths) isolates them; goldens regenerate byte-identically from it.
+- **Impact**: Parallel oracle work needs this isolation.
+- **Confidence**: High
+
+## Observation: ELK property setting mutates EMF containment
+- **Context**: T5 retarget overlay.
+- **Finding**: `setProperty` adds a contained property-map entry, so setting properties while
+  iterating `root.eAllContents()` throws `ConcurrentModificationException`; collect nodes first.
+  The JSON exporter writes abbreviated option keys (`algorithm`, `randomSeed`, `elk.direction`)
+  and `randomSeed` as the string `"1"`.
+- **Impact**: Applies to any JVM tool that rewrites options on an ElkGraph; and to TS readers of
+  oracle JSON.
+- **Confidence**: High
+
+## Observation: radial and vertiflex reject non-tree graphs
+- **Context**: T5 sample sweep, 183 ptolemy models × 9 algorithms (1,647 cases).
+- **Finding**: 1,546 ok, 101 throws (IllegalArgumentException 62, IndexOutOfBoundsException 30,
+  IllegalStateException 9); radial throws `IllegalArgumentException: The given graph is not a
+  tree!`; vertiflex throws `UnsupportedConfigurationException` with the same message. No `@hex`
+  tokens appeared in any message.
+- **Impact**: The retarget tier for tree algorithms will be throws-heavy; `throws` matching is
+  still a valid conformance verdict (D4).
+- **Confidence**: High
