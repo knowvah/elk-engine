@@ -4,3 +4,22 @@
 .claude/settings.autonomous.json
 .claude/settings.json
 .claude/settings.pre-autonomous.json
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Test
+coverage/
+
+# IDE
+.idea/
+
+# Logs
+*.log
+.oracle-build.log
+
+# macOS
+.DS_Store
