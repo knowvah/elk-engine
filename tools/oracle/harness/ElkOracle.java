@@ -32,8 +32,9 @@ import com.google.gson.JsonArray;
  * <p>Three forms: {@code ElkOracle <outDir> <input>...} (layout, output named by
  * input basename), {@code ElkOracle --cases <cases.jsonl> <outDir>} (one JSON
  * case per line, output named by id, one JSON result line per case on stdout)
- * and {@code ElkOracle --list-algorithms}. System properties set by run.sh:
- * {@value #VARIANTS_PROPERTY} (variants.json path) and {@value #TIMEOUT_PROPERTY}
+ * and {@code ElkOracle --list-algorithms}. Case mode {@code generate} reads a
+ * random-graph config ({@code .elkr}) and writes the generated graph unlaid-out.
+ * System properties set by run.sh: {@value #VARIANTS_PROPERTY} (variants.json path) and {@value #TIMEOUT_PROPERTY}
  * (per-case limit in ms, cases form only).
  */
 public final class ElkOracle {

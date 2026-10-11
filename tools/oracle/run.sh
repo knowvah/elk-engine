@@ -5,8 +5,9 @@
 # Usage: run.sh <outDir> <input.json|input.elkt>...
 #        run.sh --cases <cases.jsonl> <outDir>
 #        run.sh --list-algorithms
-# Case file: JSON Lines {"id","input","mode":"layout"|"parse",
-# "algorithm"?,"variant"?}; output is <outDir>/<id with "/" replaced by
+# Case file: JSON Lines {"id","input","mode":"layout"|"parse"|"generate",
+# "algorithm"?,"variant"?} ("generate" reads a grandom .elkr and writes the
+# graph unlaid-out); output is <outDir>/<id with "/" replaced by
 # "__">.json, one JSON result line per case on stdout. Each case is bounded
 # by ELK_SWEEP_TIMEOUT_MS (default 30000); a JVM that hit a timeout exits
 # with code 75 and is restarted on the cases without a result line.
@@ -25,7 +26,7 @@ P2_BUNDLES="${P2_BUNDLES:-$HOME/.m2/repository/p2/osgi/bundle}"
 THIRD_PARTY=(com.google.gson com.google.guava com.google.guava.failureaccess
   org.eclipse.emf.common org.eclipse.emf.ecore org.eclipse.emf.ecore.xmi
   org.eclipse.xtext.xbase.lib org.eclipse.xtend.lib org.eclipse.xtend.lib.macro
-  org.eclipse.xtext org.eclipse.xtext.util org.antlr.runtime
+  org.eclipse.xtext org.eclipse.xtext.xbase org.eclipse.xtext.util org.antlr.runtime
   com.google.inject jakarta.inject.jakarta.inject-api org.aopalliance
   org.apache.log4j org.eclipse.equinox.common)
 

@@ -1,0 +1,9 @@
+generate 1 graphs {
+    nodes = 8
+    edges total = 8
+    hierarchy {
+        levels = 2
+        compound nodes = 2
+    }
+    seed = 9
+}

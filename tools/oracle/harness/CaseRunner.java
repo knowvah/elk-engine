@@ -10,7 +10,7 @@ import org.eclipse.elk.core.util.BasicProgressMonitor;
 import org.eclipse.elk.graph.ElkNode;
 import org.eclipse.elk.graph.json.ElkGraphJson;
 
-/** Runs one case: read the model, overlay, optionally lay it out, write the JSON. */
+/** Runs one case: read (or generate) the model, overlay, optionally lay it out, write the JSON. */
 final class CaseRunner {
 
     private static final String OUTPUT_EXTENSION = ".json";
@@ -20,6 +20,7 @@ final class CaseRunner {
 
     private final Path outDir;
     private final ElkModelReader reader = new ElkModelReader();
+    private final GrandomGenerator generator = new GrandomGenerator();
     private final GraphOverlay overlay;
 
     CaseRunner(final Path outDir, final GraphOverlay overlay) {
@@ -41,7 +42,7 @@ final class CaseRunner {
         String status = CaseResult.OK;
         Throwable failure = null;
         try {
-            ElkNode graph = reader.read(Paths.get(spec.input()));
+            ElkNode graph = load(spec);
             overlay.apply(graph, spec.algorithm(), spec.variant());
             if (CaseSpec.MODE_LAYOUT.equals(spec.mode())) {
                 new RecursiveGraphLayoutEngine().layout(graph, new BasicProgressMonitor());
@@ -60,6 +61,11 @@ final class CaseRunner {
         }
         return new CaseResult(spec.id(), status, failure.getClass().getName(),
                 CaseResult.normalizeMessage(failure.getMessage()), ms);
+    }
+
+    private ElkNode load(final CaseSpec spec) throws IOException {
+        Path input = Paths.get(spec.input());
+        return CaseSpec.MODE_GENERATE.equals(spec.mode()) ? generator.generate(input) : reader.read(input);
     }
 
     static String export(final ElkNode graph) {

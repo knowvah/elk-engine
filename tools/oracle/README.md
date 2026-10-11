@@ -55,11 +55,12 @@ tools/oracle/run.sh --list-algorithms
 
 Positional form: lays out each input (layout mode); output is
 `<outDir>/<input basename without extension>.json`, so basenames must be
-unique per run. `regen-goldens.sh` uses this form.
+unique per run. `regen-goldens.sh` uses the case-file form (variant and retarget).
 
 Case-file form: JSON Lines, one `{"id": string, "input": string, "mode":
-"layout" | "parse", "algorithm"?: string, "variant"?: string}` per line. `parse` reads the model and exports it without
-running layout. Output is `<outDir>/<id with "/" replaced by "__">.json`
+"layout" | "parse" | "generate", "algorithm"?: string, "variant"?: string}` per line. `parse` reads the model and exports it without
+running layout. `generate` reads a grandom config (`.elkr`, one `generate 1 <form> { ... seed = N ... }`)
+and exports the generated graph without layout (see Generated graphs). Output is `<outDir>/<id with "/" replaced by "__">.json`
 (so ids are unique across folders). One result line per case on stdout:
 
 ```json
@@ -93,6 +94,18 @@ JVM exits with code 75; `run.sh` restarts a JVM on the cases that have no
 result line yet, so every case gets exactly one result line. `run.sh --cases`
 exits 0 when all cases were ok or timed out, 1 if any case was `throws` or
 `oracle-error`. The positional form has no variant, retarget or timeout.
+
+## Generated graphs
+
+`test/corpus/generated/<algorithmSuffix>-<shape>.elkr` plus its sibling `.json`
+hold the D7 inputs for algorithms no elk-models model uses. The `.json` files
+are produced only by `tools/oracle/regen-generated.sh` (staging directory and
+rename; prints `name nodes edges ms` per config). Constraints: at most 50 nodes
+in total, no edge labels (`BlindTextGenerator` is unseeded), `seed` set. The
+generator leaves the root unnamed, which the JSON exporter would number `n0` and
+then rename with an unseeded random suffix when it collides with the generated
+`n0` (`JsonExporter.xtend:505`); the harness sets the root identifier to `root`
+so output is byte-stable.
 
 Third-party bundles come from the p2 cache (`P2_BUNDLES`, default
 `~/.m2/repository/p2/osgi/bundle`); a missing one is a `die` naming it.
