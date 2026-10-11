@@ -131,10 +131,10 @@ its `overview.md` → first incomplete task.
   by uncommitted probes); PriorityQueue 0; HashBiMap 1 sub-model rejected and replaced (T14, not M1/M8).
 - **Decisions journaled:** 32 rows. **Flagged for the user:** (1) 27 identity-dependent
   `collections.json` scripts per section are skipped (incl. 4 KVector scripts beyond the pre-authorised
-  plain-collider exclusion) — AD-13 sign-off; (2) T11 probe vectors left uncommitted because any byte
+  plain-collider exclusion) — accepted by the user after mission end (known-divergence route); (2) T11 probe vectors left uncommitted because any byte
   change to `JavaVectors.java` perturbs `collections.json` — decide on a separate generator
-  (`plans/java-foundations/t11-hashmap-probes.patch`); (3) `UnsupportedOperationException` not added
-  to M5 — immutable Guava helpers throw `TypeError`; (4) `Sets.newTreeSet` is a snapshot, a live
+  (`plans/java-foundations/t11-hashmap-probes.patch`); (3) `UnsupportedOperationException` — resolved
+  by the user after mission end (M5 amendment, branch `fix/unsupported-operation-exception`); (4) `Sets.newTreeSet` is a snapshot, a live
   `TreeSet` shim is needed before `ScanlineOverlapCheck`/`ScanlineConstraintCalculator` ports;
   (5) 55 `PriorityQueue(Collection)` scripts skipped (no ELK caller); (6) the vector codec is
   duplicated across five test files (`test/helpers/` was in no write-set) — cleanup PR candidate.

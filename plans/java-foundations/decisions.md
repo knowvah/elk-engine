@@ -67,6 +67,10 @@ IllegalArgumentException`, `IndexOutOfBoundsException extends Error`,
 `RuntimeException` base: no in-scope code catches it (ELK catches NumberFormat 10, IndexOutOfBounds
 6, ArrayIndexOutOfBounds 4, IllegalArgument 2). Existing `Random` `RangeError` throws are unchanged.
 
+**Amendment (2026-10-11, user decision after mission end):** `src/java/lang/UnsupportedOperationException
+extends Error` is added to the list; the immutable Guava helpers (`ImmutableSet`, `ImmutableMap`,
+`Sets.intersection` view) throw it instead of `TypeError`. Null-element rejections keep `TypeError`.
+
 ## M6 — src/guava
 
 `src/guava/` may import only `src/java/` and itself; every bundle may import it (fitness rule, T3).

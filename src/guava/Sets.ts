@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { UnsupportedOperationException } from "../java/lang/UnsupportedOperationException.js";
 import { compare as compareDoubles } from "../java/lang/DoubleCompare.js";
 import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
 import type { HashStrategy } from "../java/util/HashStrategy.js";
@@ -22,7 +23,7 @@ export interface Ordinal {
 
 /**
  * Live, unmodifiable view of the intersection of two sets. Iteration follows the first set;
- * every read re-consults both backing sets. Mutators throw `TypeError` (as JS does for frozen objects).
+ * every read re-consults both backing sets. Mutators throw `UnsupportedOperationException` (M5).
  *
  * @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Sets.SetView.html
  */
@@ -76,15 +77,15 @@ export class SetView<E> implements ReadonlySet<E> {
   }
 
   add(_value: E): never {
-    throw new TypeError(VIEW_MESSAGE);
+    throw new UnsupportedOperationException(VIEW_MESSAGE);
   }
 
   delete(_value: E): never {
-    throw new TypeError(VIEW_MESSAGE);
+    throw new UnsupportedOperationException(VIEW_MESSAGE);
   }
 
   clear(): never {
-    throw new TypeError(VIEW_MESSAGE);
+    throw new UnsupportedOperationException(VIEW_MESSAGE);
   }
 }
 

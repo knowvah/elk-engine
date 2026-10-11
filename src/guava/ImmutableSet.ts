@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: EPL-2.0
+import { UnsupportedOperationException } from "../java/lang/UnsupportedOperationException.js";
 
 const REJECT_MESSAGE = "ImmutableSet is read-only";
 
 /**
- * An insertion-ordered set whose mutators throw `TypeError` (as JS does for frozen objects).
+ * An insertion-ordered set whose mutators throw `UnsupportedOperationException` (M5).
  * Elements are filled through the prototype `add`, so the `Set` constructor never reaches
  * the throwing overrides.
  *
@@ -23,15 +24,15 @@ export class ImmutableSet<E> extends Set<E> {
   }
 
   override add(_value: E): never {
-    throw new TypeError(REJECT_MESSAGE);
+    throw new UnsupportedOperationException(REJECT_MESSAGE);
   }
 
   override delete(_value: E): never {
-    throw new TypeError(REJECT_MESSAGE);
+    throw new UnsupportedOperationException(REJECT_MESSAGE);
   }
 
   override clear(): never {
-    throw new TypeError(REJECT_MESSAGE);
+    throw new UnsupportedOperationException(REJECT_MESSAGE);
   }
 }
 

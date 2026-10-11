@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from "vitest";
+import { UnsupportedOperationException } from "../java/lang/UnsupportedOperationException.js";
 import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
 import * as ImmutableMap from "./ImmutableMap.js";
 
@@ -17,9 +18,9 @@ describe("ImmutableMap.of", () => {
 
   it("is frozen", () => {
     const m = ImmutableMap.of("a", 1, "b", 2) as Map<string, number>;
-    expect(() => m.set("c", 3)).toThrow(TypeError);
-    expect(() => m.delete("a")).toThrow(TypeError);
-    expect(() => m.clear()).toThrow(TypeError);
+    expect(() => m.set("c", 3)).toThrow(UnsupportedOperationException);
+    expect(() => m.delete("a")).toThrow(UnsupportedOperationException);
+    expect(() => m.clear()).toThrow(UnsupportedOperationException);
     expect(m.size).toBe(2);
   });
 });
