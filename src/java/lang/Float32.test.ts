@@ -23,7 +23,10 @@ function fromHex(hex: string): number {
 
 function toHex(x: number): string {
   scratch.setFloat64(0, x);
-  return scratch.getBigUint64(0).toString(HEX_RADIX).padStart(BITS_BYTES * 2, '0');
+  return scratch
+    .getBigUint64(0)
+    .toString(HEX_RADIX)
+    .padStart(BITS_BYTES * 2, '0');
 }
 
 const vectors = JSON.parse(readFileSync(VECTORS_URL, 'utf8')) as Vectors;
@@ -43,5 +46,23 @@ describe('Float32', () => {
       const fn = OPS[op as keyof typeof OPS];
       expect(toHex(fn(fromHex(a), fromHex(b))), `${op} ${a} ${b}`).toBe(expected);
     }
+  });
+});
+
+describe('Float32 NaN canonicalization', () => {
+  const CANONICAL_NAN = '7ff8000000000000';
+  const NEGATIVE_NAN = fromHex('fff8000000000000');
+
+  it('returns the canonical quiet NaN for a generated NaN on every platform', () => {
+    expect(toHex(add(Infinity, -Infinity))).toBe(CANONICAL_NAN);
+    expect(toHex(sub(Infinity, Infinity))).toBe(CANONICAL_NAN);
+    expect(toHex(mul(0, Infinity))).toBe(CANONICAL_NAN);
+    expect(toHex(div(0, 0))).toBe(CANONICAL_NAN);
+    expect(toHex(div(Infinity, Infinity))).toBe(CANONICAL_NAN);
+  });
+
+  it('returns the canonical quiet NaN for a propagated sign-set NaN', () => {
+    expect(toHex(add(NEGATIVE_NAN, 1))).toBe(CANONICAL_NAN);
+    expect(toHex(fromDouble(NEGATIVE_NAN))).toBe(CANONICAL_NAN);
   });
 });

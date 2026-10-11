@@ -3,6 +3,7 @@
 # Execution observations — java-foundations (2026-10-11)
 
 ## Observation: lizard misparses `<` after a colon in TypeScript as a generic
+
 - **Context**: Batch 2 lizard gate on `src/java/lang/DoubleToString.ts`.
 - **Finding**: lizard 1.22.2 treats `<` following `name:` in an object literal
   (`{ n: n < 0n ? -n : n }`) or following a ternary `:` (`… : lo > 0 && hi < 0`)
@@ -16,6 +17,7 @@
 - **Confidence**: High
 
 ## Observation: `Random.test.ts` `replay` exceeds 30 NLOC on `main`
+
 - **Context**: Batch 2 gate run over all changed `.ts`.
 - **Finding**: `src/java/util/Random.test.ts:39` `replay` is 35 NLOC and was so
   before this mission; the hook skips `*.test.ts` so it never blocked.
@@ -24,6 +26,7 @@
 - **Confidence**: High
 
 ## Observation: JDK `Integer.valueOf` accepts any Unicode `Nd` digit
+
 - **Context**: T1/T6 vectors and `JavaInteger.valueOf`.
 - **Finding**: `Integer.valueOf("٣")` → 3 and fullwidth `"１２"` → 12 (via
   `Character.digit`), while `Double.parseDouble` rejects non-ASCII digits and
@@ -34,6 +37,7 @@
 - **Confidence**: High
 
 ## Observation: `Math.log10` needs no shim in V8
+
 - **Context**: T4, 1264 JVM rows for `Math.log10` at parsed `1e<n>` and
   `Math.pow(10, n)` inputs, n = −323…308.
 - **Finding**: native `Math.log10` matched every row bit-for-bit, including
@@ -42,6 +46,7 @@
 - **Confidence**: High
 
 ## Observation: source-launcher vector runs tie identity hashes to the generator's bytes
+
 - **Context**: T11 appended probe generators to `tools/vectors/JavaVectors.java`
   and regenerated `collections.json`.
 - **Finding**: any byte change to the generator (even a comment), or running a
@@ -55,6 +60,7 @@
 - **Confidence**: High
 
 ## Observation: JVM `HashMap` order of equal-hash keys is identity-ordered in tree bins
+
 - **Context**: T11 clean-room `JavaHashMap` model against `collections.json`.
 - **Finding**: once a bin holds ≥ 9 keys at capacity ≥ 64 and some keys have
   equal hashes without a comparison order (KVector-derived `TEdge`/`TTriangle`,
@@ -68,6 +74,7 @@
 - **Confidence**: High
 
 ## Observation: lizard parses zero functions when a Java lambda body contains `<`
+
 - **Context**: T14 lizard gate on `tools/vectors/GuavaVectors.java`.
 - **Finding**: a field initializer `BiPredicate<Integer,Integer> SIZED = (i, n) -> i < X || …`
   made lizard 1.22.2 and 1.23.0 report 0 functions for the whole file with
@@ -79,6 +86,7 @@
 - **Confidence**: High
 
 ## Observation: a capacity sweep must record orders below the expected size
+
 - **Context**: T14 deriving `newHashMapWithExpectedSize(n)` capacity from vectors.
 - **Finding**: recording iteration order only at ≥ n keys cannot distinguish an
   oversized initial table because growth reaches the same table; recording at
@@ -88,10 +96,24 @@
 - **Confidence**: High
 
 ## Observation: Guava `HashBiMap` inverse view order is not symmetric
+
 - **Context**: T14 `guava.json` `biMap` scripts (36 scripts, 1236 steps).
 - **Finding**: `put(k, v)` where `v` is bound to `k'` throws; `forcePut` takes
   `k'`'s place in the forward view but the evicted holder's place in the
   inverse view; `inverse().put` of an existing inverse key removes that
   binding and appends. A symmetric model failed 13 random scripts.
 - **Impact**: ports must not assume the inverse view mirrors forward order.
+- **Confidence**: High
+
+## Observation: generated-NaN sign differs between arm64 and x86-64
+
+- **Context**: first GitHub Actions run (`ubuntu-latest`, x86-64) of the
+  `numeric.json` `f32` replay.
+- **Finding**: `Inf − Inf`, `0 × Inf` and `0 / 0` yield `0x7ff8…` on arm64
+  (where the JVM vectors were recorded) and `0xfff8…` on x86-64, in both the
+  JVM and V8. Propagated NaNs keep their input pattern on both. Neither
+  IEEE 754 nor the JLS specifies the generated pattern.
+- **Impact**: any vector or test that compares raw NaN bits is platform-bound;
+  shims canonicalize NaN results (`Float32.ts`) and future vector generators
+  should record `doubleToLongBits` (canonical) rather than raw bits for NaN.
 - **Confidence**: High
