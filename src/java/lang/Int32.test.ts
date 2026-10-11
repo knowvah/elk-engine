@@ -79,3 +79,24 @@ describe('Int32 named cases', () => {
     expect(ushr(-1, -1)).toBe(1);
   });
 });
+
+// ---- T4: numeric.json int divZero replay ----
+import { ArithmeticException } from './ArithmeticException.js';
+
+describe('Int32 zero divisor vectors', () => {
+  it('replays every int divZero vector as ArithmeticException("/ by zero")', () => {
+    const url = new URL('../../../test/golden/refs/java/numeric.json', import.meta.url);
+    const rows = (
+      JSON.parse(readFileSync(url, 'utf8')) as {
+        divZero: readonly (readonly [string, number, { readonly message: string }])[];
+      }
+    ).divZero.filter(([op]) => op === 'int/' || op === 'int%');
+    expect(rows.length).toBe(10);
+    for (const [op, a, outcome] of rows) {
+      const fn = op === 'int/' ? div : rem;
+      expect(outcome.message).toBe('/ by zero');
+      expect(() => fn(a, 0), `${op} ${a}`).toThrow(ArithmeticException);
+      expect(() => fn(a, 0), `${op} ${a}`).toThrow('/ by zero');
+    }
+  });
+});

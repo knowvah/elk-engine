@@ -134,3 +134,56 @@ describe('d2i / d2l', () => {
     expect(d2l(-1.9)).toBe(-1n);
   });
 });
+
+// ---- T4: numeric.json replays (l2i, log10, int divZero) ----
+import { readFileSync as readNumericFile } from 'node:fs';
+import { ArithmeticException } from './ArithmeticException.js';
+import { l2i } from './JavaMath.js';
+
+const NUMERIC_URL = new URL('../../../test/golden/refs/java/numeric.json', import.meta.url);
+const HEX_RADIX = 16;
+
+interface NumericVectors {
+  readonly l2i: readonly (readonly [string, number])[];
+  readonly log10: readonly BitsRow[];
+  readonly divZero: readonly (readonly [string, number, { readonly throws: string; readonly message: string }])[];
+}
+
+const numeric = JSON.parse(readNumericFile(NUMERIC_URL, 'utf8')) as NumericVectors;
+
+function toBitsHex(x: number): string {
+  const view = new DataView(new ArrayBuffer(BITS_BYTES));
+  view.setFloat64(0, x);
+  return view.getBigUint64(0).toString(HEX_RADIX).padStart(BITS_BYTES * 2, '0');
+}
+
+describe('l2i', () => {
+  it('replays every JVM vector', () => {
+    expect(numeric.l2i.length).toBe(78);
+    for (const [long, expected] of numeric.l2i) {
+      expect(l2i(BigInt(long)), long).toBe(expected);
+    }
+  });
+});
+
+describe('Math.log10 (native)', () => {
+  it('matches every JVM vector bit-for-bit, so no shim is needed', () => {
+    expect(numeric.log10.length).toBe(1264);
+    for (const [input, expected] of numeric.log10) {
+      expect(toBitsHex(Math.log10(fromBits(input))), input).toBe(expected);
+    }
+  });
+});
+
+describe('floorDiv / floorMod zero divisor', () => {
+  it('replays every int divZero vector as ArithmeticException("/ by zero")', () => {
+    const rows = numeric.divZero.filter(([op]) => op === 'floorDiv(int)' || op === 'floorMod(int)');
+    expect(rows.length).toBe(10);
+    for (const [op, a, outcome] of rows) {
+      const fn = op === 'floorDiv(int)' ? floorDiv : floorMod;
+      expect(outcome.message).toBe('/ by zero');
+      expect(() => fn(a, 0), `${op} ${a}`).toThrow(ArithmeticException);
+      expect(() => fn(a, 0), `${op} ${a}`).toThrow('/ by zero');
+    }
+  });
+});
