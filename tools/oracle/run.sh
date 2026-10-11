@@ -18,6 +18,8 @@ HARNESS_DIR="$ROOT/tools/oracle/harness"
 VARIANTS_FILE="$ROOT/test/corpus/variants.json"
 EXIT_TIMEOUT=75 # keep in sync with ElkOracle.EXIT_TIMEOUT
 DEFAULT_TIMEOUT_MS=30000
+# Seeds JsonExporter id-collision suffixes (seam patch 0001; decisions D5b).
+EXPORT_SEED=1
 ELK_ORACLE_DIR="${ELK_ORACLE_DIR:-$ROOT/../elk-oracle}"
 P2_BUNDLES="${P2_BUNDLES:-$HOME/.m2/repository/p2/osgi/bundle}"
 # Third-party bundles named by Require-Bundle in the in-scope manifests, plus
@@ -90,6 +92,7 @@ oracle_java() { # oracle_java <timeoutMs> <args...>; runs the harness JVM
   local timeout="$1"
   shift
   java -Delk.oracle.variants="$VARIANTS_FILE" -Delk.oracle.timeoutMs="$timeout" \
+    -Dorg.eclipse.elk.graph.json.exportSeed="$EXPORT_SEED" \
     -cp "$CLASSES:$CP" ElkOracle "$@"
 }
 

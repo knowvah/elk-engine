@@ -1,0 +1,43 @@
+From e75f4de1493eae9efe7a3337e138fdf7b61dade3 Mon Sep 17 00:00:00 2001
+From: elk-engine-oracle <oracle@invalid>
+Date: Sun, 11 Oct 2026 15:10:38 -0500
+Subject: [PATCH] graph.json: seedable JsonExporter id-collision random (test
+ seam)
+
+JsonExporter resolves id collisions with an unseeded java.util.Random,
+so exports of graphs with colliding ids differ between JVMs. The system
+property org.eclipse.elk.graph.json.exportSeed seeds it; unset keeps
+ELK's behavior. Paired TS seam: injectable Random in the graph.json port.
+---
+ .../org/eclipse/elk/graph/json/JsonExporter.xtend | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/plugins/org.eclipse.elk.graph.json/src/org/eclipse/elk/graph/json/JsonExporter.xtend b/plugins/org.eclipse.elk.graph.json/src/org/eclipse/elk/graph/json/JsonExporter.xtend
+index 19b69b52..a002656e 100644
+--- a/plugins/org.eclipse.elk.graph.json/src/org/eclipse/elk/graph/json/JsonExporter.xtend
++++ b/plugins/org.eclipse.elk.graph.json/src/org/eclipse/elk/graph/json/JsonExporter.xtend
+@@ -486,7 +486,20 @@ final class JsonExporter {
+         return LayoutMetaDataService.instance.getOptionDataBySuffix(property.id) !== null
+     }
+     
+-    val RANDOM = new Random()
++    /**
++     * Test seam (elk-engine oracle): when this system property holds a long, id-collision
++     * suffixes come from a seeded {@link Random}, so exports are repeatable across JVMs.
++     * Unset, behavior is unchanged.
++     */
++    public static val EXPORT_SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed"
++
++    val RANDOM = newRandom()
++
++    private static def Random newRandom() {
++        val seed = Long.getLong(EXPORT_SEED_PROPERTY)
++        return if (seed === null) new Random() else new Random(seed)
++    }
++
+     private def String sixDigitRandomNumber() {
+         return RANDOM.nextInt(1000000) + ""
+     }
+-- 
+2.54.0 (Apple Git-157)
+

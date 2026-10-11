@@ -23,7 +23,7 @@ BUNDLES=(core graph graph.json alg.common alg.layered alg.mrtree alg.radial
   alg.force alg.disco alg.rectpacking alg.spore alg.topdownpacking
   alg.vertiflex graph.text graph.json.text core.debug.grandom)
 # Build outputs ELK does not fully gitignore.
-OUTPUT_FILTER='(^|/)(target|xtend-gen|src-gen)/|oracle-build\.json$'
+OUTPUT_FILTER='(^|/)(target|xtend-gen|src-gen)/|oracle-build\.json$|^\?\? (census|sweep)/$'
 
 abs_path() { # abs_path <path>; normalizes, parent dir must exist
   (cd "$(dirname "$1")" 2>/dev/null && echo "$PWD/$(basename "$1")") || echo "$1"
@@ -65,7 +65,10 @@ patch_files() {
 patch_subjects() {
   local f
   while IFS= read -r f; do
-    sed -n '/^Subject: /{s/^Subject: \(\[[^]]*\] \)\{0,1\}//p;q;}' "$f"
+    # Unfold RFC 2822 continuation lines: format-patch wraps long subjects.
+    awk '/^Subject: /{s=$0; sub(/^Subject: (\[[^]]*\] )?/, "", s)
+      while ((getline l) > 0 && l ~ /^[ \t]/) s = s l
+      print s; exit}' "$f"
   done < <(patch_files)
 }
 
