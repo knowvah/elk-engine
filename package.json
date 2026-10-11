@@ -1,0 +1,65 @@
+{
+  "name": "@knowvah/elk-engine",
+  "version": "0.0.0-development",
+  "description": "Faithful TypeScript port of the Eclipse Layout Kernel (ELK) — no Java, no WASM. Oracle-verified against the Java implementation, runs in the browser.",
+  "keywords": [
+    "elk",
+    "eclipse-layout-kernel",
+    "graph",
+    "layout",
+    "layered",
+    "diagram",
+    "visualization",
+    "typescript",
+    "browser"
+  ],
+  "license": "EPL-2.0",
+  "author": "Scott Seely",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/knowvah/elk-engine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/knowvah/elk-engine/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "!src/**/*.test.ts"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "build": "npm run build:js && npm run build:types",
+    "build:js": "esbuild src/index.ts --bundle --format=esm --sourcemap --outfile=dist/index.js",
+    "build:types": "tsc -p tsconfig.build.json"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^5.0.3",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "volta": {
+    "node": "26.3.1"
+  }
+}

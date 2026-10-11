@@ -1,0 +1,101 @@
+{
+  "elkCommit": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "bundles": {
+    "src/alg/common": {
+      "bundle": "org.eclipse.elk.alg.common",
+      "requires": [
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/alg/disco": {
+      "bundle": "org.eclipse.elk.alg.disco",
+      "requires": [
+        "src/alg/common",
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/alg/force": {
+      "bundle": "org.eclipse.elk.alg.force",
+      "requires": [
+        "src/alg/common",
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/alg/layered": {
+      "bundle": "org.eclipse.elk.alg.layered",
+      "requires": [
+        "src/alg/common",
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/alg/mrtree": {
+      "bundle": "org.eclipse.elk.alg.mrtree",
+      "requires": [
+        "src/alg/common",
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/alg/radial": {
+      "bundle": "org.eclipse.elk.alg.radial",
+      "requires": [
+        "src/alg/common",
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/alg/rectpacking": {
+      "bundle": "org.eclipse.elk.alg.rectpacking",
+      "requires": [
+        "src/alg/common",
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/alg/spore": {
+      "bundle": "org.eclipse.elk.alg.spore",
+      "requires": [
+        "src/alg/common",
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/alg/topdownpacking": {
+      "bundle": "org.eclipse.elk.alg.topdownpacking",
+      "requires": [
+        "src/alg/common",
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/alg/vertiflex": {
+      "bundle": "org.eclipse.elk.alg.vertiflex",
+      "requires": [
+        "src/alg/common",
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/core": {
+      "bundle": "org.eclipse.elk.core",
+      "requires": [
+        "src/graph"
+      ]
+    },
+    "src/graph": {
+      "bundle": "org.eclipse.elk.graph",
+      "requires": []
+    },
+    "src/graph/json": {
+      "bundle": "org.eclipse.elk.graph.json",
+      "requires": [
+        "src/core",
+        "src/graph"
+      ]
+    }
+  }
+}

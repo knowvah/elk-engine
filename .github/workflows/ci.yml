@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: EPL-2.0
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Least-privilege GITHUB_TOKEN; the job only reads the repo.
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # `coverage` runs the same suite as `npm test` plus the coverage thresholds.
+      - run: npm run coverage

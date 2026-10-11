@@ -1,0 +1,7 @@
+{
+  "elkCommit": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "patches": [],
+  "jdk": "openjdk version \"21.0.1\" 2023-10-17 LTS",
+  "modelsCommit": "ac5af2ba511c0037e4f347e8bd91f013950951c7",
+  "generatedBy": "tools/oracle/regen-goldens.sh"
+}
