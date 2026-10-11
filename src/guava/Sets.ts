@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: EPL-2.0
 import { compare as compareDoubles } from "../java/lang/DoubleCompare.js";
 import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
+import type { HashStrategy } from "../java/util/HashStrategy.js";
+import { JavaHashSet } from "../java/util/JavaHashSet.js";
 import { copyOf } from "./ImmutableSet.js";
 import type { ImmutableSet } from "./ImmutableSet.js";
+import { expectedSizeCapacity } from "./Maps.js";
 
 const VIEW_MESSAGE = "SetView is unmodifiable";
 
@@ -176,4 +179,47 @@ export function newTreeSet<E>(
   comparator: Comparator<E> = naturalOrder,
 ): Set<E> {
   return typeof first === "function" ? sortedSet<E>([], first) : sortedSet(first, comparator);
+}
+
+/** A Java `Collection` knows its size: arrays, `Set`, `JavaHashSet` and multimap views stand for one; a bare iterable does not. */
+function isCollection<E>(items: Iterable<E>): boolean {
+  return Array.isArray(items) || typeof (items as { size?: unknown }).size === "number";
+}
+
+/**
+ * A `HashSet` with JVM iteration order. Observed behavior (`guava.json` `sets`, 549 scripts): without
+ * `items` the set has the default table; a collection is copied like `new HashSet(collection)`
+ * (`JavaHashSet.copyOf`: sized for the source size, duplicates included); any other iterable is added
+ * one element at a time into a default table. The two differ for sources with duplicates:
+ * `<kind>-collection-dups-7/13/30` need the copy sizing, `<kind>-iterable-dups-7/13/30` the default table.
+ *
+ * @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Sets.html#newHashSet(java.lang.Iterable)
+ */
+export function newHashSet<E>(strategy: HashStrategy<E>, items?: Iterable<E>): JavaHashSet<E> {
+  if (items !== undefined && isCollection(items)) {
+    return JavaHashSet.copyOf(strategy, items);
+  }
+  const set = new JavaHashSet(strategy);
+  set.addAll(items ?? []);
+  return set;
+}
+
+/**
+ * The varargs overload `newHashSet(E...)`. Observed: the set starts with the expected-size table for
+ * the number of elements, not the default one (e.g. `string-varargs-0`…`-6` and `kvector-varargs-50`
+ * differ from a default table).
+ *
+ * @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Sets.html#newHashSet(E...)
+ */
+export function newHashSetOf<E>(strategy: HashStrategy<E>, ...elements: E[]): JavaHashSet<E> {
+  const set = newHashSetWithExpectedSize(strategy, elements.length);
+  set.addAll(elements);
+  return set;
+}
+
+/** Table sizing: see `expectedSizeCapacity` in `Maps.ts`.
+ * @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Sets.html#newHashSetWithExpectedSize(int)
+ */
+export function newHashSetWithExpectedSize<E>(strategy: HashStrategy<E>, expectedSize: number): JavaHashSet<E> {
+  return new JavaHashSet(strategy, expectedSizeCapacity(expectedSize));
 }

@@ -177,3 +177,47 @@ describe("Sets.newTreeSet", () => {
     expect(() => Sets.newTreeSet([true, false] as never)).toThrow(TypeError);
   });
 });
+
+import { INTEGER, STRING } from "../java/util/HashStrategy.js";
+import { JavaHashSet } from "../java/util/JavaHashSet.js";
+
+// The JVM+Guava order of these hash-ordered factories is replayed against guava.json (sets) in Maps.test.ts.
+describe("Sets.newHashSet", () => {
+  it("creates an empty set that iterates integers in table order", () => {
+    const set = Sets.newHashSet(INTEGER);
+    expect(set.size).toBe(0);
+    [3, 1, 2].forEach((e) => set.add(e));
+    expect([...set]).toEqual([1, 2, 3]);
+  });
+
+  it("copies arrays, Sets and JavaHashSets as Java collections, dropping duplicates", () => {
+    const sources: Array<Iterable<number>> = [[3, 1, 3, 2], new Set([3, 1, 2]), Sets.newHashSet(INTEGER, [2, 3, 1])];
+    for (const source of sources) {
+      const set = Sets.newHashSet(INTEGER, source);
+      expect([set.size, [...set]]).toEqual([3, [1, 2, 3]]);
+    }
+  });
+
+  it("adds a bare iterable element by element", () => {
+    function* elements(): Generator<string> {
+      yield "b";
+      yield "a";
+      yield "b";
+    }
+    const set = Sets.newHashSet(STRING, elements());
+    expect([set.size, [...set]]).toEqual([2, ["a", "b"]]);
+  });
+
+  it("builds from varargs and from an expected size", () => {
+    const fromArgs = Sets.newHashSetOf(INTEGER, 5, 4, 5);
+    expect([fromArgs.size, [...fromArgs]]).toEqual([2, [4, 5]]);
+    const sized = Sets.newHashSetWithExpectedSize(INTEGER, 100);
+    expect(sized instanceof JavaHashSet).toBe(true);
+    expect(sized.isEmpty()).toBe(true);
+  });
+
+  it("rejects a negative expected size with the Guava message", () => {
+    expect(() => Sets.newHashSetWithExpectedSize(INTEGER, -1)).toThrow(IllegalArgumentException);
+    expect(() => Sets.newHashSetWithExpectedSize(INTEGER, -1)).toThrow("expectedSize cannot be negative but was: -1");
+  });
+});
