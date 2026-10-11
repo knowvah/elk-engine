@@ -21,6 +21,7 @@ jobs:
           node-version: '26'
           cache: npm
       - run: npm ci
+      - run: npm run format:check
       - run: npm run typecheck
       # `coverage` runs the same suite as `npm test` plus the coverage thresholds.
       - run: npm run coverage
