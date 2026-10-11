@@ -69,21 +69,23 @@ Full list: [`docs/translation-rules.md`](docs/translation-rules.md). Core rows:
 | `int`                          | `number`, wrapped via `src/java/lang/Int32` ops     |
 | `long`                         | `number`; `bigint` only beyond 2^53, document site  |
 | `double`                       | `number`                                            |
-| `(int)` cast                   | saturating `d2i` shim (NaN → 0, clamps to int32)    |
+| `(int)` of `double`/`float`    | saturating `d2i` shim (NaN → 0, clamps to int32)    |
+| `(int)` of `long`              | wraps to low 32 bits: `l2i` shim (vector needed first); ELK's `(int) Math.round(x)` is this case |
 | `Math.round`                   | shim per Javadoc (closest long, ties → +∞; NaN → 0) |
-| integer division               | truncate toward zero (`floorDiv`/`floorMod` shims)  |
+| integer division / `%`         | truncating `Int32.div`/`Int32.rem` (throw on zero, no `-0`); `floorDiv`/`floorMod` have no in-scope caller |
 | `char`                         | UTF-16 code unit as `number`; strings via `charAt`  |
 | `String`                       | `string` (UTF-16, same as Java)                     |
 | `Comparator` / `compareTo`     | `(a, b) => number`; `Double.compare` shim for NaN   |
-| `Linked*` / `Enum*` / `Hash*`  | per AD-10: `Map`/`Set`; ordinal-ordered; `JavaHashMap` for value-hashed keys; identity-hashed → insertion order, journal the site |
+| `Linked*` / `Enum*` / `Hash*`  | per AD-10: `Map`/`Set`; ordinal-ordered; enum keys are identity-hashed; `JavaHashMap` only for value-hashed keys (KVector-derived `TEdge`/`TTriangle`, e.g. `NaiveMinST`); identity-hashed → insertion order, journal the site |
 | Guava                          | small local helpers; never a dependency             |
 | EMF (ElkGraph)                 | plain classes, Java accessor names (AD-11)          |
 | `assert`                       | dev-only check helper, no production cost           |
 | checked exceptions             | plain `Error` subclasses; keep throw sites          |
 
 Hazards: Java `int` arithmetic wraps at 32 bits; field defaults are zero/null/
-false, not `undefined`; `Random` and `Collections.shuffle` must match the JVM
-sequence exactly.
+false, not `undefined`; `Random` draws (`nextInt`, `nextDouble`, `nextFloat`,
+`nextBoolean`, `nextLong`, `setSeed`) must match the JVM sequence exactly.
+`Collections.shuffle` has no in-scope caller; its shim stays vector-proven.
 
 **Never read or copy OpenJDK source (AD-9).** OpenJDK is GPLv2+CE; reading or
 copying it into an EPL-2.0 codebase is forbidden. Implement `src/java/` shims
