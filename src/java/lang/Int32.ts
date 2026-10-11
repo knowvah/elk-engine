@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: EPL-2.0
 
+import { ArithmeticException } from './ArithmeticException.js';
+
 // All functions take and return int32 values represented as JS numbers.
 
 function requireNonZero(divisor: number): void {
-  if (divisor === 0) throw new RangeError('/ by zero');
+  if (divisor === 0) throw new ArithmeticException('/ by zero');
 }
 
 /** @see https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.18 */
@@ -23,7 +25,7 @@ export function mul(a: number, b: number): number {
 
 /**
  * Integer division truncating toward zero; `MIN_VALUE / -1` wraps to
- * `MIN_VALUE`. Throws `RangeError` (the `ArithmeticException` analog) on a
+ * `MIN_VALUE`. Throws `ArithmeticException` (`/ by zero`) on a
  * zero divisor.
  *
  * @see https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.17.2
@@ -34,7 +36,7 @@ export function div(a: number, b: number): number {
 }
 
 /**
- * Remainder whose sign follows the dividend. Throws `RangeError` on a zero
+ * Remainder whose sign follows the dividend. Throws `ArithmeticException` on a zero
  * divisor.
  *
  * @see https://docs.oracle.com/javase/specs/jls/se21/html/jls-15.html#jls-15.17.3

@@ -155,3 +155,35 @@ describe('Random vs JVM vectors', () => {
     }
   });
 });
+
+// ---- T4: random-setseed.json replay (setSeed mid-script) ----
+interface SetSeedCall {
+  readonly method: string;
+  readonly arg?: number | string;
+  readonly value?: number | string | boolean;
+}
+
+const SETSEED_PATH = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../test/golden/refs/java/random-setseed.json',
+);
+const setSeedVectors = JSON.parse(readFileSync(SETSEED_PATH, 'utf8')) as {
+  script: string[];
+  cases: { seed: string; calls: SetSeedCall[] }[];
+};
+
+describe('Random setSeed script vs JVM vectors', () => {
+  it('has the expected script and cases', () => {
+    expect(setSeedVectors.script.length).toBe(25);
+    expect(setSeedVectors.cases.map((c) => c.seed)).toEqual(['0', '1', '-1', '42']);
+  });
+
+  it.each(setSeedVectors.cases.map((c) => [c.seed, c] as const))('seed %s replays bit-identically', (_s, c) => {
+    const rnd = new Random(BigInt(c.seed));
+    expect(c.calls.length).toBe(setSeedVectors.script.length);
+    for (const call of c.calls) {
+      if (call.method === 'setSeed') rnd.setSeed(BigInt(call.arg as string));
+      else replay(rnd, call as Call);
+    }
+  });
+});

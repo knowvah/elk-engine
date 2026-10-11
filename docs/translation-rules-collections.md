@@ -59,11 +59,29 @@ Specified hash functions available to a `JavaHashMap` (Javadoc): `String.hashCod
 (`(int)(v ^ (v >>> 32))` of `doubleToLongBits`), `List`/`Set`/`Objects.hash`. The **iteration order
 of `HashMap` itself is not specified** (Javadoc: "makes no guarantees as to the order of the
 map"); only capacity/load-factor (0.75, rehash on growth) are described. The shim therefore
-cannot be derived from the Javadoc alone: write failing tests first from JVM-generated vectors
-(insert/remove/resize sequences recorded from `java.util.HashMap` on a JVM, never from the JDK's own
-implementation source, AD-9).
+cannot be derived from the Javadoc alone: it is a model fitted to JVM-generated vectors
+(`collections.json`: insert/remove/resize scripts recorded from `java.util.HashMap`, never from the
+JDK's own source, AD-9). Shims: `src/java/util/HashStrategy.ts`, `JavaHashMap.ts`, `JavaHashSet.ts`.
 
 ## 2.1 Iterated value-hashed containers (port with `JavaHashMap`)
+
+`HashStrategy<K>` (`src/java/util/HashStrategy.ts`) carries `hash`, `equals` and an optional
+`compare` (comparison order for equal-hash keys). Ready strategies: `STRING`, `INTEGER`, `DOUBLE`
+(all three provide `compare`) and `hashable()` for classes with `hashCode()`/`equals()` (no
+`compare`). `Maps.newHashMap` / `Sets.newHashSet` (`src/guava/{Maps,Sets}.ts`) take a strategy.
+
+`JavaHashMap` is an **observed-behavior model**, not a description of any JDK internals; its class
+doc comment lists each rule with the `collections.json` script that discriminates it (for example
+`seq-string-seq`, `seq-integer-neg`, `ctor-cap-*`, `seq-string-collide`, `seq-double-int`,
+`collider-ColliderComparable-*`, `putall-empty-*-12`). Rules not discriminated by those scripts are
+marked in the comment. Equal-hash keys with no comparison order are tied on the JVM by identity
+hash: `collider-ColliderPlain-same-fwd-cap64` and `-same-rev-cap64` run identical histories yet
+diverge at step 9. The model sends the new key left in that case; such orders are **not
+reproducible**. 27 scripts per section (`JavaHashMap.test.ts` and `JavaHashSet.test.ts`, predicate
+`isIdentityDependent`) are skipped: 9 `collider-ColliderPlain-same-*`, 14 plain `rand-collider-*`
+and 4 KVector scripts (`seq-kvector-grid`, `seq-kvector-frac`, `shrink-kvector-frac`,
+`seq-kvector-special`). Any key set whose equal-hash keys lack a comparison order (KVector-derived
+`TEdge`/`TTriangle`) can therefore differ from a JVM run.
 
 - V1 `MapPropertyHolder.propertyMap`, IProperty keys (`Property.hashCode` = `id.hashCode()`,
   `graph/src/.../properties/Property.java:111`). Declared
@@ -170,11 +188,11 @@ Keys of type `Set<PortSide>` (`L:.../components/ComponentGroup.java:96`) need va
 | Kind | Rule | TS | ELK citation |
 |------|------|----|--------------|
 | `LinkedHashMap/Set` (33) | insertion-ordered; re-insert keeps position | `Map`/`Set` | `core/src/.../data/LayoutMetaDataService.java:162` |
-| `HashBiMap` (8) | Guava: insertion-ordered keys (Guava Javadoc) | local BiMap | `graph.json/src/.../JsonExporter.xtend:43` |
-| `EnumMap` (6) | iterates in ordinal order (Javadoc `EnumMap`) | array indexed by `ordinal` | `alg.layered/src/.../graph/LNode.java:518` |
+| `HashBiMap` (8) | Guava: insertion-ordered keys (Guava Javadoc) | `src/guava/HashBiMap.ts` (`guava.json`) | `graph.json/src/.../JsonExporter.xtend:43` |
+| `EnumMap` (6) | iterates in ordinal order (Javadoc `EnumMap`) | `Maps.newEnumMap` (`src/guava/Maps.ts`) | `alg.layered/src/.../graph/LNode.java:518` |
 | `EnumSet` (98) | ordinal order, no nulls | bitset or sorted array by ordinal | `core/src/.../options/PortSide.java:52` |
-| `TreeSet/TreeMultimap` (13) | comparator decides equality: `compare == 0` means duplicate, `add` returns false | sorted array + binary search; `lower/higher/first/pollFirst` | `alg.common/src/.../compaction/oned/ScanlineConstraintCalculator.java:145`, `alg.layered/src/.../p3order/counting/CrossingsCounter.java:337`, `alg.common/src/.../nodespacing/internal/NodeContext.java:102` |
-| `PriorityQueue` (4) | head is *one of* the tied minimums; iterator order unspecified (Javadoc) | binary-heap class, sift-up on offer, sift-down on poll, tested on tie-heavy JVM vectors | `core/src/.../util/BoxLayoutProvider.java:551` (area ties), `alg.force/src/.../stress/StressMajorization.java:143` (dist ties), `alg.layered/src/.../p2layers/CoffmanGrahamLayerer.java:110` |
+| `TreeSet/TreeMultimap` (13) | comparator decides equality: `compare == 0` means duplicate, `add` returns false | sorted array + binary search; `lower/higher/first/pollFirst`; `Sets.newTreeSet` is a sorted snapshot `Set` (known gap in `src/guava/Sets.ts`: no live `TreeSet`); `TreeMultimap` in `src/guava/TreeMultimap.ts` | `alg.common/src/.../compaction/oned/ScanlineConstraintCalculator.java:145`, `alg.layered/src/.../p3order/counting/CrossingsCounter.java:337`, `alg.common/src/.../nodespacing/internal/NodeContext.java:102` |
+| `PriorityQueue` (4) | head is *one of* the tied minimums; iterator order unspecified (Javadoc) | `src/java/util/PriorityQueue.ts`, replayed on the tie-heavy `collections.json` scripts; no `Collection` constructor, so the 55 `usesCollectionCtor` scripts (of 231) are skipped | `core/src/.../util/BoxLayoutProvider.java:551` (area ties), `alg.force/src/.../stress/StressMajorization.java:143` (dist ties), `alg.layered/src/.../p2layers/CoffmanGrahamLayerer.java:110` |
 | `Collections.sort`, `List.sort` | stable (Javadoc: "guaranteed to be stable") | `Array.prototype.sort` (stable since ES2019) | `alg.layered/src/.../p3order/MedianHeuristic.java:72` (ELK comment `:71` relies on it) |
 | comparator contract violations | Java TimSort may throw `IllegalArgumentException` (>= 32 elements) or give implementation-defined order; JS never throws | keep comparator verbatim; journal non-transitive ones | `alg.layered/src/.../InteractiveLayeredGraphVisitor.java:849` (`(int)(a.getY()-b.getY())` truncates, non-transitive), `:433` (int subtraction overflows) |
 | `Arrays.sort(double[])` | total order: `-0.0 < 0.0`, NaN last (Javadoc) | `Float64Array.prototype.sort()` without comparator | `alg.layered/src/.../p4nodes/bk/BKNodePlacer.java:452` |
@@ -186,9 +204,31 @@ Keys of type `Set<PortSide>` (`L:.../components/ComponentGroup.java:96`) need va
 `Sets.newHashSet(x)` / `new HashSet<>(coll)` copy semantics: element order of the copy is the
 copy's own hash order, not the source order (relevant for I9, `ComponentsCompactor.java:296`).
 
-## 2.4 Vector gaps to close before the first collection port
+## 2.4 Vector gaps (closed)
 
-`test/golden/refs/java/` covers int32 ops, `d2i/d2l`, `round`, `floorDiv/Mod`, `Double.compare`,
-`Random`. Missing and needed for this section: `HashMap/HashSet` iteration order (String, Integer,
-Double, KVector-style keys; with removals and resizes), `PriorityQueue` tie order, `String.hashCode`,
-`Double.hashCode`. Extend `tools/vectors/JavaVectors.java` (JDK-generated) before writing the shims.
+All frozen in `test/golden/refs/java/`; none was edited to pass (AD-13).
+
+| Former gap | Closed by | Shim |
+|------------|-----------|------|
+| `HashMap/HashSet` iteration order (String, Integer, Double, KVector-style; removals, resizes) | `collections.json` | `JavaHashMap.ts`, `JavaHashSet.ts` (27 identity-dependent scripts per section skipped, 2.1) |
+| `PriorityQueue` tie order | `collections.json` | `PriorityQueue.ts` (55 `Collection`-constructor scripts skipped) |
+| `String.hashCode`, `Double.hashCode` | `hash.json` | `JavaString.hashCode`, `JavaDouble.hashCode` |
+| Guava containers and helpers | `guava.json` (`tools/vectors/GuavaVectors.java`) | `src/guava/*` |
+
+`tools/vectors/JavaVectors.java` writes `collections.json`; do not edit it (see the runbook).
+
+## 2.5 Runbook: JavaHashMap order mismatch in a ported site
+
+**Detection.** A golden or sweep run shows a tie-order diff (equal-weight edges, equal-key ordering)
+at a site ported on `JavaHashMap`/`JavaHashSet` (V1-V8 in 2.1, e.g. `NaiveMinST`), while ids and
+counts match. Confirm the keys' `HashStrategy` matches the Java `hashCode`/`equals` first.
+
+**Mitigation.**
+1. Add the failing key set and operation sequence as a **new** JVM vector from a separate generator
+   file under `tools/vectors/` (like `GuavaVectors.java`). Never edit `JavaVectors.java`: any byte
+   change, even a comment, changes the identity-dependent `collections.json` scripts.
+2. If the order depends on identity hash (equal hashes, no `compare`), it is not reproducible:
+   journal the site, keep the model's tie rule, and do not spend revisions on it.
+3. Otherwise revise the `JavaHashMap` model until the new vector and every non-skipped
+   `collections.json` script pass; never loosen a vector or tolerance (AD-13).
+4. Journal the case, vector file and model change in the active `decision-journal.md`.

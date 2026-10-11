@@ -14,8 +14,8 @@ from the Javadoc/JLS only (AD-9). See also [overview](architecture/overview.md),
 | shifts, `>>>` | distance masked (31); unsigned | `Int32.shl/shr/ushr` | 1.3 |
 | `long` | `number` unless > 2^53, then `bigint` | documented sites only | 1.4 |
 | `(int)` of double | NaN to 0, trunc, saturate | `d2i` | 1.5 |
-| `(int)` of long | keeps low 32 bits (wraps) | `l2i` (no vector yet) | 1.5 |
-| `float` | round to binary32 after each op | `Math.fround` | 1.6 |
+| `(int)` of long | keeps low 32 bits (wraps) | `JavaMath.l2i` | 1.5 |
+| `float` | round to binary32 after each op | `Float32.*` | 1.6 |
 | `char` | UTF-16 unit as `number`; math promotes | `charCodeAt` | 1.7 |
 | `Math.round` | ties to +inf, NaN to 0, saturate | `Math.round` shim | 1.8 |
 | `Math.sin/cos/pow/...` | <= 1 ulp only | native; divergence list | 1.9 |
@@ -33,8 +33,7 @@ from the Javadoc/JLS only (AD-9). See also [overview](architecture/overview.md),
 | seed `0` | time-seeded; inject the clock | seed provider | 3 |
 | Guava views | `reverse/filter/get` are live | local helpers | 4 |
 | `DoubleMath.fuzzy*` | Javadoc formula | local `fuzzyEquals` | 4 |
-| EMF containment | add moves; inverse refs update | plain classes (AD-11) | 5 |
-| EMF notifications | not ported | none | 5 |
+| EMF containment | add moves; inverse refs update; no notifications | plain classes (AD-11) | 5 |
 | `equals/hashCode` keys | value equality (Pair, KVector) | key function | 6.1 |
 | enum with fields | static init order | class + static instances | 6.3 |
 | overloading | one TS signature set | merged/suffixed names | 6.5 |
@@ -57,12 +56,13 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
 
 - Counts use the `G` helper and `SRC` list in
   [collections 2.0](translation-rules-collections.md#20-how-the-inventory-was-built).
-- Proof: JVM vectors from `tools/vectors/JavaVectors.java` (JDK 21.0.1): `test/golden/refs/java/lang.json`
-  (`round` 52, `roundFloat` 28, `floorDiv` 72, `floorMod` 72, `d2i` 52, `d2l` 52, `i32` 558 with ops
-  add sub mul div rem shl shr ushr neg, `doubleCompare` 1024) and `random.json` (seeds 0, 1, -1, 42,
+- Proof: JVM vectors in `test/golden/refs/java/`: `tools/vectors/JavaVectors.java` (JDK 21) writes
+  all but `guava.json` (`tools/vectors/GuavaVectors.java`, Guava 33.3.0-jre). `lang.json` (`round`
+  52, `roundFloat` 28, `floorDiv` 72, `floorMod` 72, `d2i` 52, `d2l` 52, `i32` 558 with ops add
+  sub mul div rem shl shr ushr neg, `doubleCompare` 1024), `random.json` (seeds 0, 1, -1, 42,
   2^63-1, -2^63, 25214903917 x 32 calls: nextInt, nextIntBound, nextLong, nextDouble, nextFloat,
-  nextBoolean, nextGaussian, shuffle).
-- Shim paths are proposals (nothing exists yet): `src/java/lang/`, `src/java/util/`, `src/guava/`.
+  nextBoolean, nextGaussian, shuffle); the other files are cited per rule.
+- Shims live in `src/java/lang/`, `src/java/util/`, `src/guava/`; each rule below names its export.
   Javadoc base: `https://docs.oracle.com/en/java/javase/21/docs/api/java.base/`.
 - Confidence (research-sources.md): HIGH = checked this run against Javadoc/JLS/ELK source;
   MEDIUM = single source or not re-measured; stated inline.
@@ -73,64 +73,62 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
 - Rule: every `+ - *` on `int` wraps to 32 bits; `x op= e` means `x = (T)(x op e)` (JLS 15.26.2),
   so `intVar += doubleExpr` adds in double, then truncates with `d2i`. TS: `Int32.add/sub/mul`
   (`Math.imul` for `*`), never bare `+` on ints that can exceed 2^31.
-- ELK: sentinel arithmetic `Integer.MAX_VALUE - modelOrderMap.size()`
-  `alg.layered/src/.../p1cycles/BFSNodeOrderCycleBreaker.java:189`; hash sum that wraps
-  `core/src/.../math/KVector.java:155`; `Integer.MAX_VALUE` is used 51 times as a sentinel, so
-  port it as `2147483647`, never `Infinity` (`G 'Integer\.MAX_VALUE'`).
+- ELK: `Integer.MAX_VALUE - modelOrderMap.size()`
+  `alg.layered/src/.../p1cycles/BFSNodeOrderCycleBreaker.java:189`; wrapping hash sum
+  `core/src/.../math/KVector.java:155`; `Integer.MAX_VALUE` is a sentinel 51 times: port it as
+  `2147483647`, never `Infinity` (`G 'Integer\.MAX_VALUE'`).
 - Proof: `lang.json` `i32` (add, sub, mul include wrapping cases). Confidence HIGH (JLS 15.26.2).
 
 ### 1.2 Integer division and remainder
 - Rule: `/` rounds toward zero (JLS 15.17.2); `int` division by zero throws `ArithmeticException` (JS
-  gives `Infinity`/`NaN`); `MIN / -1` overflows to MIN. `%` takes the dividend's sign, as in JS, so it
+  gives `Infinity`/`NaN`); `MIN / -1` is MIN. `%` takes the dividend's sign, as in JS, so it
   differs only for a zero divisor (throws) and `-0` results (`-4 % 2` is `-0` in JS, `0` in Java).
   TS: `Int32.div/rem` throw on zero and return `r | 0`. `Math.floorDiv/floorMod` have **0** in-scope
   callers (`G 'Math\.floor(Div|Mod)\('`); their shims serve no current port.
-- ELK `/`: `(layers - 1) / 2` `alg.layered/src/.../intermediate/LabelDummySwitcher.java:332`;
-  `slPorts.size() / 2` `alg.layered/src/.../intermediate/loops/ordering/PortSideAssigner.java:189`.
-- ELK `%`: 17 lines (`G '[A-Za-z0-9_)] ?% ?[A-Za-z0-9_(]'` gives 19 hits; one is a `String.format`
-  pattern, one a URL): 15 integer, 2 double. Negative-guarded `(i - k + n) % n`
-  `core/src/.../math/CubicSplineInterpolator.java:84`; `index % 2 > 0`
-  `alg.layered/src/.../p3order/counting/HyperedgeCrossingsCounter.java:322`; `Long % int` from
-  `Collectors.counting()` `alg.common/src/.../polyomino/PolyominoCompactor.java:299`; double fmod
-  `retval % Math.PI` `alg.layered/src/.../p5edges/splines/SplinesMath.java:128`, Xtend `d % 1`
-  `graph.json/src/.../JsonAdapter.xtend:223`.
+- ELK `/`: `(layers - 1) / 2` `alg.layered/src/.../intermediate/LabelDummySwitcher.java:332`.
+- ELK `%`: 17 lines (`G '[A-Za-z0-9_)] ?% ?[A-Za-z0-9_(]'`, 19 hits minus a `String.format`
+  pattern and a URL): 15 integer, 2 double. Negative-guarded `(i - k + n) % n`
+  `core/src/.../math/CubicSplineInterpolator.java:84`; `Long % int` from `Collectors.counting()`
+  `alg.common/src/.../polyomino/PolyominoCompactor.java:299`; double fmod `retval % Math.PI`
+  `alg.layered/src/.../p5edges/splines/SplinesMath.java:128`.
 - Proof: `i32` div/rem (72 each) include `MIN / -1` and `rem(-1, 1) = 0` (pins the `-0` rule).
-  No vector has a zero divisor (gap: add a throws test). HIGH.
+  Closed: `numeric.json` `divZero` (40 rows) pins the throws (`Int32.div/rem`). HIGH.
 
 ### 1.3 Shifts and bit operations
 - Rule: shift distance is masked to 5 bits for `int` (6 for `long`); `>>>` is unsigned (JLS 15.19).
-  JS operators are int32 with the same mask, but `>>>` yields uint32 (`| 0` if the Java result is an
-  `int`). TS: `Int32.shl/shr/ushr`; `long` shifts need `bigint` or paired int32 halves.
-- ELK: the only real 64-bit bit twiddling in scope is `TwoBitGrid`: `grid[y][xWord] >>> (xRest << 1)`
-  `alg.common/src/.../polyomino/structures/TwoBitGrid.java:185` and `LSB_MASK << (xRest << 1)`
-  `.../TwoBitGrid.java:211` (shifts up to 62 on a `long[][]`). 7 `<<` lines in scope in total.
+  JS `>>>` yields uint32 (`| 0` if the Java result is an `int`). TS: `Int32.shl/shr/ushr`; `long`
+  shifts use `Int64` (`bigint`) or paired int32 halves.
+- ELK: the only 64-bit bit twiddling in scope is `TwoBitGrid`: `grid[y][xWord] >>> (xRest << 1)`
+  `alg.common/src/.../polyomino/structures/TwoBitGrid.java:185`, `:211` (shifts up to 62 on a
+  `long[][]`). 7 `<<` lines in scope in total.
 - Proof: `i32` shl/shr/ushr (54 each). HIGH.
 
 ### 1.4 `long` and `bigint`
-- Rule: `number` while |v| < 2^53 is provable; otherwise `bigint` at a **documented** site.
+- Rule: `number` while |v| < 2^53 is provable; otherwise `bigint` at a **documented** site. Shim
+  `src/java/lang/Int64.ts` (`add sub mul div rem neg shl shr ushr`, wrapping to 64 bits;
+  `numeric.json` `i64`, 4056 rows).
 - Sites: `ElkMath.FACT_TABLE`, `factl`, `binomiall` (20! > 2^53)
   `core/src/.../math/ElkMath.java:36`, `:51`, `:97`; `TwoBitGrid` words (above; a `Uint32Array`
   pair-of-halves rewrite is equivalent and avoids `bigint`); `Random` state and `nextLong` (48/64
   bit, internal to the shim); `long randomSeed = random.nextLong()` fed to `setSeed`
   `alg.layered/src/.../p3order/LayerSweepCrossingMinimizer.java:95`, `:612`, `:188` (full 64 bits:
-  `bigint`). `System.currentTimeMillis()` `core/src/.../util/BasicProgressMonitor.java:538` fits `number`;
-  `serialVersionUID` fields (`core/src/.../math/KVector.java:34`) are dropped.
-- `Math.round` returns `long`; results at +-2^63 are not exact as `number` (vector value
-  `"9223372036854775807"` is stored as a string). Every in-scope consumer narrows or subtracts
-  from a small double (1.8), so `number` is acceptable there. HIGH.
+  `bigint`). `System.currentTimeMillis()` fits `number`; `serialVersionUID` fields are dropped.
+- `Math.round` returns `long`: `JavaMath.roundToLong` returns `bigint` (vector value
+  `"9223372036854775807"` is a string); `JavaMath.round` returns `number` and throws `RangeError`
+  outside the safe-integer range. In-scope consumers narrow or subtract from a small double. HIGH.
 
 ### 1.5 Casts
 - `(int)` of `double`/`float`: NaN to 0, round toward zero, then saturate to int range (JLS 5.1.3)
   -> `d2i`. ELK: `(int) (xe / cellSizeX)` truncates negatives, it does not floor
-  `alg.disco/src/.../structures/DCPolyomino.java:227`; `(int) Math.ceil(...)`
-  `alg.common/src/.../polyomino/structures/TwoBitGrid.java:62`. A comparator that casts a double
+  `alg.disco/src/.../structures/DCPolyomino.java:227`. A comparator that casts a double
   difference gives ties for |diff| < 1: `alg.layered/src/.../InteractiveLayeredGraphVisitor.java:849`.
 - `(int)` of `long`: **keeps the low 32 bits, wraps** (JLS 5.1.3), unlike double to int. ELK:
   `(int) Math.round(xTemp)` `alg.mrtree/src/.../p3place/NodePlacer.java:329`,
   `alg.layered/src/.../intermediate/wrapping/ARDCutIndexHeuristic.java:57`. Identical to
-  `d2i(round(x))` only while |x| < 2^31. Needs an `l2i` shim; **no vector exists** (gap, section 9).
-- `(double)`/`(float)`/`(long)` casts: `(float)` see 1.6; `(long)` has 1 site (`G '\(long\)'`).
-  38 `(int)` casts in scope (`G '\(int\)'`). Proof: `d2i`, `d2l`. HIGH.
+  `d2i(round(x))` only while |x| < 2^31. Closed: `numeric.json` `l2i` (78 rows) -> `l2i(bigint)`
+  in `src/java/lang/JavaMath.ts`, used as `l2i(roundToLong(x))`.
+- Other casts: `(float)` see 1.6; `(long)` has 1 site (`G '\(long\)'`); 38 `(int)` casts in
+  scope (`G '\(int\)'`). Proof: `d2i`, `d2l`. HIGH.
 
 ### 1.6 `float`
 - Rule: a `float` is a binary32; every float operation and cast rounds to binary32; widening to
@@ -138,23 +136,23 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   `Math.fround(...)` after each float op, cast and `floatValue()`.
 - ELK: `float barycenter = (float) sum / inLayerConnections`
   `alg.layered/src/.../p3order/AbstractBarycenterPortDistributor.java:258`; ratios
-  `(float) (newSize.x / oldSize.x)` `alg.layered/src/.../graph/LGraphUtil.java:95`;
-  `.floatValue()` `core/src/.../util/BoxLayoutProvider.java:67`; a list element rounded to float,
-  then compared with a double `alg.layered/src/.../p5edges/orthogonal/HyperEdgeSegment.java:149`;
-  `(float) Math.sqrt(totalArea)` `alg.layered/src/.../components/ComponentGroupGraphPlacer.java:376`;
-  float literal in metadata `aspectRatio = 1.6f` `core/src/.../Core.melk:163` (the AD-12 generator
-  must emit `Math.fround(1.6)` = 1.600000023841858). 89 `float` tokens in scope (`G '\bfloat\b'`),
-  mostly `BasicProgressMonitor` and `ElkMath.powf` (`core/src/.../math/ElkMath.java:178`).
-- Proof: `roundFloat`; `random.json` `nextFloat` values are float bits widened to double. HIGH.
+  `(float) (newSize.x / oldSize.x)` `alg.layered/src/.../graph/LGraphUtil.java:95`; a list element
+  rounded to float, then compared with a double
+  `alg.layered/src/.../p5edges/orthogonal/HyperEdgeSegment.java:149`; metadata literal
+  `aspectRatio = 1.6f` `core/src/.../Core.melk:163` (AD-12 generator: `Math.fround(1.6)`
+  = 1.600000023841858). 89 `float` tokens in scope (`G '\bfloat\b'`).
+- Shim `src/java/lang/Float32.ts`: `fromDouble` (narrowing; `numeric.json` `d2f`, 72 rows) and
+  `add sub mul div` (`Math.fround(a op b)`; `f32`, 2704 rows). Also `roundFloat`; `random.json`
+  `nextFloat` values are float bits widened to double. HIGH.
 
 ### 1.7 `char`
 - Rule: UTF-16 code unit (0..65535); arithmetic promotes to `int`; `(char) i` is `i & 0xFFFF`;
   `String + char` appends the character, `String + int` its digits. Java and JS strings are both
   UTF-16, so `length`/`charAt` agree. TS: `number` plus `charCodeAt` / `String.fromCharCode`.
-- ELK (6 sites): `char randChar1 = (char) ('a' + (int) (Math.random() * validCharacterRange))`
-  `core/src/.../util/BasicProgressMonitor.java:541`; `charAt` `core/src/.../comments/NodeReferenceMatcher.java:342`;
-  `toCharArray` `graph/src/.../util/GraphIdentifierGenerator.java:227`; `String.chars()`
-  `core/src/.../data/LayoutDataContentAssist.java:213`. CLAUDE.md row confirmed (JLS 5.1.3, 4.2.1). HIGH.
+- ELK (6 sites): `(char) ('a' + (int) (Math.random() * validCharacterRange))`
+  `core/src/.../util/BasicProgressMonitor.java:541`; `charAt`
+  `core/src/.../comments/NodeReferenceMatcher.java:342`; `toCharArray`
+  `graph/src/.../util/GraphIdentifierGenerator.java:227`. CLAUDE.md row confirmed (JLS 5.1.3). HIGH.
 
 ### 1.8 `Math.round`, `floor`, `ceil`
 - `Math.round(double)` returns the closest `long`, **ties toward positive infinity**; NaN gives 0;
@@ -164,8 +162,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   `Math.floor(x + 0.5)`: vector `3fdfffffffffffff` (0.49999999999999994) must give 0. `round(float)`
   returns `int` (vectors `roundFloat`).
 - ELK: `double offset = y - Math.round(y)` `alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333`
-  (long promoted to double); `(int) Math.round(rowsd)` `ARDCutIndexHeuristic.java:57` (see 1.5);
-  4 of the 11 sites are debug text (`alg.common/src/.../compaction/oned/CNode.java:85`).
+  (long promoted to double); `(int) Math.round(rowsd)` `ARDCutIndexHeuristic.java:57` (see 1.5).
 - `floor`/`ceil` are bit-identical to JS (return `double`; `ceil(-0.5)` is -0.0 in both):
   `(int) Math.floor((d + 1.0) / 2.0)` `alg.layered/src/.../p4nodes/bk/BKAligner.java:118`,
   `(int) Math.ceil(spacing)` `NetworkSimplexPlacer.java:414`. HIGH.
@@ -181,7 +178,8 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   `alg.radial/src/.../RadialUtil.java:156` `atan2`), 11 `pow/exp/log/log10`
   (`core/src/.../options/TopdownSizeApproximatorUtil.java:66` `Math.exp`), 38 `sqrt`.
   `(int) (Math.floor(Math.log10(size)) + 1)` `alg.mrtree/src/.../intermediate/FanProcessor.java:96`
-  needs `log10(10^n) == n` exactly (Javadoc requires it); add powers of ten to the vectors.
+  needs `log10(10^n) == n` exactly (Javadoc requires it). Closed, no shim: native `Math.log10`
+  matched all 1264 `numeric.json` `log10` rows (powers of ten included).
 - `Math.min/max` propagate NaN and order -0.0 below 0.0 in both languages; `Math.abs(Integer.MIN_VALUE)`
   stays MIN (Javadoc) -> `Int32.abs`; `Math.signum` matches `Math.sign`:
   `alg.layered/src/.../p4nodes/bk/NeighborhoodInformation.java:200`. Javadoc HIGH; V8 MEDIUM (not measured).
@@ -191,9 +189,9 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   greater than +Infinity (Javadoc). `<`, `==` follow IEEE (`NaN != NaN`, `-0 == 0`). Use the
   shim, never `a - b`. 83 `Double.compare` sites; e.g. heap comparator with ties
   `core/src/.../util/BoxLayoutProvider.java:551`; boxed `compareTo` `alg.common/src/.../NaiveMinST.java:59`.
-- `-0.0`: `KVector.equals` uses `==` (`core/src/.../math/KVector.java:120`, so `0.0` equals `-0.0`)
-  while `hashCode` hashes the bits (`:155`, they differ). Port both faithfully; a string key such as
-  `` `${x},${y}` `` would conflate them (`String(-0) === "0"`).
+- `-0.0`: `KVector.equals` uses `==` (`core/src/.../math/KVector.java:120`, `0.0` equals `-0.0`)
+  while `hashCode` hashes the bits (`:155`, they differ). Port both faithfully; a string key such
+  as `` `${x},${y}` `` would conflate them (`String(-0) === "0"`).
 - NaN as an "unset" sentinel: `alg.layered/src/.../p5edges/orthogonal/HyperEdgeSegment.java:74`, test
   `Double.isNaN` `:353` -> `Number.isNaN`, never `=== NaN`.
 - `Double.MIN_VALUE` is the smallest **positive** value (4.9e-324), not the most negative; ELK uses
@@ -204,18 +202,18 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
 
 ## 2. Collections and iteration order (AD-10)
 
-Full inventory, commands, per-site tables and container rows:
-[translation-rules-collections.md](translation-rules-collections.md). Headline counts (reproducible
-with the commands there):
+Inventory, commands, per-site tables and container rows:
+[translation-rules-collections.md](translation-rules-collections.md).
 
-- 179 `HashMap`/`HashSet` creations (105 map, 74 set) = 154 bound to a name + 25 anonymous;
-  **142 distinct containers** (95 maps, 47 sets).
-- **42 are iterated**: 8 value-hashed (IProperty, String, KVector-derived), 2 Integer-keyed but
-  sorted through a `TreeSet`, 2 enum-keyed (identity hash), 30 identity-hashed.
+- 179 `HashMap`/`HashSet` creations = **142 distinct containers**; **42 are iterated**: 8
+  value-hashed (IProperty, String, KVector-derived), 2 Integer-keyed but sorted through a `TreeSet`,
+  2 enum-keyed (identity hash), 30 identity-hashed.
 - Clearest AD-10 site: spore `NaiveMinST` sorts a `HashSet<TEdge>` by weight, so equal-weight tie
   order is HashSet order: `alg.common/src/.../NaiveMinST.java:58`, `:59`.
-- Rows for `LinkedHash*`, `EnumMap/EnumSet`, `TreeSet/TreeMultimap`, `PriorityQueue`,
-  `List.sort`/`Collections.sort`, `Iterator.remove`, `ListIterator` are in collections 2.3.
+- Shims: `src/java/util/{HashStrategy,JavaHashMap,JavaHashSet,PriorityQueue,Collections}.ts`
+  (models, skipped scripts and runbook in the collections doc). Rows for `LinkedHash*`,
+  `EnumMap/EnumSet`, `TreeSet/TreeMultimap`, `PriorityQueue`, sorts, `Iterator.remove`,
+  `ListIterator` are in collections 2.3.
 
 ## 3. Randomness
 
@@ -227,27 +225,25 @@ with the commands there):
 - Seeds: `new Random(randomSeed)` with an `Integer` widens with sign extension; negative seeds occur
   (`random.json` seed `-1`): `alg.layered/src/.../GraphConfigurator.java:121`.
 - **Seed 0 means time-seeded.** Option text: `core/src/.../Core.melk:608` (`randomSeed`), `:612`
-  ("If the value is 0, the seed shall be determined pseudo-randomly"). Core default
-  `randomSeed = 0` (`Core.melk:162`); layered and force default to 1
-  (`alg.layered/src/.../Layered.melk:124`, `alg.force/src/.../Force.melk:50`). Unseeded
-  `new Random()`: `GraphConfigurator.java:119`, `alg.force/src/.../ForceLayoutProvider.java:91`
-  (`val == 0`), `core/src/.../util/RandomLayoutProvider.java:63`; null seed in force falls back to
-  `new Random(1)` (`ForceLayoutProvider.java:96`). TS: take the seed from an injected provider
-  (testability.md "inject non-determinism"); golden inputs use a nonzero seed.
+  ("If the value is 0, the seed shall be determined pseudo-randomly"). Core default is 0
+  (`Core.melk:162`); layered and force default to 1 (`alg.layered/src/.../Layered.melk:124`,
+  `alg.force/src/.../Force.melk:50`). Unseeded `new Random()`: `GraphConfigurator.java:119`,
+  `alg.force/src/.../ForceLayoutProvider.java:91`, `core/src/.../util/RandomLayoutProvider.java:63`;
+  a null seed in force falls back to `new Random(1)` (`ForceLayoutProvider.java:96`). TS: inject
+  the seed provider (testability.md); golden inputs use a nonzero seed.
 - Who owns a `Random`: layered stores it as `InternalProperties.RANDOM`
-  (`alg.layered/src/.../options/InternalProperties.java:147`), read by
-  `.../p3order/GraphInfoHolder.java:94` and `.../p5edges/orthogonal/OrthogonalRoutingGenerator.java:202`;
-  force passes it to its models (`alg.force/src/.../model/AbstractForceModel.java:70`);
-  `KVector.wiggle` takes one (`core/src/.../math/KVector.java:398`). Radial, disco, rectpacking,
-  topdownpacking, vertiflex create none (`G 'new Random\('`: 9 sites in total).
+  (`alg.layered/src/.../options/InternalProperties.java:147`); force passes it to its models
+  (`alg.force/src/.../model/AbstractForceModel.java:70`); `KVector.wiggle` takes one
+  (`core/src/.../math/KVector.java:398`). Radial, disco, rectpacking, topdownpacking, vertiflex
+  create none (`G 'new Random\('`: 9 sites in total).
 - Draw order is observable: port every draw in sequence, including re-seeding
   (`random.setSeed(randomSeed)` `LayerSweepCrossingMinimizer.java:188`, which also clears the cached
-  Gaussian). Used: `nextInt(bound)` (`alg.layered/src/.../p1cycles/GreedyCycleBreaker.java:232`),
-  `nextDouble`, `nextFloat`, `nextBoolean` (`LayerSweepCrossingMinimizer.java:174`), `nextLong`;
-  `nextGaussian`: 0 sites.
+  Gaussian; `random-setseed.json`). Used: `nextInt(bound)`
+  (`alg.layered/src/.../p1cycles/GreedyCycleBreaker.java:232`), `nextDouble`, `nextFloat`,
+  `nextBoolean`, `nextLong`; `nextGaussian`: 0 sites.
 - **`Collections.shuffle`: 0 uses in scope** (`G 'Collections\.shuffle'`; the two textual hits are
-  comments, `alg.layered/src/.../options/InternalProperties.java:439`). Its shim (Javadoc: walk
-  backwards, swap with a random earlier-or-same position) is vector-proven but not needed yet.
+  comments, `alg.layered/src/.../options/InternalProperties.java:439`). `Collections.shuffle` in
+  `src/java/util/Collections.ts` (Javadoc algorithm) is vector-proven but has no caller.
 - Non-seedable randomness stays nondeterministic: `Math.random()` (4 sites): debug folder names
   `BasicProgressMonitor.java:541`; a discarded call `alg.layered/src/.../p3order/MedianHeuristic.java:40`;
   jitter when two spore vertices coincide `alg.spore/src/.../ElkGraphImporter.java:169`; JSON id
@@ -255,7 +251,11 @@ with the commands there):
 
 ## 4. Guava
 
-Policy (AD-10): small local helpers in `src/guava/`, never a dependency. Inventory:
+AD-10: local helpers, never a dependency: `src/guava/{Lists,Iterables,Iterators,Strings,DoubleMath,
+Joiner,Splitter,Range,Table,ImmutableMap,ImmutableSet,Sets,Maps,HashBiMap,Multimap,HashMultimap,
+ArrayListMultimap,LinkedListMultimap,LinkedHashMultimap,TreeMultimap}.ts`. The hash-ordered `Maps`,
+`Sets.newHashSet*`, `HashBiMap` and multimaps replay `guava.json` (1518 scripts); the rest follow
+the Javadoc. Known gap: `Sets.newTreeSet` (`src/guava/Sets.ts`) is a snapshot, not live. Inventory:
 355 import lines in 203 files (`G 'import (static )?com\.google\.common' | wc -l`; `G -l ... | wc -l`).
 Per-call counts: `grep -rhoE --include='*.java' --include='*.xtend' PATTERN "${SRC[@]}" | sort | uniq -c`
 with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|Splitter|Streams|Predicates|HashBiMap|Immutable(Map|Set))\.[a-zA-Z]+'`.
@@ -301,7 +301,7 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   `AbstractEList#add` Javadoc; that `getChildren()` is unique is MEDIUM). The list is *live*: take a
   snapshot before mutating while iterating (`alg.radial/src/.../RadialUtil.java:56`).
 - Recursive containment throws `IllegalArgumentException`: `graph/src/.../impl/ElkPortImpl.java:93`,
-  `:94`, also `ElkEdgeImpl.java:176`, `ElkLabelImpl.java:114`, `ElkEdgeSectionImpl.java:356`.
+  also `ElkEdgeImpl.java:176`, `ElkLabelImpl.java:114`, `ElkEdgeSectionImpl.java:356`.
 - Inverse references keep two sides in sync: `edge.getSources()` is an
   `EObjectWithInverseResolvingEList.ManyInverse` (`graph/src/.../impl/ElkEdgeImpl.java:197`), so adding
   a source also appends the edge to `source.getOutgoingEdges()`. Edge containment is separate:
@@ -317,7 +317,7 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   defaults through `ElkReflect.clone` (`graph/src/.../properties/Property.java:134`); `ElkReflect`
   (`graph/src/.../util/ElkReflect.java:43`) is a `Class`-keyed registry of constructors/cloners, replaced
   by constructor-function keys.
-- Notifications, adapters and reflection are not ported (AD-11): `eNotificationRequired`/`eNotify`
+- Notifications, adapters, reflection are not ported (AD-11): `eNotify`
   (`graph/src/.../impl/ElkPortImpl.java:103`), `eAdapters`, `eGet/eSet`. `eContainer()`
   (`core/src/.../util/ElkUtil.java:1154`) becomes a `parent`/`containingNode` accessor.
 - `eAllContents()` is a depth-first pre-order walk over containment features in declaration order:
@@ -331,19 +331,20 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 
 ### 6.1 `equals` / `hashCode` as map keys
 - 21 `equals` and 21 `hashCode` overrides in scope (`G 'boolean equals\('`, `G 'int hashCode\('`);
-  everything else is identity. JS `Map` has identity keys only, so value-keyed containers need a key
-  function or a `HashMap` helper that calls the ported `hashCode/equals`.
+  everything else is identity. JS `Map` has identity keys only: value-keyed containers use a key
+  function or `JavaHashMap` with a `HashStrategy` (`src/java/util/HashStrategy.ts`: `hash`,
+  `equals`, optional `compare`; `STRING`, `INTEGER`, `DOUBLE`, `hashable()`).
 - Value-equal keys that matter: `KVector` (mutable! `core/src/.../math/KVector.java:117`), `Pair`
   (`core/src/.../util/Pair.java:152`), `IProperty` (id, `Property.java:102`), `TEdge`/`TTriangle`
   (`alg.common/src/.../TEdge.java:44`), and **sets as keys**: `Set<PortSide>` in a `HashMultimap`
   (`alg.layered/src/.../components/ComponentGroup.java:96`), where `Set.equals` is element equality.
-  Keys that mutate after insertion (`KVector`) behave like Java only if `hashCode` is recomputed on
-  lookup, which a `JavaHashMap` does and a string key does not.
+  Keys that mutate after insertion (`KVector`) behave like Java only if `hashCode` is recomputed
+  on lookup: `JavaHashMap` does, a string key does not.
 
 ### 6.2 Interfaces with default methods
 - 17 `default` methods (`core/src/.../comments/IDataProvider.java:70`). TS interfaces carry no bodies:
-  use an abstract base class or mixin, or a helper function taking the interface; a class
-  implementing several such interfaces must receive each default explicitly.
+  use an abstract base class, mixin or helper function; a class implementing several such
+  interfaces must receive each default explicitly.
 
 ### 6.3 Enums with fields, methods, `ordinal()`
 - 120 enums, 66 `ordinal()` calls. Port as a class with `static readonly` instances created in
@@ -356,12 +357,11 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 
 ### 6.4 Inner and anonymous classes, static init order
 - 42 anonymous `new X() { ... }` bodies: arrow functions when single-method, otherwise a named
-  class (`alg.layered/src/.../intermediate/HierarchicalPortOrthogonalEdgeRouter.java:423` is an
-  anonymous `Comparator`). Non-static inner classes capture `this`: pass the outer explicitly.
+  class (e.g. `alg.layered/src/.../intermediate/HierarchicalPortOrthogonalEdgeRouter.java:423`).
+  Non-static inner classes capture `this`: pass the outer explicitly.
 - 7 `static {}` blocks (`G '^\s*static \{'`): ES class static blocks run in textual order with
-  the field initializers, as in Java. Registration code such as
-  `graph/src/.../util/ElkReflect.java:46` (static block) and the `ElkReflect.register` calls in
-  `core/src/.../data/LayoutMetaDataService.java:125` must run before first use; avoid
+  the field initializers, as in Java. Registration code (`graph/src/.../util/ElkReflect.java:46`,
+  `core/src/.../data/LayoutMetaDataService.java:125`) must run before first use; avoid
   import-order-dependent module side effects (the module-global fitness test forbids them).
 
 ### 6.5 Overloading and varargs
@@ -371,24 +371,27 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   indistinguishable at runtime (`int` vs `double`, `Number` vs `Boolean`), suffix the Java
   type or purpose (`addInt`, `addDouble`) and note the Java name in the `@see`.
 - ELK: `KVector.add(KVector)` / `add(double, double)` `core/src/.../math/KVector.java:219`, `:234`;
-  `scale(double)` / `scale(double, double)` `:303`, `:318`; Xtend dispatch overloads
-  `addJsonObj(JsonObject, String, Number|boolean|String|JsonElement|Object)`
-  `graph.json/src/.../JsonAdapter.xtend:169-185`. Static overload choice uses the compile-time
-  type in Java; a dispatch on runtime type can pick differently when a `double` holds an integer.
+  Xtend dispatch overloads `addJsonObj(JsonObject, String, Number|boolean|String|...)`
+  `graph.json/src/.../JsonAdapter.xtend:169-185`. Java picks overloads by compile-time type; a
+  runtime dispatch can differ when a `double` holds an integer.
 - Varargs (34 sites): `...` becomes a rest parameter; `Arrays.asList(array)` aliasing is gone:
   `core/src/.../math/ElkMath.java:671` (`long... values`).
 
 ### 6.6 `instanceof` chains
 - 171 `instanceof`: class checks stay `instanceof`; interface checks (`instanceof IProperty<?>`
-  `graph/src/.../properties/Property.java:103`) need a brand or type-guard function, since TS
-  interfaces do not exist at run time. Check-then-cast `core/src/.../math/KVector.java:118` becomes a guard.
+  `graph/src/.../properties/Property.java:103`) need a brand or type-guard function (TS interfaces
+  vanish at run time); check-then-cast `core/src/.../math/KVector.java:118` becomes a guard.
 
 ### 6.7 Exceptions: checked, language-raised, and caught
 - ELK defines 6 custom exceptions, all `RuntimeException` (`G 'extends (Exception|RuntimeException)'`),
   e.g. `core/src/.../UnsupportedGraphException.java:22`. The checked ones are JDK: `IOException`
   (6 catches), `InstantiationException`/`IllegalAccessException` (reflection, 7), `NoSuchFieldException`
   (2). TS has no checked exceptions: plain `Error` subclasses, keep every throw site and message
-  (JLS ch. 11 distinguishes the classes only at compile time). CLAUDE.md row confirmed.
+  (JLS ch. 11 distinguishes the classes only at compile time). CLAUDE.md row confirmed. Classes
+  (M5): `src/java/lang/{IllegalArgumentException,NumberFormatException,IndexOutOfBoundsException,
+  ArrayIndexOutOfBoundsException,ArithmeticException}.ts`,
+  `src/java/util/NoSuchElementException.ts`.
+  `UnsupportedOperationException` is **not** a class: immutable Guava helpers throw `TypeError`.
 - **Language-raised exceptions that ELK catches** (10 sites, `G 'catch \((Array)?IndexOutOfBounds'`):
   array indexing outside bounds throws in Java, yields `undefined` in JS.
   `alg.common/src/.../polyomino/structures/TwoBitGrid.java:224` wraps `ArrayIndexOutOfBoundsException`
@@ -396,8 +399,8 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   `IndexOutOfBoundsException`. Rule: port with an explicit bounds check that throws the same type and
   message. Likewise `NumberFormatException` from
   `Double.parseDouble` (`core/src/.../math/KVector.java:531`): `Number(s)` accepts `""` (0) and hex,
-  Java rejects them and accepts a trailing `d`/`f` and surrounding whitespace (Javadoc trims) -> a
-  `parseDouble` shim.
+  Java rejects them and accepts a trailing `d`/`f` and surrounding whitespace (Javadoc trims) ->
+  `JavaDouble.parseDouble` (`src/java/lang/JavaDouble.ts`; `text.json` `parseDouble`, 96 rows).
 - `catch (Exception e)` that cleans up and rethrows (`core/src/.../RecursiveGraphLayoutEngine.java:463`,
   disposes the provider, `throw exception`): a plain `try/catch` rethrow in TS.
 
@@ -405,18 +408,15 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 - 141 `assert` statements (`G '^\s*assert '`); assertions are disabled unless the JVM runs with
   `-ea` (JLS 14.10). None has a side effect (`G` for `++ -- add( remove( put( set*( next(` inside
   asserts returns 0). Port to a `devAssert(cond, msg?)` helper compiled out of production; keep the
-  expressions free of effects. CLAUDE.md row confirmed. E.g. `core/src/.../util/ElkSpacings.java:80`,
-  `alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:592`. HIGH.
+  expressions free of effects. CLAUDE.md row confirmed: `ElkSpacings.java:80`. HIGH.
 
 ### 6.9 `Optional`, streams, `Iterable` laziness
 - 5 `Optional<` declarations, 226 `.stream()`, 12 `parallelStream()`, 48 `Collectors.` uses. Java
-  streams are lazy (one element flows through the whole pipeline); TS arrays are eager per stage.
-  This only shows with side effects in `map`/`filter` or short circuits
-  (`findFirst` `alg.layered/src/.../p3order/counting/CrossingsCounter.java:432`): array methods for
-  pure lambdas, generators when side-effect order matters.
-- `parallelStream()` (12, `alg.common/src/.../polyomino/PolyominoCompactor.java:236`,
-  `alg.disco/src/.../transform/ElkGraphComponentsProcessor.java:180`): `collect(toSet())` and
-  `forEach` are unordered. Treat as sequential and journal where the result order feeds output.
+  streams are lazy (one element flows through the whole pipeline); TS arrays are eager per stage,
+  visible only with side effects or short circuits (`findFirst`
+  `alg.layered/src/.../p3order/counting/CrossingsCounter.java:432`): arrays for pure lambdas,
+  generators when side-effect order matters. `parallelStream()` (`PolyominoCompactor.java:236`)
+  `collect(toSet())`/`forEach` are unordered: treat as sequential, journal where order feeds output.
 - `Collectors.toSet()` is a `HashSet` (section 2); `toList()` keeps encounter order; `Stream.sorted()`
   is stable (`alg.layered/src/.../p5edges/orthogonal/HyperEdgeSegmentSplitter.java:71`). Guava
   `Iterables.filter` views are lazy and see later mutation (section 4): port as an `Iterable`
@@ -428,23 +428,23 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   (closest, ties to even significand; one or two digits when the shortest has length 1), plain
   notation for 1e-3 <= |v| < 1e7 else computerized scientific (`1.0E10`), always at least one
   fraction digit (`100.0`), `-0.0`, `NaN`, `Infinity`. JS prints `100`, `1e+21`, `5e-324`
-  (Java: `4.9E-324`). Needs a `Double.toString` shim (JS shortest digits, Java layout), vectors
-  from the JVM. ELK: `KVector.toString` `"(" + x + "," + y + ")"`
-  `core/src/.../math/KVector.java:113`, which is the stored text of a vector option;
-  `IndividualSpacings.toString` joins `getId() + ":" + value` over the (hash-ordered) map
-  `core/src/.../util/IndividualSpacings.java:122`; debug `String.format("%.2f", ...)`
-  `alg.common/src/.../NaiveMinST.java:76`. `String.format` has 4 sites, all debug or file names
-  (`core/src/.../util/BasicProgressMonitor.java:553`); `%d`/`%02d`/`%.2f` need `Formatter` rules
-  (HALF_UP rounding for `%.2f`), do not port beyond the used specifiers.
+  (Java: `4.9E-324`). Closed: `DoubleToString.toString` in `src/java/lang/DoubleToString.ts`
+  (shortest digits, Java layout; `text.json` `toString`, 14,939 rows). ELK: `KVector.toString`
+  `"(" + x + "," + y + ")"` `core/src/.../math/KVector.java:113`, the stored text of a vector
+  option; `IndividualSpacings.toString` joins `getId() + ":" + value` over the (hash-ordered) map
+  `core/src/.../util/IndividualSpacings.java:122`. `String.format` has 4 sites, all debug or file
+  names (`NaiveMinST.java:76`, `BasicProgressMonitor.java:553`); `%d`/`%02d`/`%.2f` need
+  `Formatter` rules (HALF_UP for `%.2f`); port only the used specifiers.
 - `String.hashCode` is `s[0]*31^(n-1) + ... + s[n-1]` in int arithmetic (Javadoc, verified); it
-  decides `HashMap<String,...>` order (collections V3, V4). `Double.hashCode` is
-  `(int)(v ^ (v >>> 32))` over `doubleToLongBits` (Javadoc, verified).
-- Parsing: `Integer.valueOf` (`core/src/.../data/LayoutOptionData.java:245`) rejects `"1.0"`: use a
-  strict integer parser; `Double.parseDouble` see 6.7.
-- JSON numbers (graph.json uses Gson): integral doubles print as `100.0` in Java and `100` in JS.
-  The oracle comparison is numeric (AD-4), so only parse differences matter: ids parsed as double
-  then `intValue()` (`graph.json/src/.../JsonAdapter.xtend:46`) lose precision above 2^53 (MEDIUM: Gson
-  number text not re-fetched).
+  decides `HashMap<String,...>` order (collections V3, V4): `JavaString.hashCode` (`hash.json`
+  `stringHash`). `Double.hashCode` is `(int)(v ^ (v >>> 32))` over `doubleToLongBits` (Javadoc,
+  verified): `JavaDouble.hashCode` (`doubleHash`, `doubleToLongBits`); `JavaInteger.reverse` serves
+  `KVector.hashCode` (`integerReverse`, `kvectorHash`).
+- Parsing: `Integer.valueOf` (`core/src/.../data/LayoutOptionData.java:245`) rejects `"1.0"`:
+  `JavaInteger.valueOf` (`text.json` `integerValueOf`, 33 rows); `Double.parseDouble` see 6.7.
+- JSON numbers (Gson): integral doubles print as `100.0` in Java, `100` in JS. The oracle
+  comparison is numeric (AD-4), so only parse differences matter: ids parsed as double then
+  `intValue()` (`graph.json/src/.../JsonAdapter.xtend:46`) lose precision above 2^53 (MEDIUM).
 
 ## 8. Xtend in `graph.json`
 
@@ -472,25 +472,28 @@ Operators per the Xtend docs (`https://eclipse.dev/Xtext/xtend/documentation/203
 Other rules: a method returns its last expression; `if` is an expression; `val`/`var` are
 final/mutable; `x + ""` concatenates with Java formatting (section 7, `JsonExporter.xtend:491`);
 `implementationError` returns a plain `new Error(...)` (`graph.json/src/.../JsonAdapter.xtend:60`),
-`JsonImportException` extends `RuntimeException`. No generated `.java` for the Xtend files is in the
-repo, so these five files are the only source.
+`JsonImportException` extends `RuntimeException`. No generated `.java` exists: these are the source.
 
 ## 9. Corrections to CLAUDE.md and vector gaps
 
 CLAUDE.md rows confirmed: `int`, `long`, `double`, `Math.round`, `char`, `String`, `assert`, checked
 exceptions (with the additions in 6.7), Guava, EMF. Corrections or additions:
 
-- **`(int)` cast row**: true for `double`/`float`; a `long` operand wraps (low 32 bits). Add an `l2i`
-  shim; ELK's `(int) Math.round(x)` is the long case (1.5).
-- **integer division row**: `floorDiv/floorMod` are unused in scope; the needed shims are
-  truncating `Int32.div/rem` that throw on zero and normalize `-0` (1.2).
-- **Hash row**: enum keys are identity-hashed, not value-hashed (collections 2.0); KVector-derived
-  keys (`TEdge`, `TTriangle`) are value-hashed and need `JavaHashMap` (`NaiveMinST`).
-- **Hazards line**: `Collections.shuffle` has no in-scope caller; `Random` draws (`nextInt`,
-  `nextDouble`, `nextFloat`, `nextBoolean`, `nextLong`, `setSeed`) do.
+- **`(int)` cast row**: true for `double`/`float`; a `long` operand wraps. Closed: `JavaMath.l2i`
+  (1.5); ELK's `(int) Math.round(x)` is the long case.
+- **integer division row**: `floorDiv/floorMod` have vectors (`numeric.json` `divZero`, `lang.json`)
+  and shims in `src/java/lang/JavaMath.ts` but no in-scope caller; ported code uses truncating
+  `Int32.div/rem` that throw on zero and normalize `-0` (1.2).
+- **Hash row**: enum keys are identity-hashed (collections 2.0); KVector-derived keys (`TEdge`,
+  `TTriangle`) are value-hashed and need `JavaHashMap` (`NaiveMinST`).
+- **Hazards line**: `Collections.shuffle` has no in-scope caller (shim in `Collections.ts`);
+  `Random` draws (`nextInt`, `nextDouble`, `nextFloat`, `nextBoolean`, `nextLong`, `setSeed`) do.
 
-Vector gaps (`test/golden/refs/java/` covers int32 ops, `d2i/d2l`, `round`, `roundFloat`, floor
-div/mod, `Double.compare`, `Random`): add `l2i`; `fround` arithmetic; `Math.log10` powers of ten;
-`Double.toString`/`parseDouble`; `String.hashCode`/`Double.hashCode`; `HashMap` iteration order;
-`PriorityQueue` tie order; `Random.setSeed` mid-sequence. Each is a prerequisite for the matching
-shim; write the vectors first (AD-9, AD-13).
+Vector gaps, all closed (frozen files in `test/golden/refs/java/`; AD-9, AD-13): `l2i` ->
+`numeric.json` `l2i` -> `JavaMath.l2i`; `fround` arithmetic -> `numeric.json` `f32`, `d2f` ->
+`Float32.ts`; `Math.log10` powers of ten -> `numeric.json` `log10`, no shim (native);
+`Double.toString`, `parseDouble` -> `text.json` -> `DoubleToString.ts`, `JavaDouble.parseDouble`;
+`String.hashCode`, `Double.hashCode` -> `hash.json` -> `JavaString.hashCode`, `JavaDouble.hashCode`;
+`HashMap` order -> `collections.json` -> `JavaHashMap.ts`, `JavaHashSet.ts`; `PriorityQueue` ties ->
+`collections.json` -> `PriorityQueue.ts`; `Random.setSeed` mid-sequence -> `random-setseed.json` ->
+`Random.ts`; Guava helpers -> `guava.json` -> `src/guava/*` (section 4).

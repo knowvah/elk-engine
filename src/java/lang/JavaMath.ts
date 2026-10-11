@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { div, rem } from './Int32.js';
 
+const INT_BITS = 32;
 const INT_MAX = 2147483647;
 const INT_MIN = -2147483648;
 const LONG_MAX = 9223372036854775807n;
@@ -61,7 +62,7 @@ export function roundFloat(x: number): number {
 
 /**
  * Floor of the integer quotient (rounds toward negative infinity). Throws
- * `RangeError` on a zero divisor; `MIN_VALUE / -1` wraps.
+ * `ArithmeticException` on a zero divisor; `MIN_VALUE / -1` wraps.
  *
  * @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Math.html#floorDiv(int,int)
  */
@@ -73,7 +74,7 @@ export function floorDiv(a: number, b: number): number {
 
 /**
  * `a - floorDiv(a, b) * b`; the result has the sign of the divisor. Throws
- * `RangeError` on a zero divisor.
+ * `ArithmeticException` on a zero divisor.
  *
  * @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Math.html#floorMod(int,int)
  */
@@ -107,4 +108,14 @@ function d2lSaturating(integral: number): bigint {
   if (integral >= TWO_POW_63) return LONG_MAX;
   if (integral <= -TWO_POW_63) return LONG_MIN;
   return BigInt(integral);
+}
+
+/**
+ * `(int) x` for a `long`: keeps the low 32 bits as a signed int (narrowing
+ * primitive conversion).
+ *
+ * @see https://docs.oracle.com/javase/specs/jls/se21/html/jls-5.html#jls-5.1.3
+ */
+export function l2i(x: bigint): number {
+  return Number(BigInt.asIntN(INT_BITS, x));
 }
