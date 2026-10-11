@@ -87,8 +87,8 @@ Vector tasks also: the regenerated *new* vector files equal the committed ones (
 | Batch | Name | Tasks | Depends on | Status |
 |-------|------|-------|------------|--------|
 | 1 | Vectors A + exceptions + guava boundary | T1–T3 | — | [x] |
-| 2a | Numeric, Int64, String/Integer, Double | T4–T7 | 1 | [ ] |
-| 2b | DoubleToString, Vectors B, Guava 1 | T8–T10 | 1 | [ ] |
+| 2a | Numeric, Int64, String/Integer, Double | T4–T7 | 1 | [x] |
+| 2b | DoubleToString, Vectors B, Guava 1 | T8–T10 | 1 | [x] |
 | 3 | JavaHashMap, PriorityQueue, Guava 2 | T11–T13 | 2a, 2b | [ ] |
 | 4 | Guava 3 (hash-backed) + Guava vectors | T14 | 3 | [ ] |
 | 5 | Translation-rules docs | T15 | 4 | [ ] |
