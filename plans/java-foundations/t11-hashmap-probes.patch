@@ -1,0 +1,95 @@
+diff --git a/tools/vectors/JavaVectors.java b/tools/vectors/JavaVectors.java
+index 2779cef..763362d 100644
+--- a/tools/vectors/JavaVectors.java
++++ b/tools/vectors/JavaVectors.java
+@@ -64,6 +64,7 @@ public class JavaVectors {
+         write(dir.resolve("text.json"), textVectors());
+         write(dir.resolve("random-setseed.json"), setSeedVectors());
+         write(dir.resolve("collections.json"), collectionsVectors());
++        write(dir.resolve("hashmap-probes.json"), hashMapProbes());
+     }
+ 
+     private static void write(Path file, Object tree) throws IOException {
+@@ -1793,4 +1794,82 @@ public class JavaVectors {
+         addPqRandomScripts(out);
+         return out;
+     }
++
++    // ---- hashmap-probes.json (T11) ----
++    // Targeted HashMap/HashSet observations that collections.json does not discriminate: putAll
++    // into an allocated map, the size at which a split tree-bin half stays a tree, and the
++    // threshold sequence for load factors whose capacity product is fractional.
++
++    private static final int PROBE_LOW_HASH = 0x05;
++    private static final int PROBE_HIGH_HASH = 0x45;
++    private static final int PROBE_HIGH_ID = 100;
++    private static final int PROBE_FILLER_ID = 1000;
++    private static final int PROBE_FILLER_HASH = 0x20A;
++    private static final int PROBE_SPLIT_FILL = 49;
++    private static final int PROBE_EXTRA = 3;
++    private static final int PROBE_SPLIT_CAP = 64;
++    private static final int PROBE_LF_KEYS = 200;
++    private static final int[] PROBE_PUTALL_SIZES = {12, 40, 100};
++    private static final int[][] PROBE_SPLITS = {{5, 9}, {6, 8}, {7, 7}, {8, 6}};
++    private static final float[] PROBE_LFS = {0.6f, 0.9f, 1.3f};
++    private static final int[] PROBE_LF_CAPS = {1, 16};
++    private static final KeySet PROBE_KEYS = new KeySet("collider", "ColliderComparable");
++
++    private static Object hashMapProbes() {
++        List<Plan> plans = new ArrayList<>();
++        for (int n : PROBE_PUTALL_SIZES) {
++            plans.add(putAllAllocatedProbe(n));
++        }
++        for (int[] split : PROBE_SPLITS) {
++            plans.add(splitProbe(split[0], split[1]));
++        }
++        for (float lf : PROBE_LFS) {
++            for (int cap : PROBE_LF_CAPS) {
++                plans.add(loadFactorProbe(cap, lf));
++            }
++        }
++        List<Object> maps = new ArrayList<>();
++        List<Object> sets = new ArrayList<>();
++        for (Plan p : plans) {
++            maps.add(runPlan(p, true));
++            if (p.which() == Which.BOTH) {
++                sets.add(runPlan(p, false));
++            }
++        }
++        return map("jdk", JDK, "hashMap", maps, "hashSet", sets);
++    }
++
++    private static Plan putAllAllocatedProbe(int n) {
++        List<Object> ks = colliders(true, "same", n + 1, new Random(COLLECTIONS_SEED));
++        List<Op> ops = new ArrayList<>(List.of(op("add", ks.get(0))));
++        ops.add(new Op("addAll", null, ks.subList(1, ks.size())));
++        return plan("probe-putall-allocated-" + n, PROBE_KEYS, Init.defaults(), ops, ALWAYS);
++    }
++
++    private static Plan splitProbe(int lo, int hi) {
++        List<Op> ops = new ArrayList<>();
++        for (int i = 0; i < Math.max(lo, hi); i++) {
++            if (i < lo) {
++                ops.add(op("add", new ColliderComparable(i, PROBE_LOW_HASH)));
++            }
++            if (i < hi) {
++                ops.add(op("add", new ColliderComparable(PROBE_HIGH_ID + i, PROBE_HIGH_HASH)));
++            }
++        }
++        for (int i = lo + hi; i < PROBE_SPLIT_FILL; i++) {
++            ops.add(op("add", new ColliderComparable(PROBE_FILLER_ID + i, PROBE_FILLER_HASH + i)));
++        }
++        for (int i = 0; i < PROBE_EXTRA; i++) {
++            ops.add(op("add", new ColliderComparable(lo + i, PROBE_LOW_HASH)));
++            ops.add(op("add", new ColliderComparable(PROBE_HIGH_ID + hi + i, PROBE_HIGH_HASH)));
++        }
++        String name = "probe-split-" + lo + "-" + hi;
++        return plan(name, PROBE_KEYS, Init.cap(PROBE_SPLIT_CAP), ops, ALWAYS);
++    }
++
++    private static Plan loadFactorProbe(int cap, float lf) {
++        List<Op> ops = addOps(pool(1, 3).subList(0, PROBE_LF_KEYS));
++        String name = "probe-lf-" + lf + "-" + cap;
++        return plan(name, keySet(1), Init.capLf(cap, lf), ops, ALWAYS).only(Which.MAP_ONLY);
++    }
+ }

@@ -40,3 +40,29 @@
   the exact powers 10^0…10^22 the Javadoc requires to yield n.
 - **Impact**: no `JavaMath.log10` shim; the replay test documents it.
 - **Confidence**: High
+
+## Observation: source-launcher vector runs tie identity hashes to the generator's bytes
+- **Context**: T11 appended probe generators to `tools/vectors/JavaVectors.java`
+  and regenerated `collections.json`.
+- **Finding**: any byte change to the generator (even a comment), or running a
+  precompiled copy, changes exactly the 54 `collections.json` scripts whose
+  order depends on `System.identityHashCode` (plain colliders and four KVector
+  scripts); two runs of the same program are identical. The HEAD generator
+  reproduces the file byte-for-byte.
+- **Impact**: `collections.json` is frozen to the current generator bytes;
+  new probe vectors must go in a separate generator file. The regeneration
+  gate is only meaningful for an unmodified `JavaVectors.java`.
+- **Confidence**: High
+
+## Observation: JVM `HashMap` order of equal-hash keys is identity-ordered in tree bins
+- **Context**: T11 clean-room `JavaHashMap` model against `collections.json`.
+- **Finding**: once a bin holds ≥ 9 keys at capacity ≥ 64 and some keys have
+  equal hashes without a comparison order (KVector-derived `TEdge`/`TTriangle`,
+  any non-Comparable key), the JVM breaks ties by identity hash. Identical
+  histories produce different orders (`collider-ColliderPlain-same-fwd-cap64`
+  vs `-same-rev-cap64`).
+- **Impact**: oracle output that iterates such a set (e.g. spore `NaiveMinST`
+  tie order with many equal-hash vectors) is not reproducible by any port or
+  by the JVM itself across programs; conformance goldens hitting this case
+  need a known-divergence entry rather than a model fix.
+- **Confidence**: High
