@@ -17,6 +17,7 @@ import {
 } from '../../tools/bundle-deps.js';
 
 const JAVA_DIR = `${TS_ROOT}/java`;
+const GUAVA_DIR = `${TS_ROOT}/guava`;
 const INDEX_FILE = `${TS_ROOT}/index.ts`;
 const TEST_SUFFIX = '.test.ts';
 const TS_SUFFIX = '.ts';
@@ -70,7 +71,12 @@ function violationFor(
       ? undefined
       : `${edge}: src/java may import only src/java`;
   }
-  if (isUnder(target, JAVA_DIR)) {
+  if (isUnder(file, GUAVA_DIR)) {
+    return isUnder(target, GUAVA_DIR) || isUnder(target, JAVA_DIR)
+      ? undefined
+      : `${edge}: src/guava may import only src/guava and src/java`;
+  }
+  if (isUnder(target, JAVA_DIR) || isUnder(target, GUAVA_DIR)) {
     return undefined;
   }
   const from = bundleOf(file, deps);
@@ -115,6 +121,7 @@ function unmappedFile(file: string, deps: BundleDeps): string | undefined {
   const exempt =
     file === INDEX_FILE ||
     isUnder(file, JAVA_DIR) ||
+    isUnder(file, GUAVA_DIR) ||
     bundleOf(file, deps) !== undefined;
   return exempt ? undefined : `${file}: unmapped directory`;
 }
@@ -374,5 +381,68 @@ describe('grammar bundles (conformance-corpus D0)', () => {
 
   it('resolves reference-only src/core/debug to core, not grandom (known hole)', () => {
     expect(bundleOf('src/core/debug/X.ts', committed)).toBe('src/core');
+  });
+});
+
+describe('src/guava boundary (java-foundations M6)', () => {
+  it('lets src/guava import src/java', () => {
+    expect(
+      checkFile(
+        'src/guava/Lists.ts',
+        "import { Int32 } from '../java/lang/Int32.js';",
+        committed,
+      ),
+    ).toEqual([]);
+  });
+
+  it('forbids src/guava importing a bundle, naming both files', () => {
+    expect(
+      checkFile(
+        'src/guava/Lists.ts',
+        "import { G } from '../graph/G.js';",
+        committed,
+      ),
+    ).toEqual([
+      'src/guava/Lists.ts -> src/graph/G.ts: src/guava may import only src/guava and src/java',
+    ]);
+  });
+
+  it('lets src/guava import src/guava', () => {
+    expect(
+      checkFile(
+        'src/guava/Lists.ts',
+        "import { Iterables } from './Iterables.js';",
+        committed,
+      ),
+    ).toEqual([]);
+  });
+
+  it('lets bundles and src/index.ts import src/guava', () => {
+    expect(
+      checkFile(
+        'src/alg/layered/X.ts',
+        "import { Lists } from '../../guava/Lists.js';",
+        committed,
+      ),
+    ).toEqual([]);
+    expect(
+      checkFile('src/index.ts', "export * from './guava/Lists.js';", committed),
+    ).toEqual([]);
+  });
+
+  it('forbids src/java importing src/guava', () => {
+    expect(
+      checkFile(
+        'src/java/util/A.ts',
+        "import { Lists } from '../../guava/Lists.js';",
+        committed,
+      ),
+    ).toEqual([
+      'src/java/util/A.ts -> src/guava/Lists.ts: src/java may import only src/java',
+    ]);
+  });
+
+  it('does not treat src/guava as an unmapped directory', () => {
+    expect(unmappedFile('src/guava/Lists.ts', committed)).toBeUndefined();
   });
 });
