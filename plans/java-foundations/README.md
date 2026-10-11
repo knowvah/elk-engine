@@ -90,7 +90,7 @@ Vector tasks also: the regenerated *new* vector files equal the committed ones (
 | 2a | Numeric, Int64, String/Integer, Double | T4–T7 | 1 | [x] |
 | 2b | DoubleToString, Vectors B, Guava 1 | T8–T10 | 1 | [x] |
 | 3 | JavaHashMap, PriorityQueue, Guava 2 | T11–T13 | 2a, 2b | [x] |
-| 4 | Guava 3 (hash-backed) + Guava vectors | T14 | 3 | [ ] |
+| 4 | Guava 3 (hash-backed) + Guava vectors | T14 | 3 | [x] |
 | 5 | Translation-rules docs | T15 | 4 | [ ] |
 
 Batches 2a and 2b may run concurrently (disjoint write-sets; only T9 writes `JavaVectors.java`).

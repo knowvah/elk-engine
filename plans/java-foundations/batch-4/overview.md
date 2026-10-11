@@ -7,6 +7,6 @@ Single task.
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T14 | Guava 3: Maps, HashBiMap, Multimaps + GuavaVectors | java-architect | tools/vectors/GuavaVectors.java, test/golden/refs/java/guava.json, src/guava/{Maps,HashBiMap,Multimap,HashMultimap,ArrayListMultimap,LinkedListMultimap,LinkedHashMultimap,TreeMultimap}.ts (+ .test.ts), src/guava/Sets.ts (append `newHashSet*`) | T11, T13 | [ ] |
+| T14 | Guava 3: Maps, HashBiMap, Multimaps + GuavaVectors | java-architect | tools/vectors/GuavaVectors.java, test/golden/refs/java/guava.json, src/guava/{Maps,HashBiMap,Multimap,HashMultimap,ArrayListMultimap,LinkedListMultimap,LinkedHashMultimap,TreeMultimap}.ts (+ .test.ts), src/guava/Sets.ts (append `newHashSet*`) | T11, T13 | [x] |
 
 Batch done when T14's acceptance criteria pass and the README gates are green.

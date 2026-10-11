@@ -66,3 +66,32 @@
   by the JVM itself across programs; conformance goldens hitting this case
   need a known-divergence entry rather than a model fix.
 - **Confidence**: High
+
+## Observation: lizard parses zero functions when a Java lambda body contains `<`
+- **Context**: T14 lizard gate on `tools/vectors/GuavaVectors.java`.
+- **Finding**: a field initializer `BiPredicate<Integer,Integer> SIZED = (i, n) -> i < X || …`
+  made lizard 1.22.2 and 1.23.0 report 0 functions for the whole file with
+  exit 0 (the `<` was read as a generic). Rewriting as `X > i` restored 45
+  parsed functions. The same `<`-after-`:` problem blocked a TS ternary in a
+  `*.test.ts` (the hook does check test files on Write/Edit).
+- **Impact**: a lizard exit 0 is meaningless unless the function count in
+  its summary is plausible; check it on Java and TS files alike.
+- **Confidence**: High
+
+## Observation: a capacity sweep must record orders below the expected size
+- **Context**: T14 deriving `newHashMapWithExpectedSize(n)` capacity from vectors.
+- **Finding**: recording iteration order only at ≥ n keys cannot distinguish an
+  oversized initial table because growth reaches the same table; recording at
+  8, 24, n and n+1 keys discriminates. Result: capacity `ceil(n/0.75)`.
+- **Impact**: future capacity-rule vectors (any hash container) must sample
+  below the expected size.
+- **Confidence**: High
+
+## Observation: Guava `HashBiMap` inverse view order is not symmetric
+- **Context**: T14 `guava.json` `biMap` scripts (36 scripts, 1236 steps).
+- **Finding**: `put(k, v)` where `v` is bound to `k'` throws; `forcePut` takes
+  `k'`'s place in the forward view but the evicted holder's place in the
+  inverse view; `inverse().put` of an existing inverse key removes that
+  binding and appends. A symmetric model failed 13 random scripts.
+- **Impact**: ports must not assume the inverse view mirrors forward order.
+- **Confidence**: High
