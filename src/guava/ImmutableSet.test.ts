@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from "vitest";
+import { UnsupportedOperationException } from "../java/lang/UnsupportedOperationException.js";
 import * as ImmutableSet from "./ImmutableSet.js";
 
 describe("ImmutableSet.copyOf", () => {
@@ -20,9 +21,9 @@ describe("ImmutableSet.copyOf", () => {
 
   it("rejects every mutator", () => {
     const s = ImmutableSet.copyOf([1]) as Set<number>;
-    expect(() => s.add(2)).toThrow(TypeError);
-    expect(() => s.delete(1)).toThrow(TypeError);
-    expect(() => s.clear()).toThrow(TypeError);
+    expect(() => s.add(2)).toThrow(UnsupportedOperationException);
+    expect(() => s.delete(1)).toThrow(UnsupportedOperationException);
+    expect(() => s.clear()).toThrow(UnsupportedOperationException);
     expect([...s]).toEqual([1]);
   });
 
@@ -39,6 +40,6 @@ describe("ImmutableSet.of", () => {
   });
 
   it("is frozen", () => {
-    expect(() => (ImmutableSet.of(1) as Set<number>).add(2)).toThrow(TypeError);
+    expect(() => (ImmutableSet.of(1) as Set<number>).add(2)).toThrow(UnsupportedOperationException);
   });
 });

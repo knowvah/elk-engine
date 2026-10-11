@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from "vitest";
+import { UnsupportedOperationException } from "../java/lang/UnsupportedOperationException.js";
 import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
 import * as Sets from "./Sets.js";
 
@@ -57,9 +58,9 @@ describe("Sets.intersection", () => {
 
   it("exposes no mutators", () => {
     const v = Sets.intersection(new Set([1]), new Set([1])) as unknown as Set<number>;
-    expect(() => v.add(2)).toThrow(TypeError);
-    expect(() => v.delete(1)).toThrow(TypeError);
-    expect(() => v.clear()).toThrow(TypeError);
+    expect(() => v.add(2)).toThrow(UnsupportedOperationException);
+    expect(() => v.delete(1)).toThrow(UnsupportedOperationException);
+    expect(() => v.clear()).toThrow(UnsupportedOperationException);
   });
 });
 
@@ -71,7 +72,7 @@ describe("Sets.immutableEnumSet", () => {
 
   it("is frozen", () => {
     const s = Sets.immutableEnumSet([NORTH]) as Set<Side>;
-    expect(() => s.add(EAST)).toThrow(TypeError);
+    expect(() => s.add(EAST)).toThrow(UnsupportedOperationException);
   });
 
   it("is empty for no elements", () => {

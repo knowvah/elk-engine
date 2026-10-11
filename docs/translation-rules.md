@@ -391,7 +391,7 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   (M5): `src/java/lang/{IllegalArgumentException,NumberFormatException,IndexOutOfBoundsException,
   ArrayIndexOutOfBoundsException,ArithmeticException}.ts`,
   `src/java/util/NoSuchElementException.ts`.
-  `UnsupportedOperationException` is **not** a class: immutable Guava helpers throw `TypeError`.
+  `src/java/lang/UnsupportedOperationException.ts` (M5 amendment): immutable Guava helpers throw it.
 - **Language-raised exceptions that ELK catches** (10 sites, `G 'catch \((Array)?IndexOutOfBounds'`):
   array indexing outside bounds throws in Java, yields `undefined` in JS.
   `alg.common/src/.../polyomino/structures/TwoBitGrid.java:224` wraps `ArrayIndexOutOfBoundsException`

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { UnsupportedOperationException } from "../java/lang/UnsupportedOperationException.js";
 import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
 
 const REJECT_MESSAGE = "ImmutableMap is read-only";
@@ -10,7 +11,7 @@ function requireNonNull(value: unknown, what: string): void {
 }
 
 /**
- * An insertion-ordered map whose mutators throw `TypeError` (as JS does for frozen objects).
+ * An insertion-ordered map whose mutators throw `UnsupportedOperationException` (M5).
  * Entries are filled through the prototype `set`, so the `Map` constructor never reaches
  * the throwing overrides. Duplicate keys, null keys and null values are rejected.
  *
@@ -30,15 +31,15 @@ export class ImmutableMap<K, V> extends Map<K, V> {
   }
 
   override set(_key: K, _value: V): never {
-    throw new TypeError(REJECT_MESSAGE);
+    throw new UnsupportedOperationException(REJECT_MESSAGE);
   }
 
   override delete(_key: K): never {
-    throw new TypeError(REJECT_MESSAGE);
+    throw new UnsupportedOperationException(REJECT_MESSAGE);
   }
 
   override clear(): never {
-    throw new TypeError(REJECT_MESSAGE);
+    throw new UnsupportedOperationException(REJECT_MESSAGE);
   }
 }
 
