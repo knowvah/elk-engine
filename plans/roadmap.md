@@ -200,3 +200,32 @@ Scope: a written, rehearsed process for moving the pin past `8aaa3c14` (AD-2): b
 rebuild the oracle, rerun the vector and corpus sweeps, diff `.melk` metadata dumps, port Java
 diffs.
 Exit: one rehearsal against a newer ELK commit produces a clean sweep or a triaged diff list.
+
+## Revision 2026-10-11 (conformance-corpus)
+
+Appended; no earlier line is edited. Source: D0, D3, D8, D10 in
+`plans/conformance-corpus/decisions.md`. Where this section conflicts with the text above, this
+section wins.
+
+**Scope supersession.** Line 112 ("Not in scope: `core.service`, `core.ui`, `core.debug*`, ...")
+no longer excludes `core.debug.grandom`: it is in scope (D0, mission 4d). `core.debug` is
+reference only. `alg.disco.debug` is reference only. `graph.text`, `graph.json.text` and their
+`.ide` bundles: runtime in scope, `.ide` deferred, `.ui` out. Mission 4's "Not in scope: ELK Text"
+stays true for mission 4; ELK Text moves to 4b.
+
+**Inserted missions (after 4, before 5; each is one `/plan-mission` input):**
+
+| # | Mission | Scope | Depends on | Size (Java LOC / est. tasks) | Exit criteria |
+|---|---------|-------|------------|------------------------------|---------------|
+| 4b | `graph.text` (`.elkt`) | Hand-written recursive-descent parser, one method per `ElkGraph.xtext` rule (D8); Xtend value converters, naming, scoping, linking, validation; `ElkGraphFormatter` and serializer for the `.elkt` writer (D10) | 2, 3, 4 | 1,352 / ~8 | Every elk-models `.elkt` parses equal to the oracle's parse-only JSON; realworld `.json` and `.elkt` of one model parse to the same ElkGraph (D3); `.elkt` writer round trip (ElkGraph to `.elkt`) is byte-exact against the oracle |
+| 4c | `graph.json.text` (`.elkj`) | Same approach for `ElkGraphJson.xtext` and its Xtend support | 4b (parser approach) | 972 / ~5 | `.elkj` inputs parse equal to the oracle; invalid input fails where the oracle fails (known divergence #1: presence only, D8) |
+| 4d | `core.debug.grandom` (`.elkr`) | `GRandom.xtext` parser, `ConfigurationParser`, `GeneratorOptions`, `RandomGraphGenerator` with the exact JVM `Random` sequence | 4b | 2,696 / ~7 | Reproduces `test/corpus/generated/*.json` byte for byte (D7); `BlindTextGenerator` stays unseeded and out of goldens |
+
+Mission 5 and later now depend on 4b where they need text input; their numbers do not change.
+
+**Mission 9 rescoped** to "TS sweep + per-algorithm dashboard". The oracle side (elkt-to-JSON
+mode, corpus census, native/retarget/generated tiers, oracle parity report) is the
+conformance-corpus mission, not mission 9. Mission 9 keeps: running the TS engine over the same
+cases, comparing against the oracle outputs, and the per-algorithm parity dashboard. Its exit
+changes to: sweep reports per-algorithm status for every `(algorithm, model, variant)` case
+(D1). It no longer converts the 898 `.elkt` models; that conversion is replaced by 4b.
