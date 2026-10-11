@@ -53,7 +53,8 @@ function compareFractions(a: Fraction, b: Fraction): number {
 
 function distance(a: Fraction, b: Fraction): Fraction {
   const n = a.n * b.d - b.n * a.d;
-  return { n: n < 0n ? -n : n, d: a.d * b.d };
+  const magnitude = n < 0n ? -n : n;
+  return { n: magnitude, d: a.d * b.d };
 }
 
 function decimalValue(x: Decimal): Fraction {
@@ -81,7 +82,8 @@ function roundingOf(bits: bigint): Rounding {
 function inInterval(r: Rounding, x: Fraction): boolean {
   const lo = compareFractions(x, r.low);
   const hi = compareFractions(x, r.high);
-  return r.inclusive ? lo >= 0 && hi <= 0 : lo > 0 && hi < 0;
+  if (r.inclusive) return lo >= 0 && hi <= 0;
+  return lo > 0 && hi < 0;
 }
 
 /** Shortest round-trip digits and decimal exponent as reported by JS (length hint only). */
