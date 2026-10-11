@@ -91,7 +91,7 @@ Vector tasks also: the regenerated *new* vector files equal the committed ones (
 | 2b | DoubleToString, Vectors B, Guava 1 | T8–T10 | 1 | [x] |
 | 3 | JavaHashMap, PriorityQueue, Guava 2 | T11–T13 | 2a, 2b | [x] |
 | 4 | Guava 3 (hash-backed) + Guava vectors | T14 | 3 | [x] |
-| 5 | Translation-rules docs | T15 | 4 | [ ] |
+| 5 | Translation-rules docs | T15 | 4 | [x] |
 
 Batches 2a and 2b may run concurrently (disjoint write-sets; only T9 writes `JavaVectors.java`).
 Parallel agents never run `npm run coverage` (shared `coverage/` dir); the orchestrator does.
@@ -113,3 +113,33 @@ any model revisions (M1/M8), anything journaled as needing the user, next roadma
 
 1. Re-read this file. 2. Re-read `decision-journal.md`. 3. First batch with `[ ]` →
 its `overview.md` → first incomplete task.
+
+## Mission summary (2026-10-11)
+
+- **Tasks:** 15/15 (T1–T15) across batches 1, 2a, 2b, 3, 4, 5; no STOP condition triggered.
+- **Shims delivered:** `src/java/lang/{Int64,Float32,JavaString,JavaInteger,JavaDouble,DoubleToString}`,
+  `JavaMath.l2i`, six exception classes; `src/java/util/{HashStrategy,JavaHashMap,JavaHashSet,PriorityQueue}`;
+  `src/guava/` (20 files: Lists, Iterables, Iterators, Strings, DoubleMath, Joiner, Splitter, Range,
+  Table, ImmutableMap, ImmutableSet, Sets, Maps, HashBiMap, Multimap + 5 implementations).
+  `Math.log10` needed no shim (native V8 matches all 1264 rows).
+- **Vectors (all frozen, byte-identical on regeneration):** numeric (l2i 78, f32 2704, d2f 72,
+  log10 1264, divZero 40, i64 4056); hash (stringHash 229, doubleHash 65, doubleToLongBits 65,
+  integerReverse 36, kvectorHash 256); text (toString 14,939, parseDouble 96, integerValueOf 33);
+  random-setseed (4 seeds × 25 ops); collections (1206 hashMap, 1172 hashSet, 231 priorityQueue
+  scripts, 16.4 MB); guava (1518 scripts, 25,611 steps, 4.7 MB, `GuavaVectors.java` + Guava 33.3.0-jre).
+- **Model revisions (M1/M8):** JavaHashMap 0 rejected (4 evidence-driven refinements, 3 rules decided
+  by uncommitted probes); PriorityQueue 0; HashBiMap 1 sub-model rejected and replaced (T14, not M1/M8).
+- **Decisions journaled:** 32 rows. **Flagged for the user:** (1) 27 identity-dependent
+  `collections.json` scripts per section are skipped (incl. 4 KVector scripts beyond the pre-authorised
+  plain-collider exclusion) — AD-13 sign-off; (2) T11 probe vectors left uncommitted because any byte
+  change to `JavaVectors.java` perturbs `collections.json` — decide on a separate generator
+  (`plans/java-foundations/t11-hashmap-probes.patch`); (3) `UnsupportedOperationException` not added
+  to M5 — immutable Guava helpers throw `TypeError`; (4) `Sets.newTreeSet` is a snapshot, a live
+  `TreeSet` shim is needed before `ScanlineOverlapCheck`/`ScanlineConstraintCalculator` ports;
+  (5) 55 `PriorityQueue(Collection)` scripts skipped (no ELK caller); (6) the vector codec is
+  duplicated across five test files (`test/helpers/` was in no write-set) — cleanup PR candidate.
+- **Gates (final):** typecheck 0; coverage 100/100/100/100 (53 files, 547 tests, 3.8 s; `npm test`
+  2.7 s); eight vector files byte-identical; lizard `-T nloc=30` clean on every changed source file.
+- **Known issues:** JVM `HashMap` order of equal-hash non-Comparable keys is identity-ordered and not
+  reproducible — conformance goldens hitting it need a known-divergence entry (`.agent-notes`).
+- **Next:** roadmap mission 2 — property system + ElkGraph model (`plans/roadmap.md` §2).
