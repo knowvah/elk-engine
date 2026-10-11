@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.eclipse.elk.alg.common.compaction.options.PolyominoOptions;
 import org.eclipse.elk.alg.disco.options.DisCoMetaDataProvider;
@@ -16,49 +17,103 @@ import org.eclipse.elk.alg.rectpacking.options.RectPackingMetaDataProvider;
 import org.eclipse.elk.alg.spore.options.SporeMetaDataProvider;
 import org.eclipse.elk.alg.topdownpacking.options.TopdownpackingMetaDataProvider;
 import org.eclipse.elk.alg.vertiflex.options.VertiFlexMetaDataProvider;
-import org.eclipse.elk.core.RecursiveGraphLayoutEngine;
 import org.eclipse.elk.core.data.ILayoutMetaDataProvider;
 import org.eclipse.elk.core.data.LayoutMetaDataService;
 import org.eclipse.elk.core.options.CoreOptions;
-import org.eclipse.elk.core.util.BasicProgressMonitor;
-import org.eclipse.elk.graph.ElkNode;
-import org.eclipse.elk.graph.json.ElkGraphJson;
+
+import com.google.gson.JsonObject;
 
 /**
- * Batch layout harness: reads ELK JSON graphs, lays them out with the
- * recursive layout engine, and writes the laid-out ELK JSON.
+ * Batch harness: reads ELK JSON or ELK text ({@code .elkt}) models, lays them
+ * out with the recursive layout engine (or only parses them), and writes the
+ * ELK JSON.
+ *
+ * <p>Two forms: {@code ElkOracle <outDir> <input>...} (layout, output named by
+ * input basename) and {@code ElkOracle --cases <cases.jsonl> <outDir>} (one
+ * JSON case per line, output named by id, one JSON result line per case on
+ * stdout).
  */
 public final class ElkOracle {
 
     private static final int EXIT_FAILURE = 1;
-    private static final int MIN_ARGS = 2;
-    private static final String OUTPUT_EXTENSION = ".json";
+    private static final int MIN_POSITIONAL_ARGS = 2;
+    private static final int CASES_ARGS = 3;
+    private static final long NANOS_PER_MILLI = 1_000_000L;
+    private static final String CASES_FLAG = "--cases";
+    private static final String USAGE =
+            "usage: ElkOracle <outDir> <input>... | ElkOracle --cases <cases.jsonl> <outDir>";
 
     private ElkOracle() {
     }
 
     /**
-     * Usage: ElkOracle outDir input.json...
+     * Entry point.
      *
-     * @param args the output directory followed by the input files
+     * @param args see the class comment
      */
     public static void main(final String[] args) throws IOException {
-        if (args.length < MIN_ARGS) {
-            System.err.println("usage: ElkOracle <outDir> <input.json>...");
+        boolean casesForm = args.length > 0 && CASES_FLAG.equals(args[0]);
+        if (casesForm ? args.length != CASES_ARGS : args.length < MIN_POSITIONAL_ARGS) {
+            System.err.println(USAGE);
             System.exit(EXIT_FAILURE);
         }
         long start = System.nanoTime();
-        Path outDir = Paths.get(args[0]);
-        Files.createDirectories(outDir);
         registerMetaDataProviders();
-        int failures = 0;
-        for (int i = 1; i < args.length; i++) {
-            failures += processOne(args[i], outDir) ? 0 : 1;
+        int total;
+        int failures;
+        if (casesForm) {
+            Path outDir = Paths.get(args[2]);
+            Files.createDirectories(outDir);
+            List<String> lines = Files.readAllLines(Paths.get(args[1]), StandardCharsets.UTF_8);
+            total = lines.size();
+            failures = runCases(lines, new CaseRunner(outDir));
+        } else {
+            Path outDir = Paths.get(args[0]);
+            Files.createDirectories(outDir);
+            total = args.length - 1;
+            failures = runPositional(args, new CaseRunner(outDir));
         }
-        long millis = (System.nanoTime() - start) / 1_000_000L;
-        System.err.println("ElkOracle: " + (args.length - 1) + " input(s), " + failures
+        long millis = (System.nanoTime() - start) / NANOS_PER_MILLI;
+        System.err.println("ElkOracle: " + total + " input(s), " + failures
                 + " failed, " + millis + " ms");
         System.exit(failures == 0 ? 0 : EXIT_FAILURE);
+    }
+
+    private static int runPositional(final String[] args, final CaseRunner runner) {
+        int failures = 0;
+        for (int i = 1; i < args.length; i++) {
+            String name = Paths.get(args[i]).getFileName().toString();
+            int dot = name.lastIndexOf('.');
+            String id = dot > 0 ? name.substring(0, dot) : name;
+            CaseResult result = runner.run(id, args[i], CaseRunner.MODE_LAYOUT);
+            if (!CaseResult.OK.equals(result.status())) {
+                System.err.println("ERROR " + args[i] + ": " + result.exceptionClass()
+                        + ": " + result.message());
+                failures++;
+            }
+        }
+        return failures;
+    }
+
+    private static int runCases(final List<String> lines, final CaseRunner runner) {
+        int failures = 0;
+        for (String line : lines) {
+            if (line.isBlank()) {
+                continue;
+            }
+            CaseResult result;
+            try {
+                JsonObject c = CaseRunner.parseCase(line);
+                result = runner.run(c.get("id").getAsString(), c.get("input").getAsString(),
+                        c.get("mode").getAsString());
+            } catch (RuntimeException e) {
+                result = new CaseResult(line, CaseResult.ORACLE_ERROR, e.getClass().getName(),
+                        e.getMessage(), 0L);
+            }
+            System.out.println(result.toJsonLine());
+            failures += CaseResult.OK.equals(result.status()) ? 0 : 1;
+        }
+        return failures;
     }
 
     private static void registerMetaDataProviders() {
@@ -77,36 +132,5 @@ public final class ElkOracle {
                     new TopdownpackingMetaDataProvider(),
                     new VertiFlexMetaDataProvider()
                 });
-    }
-
-    private static boolean processOne(final String input, final Path outDir) {
-        try {
-            Path inPath = Paths.get(input);
-            String json = layout(Files.readString(inPath, StandardCharsets.UTF_8));
-            Files.writeString(outDir.resolve(outputName(inPath)), json + "\n",
-                    StandardCharsets.UTF_8);
-            return true;
-        } catch (Exception | StackOverflowError e) {
-            System.err.println("ERROR " + input + ": " + e);
-            return false;
-        }
-    }
-
-    private static String layout(final String text) {
-        ElkNode graph = ElkGraphJson.forGraph(text).toElk();
-        new RecursiveGraphLayoutEngine().layout(graph, new BasicProgressMonitor());
-        return ElkGraphJson.forGraph(graph)
-                .omitLayout(false)
-                .omitZeroDimension(false)
-                .omitZeroPositions(false)
-                .omitUnknownLayoutOptions(true)
-                .prettyPrint(true)
-                .toJson();
-    }
-
-    private static String outputName(final Path input) {
-        String name = input.getFileName().toString();
-        int dot = name.lastIndexOf('.');
-        return (dot > 0 ? name.substring(0, dot) : name) + OUTPUT_EXTENSION;
     }
 }
