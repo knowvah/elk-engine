@@ -56,3 +56,23 @@ Planning-time notes are in `conformance-corpus-planning.md`.
 - **Impact**: The retarget tier for tree algorithms will be throws-heavy; `throws` matching is
   still a valid conformance verdict (D4).
 - **Confidence**: High
+
+## Observation: ELK's JSON exporter renames colliding ids with an unseeded Random
+- **Context**: T6, exporting grandom-generated graphs.
+- **Finding**: `JsonExporter.xtend:505` resolves id collisions with
+  `"_g" + new Random().nextInt(1000000)`. grandom leaves the root unnamed; the exporter numbers it
+  `n0`, which collides with generated node `n0` → `n0_g172889` style ids that change per run. The
+  harness now names the generated root `root` before export.
+- **Impact**: Mission 4d must reproduce the `root` naming to match the committed inputs byte for
+  byte. Any oracle export of a graph with colliding ids is nondeterministic (D5 will flag it).
+- **Confidence**: High
+
+## Observation: grandom generation details
+- **Context**: T6 configs.
+- **Finding**: `GRandomStandaloneSetup.doSetup()` + `new RandomGraphGenerator(null).generate(cfg)`
+  works standalone; the generator seeds its own `Random(seed)`. Needs `org.eclipse.xtext.xbase` on
+  the classpath. `trees` with `nodes = N` gives N nodes plus the root and N−1 edges regardless of
+  edge settings; `edges total = N` is exact for plain graphs; hierarchy multiplies edges. Without a
+  `nodes {}` block nodes are 30×30 with no ports or labels.
+- **Impact**: Useful for sizing future configs under the 50-node cap.
+- **Confidence**: High
