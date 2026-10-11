@@ -124,3 +124,18 @@ Added while writing the task specs; approved after Phase 8. They are binding lik
    `sporeCompaction`); T6 confirms the exact list via `--list-algorithms`.
 6. T3 records all three D0 jars (`graph.text`, `graph.json.text`, `core.debug.grandom`) in
    `oracle-build.json`, because T6 needs the grandom jar and cannot write `build.sh`.
+
+## Amendments during execution (approved by the user 2026-10-11)
+
+- **D5a — output identity hashes.** Before the run A/B comparison, every `@[0-9a-f]+` token in
+  both outputs is replaced by `@<hash>` (the D4 message rule, applied to outputs). Reason: disco's
+  programmatic `debug.discoGraph` option exports `…DCGraph@<identity hash>`, which no seed can
+  pin. Mission 9's TS comparator applies the same replacement.
+- **D5b — seeded exporter.** ELK's `JsonExporter` resolves id collisions with
+  `"_g" + new Random().nextInt(1000000)` (unseeded, `JsonExporter.xtend:489,505`). A seam patch
+  makes it seedable through the system property `org.eclipse.elk.graph.json.exportSeed`
+  (unset = ELK's behavior); `run.sh` passes `1`. Proven repeatable across JVMs; the TS `Random`
+  shim reproduces the stream (seed 1 → 548985, 764588). The `graph.json` TS port must take an
+  injectable `Random` as the paired seam.
+- **D2 unchanged.** Retarget seeds only the root; `random`'s nested composites keep its default
+  seed 0 (unseeded) — a genuine ELK behavior, reported as `nondeterministic`.

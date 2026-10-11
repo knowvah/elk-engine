@@ -76,3 +76,23 @@ Planning-time notes are in `conformance-corpus-planning.md`.
   `nodes {}` block nodes are 30×30 with no ports or labels.
 - **Impact**: Useful for sizing future configs under the 50-node cap.
 - **Confidence**: High
+
+## Observation: sources of oracle nondeterminism (first full sweep)
+- **Context**: T8, 18,023 cases × 2 JVMs.
+- **Finding**: Export artifacts: `JsonExporter` `_g` id-collision suffixes (unseeded `Random`,
+  fixed by seam patch 0001 + `exportSeed=1`) and disco's `debug.discoGraph` identity hash
+  (normalized in compare, D5a). Genuine: spore `ElkGraphImporter.java:169` `Math.random()` jitter;
+  `random` algorithm default `randomSeed = 0` → unseeded `new Random()` on nested composites
+  (retarget seeds only the root). After fixes: native nondet 0; only spore/random remain.
+- **Impact**: spore and random retarget rows can never be byte-compared; their TS conformance needs
+  a seam or a structural comparison, decided in their algorithm missions.
+- **Confidence**: High
+
+## Observation: build.sh patch-subject parsing and Maven
+- **Context**: First seam patch.
+- **Finding**: `git format-patch` folds subjects > ~78 chars; `build.sh` now unfolds them. Maven
+  3.9.11 lives at `.tools/apache-maven-3.9.11` (gitignored); Homebrew's 3.10.0 cannot start Tycho
+  4.0.12. Applying a new patch with `git am --3way` in the existing worktree + `build.sh` rebuilds
+  in place (~3 min) without deleting caches.
+- **Impact**: Use `ELK_MVN=$PWD/.tools/apache-maven-3.9.11/bin/mvn tools/oracle/build.sh`.
+- **Confidence**: High
