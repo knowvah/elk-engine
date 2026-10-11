@@ -1,0 +1,434 @@
+{
+  "jdk": "21.0.1",
+  "script": ["i", "b:10", "L", "d", "f", "z", "g", "setSeed:99", "g", "g", "i", "b:1000", "d", "setSeed:-5", "L", "f", "z", "g", "setSeed:0", "g", "i", "setSeed:9223372036854775807", "d", "g", "g"],
+  "cases": [
+    {
+      "seed": "0",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": -1155484576
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 10,
+          "value": 8
+        },
+        {
+          "method": "nextLong",
+          "value": "4437113781045784766"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fe465b93a78ef81"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fe19d2e00000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fef81a273668e4a"
+        },
+        {
+          "method": "setSeed",
+          "arg": "99"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff4b791a3c633c9"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfec732cbbb5dbe8"
+        },
+        {
+          "method": "nextInt",
+          "value": -791680696
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1000,
+          "value": 762
+        },
+        {
+          "method": "nextDouble",
+          "value": "3febbecc14c008b0"
+        },
+        {
+          "method": "setSeed",
+          "arg": "-5"
+        },
+        {
+          "method": "nextLong",
+          "value": "4967725915334898755"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fd561c500000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfea81624332cfae"
+        },
+        {
+          "method": "setSeed",
+          "arg": "0"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fe9ae59d1d6f861"
+        },
+        {
+          "method": "nextInt",
+          "value": -1557280266
+        },
+        {
+          "method": "setSeed",
+          "arg": "9223372036854775807"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fd1365b2708722c"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfd3f9c659c8ab40"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff37e2497ddd050"
+        }
+      ]
+    },
+    {
+      "seed": "1",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": -1155869325
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 10,
+          "value": 8
+        },
+        {
+          "method": "nextLong",
+          "value": "7564655870752979346"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fca96666128d71c"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fd54b3c40000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": true
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bff1e47cef7b6c24"
+        },
+        {
+          "method": "setSeed",
+          "arg": "99"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff4b791a3c633c9"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfec732cbbb5dbe8"
+        },
+        {
+          "method": "nextInt",
+          "value": -791680696
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1000,
+          "value": 762
+        },
+        {
+          "method": "nextDouble",
+          "value": "3febbecc14c008b0"
+        },
+        {
+          "method": "setSeed",
+          "arg": "-5"
+        },
+        {
+          "method": "nextLong",
+          "value": "4967725915334898755"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fd561c500000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfea81624332cfae"
+        },
+        {
+          "method": "setSeed",
+          "arg": "0"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fe9ae59d1d6f861"
+        },
+        {
+          "method": "nextInt",
+          "value": -1557280266
+        },
+        {
+          "method": "setSeed",
+          "arg": "9223372036854775807"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fd1365b2708722c"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfd3f9c659c8ab40"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff37e2497ddd050"
+        }
+      ]
+    },
+    {
+      "seed": "-1",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": 1155099827
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 10,
+          "value": 5
+        },
+        {
+          "method": "nextLong",
+          "value": "226341162490527646"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fe52fcbccce6dda"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fdaa6ecc0000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fdf2a0338e45a13"
+        },
+        {
+          "method": "setSeed",
+          "arg": "99"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff4b791a3c633c9"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfec732cbbb5dbe8"
+        },
+        {
+          "method": "nextInt",
+          "value": -791680696
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1000,
+          "value": 762
+        },
+        {
+          "method": "nextDouble",
+          "value": "3febbecc14c008b0"
+        },
+        {
+          "method": "setSeed",
+          "arg": "-5"
+        },
+        {
+          "method": "nextLong",
+          "value": "4967725915334898755"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fd561c500000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfea81624332cfae"
+        },
+        {
+          "method": "setSeed",
+          "arg": "0"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fe9ae59d1d6f861"
+        },
+        {
+          "method": "nextInt",
+          "value": -1557280266
+        },
+        {
+          "method": "setSeed",
+          "arg": "9223372036854775807"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fd1365b2708722c"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfd3f9c659c8ab40"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff37e2497ddd050"
+        }
+      ]
+    },
+    {
+      "seed": "42",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": -1170105035
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 10,
+          "value": 3
+        },
+        {
+          "method": "nextLong",
+          "value": "-5843495416241995736"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fd3c20f3f12bbb4"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fd1bba740000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": true
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fd1fb89a19b83af"
+        },
+        {
+          "method": "setSeed",
+          "arg": "99"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff4b791a3c633c9"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfec732cbbb5dbe8"
+        },
+        {
+          "method": "nextInt",
+          "value": -791680696
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1000,
+          "value": 762
+        },
+        {
+          "method": "nextDouble",
+          "value": "3febbecc14c008b0"
+        },
+        {
+          "method": "setSeed",
+          "arg": "-5"
+        },
+        {
+          "method": "nextLong",
+          "value": "4967725915334898755"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fd561c500000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfea81624332cfae"
+        },
+        {
+          "method": "setSeed",
+          "arg": "0"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fe9ae59d1d6f861"
+        },
+        {
+          "method": "nextInt",
+          "value": -1557280266
+        },
+        {
+          "method": "setSeed",
+          "arg": "9223372036854775807"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fd1365b2708722c"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfd3f9c659c8ab40"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff37e2497ddd050"
+        }
+      ]
+    }
+  ]
+}
