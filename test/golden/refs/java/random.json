@@ -1,0 +1,1027 @@
+{
+  "jdk": "21.0.1",
+  "cases": [
+    {
+      "seed": "0",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": -1155484576
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 2
+        },
+        {
+          "method": "nextLong",
+          "value": "-6688467811848818630"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fe19d2e10efa128"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fe31f1740000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": true
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bff90f96d81b8a3f"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bff1406db8b49785"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fc61aa6b82b6f2b"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfb68c0dcb919782"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 7,
+          "value": 3
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 16,
+          "value": 5
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 100,
+          "value": 52
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1073741824,
+          "value": 757175630
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2147483647,
+          "value": 49903503
+        },
+        {
+          "method": "shuffle",
+          "arg": [],
+          "value": []
+        },
+        {
+          "method": "shuffle",
+          "arg": [0],
+          "value": [0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1],
+          "value": [1, 0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+          "value": [1, 0, 6, 4, 9, 5, 3, 7, 8, 2]
+        },
+        {
+          "method": "nextInt",
+          "value": 64111306
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fe8d78cdfd046f4"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fefb40040000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": true
+        },
+        {
+          "method": "nextLong",
+          "value": "8987859488885190724"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fecf56bf24679a9"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 1
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fead83080000000"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fda61c6886d5c62"
+        },
+        {
+          "method": "nextInt",
+          "value": -1177788003
+        }
+      ]
+    },
+    {
+      "seed": "1",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": -1155869325
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 0
+        },
+        {
+          "method": "nextLong",
+          "value": "3831662765844904176"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fd54b3c7a8ab85c"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3feef7db20000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": true
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fe46e64b2b75a86"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfc339e65a568a59"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfef230b0f2e04c3"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bff506ddea89f633"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 7,
+          "value": 6
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 16,
+          "value": 13
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 100,
+          "value": 37
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1073741824,
+          "value": 579025651
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2147483647,
+          "value": 1654713205
+        },
+        {
+          "method": "shuffle",
+          "arg": [],
+          "value": []
+        },
+        {
+          "method": "shuffle",
+          "arg": [0],
+          "value": [0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1],
+          "value": [0, 1]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+          "value": [5, 7, 2, 8, 9, 6, 3, 1, 4, 0]
+        },
+        {
+          "method": "nextInt",
+          "value": 1933673321
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fe9c46d0809f020"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3f74954000000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": true
+        },
+        {
+          "method": "nextLong",
+          "value": "-8796603504740353600"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fdb4bc675c6af5e"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 2
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fe16cfe20000000"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fe389f7449de6bc"
+        },
+        {
+          "method": "nextInt",
+          "value": -193570837
+        }
+      ]
+    },
+    {
+      "seed": "-1",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": 1155099827
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 2
+        },
+        {
+          "method": "nextLong",
+          "value": "-6233441030884181172"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fdaa6ece6637c50"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fea6ff360000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfda661d02a88a04"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fcc2f057317108f"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff3ddc6389387c1"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "40009ed6ae85e9b9"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 7,
+          "value": 5
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 16,
+          "value": 7
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 100,
+          "value": 20
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1073741824,
+          "value": 360233450
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2147483647,
+          "value": 499582545
+        },
+        {
+          "method": "shuffle",
+          "arg": [],
+          "value": []
+        },
+        {
+          "method": "shuffle",
+          "arg": [0],
+          "value": [0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1],
+          "value": [1, 0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+          "value": [2, 1, 8, 0, 3, 4, 5, 9, 7, 6]
+        },
+        {
+          "method": "nextInt",
+          "value": 1506989486
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fee3c901a4d3caa"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fcc056e00000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextLong",
+          "value": "1467909348867789473"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff91769d062785c"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 2
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextFloat",
+          "value": "3febc3c3e0000000"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fc7b0f445ca6068"
+        },
+        {
+          "method": "nextInt",
+          "value": 1571216726
+        }
+      ]
+    },
+    {
+      "seed": "42",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": -1170105035
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2,
+          "value": 1
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 2
+        },
+        {
+          "method": "nextLong",
+          "value": "5694868678511409995"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fd1bba76b52c856"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fe54c2d40000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fe8ae4e385c2743"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfd00eb13f6ab506"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bffc0e4967dc4971"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfd23060c67247a1"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 7,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 16,
+          "value": 15
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 100,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1073741824,
+          "value": 163163931
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2147483647,
+          "value": 937357226
+        },
+        {
+          "method": "shuffle",
+          "arg": [],
+          "value": []
+        },
+        {
+          "method": "shuffle",
+          "arg": [0],
+          "value": [0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1],
+          "value": [1, 0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+          "value": [4, 6, 8, 2, 5, 1, 7, 9, 0, 3]
+        },
+        {
+          "method": "nextInt",
+          "value": 1076582170
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fea6e4ffaebd9a3"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fc60b3c80000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextLong",
+          "value": "-7610621359446545191"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff8d1802fc33c18"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 2
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fe8148fa0000000"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fe98e4538405834"
+        },
+        {
+          "method": "nextInt",
+          "value": 1359496886
+        }
+      ]
+    },
+    {
+      "seed": "9223372036854775807",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": 1155099827
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 2
+        },
+        {
+          "method": "nextLong",
+          "value": "-6233441030884181172"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fdaa6ece6637c50"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fea6ff360000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfda661d02a88a04"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fcc2f057317108f"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff3ddc6389387c1"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "40009ed6ae85e9b9"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 7,
+          "value": 5
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 16,
+          "value": 7
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 100,
+          "value": 20
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1073741824,
+          "value": 360233450
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2147483647,
+          "value": 499582545
+        },
+        {
+          "method": "shuffle",
+          "arg": [],
+          "value": []
+        },
+        {
+          "method": "shuffle",
+          "arg": [0],
+          "value": [0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1],
+          "value": [1, 0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+          "value": [2, 1, 8, 0, 3, 4, 5, 9, 7, 6]
+        },
+        {
+          "method": "nextInt",
+          "value": 1506989486
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fee3c901a4d3caa"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fcc056e00000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextLong",
+          "value": "1467909348867789473"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff91769d062785c"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 2
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextFloat",
+          "value": "3febc3c3e0000000"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fc7b0f445ca6068"
+        },
+        {
+          "method": "nextInt",
+          "value": 1571216726
+        }
+      ]
+    },
+    {
+      "seed": "-9223372036854775808",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": -1155484576
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 2
+        },
+        {
+          "method": "nextLong",
+          "value": "-6688467811848818630"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fe19d2e10efa128"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fe31f1740000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": true
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bff90f96d81b8a3f"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bff1406db8b49785"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fc61aa6b82b6f2b"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfb68c0dcb919782"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 7,
+          "value": 3
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 16,
+          "value": 5
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 100,
+          "value": 52
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1073741824,
+          "value": 757175630
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2147483647,
+          "value": 49903503
+        },
+        {
+          "method": "shuffle",
+          "arg": [],
+          "value": []
+        },
+        {
+          "method": "shuffle",
+          "arg": [0],
+          "value": [0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1],
+          "value": [1, 0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+          "value": [1, 0, 6, 4, 9, 5, 3, 7, 8, 2]
+        },
+        {
+          "method": "nextInt",
+          "value": 64111306
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fe8d78cdfd046f4"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fefb40040000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": true
+        },
+        {
+          "method": "nextLong",
+          "value": "8987859488885190724"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fecf56bf24679a9"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 1
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fead83080000000"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fda61c6886d5c62"
+        },
+        {
+          "method": "nextInt",
+          "value": -1177788003
+        }
+      ]
+    },
+    {
+      "seed": "25214903917",
+      "calls": [
+        {
+          "method": "nextInt",
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2,
+          "value": 0
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 2
+        },
+        {
+          "method": "nextLong",
+          "value": "6725724361348706664"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fb7a0d19f2e9120"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fe0db2360000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fd479d9d01dc533"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3ff85ec9bb73b971"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "bfd6cdb418ef3233"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fe14f8f22745832"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 7,
+          "value": 4
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 16,
+          "value": 8
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 100,
+          "value": 99
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 1073741824,
+          "value": 202314703
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 2147483647,
+          "value": 1903345775
+        },
+        {
+          "method": "shuffle",
+          "arg": [],
+          "value": []
+        },
+        {
+          "method": "shuffle",
+          "arg": [0],
+          "value": [0]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1],
+          "value": [0, 1]
+        },
+        {
+          "method": "shuffle",
+          "arg": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+          "value": [6, 3, 4, 8, 9, 0, 1, 7, 5, 2]
+        },
+        {
+          "method": "nextInt",
+          "value": 1625118877
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fe5b95d1d7287c7"
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fe8162c40000000"
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextLong",
+          "value": "-6928473205063559277"
+        },
+        {
+          "method": "nextGaussian",
+          "value": "3fdc77230d9634ff"
+        },
+        {
+          "method": "nextIntBound",
+          "arg": 3,
+          "value": 1
+        },
+        {
+          "method": "nextBoolean",
+          "value": false
+        },
+        {
+          "method": "nextFloat",
+          "value": "3fe67458e0000000"
+        },
+        {
+          "method": "nextDouble",
+          "value": "3fd780f80e05601c"
+        },
+        {
+          "method": "nextInt",
+          "value": 1593409952
+        }
+      ]
+    }
+  ]
+}
