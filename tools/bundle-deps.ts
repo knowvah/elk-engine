@@ -22,7 +22,10 @@ export const WRITE_FLAG = '--write';
 export const REQUIRE_BUNDLE_HEADER = 'Require-Bundle';
 export const COMMITTED_JSON_RELATIVE = 'test/architecture/bundle-deps.json';
 
-/** In-scope bundles (decisions.md "Bundle scope"), without the ELK prefix. */
+/**
+ * In-scope bundles (decisions.md "Bundle scope", amended by conformance-corpus D0),
+ * without the ELK prefix.
+ */
 export const IN_SCOPE_SUFFIXES: readonly string[] = [
   'core',
   'graph',
@@ -37,6 +40,9 @@ export const IN_SCOPE_SUFFIXES: readonly string[] = [
   'alg.spore',
   'alg.topdownpacking',
   'alg.vertiflex',
+  'graph.text',
+  'graph.json.text',
+  'core.debug.grandom',
 ];
 
 export const IN_SCOPE_BUNDLES: readonly string[] = IN_SCOPE_SUFFIXES.map(

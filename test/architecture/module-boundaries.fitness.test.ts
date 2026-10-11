@@ -176,7 +176,7 @@ describe('manifest parsing', () => {
     const deps = buildBundleDeps(
       {
         'org.eclipse.elk.graph.json':
-          'Require-Bundle: com.google.gson,\n org.eclipse.elk.core,\n org.eclipse.elk.graph.text\n',
+          'Require-Bundle: com.google.gson,\n org.eclipse.elk.core,\n org.eclipse.elk.core.service\n',
         'org.eclipse.elk.core': 'Bundle-Name: core\n',
       },
       'abc',
@@ -338,4 +338,41 @@ describe('regeneration', () => {
   } else {
     it.skip(`regenerated deps equal the committed file (skipped: ${reason})`, () => {});
   }
+});
+
+describe('grammar bundles (conformance-corpus D0)', () => {
+  const CORE_AND_GRAPH = ['src/core', 'src/graph'];
+
+  it('maps graph.text to src/graph/text requiring core and graph', () => {
+    expect(committed.bundles['src/graph/text']).toEqual({
+      bundle: 'org.eclipse.elk.graph.text',
+      requires: CORE_AND_GRAPH,
+    });
+  });
+
+  it('maps graph.json.text to src/graph/json/text requiring core and graph', () => {
+    expect(committed.bundles['src/graph/json/text']).toEqual({
+      bundle: 'org.eclipse.elk.graph.json.text',
+      requires: CORE_AND_GRAPH,
+    });
+  });
+
+  it('maps core.debug.grandom to src/core/debug/grandom requiring core and graph', () => {
+    expect(committed.bundles['src/core/debug/grandom']).toEqual({
+      bundle: 'org.eclipse.elk.core.debug.grandom',
+      requires: CORE_AND_GRAPH,
+    });
+  });
+
+  it('resolves src/graph/json/text to graph.json.text, not graph.json', () => {
+    const dir = bundleOf('src/graph/json/text/X.ts', committed);
+    expect(dir).toBe('src/graph/json/text');
+    expect(committed.bundles[dir ?? '']?.bundle).toBe(
+      'org.eclipse.elk.graph.json.text',
+    );
+  });
+
+  it('resolves reference-only src/core/debug to core, not grandom (known hole)', () => {
+    expect(bundleOf('src/core/debug/X.ts', committed)).toBe('src/core');
+  });
 });
