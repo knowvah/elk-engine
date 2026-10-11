@@ -92,7 +92,7 @@ Oracle Java compiles through `tools/oracle/run.sh` (it compiles `ElkOracle.java`
 | 2 | Census + oracle retarget | T4–T5 | 1 | [x] |
 | 3 | Generated corpus + manifest | T6–T7 | 2 | [x] |
 | 4 | Sweep | T8 | 3 | [x] |
-| 5 | Report + conformance docs | T9–T10 | 4 | [ ] |
+| 5 | Report + conformance docs | T9–T10 | 4 | [x] |
 
 Within a batch, the overview's `Depends On` column decides parallelism.
 
@@ -116,3 +116,21 @@ anything journaled as needing the user, and the next roadmap mission.
 
 1. Re-read this file. 2. Re-read `decision-journal.md`. 3. First batch with `[ ]` → its
 `overview.md` → first incomplete task.
+
+## Mission summary (2026-10-11)
+
+- **Tasks:** 10 of 10 complete (T1–T10), one commit each, plus fix/follow-up commits: D5a output
+  normalization (f55c8ea), `.tools/` gitignore (dd5069e), seam patch 0001 (e8a36eb).
+- **First full sweep:** 18,023 cases × 2 JVMs, 8 shards, 123 s. **Final sweep** (patched oracle,
+  D5a): 129 s — native ok 6,269 / throws 17 / nondet 0; retarget ok 8,310 / throws 1,412 /
+  nondet 1,951 / timeout 1; generated ok 49 / nondet 14; oracle-error 0. Per algorithm:
+  `docs/parity-report.md`.
+- **Decisions needing the user (all resolved in-session):** T2 AD-13 fixture swap (approved);
+  `_g` exporter randomness → seam patch 0001 with system-property seam (D5b); disco identity hash
+  → normalize in compare (D5a); keep D2 root-only seed; local Maven 3.9.11 in `.tools/`.
+- **Deviations from the brief:** 9 uncovered algorithm ids, not 8 (`random` added); `build.sh`
+  gained `--record-only`, folded-subject parsing, and a cache-ignoring dirty filter.
+- **Follow-ups:** roadmap mission 4 (`graph.json`) must add the injectable `Random` seam paired
+  with patch 0001; mission 4d must name the generated root `root`; spore/random retarget rows are
+  genuinely nondeterministic and need a seam or structural comparison in their missions.
+- **Next roadmap mission:** 1 — Java foundations completion.
