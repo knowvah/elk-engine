@@ -91,12 +91,12 @@ is a no-op diff when re-run (T16).
 
 | Batch | Name | Tasks | Depends on | Status |
 |-------|------|-------|------------|--------|
-| 1 | Scaffold | T1 | — | [ ] |
-| 2a | Repo guardrails & docs root | T2–T5 | 1 | [ ] |
-| 2b | Vectors, comparator, oracle build | T6–T8 | 1 | [ ] |
-| 3a | Java shims, harness, corpus | T9–T12 | 2a, 2b | [ ] |
-| 3b | Architecture & translation docs | T13–T15 | 2a | [ ] |
-| 4 | Goldens, conformance, roadmap | T16–T18 | 3a, 3b | [ ] |
+| 1 | Scaffold | T1 | — | [x] |
+| 2a | Repo guardrails & docs root | T2–T5 | 1 | [x] |
+| 2b | Vectors, comparator, oracle build | T6–T8 | 1 | [x] |
+| 3a | Java shims, harness, corpus | T9–T12 | 2a, 2b | [x] |
+| 3b | Architecture & translation docs | T13–T15 | 2a | [x] |
+| 4 | Goldens, conformance, roadmap | T16–T18 | 3a, 3b | [x] |
 
 Batches 2a ‖ 2b run in parallel; 3a ‖ 3b run in parallel. Within a batch,
 the overview's `Depends On` column decides parallelism.
@@ -122,3 +122,29 @@ report to the user the manual follow-ups: create GitHub repo
 
 1. Re-read this file. 2. Re-read `decision-journal.md`. 3. First batch with
 `[ ]` → its `overview.md` → first incomplete task.
+
+## Mission summary (2026-10-11)
+
+- **Tasks:** 18 of 18 complete, one commit each on `feature/elk-engine-skeleton`
+  (plus the brief commit and this plans update). Every commit's file list is
+  a subset of its task's write-set; the two pre-approved doc splits
+  (`port-map-alg-layered.md`, `translation-rules-collections.md`) were used.
+- **Decisions journaled:** 22 rows. Three are flagged for the user:
+  T9 (fdlibm-algorithm `strictLog` written from the published algorithm,
+  not OpenJDK, to match `StrictMath.log`), T8 (Tycho 4.0.12 needs Maven
+  3.9.x; the build used a scratchpad Maven 3.9.11 via `ELK_MVN`), and T15
+  (four CLAUDE.md translation rows need correction; `JavaHashMap` cannot be
+  derived from the Javadoc and needs JVM order vectors).
+- **Quality gates:** `npm run typecheck` 0; `npm run coverage` 0 with 125
+  tests and 100% statements/branches/functions/lines over `src/**`;
+  `npm run build` emits `dist/`; `tools/oracle/build.sh` built 13 in-scope
+  jars on JDK 21; `tools/oracle/run.sh` is deterministic across runs;
+  `tools/oracle/regen-goldens.sh` is a no-op on re-run.
+- **Stop conditions hit:** none.
+- **Known issues / follow-ups:** install Maven 3.9.x (or set `ELK_MVN`) before
+  rebuilding the oracle; apply the CLAUDE.md corrections listed in
+  `docs/translation-rules.md`; the module-boundaries test resolves an
+  out-of-scope `src/core/service/**` to `core` silently (see
+  `.agent-notes/elk-engine-skeleton.md`); goldens are Ptolemy-only until
+  the elkt→JSON mission. Manual: create GitHub `knowvah/elk-engine`, push,
+  claim the npm name.
