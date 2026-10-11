@@ -5,21 +5,29 @@
     {
       "id": "ptolemy-scrambler",
       "path": "realworld/ptolemy/hierarchical/comm_scrambler_Scrambler.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
       "note": "12 nodes, 22 ports, 11 labels, depth 2. Smallest hierarchical model: one composite with ports and node labels. No algorithm set (default layered); no randomSeed set (layered default seed 1, deterministic)."
     },
     {
       "id": "ptolemy-clockdrift-hierarchy",
       "path": "realworld/ptolemy/hierarchical/de_clockdrift_ClockDriftHierarchy.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
       "note": "12 nodes, 31 ports, 11 labels, depth 3. Two levels of nested children with hierarchical edges. Default layered, default seed 1, deterministic."
     },
     {
       "id": "ptolemy-afdx-multicast",
       "path": "realworld/ptolemy/hierarchical/de_afdx_AFDXMulticastSimple.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
       "note": "15 nodes, 30 ports, 14 labels, depth 2. Multicast fan-out edges across composite ports, fixed port.side/port.index. Default layered, default seed 1, deterministic."
     },
     {
       "id": "ptolemy-crossbar-switch",
       "path": "realworld/ptolemy/hierarchical/de_switch_CrossbarSwitch.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
       "note": "13 nodes, 40 ports, 12 labels, depth 2. Port-dense model (about 3 ports per node) stressing port ordering. Default layered, default seed 1, deterministic."
     }
   ]
