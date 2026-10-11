@@ -154,6 +154,14 @@ export function planCases(
   return { cases, parseErrors: parseErrors.sort(compareStrings) };
 }
 
+/** Identity-hash tokens (`Object.toString`), replaced in outputs as D4 does in messages (D5 amendment). */
+const IDENTITY_HASH = /@[0-9a-f]+/g;
+const HASH_PLACEHOLDER = '@<hash>';
+
+function sameOutput(a: string | undefined, b: string | undefined): boolean {
+  return a?.replace(IDENTITY_HASH, HASH_PLACEHOLDER) === b?.replace(IDENTITY_HASH, HASH_PLACEHOLDER);
+}
+
 function sameException(a: ExceptionInfo | undefined, b: ExceptionInfo | undefined): boolean {
   return a?.class === b?.class && a?.message === b?.message;
 }
@@ -164,7 +172,7 @@ export function verdictOf(runA: RunResult, runB: RunResult): Verdict {
   if (statuses.includes(STATUS_ORACLE_ERROR)) return STATUS_ORACLE_ERROR;
   if (statuses.includes('timeout')) return 'timeout';
   if (runA.status === STATUS_OK && runB.status === STATUS_OK) {
-    return runA.output === runB.output ? STATUS_OK : 'nondeterministic';
+    return sameOutput(runA.output, runB.output) ? STATUS_OK : 'nondeterministic';
   }
   if (runA.status === 'throws' && runB.status === 'throws') {
     return sameException(runA.exception, runB.exception) ? 'throws' : 'nondeterministic';

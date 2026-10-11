@@ -295,3 +295,17 @@ describe('runShard', () => {
     expect(res.stderrTail).toContain('boom');
   });
 });
+
+describe('verdictOf output normalization (D5 amendment, 2026-10-11)', () => {
+  it('ok when both ok outputs differ only in identity-hash tokens', () => {
+    expect(
+      verdictOf(ok('{"g":"DCGraph@2e38f232"}'), ok('{"g":"DCGraph@1b0375b3"}')),
+    ).toBe('ok');
+  });
+  it('still nondeterministic when outputs differ outside identity-hash tokens', () => {
+    expect(verdictOf(ok('{"id":"n0_g563078"}'), ok('{"id":"n0_g101912"}'))).toBe(
+      'nondeterministic',
+    );
+    expect(verdictOf(ok('{"g":"A@2e"}'), ok('{"g":"B@2e"}'))).toBe('nondeterministic');
+  });
+});
