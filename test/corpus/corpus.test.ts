@@ -11,6 +11,7 @@ import {
   resolveModelsDir,
   resolveModelsDirFrom,
 } from './corpus.js';
+import { isGoldenEntry, loadVariantNames } from './corpus.js';
 
 const KEBAB_CASE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX_GOLDEN_NODES = 50;
@@ -118,3 +119,57 @@ describe.skipIf(modelsDir === undefined)('goldens against pinned clone', () => {
 if (modelsDir === undefined) {
   it.skip(`goldens not verified: ${skipReason}`, () => {});
 }
+
+const LAYERED_ALGORITHM = 'org.eclipse.elk.layered';
+const DEFAULT_VARIANT = 'default';
+const BASE_ENTRY = {
+  id: 'sample',
+  path: 'a/b.json',
+  note: 'n',
+  algorithm: LAYERED_ALGORITHM,
+  variant: DEFAULT_VARIANT,
+};
+
+describe('golden entry guard (algorithm, variant, retarget)', () => {
+  it('accepts an entry without retarget', () => {
+    expect(isGoldenEntry(BASE_ENTRY)).toBe(true);
+  });
+
+  it('rejects an entry missing algorithm', () => {
+    const { algorithm: _omitted, ...rest } = BASE_ENTRY;
+    expect(isGoldenEntry(rest)).toBe(false);
+  });
+
+  it('rejects an entry missing variant', () => {
+    const { variant: _omitted, ...rest } = BASE_ENTRY;
+    expect(isGoldenEntry(rest)).toBe(false);
+  });
+
+  it('rejects a retarget that differs from algorithm', () => {
+    expect(isGoldenEntry({ ...BASE_ENTRY, retarget: 'org.eclipse.elk.mrtree' })).toBe(false);
+  });
+
+  it('accepts a retarget equal to algorithm', () => {
+    expect(isGoldenEntry({ ...BASE_ENTRY, retarget: LAYERED_ALGORITHM })).toBe(true);
+  });
+
+  it('rejects a non-string retarget', () => {
+    expect(isGoldenEntry({ ...BASE_ENTRY, retarget: 1 })).toBe(false);
+  });
+
+  it('gives every curated golden layered/default and no retarget', () => {
+    for (const g of manifest.golden) {
+      expect(g.algorithm).toBe(LAYERED_ALGORITHM);
+      expect(g.variant).toBe(DEFAULT_VARIANT);
+      expect(g.retarget).toBeUndefined();
+    }
+  });
+
+  it('references only variants defined in variants.json', () => {
+    const names = loadVariantNames();
+    expect(names).toContain(DEFAULT_VARIANT);
+    for (const g of manifest.golden) {
+      expect(names).toContain(g.variant);
+    }
+  });
+});

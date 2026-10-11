@@ -23,3 +23,6 @@ coverage/
 
 # macOS
 .DS_Store
+
+# Local toolchain (Maven 3.9.x for the oracle build; not committed)
+.tools/

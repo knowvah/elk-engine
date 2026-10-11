@@ -1,0 +1,4 @@
+generate 1 trees {
+    nodes = 15
+    seed = 1
+}

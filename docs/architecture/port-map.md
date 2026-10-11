@@ -84,9 +84,10 @@ matter:
   Longest prefix: `src/graph/json/**` belongs to `graph.json`, the rest of `src/graph/**` to
   `graph`.
 - **In-scope bundle shares a prefix with out-of-scope bundles.** `core` vs `core.service`,
-  `core.ui`, `core.meta`, `core.debug*`; `alg.disco` vs `alg.disco.debug`. The out-of-scope ones are
-  absent from `bundle-deps.json`, so `src/core/service/**` would silently resolve to `core`. They
-  must not be ported; the fitness test cannot catch it.
+  `core.ui`, `core.meta`, `core.debug` (Reference); `alg.disco` vs `alg.disco.debug` (Reference).
+  `core.debug.grandom` is in scope (D0) and gets its own `src/core/debug/grandom/` root. The
+  out-of-scope ones are absent from `bundle-deps.json`, so `src/core/service/**` would silently
+  resolve to `core`. They must not be ported; the fitness test cannot catch it.
 - **Test plugins reuse source package names.** `org.eclipse.elk.core` exists in `core` and
   `core.test`; `graph.properties` in `graph` and `core.test`. Test classes land colocated in the
   same `src/` directory as `*.test.ts`; ownership follows the directory, not the plugin.
@@ -489,10 +490,29 @@ Not attached to a bundle; they hold shared test infrastructure and cross-bundle 
 |---|---|---:|---:|---|
 | `shared.test` | `test/integration/` | 4 | 425 | hand port |
 
+## Grammar bundles added by D0 (not in the Summary totals above)
+
+Added by D0 in `plans/conformance-corpus/decisions.md`. LOC = `wc -l` over hand-written files,
+excluding `src-gen/` and `xtend-gen/`; the `.xtext` grammar is counted separately from
+Java + Xtend. Approach: one hand-written parse method per Xtext rule (D8); no Xtext or ANTLR.
+
+| Bundle (`org.eclipse.elk.`) | TS root | Files | Java+Xtend LOC | `.xtext` LOC | Total LOC |
+|---|---|---:|---:|---:|---:|
+| `graph.text` | `src/graph/text/` | 18 (17 Xtend + 1 xtext) | 1,232 | 120 | 1,352 |
+| `graph.json.text` | `src/graph/json/text/` | 15 (1 Java + 13 Xtend + 1 xtext) | 801 | 171 | 972 |
+| `core.debug.grandom` | `src/core/debug/grandom/` | 9 (3 Java + 5 Xtend + 1 xtext) | 2,543 | 153 | 2,696 |
+
+Mission mapping: `graph.text` is roadmap 4b, `graph.json.text` 4c, `core.debug.grandom` 4d
+(`plans/roadmap.md`, Revision 2026-10-11). TS roots are proposed; `bundle-deps.json` gains the
+three bundles when their missions start.
+
 ## Out of scope or deferred (not rows above)
 
-`core.service`, `core.ui`, `core.meta`, `core.meta.ui`, `core.debug*`, `alg.disco.debug`,
-`conn.gmf`, `graph.text*`, `graph.json.text*` (out of scope); `alg.libavoid`, `alg.graphviz.dot`,
-`alg.graphviz.layouter` (deferred). `core.meta` contains the `.melk` compiler whose behavior the
-`tools/melk/` generator reproduces (AD-12); it is read as a reference only.
+`core.service`, `core.ui`, `core.meta`, `core.meta.ui`, `conn.gmf`, `graph.text.ui`,
+`graph.json.text.ui`, `core.debug.grandom.ui` (out of scope); `alg.libavoid`, `alg.graphviz.dot`,
+`alg.graphviz.layouter`, `graph.text.ide`, `graph.json.text.ide`, `core.debug.grandom.ide`
+(deferred); `core.debug`, `alg.disco.debug` (reference only: read for ideas, never ported).
+`core.meta` contains the `.melk` compiler whose behavior the `tools/melk/` generator reproduces
+(AD-12); it is read as a reference only. `graph.text`, `graph.json.text` and `core.debug.grandom`
+are in scope per D0 (`plans/conformance-corpus/decisions.md`); see the next section.
 

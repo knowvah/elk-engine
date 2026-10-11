@@ -129,8 +129,12 @@ vectors (`tools/vectors/JavaVectors.java`).
 **In scope** (bundle → purpose, from `Bundle-Name`):
 
 - `core` — core components: layout engine, options, metadata, math, utilities
+- `core.debug.grandom` — ELK Random Graph Generator (grammar `GRandom.xtext`;
+  seeded `Random`; `BlindTextGenerator` is unseeded, keep it out of goldens)
 - `graph` — ElkGraph model (EMF-generated; plain classes here)
 - `graph.json` — ELK JSON import/export
+- `graph.text` — ELK Textual Graph Format (`.elkt`; grammar `ElkGraph.xtext`)
+- `graph.json.text` — ELK Textual JSON Graph Format (grammar `ElkGraphJson.xtext`)
 - `alg.common` — algorithms shared across layouts
 - `alg.layered` — layered (Sugiyama-style) layout
 - `alg.mrtree` — Mr. Tree tree layout
@@ -144,14 +148,26 @@ vectors (`tools/vectors/JavaVectors.java`).
 
 **Deferred** (roadmap decides): `alg.libavoid` (drives an external C++ process),
 `alg.graphviz.dot` / `alg.graphviz.layouter` (DOT I/O + external `dot`;
-candidate for delegating to dot-engine).
+candidate for delegating to dot-engine); `graph.text.ide`, `graph.json.text.ide`,
+`core.debug.grandom.ide` (Xtext generic IDE services: content assist; needs a
+browser-editor host decision).
+
+**Reference only** (read for design ideas; never ported line by line, no
+`@see` to them): `core.debug` (layout graph view, execution-time tree, image
+export: model for the parity dashboard and a later debug viewer),
+`alg.disco.debug` (polyomino/compaction renderer: model for disco divergence
+visualization).
 
 **Out of scope**: `core.service` (Eclipse/JFace/Guice runtime), `core.ui`,
-`core.meta`, `core.meta.ui`, `core.debug*`, `alg.disco.debug`, `conn.gmf`,
-`graph.text*`, `graph.json.text*` (Xtext editors).
+`core.meta`, `core.meta.ui`, `conn.gmf`, `graph.text.ui`, `graph.json.text.ui`,
+`core.debug.grandom.ui` (Eclipse editors; require Eclipse UI, `core.ui`/`core.service`).
 
-Third-party `Require-Bundle` entries (Guava, EMF, Gson, Xtend/Xbase) are not TS
-directories; AD-10, AD-11, and the translation rules cover them.
+Third-party `Require-Bundle` entries (Guava, EMF, Gson, Xtend/Xbase, Xtext, ANTLR)
+are not TS directories; AD-10, AD-11, and the translation rules cover them. The
+`.xtext` grammars are ported as hand-written parsers implementing each rule; no
+Xtext or ANTLR dependency (zero runtime dependencies). The hand-written Xtend
+(value converters, naming, scoping, linking, validation, formatting) is ported
+like any other source.
 
 ## External Directories
 

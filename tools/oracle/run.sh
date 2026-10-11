@@ -1,18 +1,36 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: EPL-2.0
-# Lays out ELK JSON graphs with the source-built oracle (AD-3).
-# Usage: run.sh <outDir> <input.json>...
+# Lays out (or parses) ELK JSON / ELK text (.elkt) graphs with the
+# source-built oracle (AD-3).
+# Usage: run.sh <outDir> <input.json|input.elkt>...
+#        run.sh --cases <cases.jsonl> <outDir>
+#        run.sh --list-algorithms
+# Case file: JSON Lines {"id","input","mode":"layout"|"parse"|"generate",
+# "algorithm"?,"variant"?} ("generate" reads a grandom .elkr and writes the
+# graph unlaid-out); output is <outDir>/<id with "/" replaced by
+# "__">.json, one JSON result line per case on stdout. Each case is bounded
+# by ELK_SWEEP_TIMEOUT_MS (default 30000); a JVM that hit a timeout exits
+# with code 75 and is restarted on the cases without a result line.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-HARNESS="$ROOT/tools/oracle/harness/ElkOracle.java"
+HARNESS_DIR="$ROOT/tools/oracle/harness"
+VARIANTS_FILE="$ROOT/test/corpus/variants.json"
+EXIT_TIMEOUT=75 # keep in sync with ElkOracle.EXIT_TIMEOUT
+DEFAULT_TIMEOUT_MS=30000
+# Seeds JsonExporter id-collision suffixes (seam patch 0001; decisions D5b).
+EXPORT_SEED=1
 ELK_ORACLE_DIR="${ELK_ORACLE_DIR:-$ROOT/../elk-oracle}"
 P2_BUNDLES="${P2_BUNDLES:-$HOME/.m2/repository/p2/osgi/bundle}"
 # Third-party bundles named by Require-Bundle in the in-scope manifests, plus
-# Guava's failureaccess companion (not a Require-Bundle entry).
+# companions that are not Require-Bundle entries: Guava's failureaccess, and
+# Guice with its inject/aopalliance/log4j dependencies (Xtext standalone setup).
 THIRD_PARTY=(com.google.gson com.google.guava com.google.guava.failureaccess
   org.eclipse.emf.common org.eclipse.emf.ecore org.eclipse.emf.ecore.xmi
-  org.eclipse.xtext.xbase.lib org.eclipse.xtend.lib org.eclipse.xtend.lib.macro)
+  org.eclipse.xtext.xbase.lib org.eclipse.xtend.lib org.eclipse.xtend.lib.macro
+  org.eclipse.xtext org.eclipse.xtext.xbase org.eclipse.xtext.util org.antlr.runtime
+  com.google.inject jakarta.inject.jakarta.inject-api org.aopalliance
+  org.apache.log4j org.eclipse.equinox.common)
 
 die() {
   echo "error: $1" >&2
@@ -51,23 +69,80 @@ build_classpath() {
   printf '%s' "${cp#:}"
 }
 
+stale_harness() { # stale_harness <classesDir>; succeeds when a source is newer
+  local src
+  for src in "$HARNESS_DIR"/*.java; do
+    [ -f "$1/$(basename "${src%.java}").class" ] || return 0
+    [ "$src" -nt "$1/ElkOracle.class" ] && return 0
+  done
+  return 1
+}
+
 compile_harness() { # compile_harness <classpath> <classesDir>
-  local class="$2/ElkOracle.class"
-  if [ -f "$class" ] && [ ! "$HARNESS" -nt "$class" ]; then
-    return 0
-  fi
+  stale_harness "$2" || return 0
   mkdir -p "$2"
-  javac -nowarn -encoding UTF-8 -cp "$1" -d "$2" "$HARNESS"
+  javac -nowarn -encoding UTF-8 -cp "$1" -d "$2" "$HARNESS_DIR"/*.java
+}
+
+cleanup() {
+  rm -rf "${WORK_DIR:-}"
+}
+
+oracle_java() { # oracle_java <timeoutMs> <args...>; runs the harness JVM
+  local timeout="$1"
+  shift
+  java -Delk.oracle.variants="$VARIANTS_FILE" -Delk.oracle.timeoutMs="$timeout" \
+    -Dorg.eclipse.elk.graph.json.exportSeed="$EXPORT_SEED" \
+    -cp "$CLASSES:$CP" ElkOracle "$@"
+}
+
+run_cases() { # run_cases <cases.jsonl> <outDir>; restarts the JVM after a timeout
+  local timeout="${ELK_SWEEP_TIMEOUT_MS:-$DEFAULT_TIMEOUT_MS}"
+  local cur="$WORK_DIR/cases.cur" iter="$WORK_DIR/iter.out" rc overall=0 done_count
+  case "$timeout" in '' | *[!0-9]*) die "ELK_SWEEP_TIMEOUT_MS must be a non-negative integer" ;; esac
+  awk 'NF' "$1" >"$cur"
+  while true; do
+    rc=0
+    oracle_java "$timeout" --cases "$cur" "$2" | tee "$iter" || rc=$?
+    if [ "$rc" -eq "$EXIT_TIMEOUT" ]; then
+      done_count="$(wc -l <"$iter")"
+      tail -n +"$((done_count + 1))" "$cur" >"$cur.next"
+      mv "$cur.next" "$cur"
+      [ -s "$cur" ] || break
+    elif [ "$rc" -eq 1 ]; then
+      overall=1
+      break
+    else
+      overall="$rc"
+      break
+    fi
+  done
+  return "$overall"
 }
 
 main() {
-  local classes="$ELK_ORACLE_DIR/harness-classes" cp
-  [ "$#" -ge 2 ] || die "usage: run.sh <outDir> <input.json>..."
+  CLASSES="$ELK_ORACLE_DIR/harness-classes"
+  [ "$#" -ge 1 ] || die "usage: run.sh <outDir> <input>... | run.sh --cases <cases.jsonl> <outDir> | run.sh --list-algorithms"
   [ -f "$ELK_ORACLE_DIR/oracle-build.json" ] ||
     die "$ELK_ORACLE_DIR/oracle-build.json missing; run tools/oracle/build.sh"
-  cp="$(build_classpath)"
-  compile_harness "$cp" "$classes"
-  exec java -cp "$classes:$cp" ElkOracle "$@"
+  CP="$(build_classpath)"
+  compile_harness "$CP" "$CLASSES"
+  case "${1:-}" in
+    --list-algorithms)
+      [ "$#" -eq 1 ] || die "--list-algorithms takes no arguments"
+      oracle_java 0 --list-algorithms
+      ;;
+    --cases)
+      [ "$#" -eq 3 ] || die "usage: run.sh --cases <cases.jsonl> <outDir>"
+      WORK_DIR="$(mktemp -d)"
+      trap cleanup EXIT
+      run_cases "$2" "$3"
+      ;;
+    *)
+      [ "$#" -ge 2 ] || die "usage: run.sh <outDir> <input>... "
+      oracle_java 0 "$@"
+      ;;
+  esac
 }
 
 main "$@"

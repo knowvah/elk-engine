@@ -8,11 +8,18 @@ export const MODELS_REPO_SLUG = 'eclipse-elk/elk-models';
 export const MODELS_DIR_ENV = 'ELK_MODELS_DIR';
 export const DEFAULT_MODELS_RELATIVE_PATH = '../../eclipse-elk/elk-models';
 const MANIFEST_FILE = 'manifest.json';
+const VARIANTS_FILE = 'variants.json';
 
 export interface GoldenEntry {
   readonly id: string;
   readonly path: string;
   readonly note: string;
+  /** Effective root algorithm, full id (the dashboard row). */
+  readonly algorithm: string;
+  /** Key in variants.json; "default" applies no overlay. */
+  readonly variant: string;
+  /** Present only when the oracle must override the algorithm (D2); equals `algorithm`. */
+  readonly retarget?: string;
 }
 
 export interface CorpusManifest {
@@ -33,13 +40,31 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-function isGoldenEntry(value: unknown): value is GoldenEntry {
+function isValidRetarget(entry: Record<string, unknown>): boolean {
+  const retarget = entry['retarget'];
+  return retarget === undefined || retarget === entry['algorithm'];
+}
+
+export function isGoldenEntry(value: unknown): value is GoldenEntry {
   return (
     isRecord(value) &&
     typeof value['id'] === 'string' &&
     typeof value['path'] === 'string' &&
-    typeof value['note'] === 'string'
+    typeof value['note'] === 'string' &&
+    typeof value['algorithm'] === 'string' &&
+    typeof value['variant'] === 'string' &&
+    isValidRetarget(value)
   );
+}
+
+/** Variant names defined in test/corpus/variants.json. */
+export function loadVariantNames(): readonly string[] {
+  const file = path.join(repoRoot(), 'test', 'corpus', VARIANTS_FILE);
+  const parsed: unknown = JSON.parse(readFileSync(file, 'utf8'));
+  if (!isRecord(parsed)) {
+    throw new Error(`Invalid variants file: ${file}`);
+  }
+  return Object.keys(parsed);
 }
 
 function isManifest(value: unknown): value is CorpusManifest {
@@ -57,6 +82,11 @@ export function loadManifest(): CorpusManifest {
   const parsed: unknown = JSON.parse(readFileSync(file, 'utf8'));
   if (!isManifest(parsed)) {
     throw new Error(`Invalid corpus manifest: ${file}`);
+  }
+  const variants = loadVariantNames();
+  const unknown = parsed.golden.find((g) => !variants.includes(g.variant));
+  if (unknown !== undefined) {
+    throw new Error(`Golden ${unknown.id} names unknown variant ${unknown.variant}: ${file}`);
   }
   return parsed;
 }

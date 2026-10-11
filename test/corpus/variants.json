@@ -1,0 +1,9 @@
+{
+  "default": {},
+  "direction-right": { "org.eclipse.elk.direction": "RIGHT" },
+  "direction-left": { "org.eclipse.elk.direction": "LEFT" },
+  "direction-down": { "org.eclipse.elk.direction": "DOWN" },
+  "direction-up": { "org.eclipse.elk.direction": "UP" },
+  "hierarchy-separate": { "org.eclipse.elk.hierarchyHandling": "SEPARATE_CHILDREN" },
+  "hierarchy-include": { "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN" }
+}

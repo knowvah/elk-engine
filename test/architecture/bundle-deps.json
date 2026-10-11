@@ -86,12 +86,33 @@
         "src/graph"
       ]
     },
+    "src/core/debug/grandom": {
+      "bundle": "org.eclipse.elk.core.debug.grandom",
+      "requires": [
+        "src/core",
+        "src/graph"
+      ]
+    },
     "src/graph": {
       "bundle": "org.eclipse.elk.graph",
       "requires": []
     },
     "src/graph/json": {
       "bundle": "org.eclipse.elk.graph.json",
+      "requires": [
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/graph/json/text": {
+      "bundle": "org.eclipse.elk.graph.json.text",
+      "requires": [
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/graph/text": {
+      "bundle": "org.eclipse.elk.graph.text",
       "requires": [
         "src/core",
         "src/graph"

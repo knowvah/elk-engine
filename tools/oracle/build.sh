@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: EPL-2.0
 # Builds upstream ELK from source in a detached worktree (AD-3).
+# Usage: build.sh [--record-only]
+#   --record-only  skip Maven (and its version check) and only rewrite
+#                  oracle-build.json from the jars already built in the worktree.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -18,9 +21,9 @@ GIT_IDENT=(-c user.name=elk-engine-oracle -c user.email=oracle@invalid)
 # In-scope bundles, org.eclipse.elk. prefix omitted (decisions.md).
 BUNDLES=(core graph graph.json alg.common alg.layered alg.mrtree alg.radial
   alg.force alg.disco alg.rectpacking alg.spore alg.topdownpacking
-  alg.vertiflex)
+  alg.vertiflex graph.text graph.json.text core.debug.grandom)
 # Build outputs ELK does not fully gitignore.
-OUTPUT_FILTER='(^|/)(target|xtend-gen|src-gen)/|oracle-build\.json$'
+OUTPUT_FILTER='(^|/)(target|xtend-gen|src-gen)/|oracle-build\.json$|^\?\? (census|sweep)/$'
 
 abs_path() { # abs_path <path>; normalizes, parent dir must exist
   (cd "$(dirname "$1")" 2>/dev/null && echo "$PWD/$(basename "$1")") || echo "$1"
@@ -62,7 +65,10 @@ patch_files() {
 patch_subjects() {
   local f
   while IFS= read -r f; do
-    sed -n '/^Subject: /{s/^Subject: \(\[[^]]*\] \)\{0,1\}//p;q;}' "$f"
+    # Unfold RFC 2822 continuation lines: format-patch wraps long subjects.
+    awk '/^Subject: /{s=$0; sub(/^Subject: (\[[^]]*\] )?/, "", s)
+      while ((getline l) > 0 && l ~ /^[ \t]/) s = s l
+      print s; exit}' "$f"
   done < <(patch_files)
 }
 
@@ -146,17 +152,26 @@ write_manifest() {
 }
 
 main() {
-  local start="$SECONDS"
+  local start="$SECONDS" record_only=0
+  case "${1:-}" in
+    "") ;;
+    --record-only) record_only=1 ;;
+    *) die "$EXIT_PRECONDITION" "usage: build.sh [--record-only]" ;;
+  esac
   ELK_SOURCE_DIR="$(abs_path "$ELK_SOURCE_DIR")"
   ELK_ORACLE_DIR="$(abs_path "$ELK_ORACLE_DIR")"
   COMMIT="$(tr -d '[:space:]' <"$ORACLE_TOOLS/ELK_COMMIT")"
   echo "repo root:   $ROOT"
   echo "ELK source:  $ELK_SOURCE_DIR"
   echo "ELK oracle:  $ELK_ORACLE_DIR"
-  check_tools
+  [ "$record_only" -eq 1 ] || check_tools
   check_source
   if [ -e "$ELK_ORACLE_DIR" ]; then verify_worktree; else create_worktree; fi
-  run_maven
+  if [ "$record_only" -eq 1 ]; then
+    echo "record-only: skipping Maven"
+  else
+    run_maven
+  fi
   write_manifest
   echo "oracle build OK in $((SECONDS - start))s (exit 0)"
 }
