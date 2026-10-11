@@ -88,7 +88,7 @@ Oracle Java compiles through `tools/oracle/run.sh` (it compiles `ElkOracle.java`
 
 | Batch | Name | Tasks | Depends on | Status |
 |-------|------|-------|------------|--------|
-| 1 | Scope + oracle input | T1–T3 | — | [ ] |
+| 1 | Scope + oracle input | T1–T3 | — | [x] |
 | 2 | Census + oracle retarget | T4–T5 | 1 | [ ] |
 | 3 | Generated corpus + manifest | T6–T7 | 2 | [ ] |
 | 4 | Sweep | T8 | 3 | [ ] |
