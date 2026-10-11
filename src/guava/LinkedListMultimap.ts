@@ -2,7 +2,14 @@
 import type { HashStrategy } from '../java/util/HashStrategy.js';
 import { JavaHashMap } from '../java/util/JavaHashMap.js';
 import { JavaHashSet } from '../java/util/JavaHashSet.js';
-import { Chain, ChainedMultimap, ListKeyView, type LinkedBucket, type ListMultimap, type ValueList } from './Multimap.js';
+import {
+  Chain,
+  ChainedMultimap,
+  ListKeyView,
+  type LinkedBucket,
+  type ListMultimap,
+  type ValueList,
+} from './Multimap.js';
 
 /**
  * Every put appends an occurrence, duplicates kept; `entries()`, `keys()` and `values()` follow the
@@ -19,7 +26,9 @@ export class LinkedListMultimap<K, V> extends ChainedMultimap<K, V> implements L
     private readonly keyStrategy: HashStrategy<K>,
     valueStrategy: HashStrategy<V>,
   ) {
-    super(new JavaHashMap<K, LinkedBucket<K, V>>(keyStrategy), new Chain<K, V>(), false, (a, b) => valueStrategy.equals(a, b));
+    super(new JavaHashMap<K, LinkedBucket<K, V>>(keyStrategy), new Chain<K, V>(), false, (a, b) =>
+      valueStrategy.equals(a, b),
+    );
   }
 
   /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/LinkedListMultimap.html#create() */

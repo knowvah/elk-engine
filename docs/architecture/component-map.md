@@ -2,10 +2,10 @@
 
 # Component map
 
-| Diagram | Shows |
-|---------|-------|
+| Diagram                | Shows                                                    |
+| ---------------------- | -------------------------------------------------------- |
 | 1. Bundle dependencies | The 13 in-scope bundles and their `Require-Bundle` edges |
-| 2. Core runtime | How a layout algorithm plugs into the engine |
+| 2. Core runtime        | How a layout algorithm plugs into the engine             |
 
 Names omit the `org.eclipse.elk.` prefix. Scope: [inventory](inventory.md).
 
@@ -78,16 +78,16 @@ Java manifest has the same edge.
 Class locations are under `$ELK_SOURCE_DIR/plugins/org.eclipse.elk.core/src/org/eclipse/elk/core`
 unless noted; verified at the pinned commit.
 
-| Class | Path | Role |
-|-------|------|------|
-| `IGraphLayoutEngine` | `IGraphLayoutEngine.java` | `layout(ElkNode, IElkProgressMonitor)` |
-| `RecursiveGraphLayoutEngine` | `RecursiveGraphLayoutEngine.java` | Walks hierarchy, runs the provider per level |
-| `AbstractLayoutProvider` | `AbstractLayoutProvider.java` | Base class of every algorithm; implements `IGraphLayoutEngine` |
-| `LayoutMetaDataService` | `data/LayoutMetaDataService.java` | Singleton registry of algorithm, option, category data |
-| `ILayoutMetaDataProvider` | `data/ILayoutMetaDataProvider.java` | `apply(Registry)`; one generated per algorithm bundle (from `.melk`) |
-| `LayoutAlgorithmData` | `data/LayoutAlgorithmData.java` | Algorithm id plus `getInstancePool()` of providers |
-| `IProperty` / `MapPropertyHolder` | `graph/.../graph/properties/` | Typed option keys and the map holder behind `getProperty` |
-| `ElkNode` (ElkGraph) | `graph/.../graph/ElkNode.java` | Graph model; elements are `EMapPropertyHolder` |
+| Class                             | Path                                | Role                                                                 |
+| --------------------------------- | ----------------------------------- | -------------------------------------------------------------------- |
+| `IGraphLayoutEngine`              | `IGraphLayoutEngine.java`           | `layout(ElkNode, IElkProgressMonitor)`                               |
+| `RecursiveGraphLayoutEngine`      | `RecursiveGraphLayoutEngine.java`   | Walks hierarchy, runs the provider per level                         |
+| `AbstractLayoutProvider`          | `AbstractLayoutProvider.java`       | Base class of every algorithm; implements `IGraphLayoutEngine`       |
+| `LayoutMetaDataService`           | `data/LayoutMetaDataService.java`   | Singleton registry of algorithm, option, category data               |
+| `ILayoutMetaDataProvider`         | `data/ILayoutMetaDataProvider.java` | `apply(Registry)`; one generated per algorithm bundle (from `.melk`) |
+| `LayoutAlgorithmData`             | `data/LayoutAlgorithmData.java`     | Algorithm id plus `getInstancePool()` of providers                   |
+| `IProperty` / `MapPropertyHolder` | `graph/.../graph/properties/`       | Typed option keys and the map holder behind `getProperty`            |
+| `ElkNode` (ElkGraph)              | `graph/.../graph/ElkNode.java`      | Graph model; elements are `EMapPropertyHolder`                       |
 
 ```plantuml
 @startuml

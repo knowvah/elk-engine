@@ -25,7 +25,12 @@ interface Step {
 interface Script {
   readonly name: string;
   readonly keyKind: Kind;
-  readonly init: { readonly factory: string; readonly n?: number; readonly source?: string; readonly items?: unknown[] };
+  readonly init: {
+    readonly factory: string;
+    readonly n?: number;
+    readonly source?: string;
+    readonly items?: unknown[];
+  };
   readonly steps: readonly Step[];
 }
 
@@ -206,7 +211,10 @@ describe('Maps.newHashMap and newHashMapWithExpectedSize', () => {
 
   it('reject a negative expected size with the Guava message', () => {
     const { maps } = vectors.negativeExpectedSize;
-    expect([maps.throws, maps.message]).toEqual(['IllegalArgumentException', 'expectedSize cannot be negative but was: -1']);
+    expect([maps.throws, maps.message]).toEqual([
+      'IllegalArgumentException',
+      'expectedSize cannot be negative but was: -1',
+    ]);
     expect(() => Maps.newHashMapWithExpectedSize(STRING, -1)).toThrow(IllegalArgumentException);
     expect(() => Maps.newHashMapWithExpectedSize(STRING, -1)).toThrow(maps.message);
   });

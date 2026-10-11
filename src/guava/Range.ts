@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
+import { IllegalArgumentException } from '../java/lang/IllegalArgumentException.js';
 
 /** Endpoint types ordered by the JS `<` operator (numbers, bigints, strings by UTF-16 units). */
 export type Comparable = number | bigint | string;

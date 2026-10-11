@@ -6,10 +6,11 @@ Planning-time notes are in `elk-engine-skeleton-planning.md`. These were
 found while executing the mission.
 
 ## Observation: Tycho 4.0.12 does not run on Maven 3.10
+
 - **Context**: T8, first `mvn -P elk-meta clean install` in the oracle worktree.
 - **Finding**: Maven 3.10.0 fails immediately with
   `com.google.inject.ProvisionException: No implementation for
-  MavenTargetLocationFactory was bound` (while locating
+MavenTargetLocationFactory was bound` (while locating
   `TychoWorkspaceReader`). The identical command succeeds on Maven 3.9.11
   with the same JDK 21.0.1. `tools/oracle/build.sh` therefore enforces the
   3.9 series and reads `ELK_MVN` to pick the binary.
@@ -18,6 +19,7 @@ found while executing the mission.
 - **Confidence**: High
 
 ## Observation: V8 `Math.log` is 1 ulp off `StrictMath.log`
+
 - **Context**: T9, replaying the `nextGaussian` vectors for seed 1.
 - **Finding**: `Math.log` gave `…af5d` where the JVM vector has `…af5e`.
   The `Random.nextGaussian` Javadoc specifies `StrictMath`, whose spec is
@@ -31,6 +33,7 @@ found while executing the mission.
 - **Confidence**: High
 
 ## Observation: every elk-models `.json` is a Ptolemy model
+
 - **Context**: T12 golden selection.
 - **Finding**: All 550 `.json` files sit under `realworld/ptolemy/`
   (`hierarchical/`, `flattened/`); `examples/`, `tests/`, `tickets/` hold only
@@ -41,6 +44,7 @@ found while executing the mission.
 - **Confidence**: High
 
 ## Observation: longest-prefix bundle lookup has a silent hole
+
 - **Context**: T14, reviewing `module-boundaries.fitness.test.ts`.
 - **Finding**: A future `src/core/service/**` (out-of-scope bundle
   `core.service`) would resolve to `core` because only in-scope bundles are
@@ -50,6 +54,7 @@ found while executing the mission.
 - **Confidence**: High
 
 ## Observation: vitest 5 text coverage reporter hides 100% files
+
 - **Context**: T9/T10 checking per-file coverage.
 - **Finding**: The `text` reporter prints "No files with missing coverage.
   N files fully covered." and omits the per-file table when everything is
@@ -58,6 +63,7 @@ found while executing the mission.
 - **Confidence**: High
 
 ## Observation: macOS bash 3.2 constraints for `tools/**/*.sh`
+
 - **Context**: T8, T11, T16 scripts.
 - **Finding**: `mapfile` is unavailable; empty-array expansion under `set -u`
   errors; `trap` handlers cannot reference `local` variables; shellcheck
@@ -67,6 +73,7 @@ found while executing the mission.
 - **Confidence**: High
 
 ## Observation: `LayoutMetaDataService` auto-registers providers
+
 - **Context**: T11 harness.
 - **Finding**: `LayoutMetaDataService.getInstance()` registers `CoreOptions`
   and loads every `META-INF/services/…ILayoutMetaDataProvider` entry on the
@@ -77,6 +84,7 @@ found while executing the mission.
 - **Confidence**: High
 
 ## Observation: `.melk` packages do not follow directory layout
+
 - **Context**: T14 port map.
 - **Finding**: `alg/force/stress/Stress.melk` declares package
   `org.eclipse.elk.alg.force`; `core/Core.melk` declares `org.eclipse.elk`
@@ -87,6 +95,7 @@ found while executing the mission.
 - **Confidence**: High
 
 ## Observation: `HashMap` order cannot be derived from the Javadoc
+
 - **Context**: T15 collections survey; AD-9 vs AD-10.
 - **Finding**: The `HashMap` Javadoc specifies capacity and load factor but
   not iteration order, so the AD-10 `JavaHashMap` shim cannot be written from
@@ -100,6 +109,7 @@ found while executing the mission.
 - **Confidence**: High
 
 ## Observation: the brief's `Random` usage counts included out-of-scope code
+
 - **Context**: T15 cross-check of the T9 scope note.
 - **Finding**: In-scope bundles have 0 callers of `Collections.shuffle` and
   `nextGaussian` (the brief said 1 each). The in-scope surface is
@@ -111,6 +121,7 @@ found while executing the mission.
 - **Confidence**: High
 
 ## Observation: shell survey pitfalls on macOS/zsh
+
 - **Context**: T15 counting commands.
 - **Finding**: zsh errors on unquoted `--include=*.java`; ERE
   `[A-Za-z0-9_)\]]` does not escape `]` (silently reported 0 integer `%`

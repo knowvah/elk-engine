@@ -7,41 +7,41 @@ Surveyed: the 13 in-scope bundles (decisions.md "Bundle scope") at ELK
 from the Javadoc/JLS only (AD-9). See also [overview](architecture/overview.md),
 [port map](architecture/port-map.md), [section 2 detail](translation-rules-collections.md).
 
-| Hazard | Rule | Shim / idiom | Sec |
-|--------|------|--------------|-----|
-| `int` `+ - *` overflow | wrap to int32 after every op | `Int32.add/sub/mul` | 1.1 |
-| `int` `/` `%` | truncate; `/0` throws | `Int32.div/rem` | 1.2 |
-| shifts, `>>>` | distance masked (31); unsigned | `Int32.shl/shr/ushr` | 1.3 |
-| `long` | `number` unless > 2^53, then `bigint` | documented sites only | 1.4 |
-| `(int)` of double | NaN to 0, trunc, saturate | `d2i` | 1.5 |
-| `(int)` of long | keeps low 32 bits (wraps) | `JavaMath.l2i` | 1.5 |
-| `float` | round to binary32 after each op | `Float32.*` | 1.6 |
-| `char` | UTF-16 unit as `number`; math promotes | `charCodeAt` | 1.7 |
-| `Math.round` | ties to +inf, NaN to 0, saturate | `Math.round` shim | 1.8 |
-| `Math.sin/cos/pow/...` | <= 1 ulp only | native; divergence list | 1.9 |
-| `Double.compare` | -0.0 < 0.0, NaN greatest | `Double.compare` shim | 1.10 |
-| `Double.MIN_VALUE` | smallest positive, not negative | `Number.MIN_VALUE` | 1.10 |
-| HashMap, value keys | reproduce Java order | `JavaHashMap` (AD-10) | 2 |
-| HashMap, identity keys | order undefined: insertion, journal | `Map`/`Set` | 2 |
-| `Linked*`, `HashBiMap` | insertion order | `Map`/`Set` | 2 |
-| `EnumMap/EnumSet` | ordinal order | ordinal-indexed | 2 |
-| `TreeSet` | `compare == 0` is a duplicate | sorted array | 2 |
-| `PriorityQueue` | tie order = heap algorithm | binary heap + vectors | 2 |
-| sort | stable; bad comparators differ | native stable sort | 2 |
-| `ListIterator`, `remove()` | cursor semantics | `ListIterator` class | 2 |
-| `Random(seed)` | 48-bit LCG per Javadoc | `java/util/Random` | 3 |
-| seed `0` | time-seeded; inject the clock | seed provider | 3 |
-| Guava views | `reverse/filter/get` are live | local helpers | 4 |
-| `DoubleMath.fuzzy*` | Javadoc formula | local `fuzzyEquals` | 4 |
-| EMF containment | add moves; inverse refs update; no notifications | plain classes (AD-11) | 5 |
-| `equals/hashCode` keys | value equality (Pair, KVector) | key function | 6.1 |
-| enum with fields | static init order | class + static instances | 6.3 |
-| overloading | one TS signature set | merged/suffixed names | 6.5 |
-| language exceptions | `IndexOutOfBounds`, `NumberFormat` caught | explicit checks | 6.7 |
-| `assert` | disabled by default | dev-only helper | 6.8 |
-| streams | eager vs lazy; `parallelStream` | arrays, sequential | 6.9 |
-| `Double.toString`, concat | Java format | `Double.toString` shim | 7 |
-| Xtend `==`, `?.`, `=>` | `equals`, null-safe, `with` | see table | 8 |
+| Hazard                     | Rule                                             | Shim / idiom             | Sec  |
+| -------------------------- | ------------------------------------------------ | ------------------------ | ---- |
+| `int` `+ - *` overflow     | wrap to int32 after every op                     | `Int32.add/sub/mul`      | 1.1  |
+| `int` `/` `%`              | truncate; `/0` throws                            | `Int32.div/rem`          | 1.2  |
+| shifts, `>>>`              | distance masked (31); unsigned                   | `Int32.shl/shr/ushr`     | 1.3  |
+| `long`                     | `number` unless > 2^53, then `bigint`            | documented sites only    | 1.4  |
+| `(int)` of double          | NaN to 0, trunc, saturate                        | `d2i`                    | 1.5  |
+| `(int)` of long            | keeps low 32 bits (wraps)                        | `JavaMath.l2i`           | 1.5  |
+| `float`                    | round to binary32 after each op                  | `Float32.*`              | 1.6  |
+| `char`                     | UTF-16 unit as `number`; math promotes           | `charCodeAt`             | 1.7  |
+| `Math.round`               | ties to +inf, NaN to 0, saturate                 | `Math.round` shim        | 1.8  |
+| `Math.sin/cos/pow/...`     | <= 1 ulp only                                    | native; divergence list  | 1.9  |
+| `Double.compare`           | -0.0 < 0.0, NaN greatest                         | `Double.compare` shim    | 1.10 |
+| `Double.MIN_VALUE`         | smallest positive, not negative                  | `Number.MIN_VALUE`       | 1.10 |
+| HashMap, value keys        | reproduce Java order                             | `JavaHashMap` (AD-10)    | 2    |
+| HashMap, identity keys     | order undefined: insertion, journal              | `Map`/`Set`              | 2    |
+| `Linked*`, `HashBiMap`     | insertion order                                  | `Map`/`Set`              | 2    |
+| `EnumMap/EnumSet`          | ordinal order                                    | ordinal-indexed          | 2    |
+| `TreeSet`                  | `compare == 0` is a duplicate                    | sorted array             | 2    |
+| `PriorityQueue`            | tie order = heap algorithm                       | binary heap + vectors    | 2    |
+| sort                       | stable; bad comparators differ                   | native stable sort       | 2    |
+| `ListIterator`, `remove()` | cursor semantics                                 | `ListIterator` class     | 2    |
+| `Random(seed)`             | 48-bit LCG per Javadoc                           | `java/util/Random`       | 3    |
+| seed `0`                   | time-seeded; inject the clock                    | seed provider            | 3    |
+| Guava views                | `reverse/filter/get` are live                    | local helpers            | 4    |
+| `DoubleMath.fuzzy*`        | Javadoc formula                                  | local `fuzzyEquals`      | 4    |
+| EMF containment            | add moves; inverse refs update; no notifications | plain classes (AD-11)    | 5    |
+| `equals/hashCode` keys     | value equality (Pair, KVector)                   | key function             | 6.1  |
+| enum with fields           | static init order                                | class + static instances | 6.3  |
+| overloading                | one TS signature set                             | merged/suffixed names    | 6.5  |
+| language exceptions        | `IndexOutOfBounds`, `NumberFormat` caught        | explicit checks          | 6.7  |
+| `assert`                   | disabled by default                              | dev-only helper          | 6.8  |
+| streams                    | eager vs lazy; `parallelStream`                  | arrays, sequential       | 6.9  |
+| `Double.toString`, concat  | Java format                                      | `Double.toString` shim   | 7    |
+| Xtend `==`, `?.`, `=>`     | `equals`, null-safe, `with`                      | see table                | 8    |
 
 ## Conventions
 
@@ -70,6 +70,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
 ## 1. Numeric types
 
 ### 1.1 `int` overflow
+
 - Rule: every `+ - *` on `int` wraps to 32 bits; `x op= e` means `x = (T)(x op e)` (JLS 15.26.2),
   so `intVar += doubleExpr` adds in double, then truncates with `d2i`. TS: `Int32.add/sub/mul`
   (`Math.imul` for `*`), never bare `+` on ints that can exceed 2^31.
@@ -80,6 +81,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
 - Proof: `lang.json` `i32` (add, sub, mul include wrapping cases). Confidence HIGH (JLS 15.26.2).
 
 ### 1.2 Integer division and remainder
+
 - Rule: `/` rounds toward zero (JLS 15.17.2); `int` division by zero throws `ArithmeticException` (JS
   gives `Infinity`/`NaN`); `MIN / -1` is MIN. `%` takes the dividend's sign, as in JS, so it
   differs only for a zero divisor (throws) and `-0` results (`-4 % 2` is `-0` in JS, `0` in Java).
@@ -95,6 +97,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   Closed: `numeric.json` `divZero` (40 rows) pins the throws (`Int32.div/rem`). HIGH.
 
 ### 1.3 Shifts and bit operations
+
 - Rule: shift distance is masked to 5 bits for `int` (6 for `long`); `>>>` is unsigned (JLS 15.19).
   JS `>>>` yields uint32 (`| 0` if the Java result is an `int`). TS: `Int32.shl/shr/ushr`; `long`
   shifts use `Int64` (`bigint`) or paired int32 halves.
@@ -104,6 +107,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
 - Proof: `i32` shl/shr/ushr (54 each). HIGH.
 
 ### 1.4 `long` and `bigint`
+
 - Rule: `number` while |v| < 2^53 is provable; otherwise `bigint` at a **documented** site. Shim
   `src/java/lang/Int64.ts` (`add sub mul div rem neg shl shr ushr`, wrapping to 64 bits;
   `numeric.json` `i64`, 4056 rows).
@@ -118,6 +122,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   outside the safe-integer range. In-scope consumers narrow or subtract from a small double. HIGH.
 
 ### 1.5 Casts
+
 - `(int)` of `double`/`float`: NaN to 0, round toward zero, then saturate to int range (JLS 5.1.3)
   -> `d2i`. ELK: `(int) (xe / cellSizeX)` truncates negatives, it does not floor
   `alg.disco/src/.../structures/DCPolyomino.java:227`. A comparator that casts a double
@@ -131,6 +136,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   scope (`G '\(int\)'`). Proof: `d2i`, `d2l`. HIGH.
 
 ### 1.6 `float`
+
 - Rule: a `float` is a binary32; every float operation and cast rounds to binary32; widening to
   `double` is exact, so a stored float carries its rounding error into later double math. TS:
   `Math.fround(...)` after each float op, cast and `floatValue()`.
@@ -146,6 +152,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   `nextFloat` values are float bits widened to double. HIGH.
 
 ### 1.7 `char`
+
 - Rule: UTF-16 code unit (0..65535); arithmetic promotes to `int`; `(char) i` is `i & 0xFFFF`;
   `String + char` appends the character, `String + int` its digits. Java and JS strings are both
   UTF-16, so `length`/`charAt` agree. TS: `number` plus `charCodeAt` / `String.fromCharCode`.
@@ -155,6 +162,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   `graph/src/.../util/GraphIdentifierGenerator.java:227`. CLAUDE.md row confirmed (JLS 5.1.3). HIGH.
 
 ### 1.8 `Math.round`, `floor`, `ceil`
+
 - `Math.round(double)` returns the closest `long`, **ties toward positive infinity**; NaN gives 0;
   out-of-range values saturate to `Long.MIN/MAX_VALUE` (Javadoc `Math#round(double)`). CLAUDE.md row
   confirmed. JS `Math.round` has the same tie rule but returns NaN/-0/+-Infinity, so the shim is
@@ -168,6 +176,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   `(int) Math.ceil(spacing)` `NetworkSimplexPlacer.java:414`. HIGH.
 
 ### 1.9 `Math.*` accuracy (AD-4 known divergences)
+
 - Rule: Javadoc requires only <= 1 ulp for `sin cos tan exp log log10 pow` (2 ulp for `atan2`,
   semi-monotonic); `sqrt` and `+ - * /` are correctly rounded. JVM and V8 may differ in the last
   bit for the transcendental ones. Use native `Math.*`; the 1e-6 tolerance (AD-4) absorbs value
@@ -185,6 +194,7 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   `alg.layered/src/.../p4nodes/bk/NeighborhoodInformation.java:200`. Javadoc HIGH; V8 MEDIUM (not measured).
 
 ### 1.10 `Double.compare`, `-0.0`, NaN, constants
+
 - `Double.compare` / `Double.compareTo` give a total order: `-0.0 < 0.0`, NaN equals itself and is
   greater than +Infinity (Javadoc). `<`, `==` follow IEEE (`NaN != NaN`, `-0 == 0`). Use the
   shim, never `a - b`. 83 `Double.compare` sites; e.g. heap comparator with ties
@@ -260,25 +270,25 @@ the Javadoc. Known gap: `Sets.newTreeSet` (`src/guava/Sets.ts`) is a snapshot, n
 Per-call counts: `grep -rhoE --include='*.java' --include='*.xtend' PATTERN "${SRC[@]}" | sort | uniq -c`
 with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|Splitter|Streams|Predicates|HashBiMap|Immutable(Map|Set))\.[a-zA-Z]+'`.
 
-| Guava | Count | TS replacement and semantics |
-|-------|------:|------------------------------|
-| `Lists.newArrayList` | 271 | `[]` / `[...it]` (copies) |
-| `Lists.newLinkedList` / `ArrayListWithCapacity` / `WithExpectedSize` | 42 / 26 / 7 | `[]` |
-| `Lists.reverse` | 33 | **live view**; copy only if consumed before the source changes: `alg.common/src/.../RectilinearConvexHull.java:131` |
-| `Maps.newHashMap` / `newLinkedHashMap` / `newEnumMap` | 68 / 7 / 4 | see section 2 |
-| `Sets.newHashSet` / `newLinkedHashSet` / `newTreeSet` | 44 / 17 / 6 | see section 2 |
-| `Sets.immutableEnumSet` / `intersection` | 15 / 5 | frozen ordinal set; `intersection` is a live view |
-| `Iterables.concat/size/isEmpty` | 21 / 20 / 13 | lazy `concat`; `size` iterates unless a collection |
-| `Iterables.filter/getFirst/all/any/getLast/get/transform/addAll` | 8/5/5/4/3/2/1/1 | `filter`/`transform` are lazy, re-iterable views: `alg.layered/src/.../graph/LNode.java:247` |
-| `Iterators.filter/concat/singletonIterator/unmodifiableIterator` | 2/1/1/1 | generators: `core/src/.../util/ElkUtil.java:989` |
-| `Strings.isNullOrEmpty` / `repeat` | 33 / 18 | `s == null \|\| s.length === 0`; `repeat` (negative count throws) |
-| `DoubleMath.fuzzyCompare` / `fuzzyEquals` | 28 / 19 | below |
-| `Joiner.on` / `Splitter.on` | 4 / 1 | `join` converts elements with `toString` (Java double text, section 7); `Splitter` keeps empty parts like JS `split`: `graph.json/src/.../JsonExporter.xtend:456` |
-| `HashBiMap.create` | 8 | local BiMap; insertion-ordered keys (Guava Javadoc); `put` of a duplicate value throws |
-| `HashMultimap` / `ArrayListMultimap` / `LinkedListMultimap` / `LinkedHashMultimap` / `TreeMultimap` | 12 / 4 / 1 / 1 / 1 | local `Multimap`; `get(k)` is a live, never-null view; `HashMultimap` is hash-ordered (section 2) |
-| `Table`/`ArrayTable`, `Range.closed` | 1, 1 | 2-D array with index maps (`alg.layered/src/.../intermediate/loops/ordering/PortRestorer.java:96`); `{lo, hi}` (`.../p2layers/MinWidthLayerer.java:107`) |
-| `ImmutableMap` / `ImmutableSet` (`of`, `copyOf`) | 2 / 2 | frozen insertion-ordered copy: `core/src/.../util/ElkSpacings.java:209` |
-| `Function`, `Predicate`, `Predicates.and`, `Streams`, guava `Optional` | 5, 8, 1, 2, 1 | plain functions / generators / `T \| undefined` |
+| Guava                                                                                               |              Count | TS replacement and semantics                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------- | -----------------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Lists.newArrayList`                                                                                |                271 | `[]` / `[...it]` (copies)                                                                                                                                         |
+| `Lists.newLinkedList` / `ArrayListWithCapacity` / `WithExpectedSize`                                |        42 / 26 / 7 | `[]`                                                                                                                                                              |
+| `Lists.reverse`                                                                                     |                 33 | **live view**; copy only if consumed before the source changes: `alg.common/src/.../RectilinearConvexHull.java:131`                                               |
+| `Maps.newHashMap` / `newLinkedHashMap` / `newEnumMap`                                               |         68 / 7 / 4 | see section 2                                                                                                                                                     |
+| `Sets.newHashSet` / `newLinkedHashSet` / `newTreeSet`                                               |        44 / 17 / 6 | see section 2                                                                                                                                                     |
+| `Sets.immutableEnumSet` / `intersection`                                                            |             15 / 5 | frozen ordinal set; `intersection` is a live view                                                                                                                 |
+| `Iterables.concat/size/isEmpty`                                                                     |       21 / 20 / 13 | lazy `concat`; `size` iterates unless a collection                                                                                                                |
+| `Iterables.filter/getFirst/all/any/getLast/get/transform/addAll`                                    |    8/5/5/4/3/2/1/1 | `filter`/`transform` are lazy, re-iterable views: `alg.layered/src/.../graph/LNode.java:247`                                                                      |
+| `Iterators.filter/concat/singletonIterator/unmodifiableIterator`                                    |            2/1/1/1 | generators: `core/src/.../util/ElkUtil.java:989`                                                                                                                  |
+| `Strings.isNullOrEmpty` / `repeat`                                                                  |            33 / 18 | `s == null \|\| s.length === 0`; `repeat` (negative count throws)                                                                                                 |
+| `DoubleMath.fuzzyCompare` / `fuzzyEquals`                                                           |            28 / 19 | below                                                                                                                                                             |
+| `Joiner.on` / `Splitter.on`                                                                         |              4 / 1 | `join` converts elements with `toString` (Java double text, section 7); `Splitter` keeps empty parts like JS `split`: `graph.json/src/.../JsonExporter.xtend:456` |
+| `HashBiMap.create`                                                                                  |                  8 | local BiMap; insertion-ordered keys (Guava Javadoc); `put` of a duplicate value throws                                                                            |
+| `HashMultimap` / `ArrayListMultimap` / `LinkedListMultimap` / `LinkedHashMultimap` / `TreeMultimap` | 12 / 4 / 1 / 1 / 1 | local `Multimap`; `get(k)` is a live, never-null view; `HashMultimap` is hash-ordered (section 2)                                                                 |
+| `Table`/`ArrayTable`, `Range.closed`                                                                |               1, 1 | 2-D array with index maps (`alg.layered/src/.../intermediate/loops/ordering/PortRestorer.java:96`); `{lo, hi}` (`.../p2layers/MinWidthLayerer.java:107`)          |
+| `ImmutableMap` / `ImmutableSet` (`of`, `copyOf`)                                                    |              2 / 2 | frozen insertion-ordered copy: `core/src/.../util/ElkSpacings.java:209`                                                                                           |
+| `Function`, `Predicate`, `Predicates.and`, `Streams`, guava `Optional`                              |      5, 8, 1, 2, 1 | plain functions / generators / `T \| undefined`                                                                                                                   |
 
 `DoubleMath` (Guava Javadoc, fetched): `fuzzyEquals(a, b, tol)` is
 `Math.abs(a - b) <= tol || Double.valueOf(a).equals(Double.valueOf(b))` (all NaNs equal, +-0 equal,
@@ -298,7 +308,7 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   `EObjectContainmentWithInverseEList` (`graph/src/.../impl/ElkNodeImpl.java:136`); `setParent` first
   removes the node from its old container, then inverse-adds (`graph/src/.../impl/ElkPortImpl.java:97`,
   `:99`). A unique `EList` ignores a duplicate `add` and returns `false` (EMF 2.9.0
-  `AbstractEList#add` Javadoc; that `getChildren()` is unique is MEDIUM). The list is *live*: take a
+  `AbstractEList#add` Javadoc; that `getChildren()` is unique is MEDIUM). The list is _live_: take a
   snapshot before mutating while iterating (`alg.radial/src/.../RadialUtil.java:56`).
 - Recursive containment throws `IllegalArgumentException`: `graph/src/.../impl/ElkPortImpl.java:93`,
   also `ElkEdgeImpl.java:176`, `ElkLabelImpl.java:114`, `ElkEdgeSectionImpl.java:356`.
@@ -330,6 +340,7 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 ## 6. Java language
 
 ### 6.1 `equals` / `hashCode` as map keys
+
 - 21 `equals` and 21 `hashCode` overrides in scope (`G 'boolean equals\('`, `G 'int hashCode\('`);
   everything else is identity. JS `Map` has identity keys only: value-keyed containers use a key
   function or `JavaHashMap` with a `HashStrategy` (`src/java/util/HashStrategy.ts`: `hash`,
@@ -342,11 +353,13 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   on lookup: `JavaHashMap` does, a string key does not.
 
 ### 6.2 Interfaces with default methods
+
 - 17 `default` methods (`core/src/.../comments/IDataProvider.java:70`). TS interfaces carry no bodies:
   use an abstract base class, mixin or helper function; a class implementing several such
   interfaces must receive each default explicitly.
 
 ### 6.3 Enums with fields, methods, `ordinal()`
+
 - 120 enums, 66 `ordinal()` calls. Port as a class with `static readonly` instances created in
   declaration order, an `ordinal` field, `values()`, `valueOf`, `name()`, `compareTo` by ordinal.
   Static blocks run after all constants: `alg.common/src/.../polyomino/structures/Direction.java:28`
@@ -356,6 +369,7 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   `switch` on the instance with an exhaustive `default: never`.
 
 ### 6.4 Inner and anonymous classes, static init order
+
 - 42 anonymous `new X() { ... }` bodies: arrow functions when single-method, otherwise a named
   class (e.g. `alg.layered/src/.../intermediate/HierarchicalPortOrthogonalEdgeRouter.java:423`).
   Non-static inner classes capture `this`: pass the outer explicitly.
@@ -365,6 +379,7 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   import-order-dependent module side effects (the module-global fitness test forbids them).
 
 ### 6.5 Overloading and varargs
+
 - TS cannot declare two methods of one name with different bodies. Rule: same name when arity or
   runtime type distinguishes the overloads (TS overload signatures, one implementation with an
   `instanceof`/`typeof`/argument-count dispatch, call sites unchanged); when parameter types are
@@ -378,18 +393,20 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   `core/src/.../math/ElkMath.java:671` (`long... values`).
 
 ### 6.6 `instanceof` chains
+
 - 171 `instanceof`: class checks stay `instanceof`; interface checks (`instanceof IProperty<?>`
   `graph/src/.../properties/Property.java:103`) need a brand or type-guard function (TS interfaces
   vanish at run time); check-then-cast `core/src/.../math/KVector.java:118` becomes a guard.
 
 ### 6.7 Exceptions: checked, language-raised, and caught
+
 - ELK defines 6 custom exceptions, all `RuntimeException` (`G 'extends (Exception|RuntimeException)'`),
   e.g. `core/src/.../UnsupportedGraphException.java:22`. The checked ones are JDK: `IOException`
   (6 catches), `InstantiationException`/`IllegalAccessException` (reflection, 7), `NoSuchFieldException`
   (2). TS has no checked exceptions: plain `Error` subclasses, keep every throw site and message
   (JLS ch. 11 distinguishes the classes only at compile time). CLAUDE.md row confirmed. Classes
   (M5): `src/java/lang/{IllegalArgumentException,NumberFormatException,IndexOutOfBoundsException,
-  ArrayIndexOutOfBoundsException,ArithmeticException}.ts`,
+ArrayIndexOutOfBoundsException,ArithmeticException}.ts`,
   `src/java/util/NoSuchElementException.ts`.
   `src/java/lang/UnsupportedOperationException.ts` (M5 amendment): immutable Guava helpers throw it.
 - **Language-raised exceptions that ELK catches** (10 sites, `G 'catch \((Array)?IndexOutOfBounds'`):
@@ -405,12 +422,14 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   disposes the provider, `throw exception`): a plain `try/catch` rethrow in TS.
 
 ### 6.8 `assert`
+
 - 141 `assert` statements (`G '^\s*assert '`); assertions are disabled unless the JVM runs with
   `-ea` (JLS 14.10). None has a side effect (`G` for `++ -- add( remove( put( set*( next(` inside
   asserts returns 0). Port to a `devAssert(cond, msg?)` helper compiled out of production; keep the
   expressions free of effects. CLAUDE.md row confirmed: `ElkSpacings.java:80`. HIGH.
 
 ### 6.9 `Optional`, streams, `Iterable` laziness
+
 - 5 `Optional<` declarations, 226 `.stream()`, 12 `parallelStream()`, 48 `Collectors.` uses. Java
   streams are lazy (one element flows through the whole pipeline); TS arrays are eager per stage,
   visible only with side effects or short circuits (`findFirst`
@@ -452,20 +471,20 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 `JsonMetaDataConverter.xtend` (91), `JsonImportException.xtend` (36). Counts via
 `grep -rEn --include='*.xtend' -e PATTERN graph.json/src | wc -l`.
 
-| Xtend | Meaning | TS | Example |
-|-------|---------|----|---------|
-| `a == b`, `a != b` (2 / 7) | `equals()`, null-safe | `Objects.equals` helper, **not** `===` | `graph.json/src/.../JsonExporter.xtend:459` |
-| `a === b`, `a !== b` (27 / 46) | reference identity | `===` | `JsonExporter.xtend:179` |
-| `a?.b` (18) | null-safe call | `a?.b` | `graph.json/src/.../JsonAdapter.xtend:93` |
-| `a ?: b` (10) | elvis (`null` only) | `a ?? b` | `graph.json/src/.../JsonImporter.xtend:199` |
-| `x => [ it\| ... ]` (33) | `with`: run lambda on `x`, return `x` | helper `with(x, f)` | `JsonImporter.xtend:124` |
-| `list += e` (6) | `list.add(e)` (EList semantics, sec. 5) | `list.add(e)` | `JsonImporter.xtend:199` |
-| `extension JsonAdapter` (3) | static/instance methods called as members | explicit `adapter.fn(x)` calls | `JsonImporter.xtend:53` |
-| `[ a \| ... ]`, `it` (43 / 26) | lambdas; implicit `it` | arrow functions | `JsonExporter.xtend:117` |
-| `switch o { String: ... }` (7) | type-guard switch | `typeof`/`instanceof` chain | `JsonAdapter.xtend:186` |
-| `obj.prop` / `.size` | getter / `size()` | `getX()` / `.length` | `JsonImporter.xtend:387` |
-| `def` without type (114) | inferred return type | declare explicit return types | `JsonImporter.xtend:99` |
-| `x as T` (2) | checked cast | type guard + throw | `JsonAdapter.xtend:72` |
+| Xtend                          | Meaning                                   | TS                                     | Example                                     |
+| ------------------------------ | ----------------------------------------- | -------------------------------------- | ------------------------------------------- |
+| `a == b`, `a != b` (2 / 7)     | `equals()`, null-safe                     | `Objects.equals` helper, **not** `===` | `graph.json/src/.../JsonExporter.xtend:459` |
+| `a === b`, `a !== b` (27 / 46) | reference identity                        | `===`                                  | `JsonExporter.xtend:179`                    |
+| `a?.b` (18)                    | null-safe call                            | `a?.b`                                 | `graph.json/src/.../JsonAdapter.xtend:93`   |
+| `a ?: b` (10)                  | elvis (`null` only)                       | `a ?? b`                               | `graph.json/src/.../JsonImporter.xtend:199` |
+| `x => [ it\| ... ]` (33)       | `with`: run lambda on `x`, return `x`     | helper `with(x, f)`                    | `JsonImporter.xtend:124`                    |
+| `list += e` (6)                | `list.add(e)` (EList semantics, sec. 5)   | `list.add(e)`                          | `JsonImporter.xtend:199`                    |
+| `extension JsonAdapter` (3)    | static/instance methods called as members | explicit `adapter.fn(x)` calls         | `JsonImporter.xtend:53`                     |
+| `[ a \| ... ]`, `it` (43 / 26) | lambdas; implicit `it`                    | arrow functions                        | `JsonExporter.xtend:117`                    |
+| `switch o { String: ... }` (7) | type-guard switch                         | `typeof`/`instanceof` chain            | `JsonAdapter.xtend:186`                     |
+| `obj.prop` / `.size`           | getter / `size()`                         | `getX()` / `.length`                   | `JsonImporter.xtend:387`                    |
+| `def` without type (114)       | inferred return type                      | declare explicit return types          | `JsonImporter.xtend:99`                     |
+| `x as T` (2)                   | checked cast                              | type guard + throw                     | `JsonAdapter.xtend:72`                      |
 
 Operators per the Xtend docs (`https://eclipse.dev/Xtext/xtend/documentation/203_xtend_expressions.html`:
 `==` is `operator_equals`, `=>` the with-operator, `?:` elvis; MEDIUM on the exact null-safety of `==`).

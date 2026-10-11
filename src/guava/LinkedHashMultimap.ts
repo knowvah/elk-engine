@@ -53,7 +53,9 @@ class InsertionTable<K, B> implements KeyTable<K, B> {
  */
 export class LinkedHashMultimap<K, V> extends ChainedMultimap<K, V> {
   private constructor(keyStrategy: HashStrategy<K>, valueStrategy: HashStrategy<V>) {
-    super(new InsertionTable<K, LinkedBucket<K, V>>(keyStrategy), new Chain<K, V>(), true, (a, b) => valueStrategy.equals(a, b));
+    super(new InsertionTable<K, LinkedBucket<K, V>>(keyStrategy), new Chain<K, V>(), true, (a, b) =>
+      valueStrategy.equals(a, b),
+    );
   }
 
   /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/LinkedHashMultimap.html#create() */

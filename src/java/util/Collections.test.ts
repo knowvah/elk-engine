@@ -16,23 +16,35 @@ interface Case {
   readonly calls: Call[];
 }
 
-const VECTORS_PATH = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  '../../../test/golden/refs/java/random.json',
-);
+const VECTORS_PATH = resolve(dirname(fileURLToPath(import.meta.url)), '../../../test/golden/refs/java/random.json');
 const cases = (JSON.parse(readFileSync(VECTORS_PATH, 'utf8')) as { cases: Case[] }).cases;
 
 /** Advances the generator exactly as the JVM harness did between shuffles. */
 function advance(rnd: Random, call: Call): void {
   switch (call.method) {
-    case 'nextInt': rnd.nextInt(); break;
-    case 'nextIntBound': rnd.nextInt(call.arg as number); break;
-    case 'nextLong': rnd.nextLong(); break;
-    case 'nextBoolean': rnd.nextBoolean(); break;
-    case 'nextDouble': rnd.nextDouble(); break;
-    case 'nextFloat': rnd.nextFloat(); break;
-    case 'nextGaussian': rnd.nextGaussian(); break;
-    default: throw new Error(`unknown vector method ${call.method}`);
+    case 'nextInt':
+      rnd.nextInt();
+      break;
+    case 'nextIntBound':
+      rnd.nextInt(call.arg as number);
+      break;
+    case 'nextLong':
+      rnd.nextLong();
+      break;
+    case 'nextBoolean':
+      rnd.nextBoolean();
+      break;
+    case 'nextDouble':
+      rnd.nextDouble();
+      break;
+    case 'nextFloat':
+      rnd.nextFloat();
+      break;
+    case 'nextGaussian':
+      rnd.nextGaussian();
+      break;
+    default:
+      throw new Error(`unknown vector method ${call.method}`);
   }
 }
 

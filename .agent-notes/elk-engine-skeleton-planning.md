@@ -3,6 +3,7 @@
 # Planning observations — elk-engine skeleton (2026-10-11)
 
 ## Observation: ELK master is one Java line past the 0.12.0 release
+
 - **Context**: Choosing the ELK pin for the port and oracle.
 - **Finding**: 0.12.0 was cut at `0c51a28d` (2026-07-09). Excluding
   pom/MANIFEST version bumps, master `8aaa3c14` differs only in
@@ -16,6 +17,7 @@
 - **Confidence**: High
 
 ## Observation: randomSeed = 0 means time-seeded in ELK
+
 - **Context**: Scoping the `java.util.Random` port and oracle determinism.
 - **Finding**: `core/Core.melk:608` documents seed 0 as "determined
   pseudo-randomly". Core's default is `randomSeed = 0` (`Core.melk:162`).
@@ -27,6 +29,7 @@
 - **Confidence**: High
 
 ## Observation: TypeScript 7 toolchain gaps
+
 - **Context**: Toolchain selection (AD-6).
 - **Finding**: `typescript@7.0.2` (GA 2026-07-08) ships the native
   compiler as `tsc`. typedoc's peer range stops at TS 6.0.x.
@@ -34,6 +37,7 @@
 - **Confidence**: High (npm metadata, 2026-10-11)
 
 ## Observation: ELK's test models and builds
+
 - **Context**: Oracle and corpus planning.
 - **Finding**: ELK's JUnit tests read models from `eclipse-elk/elk-models`
   via the `tests.paths.models-repo` property. The build is Maven + Tycho

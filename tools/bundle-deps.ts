@@ -45,14 +45,9 @@ export const IN_SCOPE_SUFFIXES: readonly string[] = [
   'core.debug.grandom',
 ];
 
-export const IN_SCOPE_BUNDLES: readonly string[] = IN_SCOPE_SUFFIXES.map(
-  (suffix) => `${ELK_PREFIX}${suffix}`,
-);
+export const IN_SCOPE_BUNDLES: readonly string[] = IN_SCOPE_SUFFIXES.map((suffix) => `${ELK_PREFIX}${suffix}`);
 
-export const REPO_ROOT: string = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-);
+export const REPO_ROOT: string = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** Parses MANIFEST text into headers; a leading single space continues the previous header. */
 export function parseManifestHeaders(text: string): Record<string, string> {
@@ -111,23 +106,16 @@ export function bundleToTsDir(bundle: string): string {
 }
 
 /** Builds the sorted dependency table from MANIFEST texts keyed by bundle name. */
-export function buildBundleDeps(
-  manifests: Readonly<Record<string, string>>,
-  elkCommit: string,
-): BundleDeps {
+export function buildBundleDeps(manifests: Readonly<Record<string, string>>, elkCommit: string): BundleDeps {
   const inScope = new Set(IN_SCOPE_BUNDLES);
-  const entries: [string, BundleEntry][] = Object.entries(manifests).map(
-    ([bundle, text]) => {
-      const required = parseRequireBundle(
-        parseManifestHeaders(text)[REQUIRE_BUNDLE_HEADER],
-      );
-      const requires = required
-        .filter((name) => inScope.has(name))
-        .map(bundleToTsDir)
-        .sort();
-      return [bundleToTsDir(bundle), { bundle, requires }];
-    },
-  );
+  const entries: [string, BundleEntry][] = Object.entries(manifests).map(([bundle, text]) => {
+    const required = parseRequireBundle(parseManifestHeaders(text)[REQUIRE_BUNDLE_HEADER]);
+    const requires = required
+      .filter((name) => inScope.has(name))
+      .map(bundleToTsDir)
+      .sort();
+    return [bundleToTsDir(bundle), { bundle, requires }];
+  });
   entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
   return { elkCommit, bundles: Object.fromEntries(entries) };
 }
@@ -142,10 +130,7 @@ export function resolveElkDir(
   env: Readonly<Record<string, string | undefined>>,
   repoRoot: string = REPO_ROOT,
 ): string {
-  return resolve(
-    repoRoot,
-    arg ?? env[ELK_SOURCE_DIR_ENV] ?? DEFAULT_ELK_SOURCE_DIR,
-  );
+  return resolve(repoRoot, arg ?? env[ELK_SOURCE_DIR_ENV] ?? DEFAULT_ELK_SOURCE_DIR);
 }
 
 export function readElkCommit(elkDir: string): string {
@@ -180,9 +165,6 @@ function main(argv: readonly string[]): void {
 }
 
 const entry = process.argv[1];
-if (
-  entry !== undefined &&
-  pathToFileURL(realpathSync(entry)).href === import.meta.url
-) {
+if (entry !== undefined && pathToFileURL(realpathSync(entry)).href === import.meta.url) {
   main(process.argv.slice(2));
 }

@@ -14,11 +14,11 @@ architecture, and verification scaffolding; algorithms are ported in later missi
 
 ## Goals
 
-* **Faithful port**: the Java at the pinned ELK commit is the spec; every branch is ported.
-* **Oracle-verified**: outputs are compared with ELK built from source (structure exact,
+- **Faithful port**: the Java at the pinned ELK commit is the spec; every branch is ported.
+- **Oracle-verified**: outputs are compared with ELK built from source (structure exact,
   coordinates within 1e-6).
-* **Browser-safe**: `src/` uses no Node built-ins.
-* **Zero runtime dependencies.**
+- **Browser-safe**: `src/` uses no Node built-ins.
+- **Zero runtime dependencies.**
 
 ## Public contract
 
@@ -30,7 +30,7 @@ I/O adapter, and the first npm publish freezes this surface.
 Requires Node 22 or newer (Node 26 is used in CI).
 
 | Command             | Purpose                                 |
-|---------------------|-----------------------------------------|
+| ------------------- | --------------------------------------- |
 | `npm ci`            | Install dependencies                    |
 | `npm run typecheck` | Type-check with the native TypeScript 7 |
 | `npm test`          | Run the vitest suite                    |
@@ -42,21 +42,21 @@ Requires Node 22 or newer (Node 26 is used in CI).
 Scripts and tests locate sibling checkouts through environment variables. Library code under
 `src/` never reads them.
 
-| Variable          | Default                       | Content                                  |
-|-------------------|-------------------------------|------------------------------------------|
-| `ELK_SOURCE_DIR`  | `../elk`                      | Eclipse ELK checkout at the pinned commit |
-| `ELK_ORACLE_DIR`  | `../elk-oracle`               | Oracle worktree built from ELK source    |
-| `ELK_MODELS_DIR`  | `../../eclipse-elk/elk-models` | elk-models checkout at the pinned commit |
+| Variable         | Default                        | Content                                   |
+| ---------------- | ------------------------------ | ----------------------------------------- |
+| `ELK_SOURCE_DIR` | `../elk`                       | Eclipse ELK checkout at the pinned commit |
+| `ELK_ORACLE_DIR` | `../elk-oracle`                | Oracle worktree built from ELK source     |
+| `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | elk-models checkout at the pinned commit  |
 
 Defaults are relative to the repository root.
 
 ## Documentation
 
-* [`CLAUDE.md`](CLAUDE.md): conventions for agents and contributors
-* [`docs/architecture/overview.md`](docs/architecture/overview.md)
-* [`docs/conformance.md`](docs/conformance.md)
-* [`docs/translation-rules.md`](docs/translation-rules.md)
-* [`plans/roadmap.md`](plans/roadmap.md)
+- [`CLAUDE.md`](CLAUDE.md): conventions for agents and contributors
+- [`docs/architecture/overview.md`](docs/architecture/overview.md)
+- [`docs/conformance.md`](docs/conformance.md)
+- [`docs/translation-rules.md`](docs/translation-rules.md)
+- [`plans/roadmap.md`](plans/roadmap.md)
 
 ## License
 

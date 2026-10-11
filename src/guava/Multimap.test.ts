@@ -38,12 +38,7 @@ interface Script {
   readonly steps: readonly Step[];
 }
 
-type Section =
-  | 'hashMultimap'
-  | 'arrayListMultimap'
-  | 'linkedListMultimap'
-  | 'linkedHashMultimap'
-  | 'treeMultimap';
+type Section = 'hashMultimap' | 'arrayListMultimap' | 'linkedListMultimap' | 'linkedHashMultimap' | 'treeMultimap';
 
 type Vectors = { readonly jdk: string; readonly guava: string } & Record<Section, readonly Script[]>;
 
@@ -134,7 +129,10 @@ function createMultimap(script: Script): Multimap<unknown, number> {
     default:
       return TreeMultimap.create(
         comparatorFor(keyOrder as string, coarseKey),
-        comparatorFor(valueOrder as string, (v) => Math.floor((v as number) / COARSE_VALUE)) as (a: number, b: number) => number,
+        comparatorFor(valueOrder as string, (v) => Math.floor((v as number) / COARSE_VALUE)) as (
+          a: number,
+          b: number,
+        ) => number,
       );
   }
 }

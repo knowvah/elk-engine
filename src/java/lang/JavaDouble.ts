@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-import { NumberFormatException } from "./NumberFormatException.js";
+import { NumberFormatException } from './NumberFormatException.js';
 
 const DOUBLE_BYTES = 8;
 const HALF_WORD_SHIFT = 32n;
@@ -14,12 +14,11 @@ const SUBNORMAL_KEEP_OFFSET = 1075n;
 const UNDERFLOW_EXPONENT = -1076n;
 const HEX_BITS_PER_DIGIT = 4n;
 const TRIM_LIMIT = 0x20;
-const EMPTY_STRING_MESSAGE = "empty String";
-const MULTIPLE_POINTS_MESSAGE = "multiple points";
+const EMPTY_STRING_MESSAGE = 'empty String';
+const MULTIPLE_POINTS_MESSAGE = 'multiple points';
 
 const DECIMAL_PATTERN = /^([0-9]*)(?:\.([0-9]*))?([eE][+-]?[0-9]+)?[fFdD]?$/u;
-const HEX_PATTERN =
-  /^([0-9a-fA-F]*)(?:\.([0-9a-fA-F]*))?[pP]([+-]?[0-9]+)[fFdD]?$/u;
+const HEX_PATTERN = /^([0-9a-fA-F]*)(?:\.([0-9a-fA-F]*))?[pP]([+-]?[0-9]+)[fFdD]?$/u;
 const SIGNIFICAND_RUN = /^[0-9.]*/u;
 
 const scratch = new DataView(new ArrayBuffer(DOUBLE_BYTES));
@@ -87,10 +86,7 @@ function scaleToDouble(m: bigint, e2: bigint): number {
   const top = bl - 1n + e2;
   if (top > MAX_EXPONENT) return Infinity;
   if (top < UNDERFLOW_EXPONENT) return 0;
-  const keep =
-    top >= MIN_NORMAL_EXPONENT
-      ? BigInt(MANTISSA_PRECISION)
-      : top + SUBNORMAL_KEEP_OFFSET;
+  const keep = top >= MIN_NORMAL_EXPONENT ? BigInt(MANTISSA_PRECISION) : top + SUBNORMAL_KEEP_OFFSET;
   const drop = bl - keep;
   if (drop <= 0n) return Number(m) * 2 ** Number(e2);
   const half = 1n << (drop - 1n);
@@ -104,33 +100,32 @@ function parseHexMagnitude(body: string): number | undefined {
   const match = HEX_PATTERN.exec(body);
   if (match === null) return undefined;
   const whole = match[1] as string; // group 1 always participates
-  const fraction = match[2] ?? "";
+  const fraction = match[2] ?? '';
   if (whole.length + fraction.length === 0) return undefined;
   const mantissa = BigInt(`0x${whole}${fraction}`);
   if (mantissa === 0n) return 0;
-  const exponent =
-    BigInt(match[3] as string) - HEX_BITS_PER_DIGIT * BigInt(fraction.length);
+  const exponent = BigInt(match[3] as string) - HEX_BITS_PER_DIGIT * BigInt(fraction.length);
   return scaleToDouble(mantissa, exponent);
 }
 
-type DecimalOutcome = number | "multiple-points" | undefined;
+type DecimalOutcome = number | 'multiple-points' | undefined;
 
 function parseDecimalMagnitude(body: string): DecimalOutcome {
   // `*` always matches, so exec never returns null.
   const run = (SIGNIFICAND_RUN.exec(body) as RegExpExecArray)[0];
-  if (run.indexOf(".") !== run.lastIndexOf(".")) return "multiple-points";
+  if (run.indexOf('.') !== run.lastIndexOf('.')) return 'multiple-points';
   const match = DECIMAL_PATTERN.exec(body);
   if (match === null) return undefined;
   const whole = match[1] as string; // group 1 always participates
-  const fraction = match[2] ?? "";
+  const fraction = match[2] ?? '';
   if (whole.length + fraction.length === 0) return undefined;
-  return Number(`${whole || "0"}.${fraction || "0"}${match[3] ?? ""}`);
+  return Number(`${whole || '0'}.${fraction || '0'}${match[3] ?? ''}`);
 }
 
 function parseMagnitude(body: string): DecimalOutcome {
-  if (body === "NaN") return NaN;
-  if (body === "Infinity") return Infinity;
-  if (body.startsWith("0x") || body.startsWith("0X")) {
+  if (body === 'NaN') return NaN;
+  if (body === 'Infinity') return Infinity;
+  if (body.startsWith('0x') || body.startsWith('0X')) {
     return parseHexMagnitude(body.slice(2));
   }
   return parseDecimalMagnitude(body);
@@ -144,12 +139,11 @@ function parseMagnitude(body: string): DecimalOutcome {
  */
 export function parseDouble(s: string): number {
   const trimmed = trimJava(s);
-  if (trimmed.length === 0)
-    throw new NumberFormatException(EMPTY_STRING_MESSAGE);
-  const negative = trimmed.startsWith("-");
-  const signed = negative || trimmed.startsWith("+");
+  if (trimmed.length === 0) throw new NumberFormatException(EMPTY_STRING_MESSAGE);
+  const negative = trimmed.startsWith('-');
+  const signed = negative || trimmed.startsWith('+');
   const magnitude = parseMagnitude(signed ? trimmed.slice(1) : trimmed);
-  if (magnitude === "multiple-points") {
+  if (magnitude === 'multiple-points') {
     throw new NumberFormatException(MULTIPLE_POINTS_MESSAGE);
   }
   if (magnitude === undefined) {

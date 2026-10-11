@@ -46,7 +46,9 @@
     "coverage": "vitest run --coverage",
     "build": "npm run build:js && npm run build:types",
     "build:js": "esbuild src/index.ts --bundle --format=esm --sourcemap --outfile=dist/index.js",
-    "build:types": "tsc -p tsconfig.build.json"
+    "build:types": "tsc -p tsconfig.build.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "engines": {
     "node": ">=22.0.0"
@@ -55,6 +57,7 @@
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^5.0.3",
     "esbuild": "^0.28.2",
+    "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "7.0.2",
     "vitest": "^5.0.3"

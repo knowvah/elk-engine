@@ -16,10 +16,7 @@ interface Case {
   readonly calls: Call[];
 }
 
-const VECTORS_PATH = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  '../../../test/golden/refs/java/random.json',
-);
+const VECTORS_PATH = resolve(dirname(fileURLToPath(import.meta.url)), '../../../test/golden/refs/java/random.json');
 const cases = (JSON.parse(readFileSync(VECTORS_PATH, 'utf8')) as { cases: Case[] }).cases;
 
 const HEX_RADIX = 16;
@@ -143,8 +140,22 @@ describe('Random vs JVM vectors', () => {
       }
     }
     const radii = [
-      0.5, 0.25, 0.125, 0.5 * (1 + 2 ** -24), 0.8367, 1 - 2 ** -22 + 2 ** -26, 1 - 2 ** -22, 1 - 2 ** -30,
-      0.99, 0.9, 0.7, 0.4, 0.2, 0.05, 1e-3, 1e-9,
+      0.5,
+      0.25,
+      0.125,
+      0.5 * (1 + 2 ** -24),
+      0.8367,
+      1 - 2 ** -22 + 2 ** -26,
+      1 - 2 ** -22,
+      1 - 2 ** -30,
+      0.99,
+      0.9,
+      0.7,
+      0.4,
+      0.2,
+      0.05,
+      1e-3,
+      1e-9,
     ];
     for (const radius of radii) {
       const d = (1 + radius) / 2;

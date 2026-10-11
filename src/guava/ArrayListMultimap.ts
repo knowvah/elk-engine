@@ -3,7 +3,14 @@ import { IllegalArgumentException } from '../java/lang/IllegalArgumentException.
 import type { HashStrategy } from '../java/util/HashStrategy.js';
 import { JavaHashMap } from '../java/util/JavaHashMap.js';
 import { expectedSizeCapacity } from './Maps.js';
-import { BucketMultimap, ListKeyView, type KeyTable, type ListBucket, type ListMultimap, type ValueList } from './Multimap.js';
+import {
+  BucketMultimap,
+  ListKeyView,
+  type KeyTable,
+  type ListBucket,
+  type ListMultimap,
+  type ValueList,
+} from './Multimap.js';
 
 /** A key's values in insertion order, duplicates kept. */
 class ArrayBucket<V> implements ListBucket<V> {

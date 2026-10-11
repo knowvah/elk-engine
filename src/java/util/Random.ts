@@ -17,9 +17,9 @@ const TWO_POW_27 = 2 ** 27;
 const DOUBLE_UNIT = 2 ** -53;
 const SEED_SPACE = 2 ** 48;
 
-const LN2_HI = 6.93147180369123816490e-1;
+const LN2_HI = 6.9314718036912381649e-1;
 const LN2_LO = 1.90821492927058770002e-10;
-const LG1 = 6.666666666666735130e-1;
+const LG1 = 6.66666666666673513e-1;
 const LG2 = 3.999999999940941908e-1;
 const LG3 = 2.857142874366239149e-1;
 const LG4 = 2.222219843214978396e-1;
@@ -58,7 +58,7 @@ function logNearOne(f: number, k: number): number {
   if (f === 0) return k * LN2_HI + k * LN2_LO;
   const r = f * f * (0.5 - 0.33333333333333333 * f);
   if (k === 0) return f - r;
-  return k * LN2_HI - ((r - k * LN2_LO) - f);
+  return k * LN2_HI - (r - k * LN2_LO - f);
 }
 
 function logPolynomial(f: number, hx: number, k: number): number {
@@ -73,10 +73,10 @@ function logPolynomial(f: number, hx: number, k: number): number {
     // Mantissa in this band (x near sqrt 2) with s < 1 implies k = -1, so
     // fdlibm's k === 0 sub-branch is unreachable for this function's domain.
     const hfsq = 0.5 * f * f;
-    return dk * LN2_HI - ((hfsq - (s * (hfsq + r) + dk * LN2_LO)) - f);
+    return dk * LN2_HI - (hfsq - (s * (hfsq + r) + dk * LN2_LO) - f);
   }
   if (k === 0) return f - s * (f - r);
-  return dk * LN2_HI - ((s * (f - r) - dk * LN2_LO) - f);
+  return dk * LN2_HI - (s * (f - r) - dk * LN2_LO - f);
 }
 
 /**

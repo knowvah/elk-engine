@@ -40,9 +40,7 @@ function pow(base: bigint, exponent: number): bigint {
 }
 
 function scaled(x: bigint, base: bigint, exponent: number): Fraction {
-  return exponent >= 0
-    ? { n: x * pow(base, exponent), d: 1n }
-    : { n: x, d: pow(base, -exponent) };
+  return exponent >= 0 ? { n: x * pow(base, exponent), d: 1n } : { n: x, d: pow(base, -exponent) };
 }
 
 function compareFractions(a: Fraction, b: Fraction): number {

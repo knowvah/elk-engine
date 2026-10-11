@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: EPL-2.0
-import { UnsupportedOperationException } from "../java/lang/UnsupportedOperationException.js";
-import { compare as compareDoubles } from "../java/lang/DoubleCompare.js";
-import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
-import type { HashStrategy } from "../java/util/HashStrategy.js";
-import { JavaHashSet } from "../java/util/JavaHashSet.js";
-import { copyOf } from "./ImmutableSet.js";
-import type { ImmutableSet } from "./ImmutableSet.js";
-import { expectedSizeCapacity } from "./Maps.js";
+import { UnsupportedOperationException } from '../java/lang/UnsupportedOperationException.js';
+import { compare as compareDoubles } from '../java/lang/DoubleCompare.js';
+import { IllegalArgumentException } from '../java/lang/IllegalArgumentException.js';
+import type { HashStrategy } from '../java/util/HashStrategy.js';
+import { JavaHashSet } from '../java/util/JavaHashSet.js';
+import { copyOf } from './ImmutableSet.js';
+import type { ImmutableSet } from './ImmutableSet.js';
+import { expectedSizeCapacity } from './Maps.js';
 
-const VIEW_MESSAGE = "SetView is unmodifiable";
+const VIEW_MESSAGE = 'SetView is unmodifiable';
 
 /** Java `Comparator`: negative, zero or positive like `compare(a, b)`. */
 export type Comparator<E> = (a: E, b: E) => number;
@@ -136,16 +136,16 @@ export function newLinkedHashSetWithExpectedSize<E>(expectedSize: number): Set<E
 }
 
 function naturalOrder(a: unknown, b: unknown): number {
-  if (typeof a === "number") {
+  if (typeof a === 'number') {
     return compareDoubles(a, b as number);
   }
-  if (typeof a === "string" || typeof a === "bigint") {
+  if (typeof a === 'string' || typeof a === 'bigint') {
     return a < (b as typeof a) ? -1 : a > (b as typeof a) ? 1 : 0;
   }
-  if (typeof a === "object" && a !== null && "compareTo" in a && typeof a.compareTo === "function") {
+  if (typeof a === 'object' && a !== null && 'compareTo' in a && typeof a.compareTo === 'function') {
     return (a.compareTo as (other: unknown) => number)(b);
   }
-  throw new TypeError("Element has no natural ordering: expected number, bigint, string or compareTo()");
+  throw new TypeError('Element has no natural ordering: expected number, bigint, string or compareTo()');
 }
 
 function sortedSet<E>(elements: Iterable<E>, comparator: Comparator<E>): Set<E> {
@@ -179,12 +179,12 @@ export function newTreeSet<E>(
   first: Iterable<E> | Comparator<E> = [],
   comparator: Comparator<E> = naturalOrder,
 ): Set<E> {
-  return typeof first === "function" ? sortedSet<E>([], first) : sortedSet(first, comparator);
+  return typeof first === 'function' ? sortedSet<E>([], first) : sortedSet(first, comparator);
 }
 
 /** A Java `Collection` knows its size: arrays, `Set`, `JavaHashSet` and multimap views stand for one; a bare iterable does not. */
 function isCollection<E>(items: Iterable<E>): boolean {
-  return Array.isArray(items) || typeof (items as { size?: unknown }).size === "number";
+  return Array.isArray(items) || typeof (items as { size?: unknown }).size === 'number';
 }
 
 /**

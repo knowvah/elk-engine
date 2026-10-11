@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
+import { IllegalArgumentException } from '../java/lang/IllegalArgumentException.js';
 
 /**
  * Splits on a literal, non-empty separator, keeping empty segments (Guava's default).
@@ -23,7 +23,7 @@ export class Splitter {
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/base/Splitter.html#on(java.lang.String) */
 export function on(separator: string): Splitter {
   if (separator.length === 0) {
-    throw new IllegalArgumentException("The separator may not be the empty string.");
+    throw new IllegalArgumentException('The separator may not be the empty string.');
   }
   return new Splitter(separator);
 }

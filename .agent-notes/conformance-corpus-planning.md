@@ -3,6 +3,7 @@
 # Planning observations — conformance-corpus (2026-10-11)
 
 ## Observation: elk-models covers almost only layered
+
 - **Context**: Choosing the conformance unit.
 - **Finding**: Explicit `algorithm:` keys across all models: layered dominant; rectpacking 4,
   stress 3, box 3, fixed 1. About 822 files set none (default layered). Zero models for mrtree,
@@ -11,6 +12,7 @@
 - **Confidence**: High
 
 ## Observation: model basenames collide across folders
+
 - **Context**: Planning a corpus sweep through `run.sh`.
 - **Finding**: 217 basenames repeat across distinct model paths (e.g. ptolemy `hierarchical/`
   vs `flattened/`). `run.sh` names outputs by basename and requires uniqueness per run.
@@ -18,6 +20,7 @@
 - **Confidence**: High
 
 ## Observation: the oracle already builds the grammar bundles
+
 - **Context**: Scoping the `.elkt` / `.elkr` oracle modes.
 - **Finding**: `../elk-oracle/plugins/org.eclipse.elk.{graph.text,graph.json.text,core.debug.grandom}/target/*.jar`
   exist after `build.sh`, but `oracle-build.json` records only the 13 original bundles. `run.sh`
@@ -26,6 +29,7 @@
 - **Confidence**: High
 
 ## Observation: ELK's test framework needs graph.text and grandom
+
 - **Context**: Whether `core.debug.grandom` is worth porting.
 - **Finding**: `alg.test` requires `core.debug.grandom` and `graph.text`;
   `PlainJavaInitialization.java:84-86` calls `GRandomStandaloneSetup.doSetup()` and
@@ -35,6 +39,7 @@
 - **Confidence**: High
 
 ## Observation: vitest does not collect tests under tools/
+
 - **Context**: Placing tests for new `tools/corpus/*.ts` scripts.
 - **Finding**: `vitest.config.ts` includes only `src/**/*.test.ts` and `test/**/*.test.ts`;
   coverage thresholds apply to `src/**` only. Existing tool tests live in `test/architecture/`.

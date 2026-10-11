@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-import { toString as doubleToString } from "../java/lang/DoubleToString.js";
+import { toString as doubleToString } from '../java/lang/DoubleToString.js';
 
 function nullElementMessage(index: number): string {
   return `null element at index ${index}`;

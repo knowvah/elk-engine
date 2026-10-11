@@ -3,10 +3,7 @@
 /** Constructor type usable with `instanceof`, including abstract classes. */
 export type ClassOf<T> = abstract new (...args: never[]) => T;
 
-function* filterGen<T>(
-  unfiltered: Iterator<T>,
-  predicate: (element: T) => boolean,
-): Generator<T, void, undefined> {
+function* filterGen<T>(unfiltered: Iterator<T>, predicate: (element: T) => boolean): Generator<T, void, undefined> {
   for (let r = unfiltered.next(); r.done !== true; r = unfiltered.next()) {
     if (predicate(r.value)) {
       yield r.value;
@@ -15,22 +12,13 @@ function* filterGen<T>(
 }
 
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Iterators.html#filter(java.util.Iterator,com.google.common.base.Predicate) */
-export function filter<T>(
-  unfiltered: Iterator<T>,
-  predicate: (element: T) => boolean,
-): IterableIterator<T> {
+export function filter<T>(unfiltered: Iterator<T>, predicate: (element: T) => boolean): IterableIterator<T> {
   return filterGen(unfiltered, predicate);
 }
 
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Iterators.html#filter(java.util.Iterator,java.lang.Class) */
-export function filterInstances<T>(
-  unfiltered: Iterator<unknown>,
-  desiredClass: ClassOf<T>,
-): IterableIterator<T> {
-  return filterGen(
-    unfiltered,
-    (element): boolean => element instanceof desiredClass,
-  ) as IterableIterator<T>;
+export function filterInstances<T>(unfiltered: Iterator<unknown>, desiredClass: ClassOf<T>): IterableIterator<T> {
+  return filterGen(unfiltered, (element): boolean => element instanceof desiredClass) as IterableIterator<T>;
 }
 
 function* concatGen<T>(inputs: Iterator<T>[]): Generator<T, void, undefined> {

@@ -63,15 +63,11 @@ describe('fitness: src/ is browser-safe (no Node built-ins)', () => {
     expect(findNodeUsage('src/a.ts', "const f = require('fs/promises');")).toEqual([
       "src/a.ts:1: imports Node built-in 'fs/promises'",
     ]);
-    expect(findNodeUsage('src/a.ts', "export * from 'os';")).toEqual([
-      "src/a.ts:1: imports Node built-in 'os'",
-    ]);
+    expect(findNodeUsage('src/a.ts', "export * from 'os';")).toEqual(["src/a.ts:1: imports Node built-in 'os'"]);
   });
 
   it('self-check: flags process.env; ignores relative imports and comments', () => {
-    expect(findNodeUsage('src/b.ts', 'const v = process.env.X;')).toEqual([
-      'src/b.ts:1: references process',
-    ]);
+    expect(findNodeUsage('src/b.ts', 'const v = process.env.X;')).toEqual(['src/b.ts:1: references process']);
     const clean = "import { a } from './fs.js';\n// uses process.env\nconst myprocess = obj.process.x;\n";
     expect(findNodeUsage('src/c.ts', clean)).toEqual([]);
   });

@@ -142,7 +142,10 @@ export class TreeMultimap<K, V> extends BucketMultimap<K, V, SortedBucket<V>> {
   }
 
   /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/TreeMultimap.html#create(java.util.Comparator,java.util.Comparator) */
-  static create<K, V>(keyComparator: (a: K, b: K) => number, valueComparator: (a: V, b: V) => number): TreeMultimap<K, V> {
+  static create<K, V>(
+    keyComparator: (a: K, b: K) => number,
+    valueComparator: (a: V, b: V) => number,
+  ): TreeMultimap<K, V> {
     return new TreeMultimap(keyComparator, valueComparator);
   }
 }

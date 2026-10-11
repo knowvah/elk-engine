@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
-import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
-import { IndexOutOfBoundsException } from "../java/lang/IndexOutOfBoundsException.js";
+import { IllegalArgumentException } from '../java/lang/IllegalArgumentException.js';
+import { IndexOutOfBoundsException } from '../java/lang/IndexOutOfBoundsException.js';
 
 /**
  * A live reversed view of an array: reads reflect later source changes and writes go through.
@@ -41,15 +41,11 @@ export class ReverseList<T> implements Iterable<T> {
 
   #sourceIndex(index: number): number {
     if (index < 0) {
-      throw new IndexOutOfBoundsException(
-        `index (${index}) must not be negative`,
-      );
+      throw new IndexOutOfBoundsException(`index (${index}) must not be negative`);
     }
     const size = this.#source.length;
     if (index >= size) {
-      throw new IndexOutOfBoundsException(
-        `index (${index}) must be less than size (${size})`,
-      );
+      throw new IndexOutOfBoundsException(`index (${index}) must be less than size (${size})`);
     }
     return size - 1 - index;
   }
@@ -73,9 +69,7 @@ export function newLinkedList<T>(elements?: Iterable<T>): T[] {
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Lists.html#newArrayListWithCapacity(int) */
 export function newArrayListWithCapacity<T>(initialArraySize: number): T[] {
   if (initialArraySize < 0) {
-    throw new IllegalArgumentException(
-      `initialArraySize cannot be negative but was: ${initialArraySize}`,
-    );
+    throw new IllegalArgumentException(`initialArraySize cannot be negative but was: ${initialArraySize}`);
   }
   return [];
 }

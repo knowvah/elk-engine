@@ -17,18 +17,18 @@ for b in core graph graph.json alg.common alg.layered alg.mrtree alg.radial alg.
 G() { grep -rnE --include='*.java' --include='*.xtend' "$@" "${SRC[@]}"; }
 ```
 
-| Count | Command (append `\| wc -l`) |
-|-------|-----------------------------|
-| 105 HashMap creations | `G 'new (java\.util\.)?HashMap\b\|Maps\.newHashMap'` |
-| 74 HashSet creations | `G 'new (java\.util\.)?HashSet\b\|Sets\.newHashSet'` |
-| 33 LinkedHash* (10 map, 23 set) | `G 'new LinkedHash(Map\|Set)\b\|Maps\.newLinkedHashMap\|Sets\.newLinkedHashSet'` |
-| 6 EnumMap; 83 EnumSet + 15 `immutableEnumSet` | `G 'new EnumMap\b\|Maps\.newEnumMap'`; `G 'EnumSet\.(of\|noneOf\|allOf)\('`; `G 'Sets\.immutableEnumSet\('` |
-| 12 TreeSet, 0 TreeMap, 1 TreeMultimap | `G 'new TreeSet\b\|Sets\.newTreeSet'`, `G 'TreeMultimap\.create'` |
-| 4 PriorityQueue | `G 'new PriorityQueue\b'` |
-| 46 `Collections.sort` (2 are EMF `ECollections.sort`); 111 `.sort(` (includes those 46) | `G 'Collections\.sort\('`, `G '\.sort\('` |
-| 8 Arrays.sort | `G 'Arrays\.sort\('` |
-| 70 listIterator, 41 `.remove()` | `G '\.listIterator\('`, `G '\.remove\(\)'` (iterator + queue) |
-| 95 LinkedList, 9 ArrayDeque, 4 Stack | `G 'new LinkedList\b\|Lists\.newLinkedList'`, `G 'new ArrayDeque\b'`, `G 'new Stack\b'` |
+| Count                                                                                   | Command (append `\| wc -l`)                                                                                 |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 105 HashMap creations                                                                   | `G 'new (java\.util\.)?HashMap\b\|Maps\.newHashMap'`                                                        |
+| 74 HashSet creations                                                                    | `G 'new (java\.util\.)?HashSet\b\|Sets\.newHashSet'`                                                        |
+| 33 LinkedHash* (10 map, 23 set)                                                         | `G 'new LinkedHash(Map\|Set)\b\|Maps\.newLinkedHashMap\|Sets\.newLinkedHashSet'`                            |
+| 6 EnumMap; 83 EnumSet + 15 `immutableEnumSet`                                           | `G 'new EnumMap\b\|Maps\.newEnumMap'`; `G 'EnumSet\.(of\|noneOf\|allOf)\('`; `G 'Sets\.immutableEnumSet\('` |
+| 12 TreeSet, 0 TreeMap, 1 TreeMultimap                                                   | `G 'new TreeSet\b\|Sets\.newTreeSet'`, `G 'TreeMultimap\.create'`                                           |
+| 4 PriorityQueue                                                                         | `G 'new PriorityQueue\b'`                                                                                   |
+| 46 `Collections.sort` (2 are EMF `ECollections.sort`); 111 `.sort(` (includes those 46) | `G 'Collections\.sort\('`, `G '\.sort\('`                                                                   |
+| 8 Arrays.sort                                                                           | `G 'Arrays\.sort\('`                                                                                        |
+| 70 listIterator, 41 `.remove()`                                                         | `G '\.listIterator\('`, `G '\.remove\(\)'` (iterator + queue)                                               |
+| 95 LinkedList, 9 ArrayDeque, 4 Stack                                                    | `G 'new LinkedList\b\|Lists\.newLinkedList'`, `G 'new ArrayDeque\b'`, `G 'new Stack\b'`                     |
 
 HashMap/HashSet method (static triage, lower bound; no execution):
 
@@ -43,12 +43,12 @@ HashMap/HashSet method (static triage, lower bound; no execution):
 
 Headline: **42 containers are iterated** (40 named + 2 anonymous value-sets):
 
-| Key kind | Iterated | Port policy |
-|----------|---------:|-------------|
-| value-hashed, order can matter (String, IProperty, KVector-derived) | 8 | `JavaHashMap` shim (AD-10) |
-| value-hashed Integer, keys fed to a sorted TreeSet (order-insensitive) | 2 | plain `Map` |
-| enum (`Enum.hashCode` is identity-based) | 2 | insertion order, journal |
-| identity-hashed (LNode, LEdge, LPort, ElkNode, ...) | 30 | insertion order, journal |
+| Key kind                                                               | Iterated | Port policy                |
+| ---------------------------------------------------------------------- | -------: | -------------------------- |
+| value-hashed, order can matter (String, IProperty, KVector-derived)    |        8 | `JavaHashMap` shim (AD-10) |
+| value-hashed Integer, keys fed to a sorted TreeSet (order-insensitive) |        2 | plain `Map`                |
+| enum (`Enum.hashCode` is identity-based)                               |        2 | insertion order, journal   |
+| identity-hashed (LNode, LEdge, LPort, ElkNode, ...)                    |       30 | insertion order, journal   |
 
 Correction to the task brief: enum keys are **not** value-hashed. `Enum.hashCode()` is final and
 its Javadoc points at `System.identityHashCode`, so `HashSet<Direction>` order is JVM-run
@@ -107,7 +107,7 @@ and 4 KVector scripts (`seq-kvector-grid`, `seq-kvector-frac`, `shrink-kvector-f
   and V6/V7 output reach `alg.common/src/.../NaiveMinST.java:53`, `:58`, `:59`, where the HashSet order is
   copied to a list and sorted by weight: **tie order = HashSet iteration order**, the clearest
   AD-10 case in scope. `KVector.hashCode` is `Double.valueOf(x).hashCode() +
-  Integer.reverse(Double.valueOf(y).hashCode())` (`core/src/.../math/KVector.java:155`, int overflow wraps).
+Integer.reverse(Double.valueOf(y).hashCode())` (`core/src/.../math/KVector.java:155`, int overflow wraps).
 - V9, V10 `modelOrderMap` (Integer keys) in `alg.layered/src/.../p1cycles/BFSNodeOrderCycleBreaker.java:181`
   and `.../p1cycles/DFSNodeOrderCycleBreaker.java:155`: keys go through `new TreeSet<>(map.keySet())`
   (`.../p1cycles/BFSNodeOrderCycleBreaker.java:215`, `.../p1cycles/DFSNodeOrderCycleBreaker.java:190`),
@@ -126,11 +126,13 @@ that touches one of these sites writes a journal entry and keeps insertion order
 Notation: `L:` = `alg.layered/src/...`; a bare `:N` is a line in the same file; `decl -> iteration`.
 
 Enum-keyed (identity hash):
+
 - E1, E2 `LEFT_RIGHT/UP_DOWN`
   `L:.../compaction/components/OneDimensionalComponentsCompaction.java:65-66` -> `:326`, `:336`,
   `:346` (order of `cNodes.add` for placeholders).
 
 Identity-hashed:
+
 - I1 `SweepCopy.updatePortOrder` `L:.../p3order/SweepCopy.java:99` -> `:138`
 - I2 `graphsWhoseNodeOrderChanged` `L:.../p3order/LayerSweepCrossingMinimizer.java:627` -> `:546`, `:552`
 - I3 `BFSNodeOrderCycleBreaker.sources` `L:.../p1cycles/BFSNodeOrderCycleBreaker.java:100` -> `:121`
@@ -173,6 +175,7 @@ Identity-hashed:
 
 Guava `HashMultimap` (12 `create()` calls; counted separately from the 142/42 above) adds
 identity-ordered iteration at:
+
 - `L:.../compound/CompoundGraphPreprocessor.java:107` -> `:252` (`keySet`), `crossHierarchyMap`
 - `graph.json/src/.../JsonImporter.xtend:313` -> `:360`, `:372` (`ElkEdgeSection` keys)
 - `L:.../intermediate/compaction/NetworkSimplexCompaction.java:208` -> `:256`, `:275` (`lEdgeMap`)
@@ -185,21 +188,21 @@ Keys of type `Set<PortSide>` (`L:.../components/ComponentGroup.java:96`) need va
 
 ## 2.3 One row per container kind
 
-| Kind | Rule | TS | ELK citation |
-|------|------|----|--------------|
-| `LinkedHashMap/Set` (33) | insertion-ordered; re-insert keeps position | `Map`/`Set` | `core/src/.../data/LayoutMetaDataService.java:162` |
-| `HashBiMap` (8) | Guava: insertion-ordered keys (Guava Javadoc) | `src/guava/HashBiMap.ts` (`guava.json`) | `graph.json/src/.../JsonExporter.xtend:43` |
-| `EnumMap` (6) | iterates in ordinal order (Javadoc `EnumMap`) | `Maps.newEnumMap` (`src/guava/Maps.ts`) | `alg.layered/src/.../graph/LNode.java:518` |
-| `EnumSet` (98) | ordinal order, no nulls | bitset or sorted array by ordinal | `core/src/.../options/PortSide.java:52` |
-| `TreeSet/TreeMultimap` (13) | comparator decides equality: `compare == 0` means duplicate, `add` returns false | sorted array + binary search; `lower/higher/first/pollFirst`; `Sets.newTreeSet` is a sorted snapshot `Set` (known gap in `src/guava/Sets.ts`: no live `TreeSet`); `TreeMultimap` in `src/guava/TreeMultimap.ts` | `alg.common/src/.../compaction/oned/ScanlineConstraintCalculator.java:145`, `alg.layered/src/.../p3order/counting/CrossingsCounter.java:337`, `alg.common/src/.../nodespacing/internal/NodeContext.java:102` |
-| `PriorityQueue` (4) | head is *one of* the tied minimums; iterator order unspecified (Javadoc) | `src/java/util/PriorityQueue.ts`, replayed on the tie-heavy `collections.json` scripts; no `Collection` constructor, so the 55 `usesCollectionCtor` scripts (of 231) are skipped | `core/src/.../util/BoxLayoutProvider.java:551` (area ties), `alg.force/src/.../stress/StressMajorization.java:143` (dist ties), `alg.layered/src/.../p2layers/CoffmanGrahamLayerer.java:110` |
-| `Collections.sort`, `List.sort` | stable (Javadoc: "guaranteed to be stable") | `Array.prototype.sort` (stable since ES2019) | `alg.layered/src/.../p3order/MedianHeuristic.java:72` (ELK comment `:71` relies on it) |
-| comparator contract violations | Java TimSort may throw `IllegalArgumentException` (>= 32 elements) or give implementation-defined order; JS never throws | keep comparator verbatim; journal non-transitive ones | `alg.layered/src/.../InteractiveLayeredGraphVisitor.java:849` (`(int)(a.getY()-b.getY())` truncates, non-transitive), `:433` (int subtraction overflows) |
-| `Arrays.sort(double[])` | total order: `-0.0 < 0.0`, NaN last (Javadoc) | `Float64Array.prototype.sort()` without comparator | `alg.layered/src/.../p4nodes/bk/BKNodePlacer.java:452` |
-| `Iterator.remove` (41 `.remove()`) | removes last returned element; legal only once per `next()` | explicit index loop or filter-in-place | `core/src/.../util/ElkUtil.java:579`, `alg.layered/src/.../graph/LPort.java:312` |
-| `ListIterator` (70) | cursor between elements: `add` inserts at cursor, `remove`/`set` hit last returned, `previous` moves back | `ListIterator<T>` class over an array | `core/src/.../util/ElkUtil.java:956` (`add`) and `:965` (`remove`), `alg.layered/src/.../p5edges/orthogonal/HyperEdgeSegment.java:158` (`previous` + `add`) |
-| `LinkedList`/`ArrayDeque`/`Stack` | Stack iterates bottom to top, `ArrayDeque.push` adds at the head and iterates head first; deques reject null | array or Deque class | `alg.layered/src/.../graph/Tarjan.java:42`, `alg.common/src/.../networksimplex/NetworkSimplex.java:332` |
-| fail-fast iterators | mutation during iteration throws `ConcurrentModificationException`; JS `Map`/`Array` iterators tolerate it | no emulation; port code that avoids it | Javadoc `HashMap` (no ELK site depends on the exception) |
+| Kind                               | Rule                                                                                                                     | TS                                                                                                                                                                                                              | ELK citation                                                                                                                                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `LinkedHashMap/Set` (33)           | insertion-ordered; re-insert keeps position                                                                              | `Map`/`Set`                                                                                                                                                                                                     | `core/src/.../data/LayoutMetaDataService.java:162`                                                                                                                                                           |
+| `HashBiMap` (8)                    | Guava: insertion-ordered keys (Guava Javadoc)                                                                            | `src/guava/HashBiMap.ts` (`guava.json`)                                                                                                                                                                         | `graph.json/src/.../JsonExporter.xtend:43`                                                                                                                                                                   |
+| `EnumMap` (6)                      | iterates in ordinal order (Javadoc `EnumMap`)                                                                            | `Maps.newEnumMap` (`src/guava/Maps.ts`)                                                                                                                                                                         | `alg.layered/src/.../graph/LNode.java:518`                                                                                                                                                                   |
+| `EnumSet` (98)                     | ordinal order, no nulls                                                                                                  | bitset or sorted array by ordinal                                                                                                                                                                               | `core/src/.../options/PortSide.java:52`                                                                                                                                                                      |
+| `TreeSet/TreeMultimap` (13)        | comparator decides equality: `compare == 0` means duplicate, `add` returns false                                         | sorted array + binary search; `lower/higher/first/pollFirst`; `Sets.newTreeSet` is a sorted snapshot `Set` (known gap in `src/guava/Sets.ts`: no live `TreeSet`); `TreeMultimap` in `src/guava/TreeMultimap.ts` | `alg.common/src/.../compaction/oned/ScanlineConstraintCalculator.java:145`, `alg.layered/src/.../p3order/counting/CrossingsCounter.java:337`, `alg.common/src/.../nodespacing/internal/NodeContext.java:102` |
+| `PriorityQueue` (4)                | head is _one of_ the tied minimums; iterator order unspecified (Javadoc)                                                 | `src/java/util/PriorityQueue.ts`, replayed on the tie-heavy `collections.json` scripts; no `Collection` constructor, so the 55 `usesCollectionCtor` scripts (of 231) are skipped                                | `core/src/.../util/BoxLayoutProvider.java:551` (area ties), `alg.force/src/.../stress/StressMajorization.java:143` (dist ties), `alg.layered/src/.../p2layers/CoffmanGrahamLayerer.java:110`                 |
+| `Collections.sort`, `List.sort`    | stable (Javadoc: "guaranteed to be stable")                                                                              | `Array.prototype.sort` (stable since ES2019)                                                                                                                                                                    | `alg.layered/src/.../p3order/MedianHeuristic.java:72` (ELK comment `:71` relies on it)                                                                                                                       |
+| comparator contract violations     | Java TimSort may throw `IllegalArgumentException` (>= 32 elements) or give implementation-defined order; JS never throws | keep comparator verbatim; journal non-transitive ones                                                                                                                                                           | `alg.layered/src/.../InteractiveLayeredGraphVisitor.java:849` (`(int)(a.getY()-b.getY())` truncates, non-transitive), `:433` (int subtraction overflows)                                                     |
+| `Arrays.sort(double[])`            | total order: `-0.0 < 0.0`, NaN last (Javadoc)                                                                            | `Float64Array.prototype.sort()` without comparator                                                                                                                                                              | `alg.layered/src/.../p4nodes/bk/BKNodePlacer.java:452`                                                                                                                                                       |
+| `Iterator.remove` (41 `.remove()`) | removes last returned element; legal only once per `next()`                                                              | explicit index loop or filter-in-place                                                                                                                                                                          | `core/src/.../util/ElkUtil.java:579`, `alg.layered/src/.../graph/LPort.java:312`                                                                                                                             |
+| `ListIterator` (70)                | cursor between elements: `add` inserts at cursor, `remove`/`set` hit last returned, `previous` moves back                | `ListIterator<T>` class over an array                                                                                                                                                                           | `core/src/.../util/ElkUtil.java:956` (`add`) and `:965` (`remove`), `alg.layered/src/.../p5edges/orthogonal/HyperEdgeSegment.java:158` (`previous` + `add`)                                                  |
+| `LinkedList`/`ArrayDeque`/`Stack`  | Stack iterates bottom to top, `ArrayDeque.push` adds at the head and iterates head first; deques reject null             | array or Deque class                                                                                                                                                                                            | `alg.layered/src/.../graph/Tarjan.java:42`, `alg.common/src/.../networksimplex/NetworkSimplex.java:332`                                                                                                      |
+| fail-fast iterators                | mutation during iteration throws `ConcurrentModificationException`; JS `Map`/`Array` iterators tolerate it               | no emulation; port code that avoids it                                                                                                                                                                          | Javadoc `HashMap` (no ELK site depends on the exception)                                                                                                                                                     |
 
 `Sets.newHashSet(x)` / `new HashSet<>(coll)` copy semantics: element order of the copy is the
 copy's own hash order, not the source order (relevant for I9, `ComponentsCompactor.java:296`).
@@ -208,12 +211,12 @@ copy's own hash order, not the source order (relevant for I9, `ComponentsCompact
 
 All frozen in `test/golden/refs/java/`; none was edited to pass (AD-13).
 
-| Former gap | Closed by | Shim |
-|------------|-----------|------|
-| `HashMap/HashSet` iteration order (String, Integer, Double, KVector-style; removals, resizes) | `collections.json` | `JavaHashMap.ts`, `JavaHashSet.ts` (27 identity-dependent scripts per section skipped, 2.1) |
-| `PriorityQueue` tie order | `collections.json` | `PriorityQueue.ts` (55 `Collection`-constructor scripts skipped) |
-| `String.hashCode`, `Double.hashCode` | `hash.json` | `JavaString.hashCode`, `JavaDouble.hashCode` |
-| Guava containers and helpers | `guava.json` (`tools/vectors/GuavaVectors.java`) | `src/guava/*` |
+| Former gap                                                                                    | Closed by                                        | Shim                                                                                        |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `HashMap/HashSet` iteration order (String, Integer, Double, KVector-style; removals, resizes) | `collections.json`                               | `JavaHashMap.ts`, `JavaHashSet.ts` (27 identity-dependent scripts per section skipped, 2.1) |
+| `PriorityQueue` tie order                                                                     | `collections.json`                               | `PriorityQueue.ts` (55 `Collection`-constructor scripts skipped)                            |
+| `String.hashCode`, `Double.hashCode`                                                          | `hash.json`                                      | `JavaString.hashCode`, `JavaDouble.hashCode`                                                |
+| Guava containers and helpers                                                                  | `guava.json` (`tools/vectors/GuavaVectors.java`) | `src/guava/*`                                                                               |
 
 `tools/vectors/JavaVectors.java` writes `collections.json`; do not edit it (see the runbook).
 
@@ -224,6 +227,7 @@ at a site ported on `JavaHashMap`/`JavaHashSet` (V1-V8 in 2.1, e.g. `NaiveMinST`
 counts match. Confirm the keys' `HashStrategy` matches the Java `hashCode`/`equals` first.
 
 **Mitigation.**
+
 1. Add the failing key set and operation sequence as a **new** JVM vector from a separate generator
    file under `tools/vectors/` (like `GuavaVectors.java`). Never edit `JavaVectors.java`: any byte
    change, even a comment, changes the identity-dependent `collections.json` scripts.

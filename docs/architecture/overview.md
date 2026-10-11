@@ -2,13 +2,13 @@
 
 # elk-engine architecture overview
 
-| Document | Content |
-|----------|---------|
-| [inventory.md](inventory.md) | Every ELK bundle: purpose, LOC, generated sources, scope |
-| [port-map.md](port-map.md) | Java packages to `src/` modules mapping |
-| [component-map.md](component-map.md) | In-scope bundle dependencies; core runtime pieces |
-| [../translation-rules.md](../translation-rules.md) | Java to TypeScript rules |
-| [../conformance.md](../conformance.md) | Oracle comparison bar and procedure (arrives later in this mission) |
+| Document                                           | Content                                                             |
+| -------------------------------------------------- | ------------------------------------------------------------------- |
+| [inventory.md](inventory.md)                       | Every ELK bundle: purpose, LOC, generated sources, scope            |
+| [port-map.md](port-map.md)                         | Java packages to `src/` modules mapping                             |
+| [component-map.md](component-map.md)               | In-scope bundle dependencies; core runtime pieces                   |
+| [../translation-rules.md](../translation-rules.md) | Java to TypeScript rules                                            |
+| [../conformance.md](../conformance.md)             | Oracle comparison bar and procedure (arrives later in this mission) |
 
 ## What elk-engine is
 
@@ -69,14 +69,14 @@ JSON contract.
 
 ## Tech stack
 
-| Concern | Choice |
-|---------|--------|
-| Language | TypeScript 7.0.2 (native `tsc`), ES2022, NodeNext, `strict` |
-| Tests | vitest 5.0.x with `@vitest/coverage-v8` (90% thresholds) |
-| Bundling | esbuild 0.28.x |
-| Script runner | tsx |
-| Runtime | Node 22 or newer; `src/` itself is browser-safe |
-| Oracle only | Maven 3.9+ and JDK 21 (JDK 17 fallback) for ELK's Tycho build |
+| Concern       | Choice                                                        |
+| ------------- | ------------------------------------------------------------- |
+| Language      | TypeScript 7.0.2 (native `tsc`), ES2022, NodeNext, `strict`   |
+| Tests         | vitest 5.0.x with `@vitest/coverage-v8` (90% thresholds)      |
+| Bundling      | esbuild 0.28.x                                                |
+| Script runner | tsx                                                           |
+| Runtime       | Node 22 or newer; `src/` itself is browser-safe               |
+| Oracle only   | Maven 3.9+ and JDK 21 (JDK 17 fallback) for ELK's Tycho build |
 
 ## Fitness constraints (AD-8)
 

@@ -10,15 +10,15 @@ The comparator is [`test/golden/compare-json.ts`](../test/golden/compare-json.ts
 this document describes what it implements. Port rules live in
 [`docs/translation-rules.md`](translation-rules.md).
 
-| # | Section | Answers |
-|---|---------|---------|
-| 1 | [Oracle](#1-oracle) | What is "correct", and at which commit? |
-| 1a | [Conformance unit](#1a-conformance-unit) | What is one case, and which cases exist? |
-| 2 | [Conformance bar](#2-conformance-bar) | What counts as equal? |
-| 3 | [Goldens and corpus](#3-goldens-and-corpus) | Where do reference outputs come from? |
-| 4 | [Seam patches](#4-seam-patches) | How do we change the oracle? |
-| 5 | [Oracle operations](#5-oracle-operations-runbook) | What do I do when it breaks? |
-| 6 | [Gates](#6-gates) | What must pass before a change lands? |
+| #   | Section                                           | Answers                                  |
+| --- | ------------------------------------------------- | ---------------------------------------- |
+| 1   | [Oracle](#1-oracle)                               | What is "correct", and at which commit?  |
+| 1a  | [Conformance unit](#1a-conformance-unit)          | What is one case, and which cases exist? |
+| 2   | [Conformance bar](#2-conformance-bar)             | What counts as equal?                    |
+| 3   | [Goldens and corpus](#3-goldens-and-corpus)       | Where do reference outputs come from?    |
+| 4   | [Seam patches](#4-seam-patches)                   | How do we change the oracle?             |
+| 5   | [Oracle operations](#5-oracle-operations-runbook) | What do I do when it breaks?             |
+| 6   | [Gates](#6-gates)                                 | What must pass before a change lands?    |
 
 ## 1. Oracle
 
@@ -26,14 +26,14 @@ The oracle (AD-3) is upstream ELK **built from source** in a detached git
 worktree of `$ELK_SOURCE_DIR`, created at `$ELK_ORACLE_DIR` by
 `tools/oracle/build.sh`. Both are outside this repository; neither is vendored.
 
-| Item | Where |
-|------|-------|
-| Pinned ELK commit | `tools/oracle/ELK_COMMIT` (currently `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`) |
-| Patch series | `tools/oracle/patches/*.patch`, applied in lexical order with `git am --3way` |
-| Build | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho downloads p2 artifacts) |
-| Batch runner | `tools/oracle/run.sh <outDir> <input>...` or `run.sh --cases <cases.jsonl> <outDir>` |
-| Harness | `tools/oracle/harness/ElkOracle.java` |
-| Build manifest | `$ELK_ORACLE_DIR/oracle-build.json` (commit, patches, JDK, jar per bundle) |
+| Item              | Where                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------ |
+| Pinned ELK commit | `tools/oracle/ELK_COMMIT` (currently `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)     |
+| Patch series      | `tools/oracle/patches/*.patch`, applied in lexical order with `git am --3way`        |
+| Build             | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho downloads p2 artifacts)         |
+| Batch runner      | `tools/oracle/run.sh <outDir> <input>...` or `run.sh --cases <cases.jsonl> <outDir>` |
+| Harness           | `tools/oracle/harness/ElkOracle.java`                                                |
+| Build manifest    | `$ELK_ORACLE_DIR/oracle-build.json` (commit, patches, JDK, jar per bundle)           |
 
 **Build.** `build.sh` runs `mvn -P elk-meta clean install -DskipTests` (the melk
 compiler) and then `mvn clean install -DskipTests -Dmaven.test.skip=true` from
@@ -57,8 +57,8 @@ run, since the output name is the basename.
 
 **Patch series semantics.** The series holds one patch today:
 
-| Patch | Effect | Paired TS seam |
-|-------|--------|----------------|
+| Patch                                                                   | Effect                                                                                                                                                                                                                              | Paired TS seam                                                                                                                                    |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b) | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1` | Injectable `Random` in the `graph.json` port; pending that port (the TS `Random` shim already reproduces the stream: seed 1 gives 548985, 764588) |
 
 Patches exist only to add narrowly scoped seams that make JVM and JS behavior comparable;
@@ -84,12 +84,12 @@ A case reads the `.json` when one exists, else the `.elkt`; `.elkg` (EMF XMI) is
 `default` (none), `direction-right`, `direction-left`, `direction-down`, `direction-up`,
 `hierarchy-separate` (`SEPARATE_CHILDREN`), `hierarchy-include` (`INCLUDE_CHILDREN`).
 
-| Tier | Algorithm | Models | Variants |
-|------|-----------|--------|----------|
-| native | the model's own `rootAlgorithm` | every census model | all seven |
-| retarget | every listed algorithm except the model's own | every census model | `default` only (OR-1) |
-| generated | the algorithm named by the file prefix | `test/corpus/generated/*.json` | all seven |
-| ported JUnit | per algorithm mission | upstream JUnit cases (AD-13) | as ported |
+| Tier         | Algorithm                                     | Models                         | Variants              |
+| ------------ | --------------------------------------------- | ------------------------------ | --------------------- |
+| native       | the model's own `rootAlgorithm`               | every census model             | all seven             |
+| retarget     | every listed algorithm except the model's own | every census model             | `default` only (OR-1) |
+| generated    | the algorithm named by the file prefix        | `test/corpus/generated/*.json` | all seven             |
+| ported JUnit | per algorithm mission                         | upstream JUnit cases (AD-13)   | as ported             |
 
 `tools/oracle/run.sh --list-algorithms` is the list of algorithm ids (14 today).
 
@@ -103,17 +103,17 @@ native tier covers it).
 
 AD-4, exactly as `compareLayout(expected, actual, { tol })` implements it:
 
-| Rule | Behavior |
-|------|----------|
-| Tolerance | Absolute, `DEFAULT_TOLERANCE = 1e-6`; finite numbers pass when `abs(e - a) <= tol` |
-| Non-finite numbers | `NaN` and `±Infinity` must be exactly equal (`Object.is` or `===`), even with `tol: Infinity` |
-| Strings, booleans, `null` | Strictly equal, else `value` |
-| Kind mismatch | Different JSON kinds (`null`, array, object, number, string, boolean) give one `type` diff |
-| Object keys | Key set must be identical: a key only in expected is `missing`, only in actual is `extra` |
-| Arrays | Matched **by `id`** when every element on both sides is an object with a string `id` and ids are unique per side (an empty array counts as keyed); otherwise **positionally** |
-| Keyed arrays | An id on one side only is a `structure` diff at `path[id=<id>]`; order is ignored |
-| Positional arrays | A length difference is one `structure` diff and elements are not compared further |
-| Diff kinds | `structure`, `value`, `type`, `missing`, `extra`; `path` is JSON-path-like (`children[id=n1].x`) |
+| Rule                      | Behavior                                                                                                                                                                      |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tolerance                 | Absolute, `DEFAULT_TOLERANCE = 1e-6`; finite numbers pass when `abs(e - a) <= tol`                                                                                            |
+| Non-finite numbers        | `NaN` and `±Infinity` must be exactly equal (`Object.is` or `===`), even with `tol: Infinity`                                                                                 |
+| Strings, booleans, `null` | Strictly equal, else `value`                                                                                                                                                  |
+| Kind mismatch             | Different JSON kinds (`null`, array, object, number, string, boolean) give one `type` diff                                                                                    |
+| Object keys               | Key set must be identical: a key only in expected is `missing`, only in actual is `extra`                                                                                     |
+| Arrays                    | Matched **by `id`** when every element on both sides is an object with a string `id` and ids are unique per side (an empty array counts as keyed); otherwise **positionally** |
+| Keyed arrays              | An id on one side only is a `structure` diff at `path[id=<id>]`; order is ignored                                                                                             |
+| Positional arrays         | A length difference is one `structure` diff and elements are not compared further                                                                                             |
+| Diff kinds                | `structure`, `value`, `type`, `missing`, `extra`; `path` is JSON-path-like (`children[id=n1].x`)                                                                              |
 
 Consequences: element ids, element counts, edge-section topology, and
 bend-point counts are exact because ids and array lengths are exact;
@@ -139,19 +139,19 @@ test or fixture it affects. Accepted classes:
 
 Concrete entries (add one only with the user's approval):
 
-| # | Divergence | Cause | Scope | Approved |
-|---|------------|-------|-------|----------|
-| 1 | Parse-error message text | ANTLR messages are artifacts of the generated parser, which is never ported | Invalid grammar input (`.elkt`, `.elkj`, `.elkr`): only the *presence* of a parse failure must match, not the message. Valid input must match exactly | D8, user, 2026-10-11 |
+| #   | Divergence               | Cause                                                                       | Scope                                                                                                                                                 | Approved             |
+| --- | ------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| 1   | Parse-error message text | ANTLR messages are artifacts of the generated parser, which is never ported | Invalid grammar input (`.elkt`, `.elkj`, `.elkr`): only the _presence_ of a parse failure must match, not the message. Valid input must match exactly | D8, user, 2026-10-11 |
 
 **Verdicts.** Each case gets one verdict from two separate JVM runs of the oracle (D4, D5, OR-2):
 
-| Verdict | Meaning |
-|---------|---------|
-| `ok` | Both runs laid out the model and the output files are byte-identical |
-| `throws` | Both runs threw the same exception: exact class, and exact message after `@[0-9a-f]+` becomes `@<hash>` (the message may be null, e.g. `StackOverflowError`) |
-| `nondeterministic` | The runs disagree (output bytes, exception, or one `ok` and one `throws`) |
-| `oracle-error` | Harness fault (unreadable input, unknown variant/algorithm/option, lost result line); never acceptable |
-| `timeout` | A run exceeded `ELK_SWEEP_TIMEOUT_MS` |
+| Verdict            | Meaning                                                                                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ok`               | Both runs laid out the model and the output files are byte-identical                                                                                         |
+| `throws`           | Both runs threw the same exception: exact class, and exact message after `@[0-9a-f]+` becomes `@<hash>` (the message may be null, e.g. `StackOverflowError`) |
+| `nondeterministic` | The runs disagree (output bytes, exception, or one `ok` and one `throws`)                                                                                    |
+| `oracle-error`     | Harness fault (unreadable input, unknown variant/algorithm/option, lost result line); never acceptable                                                       |
+| `timeout`          | A run exceeded `ELK_SWEEP_TIMEOUT_MS`                                                                                                                        |
 
 Precedence: `oracle-error`, then `timeout`, then `ok`/`throws` when equal, else
 `nondeterministic`. Before the byte comparison, every `@[0-9a-f]+` token in both outputs is
@@ -170,13 +170,13 @@ patch fixes them.
 
 AD-5. Reference outputs are committed so CI needs no JVM.
 
-| Item | Where |
-|------|-------|
-| Pinned corpus | `eclipse-elk/elk-models` at the `commit` in `test/corpus/manifest.json` (not vendored) |
-| Models directory | `$ELK_MODELS_DIR`, default `../../eclipse-elk/elk-models` relative to this repo |
-| Curated set | `golden[]` in `test/corpus/manifest.json`: `{ id, path, note }` |
-| Refs | `test/golden/refs/elk/<id>.json`, one per manifest `id` |
-| Provenance | `test/golden/refs/elk/_meta.json`: `elkCommit`, `patches`, `jdk`, `modelsCommit`, `generatedBy` |
+| Item             | Where                                                                                           |
+| ---------------- | ----------------------------------------------------------------------------------------------- |
+| Pinned corpus    | `eclipse-elk/elk-models` at the `commit` in `test/corpus/manifest.json` (not vendored)          |
+| Models directory | `$ELK_MODELS_DIR`, default `../../eclipse-elk/elk-models` relative to this repo                 |
+| Curated set      | `golden[]` in `test/corpus/manifest.json`: `{ id, path, note }`                                 |
+| Refs             | `test/golden/refs/elk/<id>.json`, one per manifest `id`                                         |
+| Provenance       | `test/golden/refs/elk/_meta.json`: `elkCommit`, `patches`, `jdk`, `modelsCommit`, `generatedBy` |
 
 **Id to path mapping.** `golden[].path` is relative to `$ELK_MODELS_DIR`, and
 the input is `$ELK_MODELS_DIR/<path>`. `regen-goldens.sh` runs the harness on
@@ -248,7 +248,7 @@ Seam patches change the oracle; they are rare and always paired with a TS seam.
    `census/` and `sweep/` caches, which removing the worktree deletes), apply it with
    `build.sh`'s identity:
    `git -C "$ELK_ORACLE_DIR" -c user.name=elk-engine-oracle \
-   -c user.email=oracle@invalid am --3way <patch>`;
+-c user.email=oracle@invalid am --3way <patch>`;
    `build.sh` then verifies the series and rebuilds in place (about 3 minutes), so steps 4-5
    can be skipped.
 2. Export:
@@ -269,15 +269,15 @@ Never leave an uncommitted edit in the worktree: `build.sh` treats it as stale
 
 ## 5. Oracle operations (runbook)
 
-| Failure | Detection | Mitigation |
-|---------|-----------|------------|
-| Tycho build fails (p2 unreachable, JDK, Maven version) | `tools/oracle/build.sh` exits non-zero; full Maven output in `.oracle-build.log` at the repo root. Exit `1` is a missing tool or wrong Maven; exit `3` means a bundle jar was not produced | Maven must be **3.9.x**: Tycho 4.0.12 fails on Maven 3.10 (Homebrew's 3.10.0) with `ProvisionException: No implementation for MavenTargetLocationFactory was bound`. A local 3.9.11 lives at `.tools/apache-maven-3.9.11/` (gitignored): `ELK_MVN=$PWD/.tools/apache-maven-3.9.11/bin/mvn tools/oracle/build.sh`. Use JDK 21, or JDK 17 via `JAVA_HOME`. Check network (first run downloads p2 artifacts), then rerun. `build.sh --record-only` skips Maven and only rewrites `oracle-build.json` from jars already built. Exit `2`: remove the worktree (section 4 step 4) and rebuild. Otherwise escalate with the log tail |
-| `build.sh` exits `2` right after applying a patch | Worktree reported stale | `build.sh` unfolds wrapped patch subjects (`git format-patch` folds those over about 78 chars) and ignores the untracked `census/` and `sweep/` caches; other dirt or an unlisted patch still gives exit `2`: fix the worktree (section 4) |
-| Golden drift after a patch or commit bump | `tools/oracle/regen-goldens.sh` followed by `git diff --exit-code test/golden/refs` is non-empty; `test/golden/oracle-refs.test.ts` fails on a stale `_meta.json` (`elkCommit`, `modelsCommit`); a TS conformance test, once present, fails with a `formatDiffs` report | Rebuild (`build.sh`), run `regen-goldens.sh`, review the diff, journal the patch id. Never hand-edit a ref or loosen `tol` |
-| Xtext/ANTLR jar missing from the p2 cache (`.elkt`, `.elkr`, or any `run.sh` start) | `run.sh` exits non-zero with `bundle <name> not in p2 cache <dir>` (e.g. `org.eclipse.xtext`, `org.antlr.runtime`, `org.eclipse.xtext.xbase`) | Set `P2_BUNDLES` to the Tycho p2 cache that holds it, or run `build.sh` with network access so Tycho fetches it; rerun `run.sh`. Do not substitute jars from elsewhere |
-| Sweep hang or OOM | A case runs to the timeout and reports `timeout` (a stderr line names it); a run with no result line gives `oracle-error` and `sweep: shard <n> run <A or B> exited <code>` on stderr; the machine swaps under 8 concurrent JVMs | Lower concurrency and batch size: `sweep.sh --shards 2`, narrow with `--filter` or `--limit`. Raise `ELK_SWEEP_TIMEOUT_MS` only for a model that is slow but correct. A reproducible `timeout` is a finding: journal the case id, do not widen the limit to hide it |
-| Census drift after a pin bump (`ELK_COMMIT` or models `commit`) | `npx tsx tools/corpus/census.ts` exits `1` and lists the differing models; `test/corpus/census.test.ts` fails | Confirm the clone and oracle are at the new pins, rerun `census.ts --write`, review `git diff test/corpus/census.json`, journal the cause, then rerun `sweep.sh` and regenerate the parity report. Never hand-edit the census |
-| elk-models missing or wrong sha | Corpus tests skip with a message naming the expected sha; `regen-goldens.sh` exits `1` (`elk-models at <sha>, expected pinned <sha>`) | Run `test/corpus/fetch.sh` (clones and checks out the pinned commit). It exits `2` if an existing clone is at another commit and does not touch it: fix that clone yourself or point `ELK_MODELS_DIR` at a fresh path. Never move an existing clone's HEAD from a script |
+| Failure                                                                             | Detection                                                                                                                                                                                                                                                               | Mitigation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tycho build fails (p2 unreachable, JDK, Maven version)                              | `tools/oracle/build.sh` exits non-zero; full Maven output in `.oracle-build.log` at the repo root. Exit `1` is a missing tool or wrong Maven; exit `3` means a bundle jar was not produced                                                                              | Maven must be **3.9.x**: Tycho 4.0.12 fails on Maven 3.10 (Homebrew's 3.10.0) with `ProvisionException: No implementation for MavenTargetLocationFactory was bound`. A local 3.9.11 lives at `.tools/apache-maven-3.9.11/` (gitignored): `ELK_MVN=$PWD/.tools/apache-maven-3.9.11/bin/mvn tools/oracle/build.sh`. Use JDK 21, or JDK 17 via `JAVA_HOME`. Check network (first run downloads p2 artifacts), then rerun. `build.sh --record-only` skips Maven and only rewrites `oracle-build.json` from jars already built. Exit `2`: remove the worktree (section 4 step 4) and rebuild. Otherwise escalate with the log tail |
+| `build.sh` exits `2` right after applying a patch                                   | Worktree reported stale                                                                                                                                                                                                                                                 | `build.sh` unfolds wrapped patch subjects (`git format-patch` folds those over about 78 chars) and ignores the untracked `census/` and `sweep/` caches; other dirt or an unlisted patch still gives exit `2`: fix the worktree (section 4)                                                                                                                                                                                                                                                                                                                                                                                    |
+| Golden drift after a patch or commit bump                                           | `tools/oracle/regen-goldens.sh` followed by `git diff --exit-code test/golden/refs` is non-empty; `test/golden/oracle-refs.test.ts` fails on a stale `_meta.json` (`elkCommit`, `modelsCommit`); a TS conformance test, once present, fails with a `formatDiffs` report | Rebuild (`build.sh`), run `regen-goldens.sh`, review the diff, journal the patch id. Never hand-edit a ref or loosen `tol`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Xtext/ANTLR jar missing from the p2 cache (`.elkt`, `.elkr`, or any `run.sh` start) | `run.sh` exits non-zero with `bundle <name> not in p2 cache <dir>` (e.g. `org.eclipse.xtext`, `org.antlr.runtime`, `org.eclipse.xtext.xbase`)                                                                                                                           | Set `P2_BUNDLES` to the Tycho p2 cache that holds it, or run `build.sh` with network access so Tycho fetches it; rerun `run.sh`. Do not substitute jars from elsewhere                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Sweep hang or OOM                                                                   | A case runs to the timeout and reports `timeout` (a stderr line names it); a run with no result line gives `oracle-error` and `sweep: shard <n> run <A or B> exited <code>` on stderr; the machine swaps under 8 concurrent JVMs                                        | Lower concurrency and batch size: `sweep.sh --shards 2`, narrow with `--filter` or `--limit`. Raise `ELK_SWEEP_TIMEOUT_MS` only for a model that is slow but correct. A reproducible `timeout` is a finding: journal the case id, do not widen the limit to hide it                                                                                                                                                                                                                                                                                                                                                           |
+| Census drift after a pin bump (`ELK_COMMIT` or models `commit`)                     | `npx tsx tools/corpus/census.ts` exits `1` and lists the differing models; `test/corpus/census.test.ts` fails                                                                                                                                                           | Confirm the clone and oracle are at the new pins, rerun `census.ts --write`, review `git diff test/corpus/census.json`, journal the cause, then rerun `sweep.sh` and regenerate the parity report. Never hand-edit the census                                                                                                                                                                                                                                                                                                                                                                                                 |
+| elk-models missing or wrong sha                                                     | Corpus tests skip with a message naming the expected sha; `regen-goldens.sh` exits `1` (`elk-models at <sha>, expected pinned <sha>`)                                                                                                                                   | Run `test/corpus/fetch.sh` (clones and checks out the pinned commit). It exits `2` if an existing clone is at another commit and does not touch it: fix that clone yourself or point `ELK_MODELS_DIR` at a fresh path. Never move an existing clone's HEAD from a script                                                                                                                                                                                                                                                                                                                                                      |
 
 Other `run.sh` failures: `oracle-build.json missing` or `oracle jar missing`
 means run `build.sh` first; `bundle <name> not in p2 cache` means set
@@ -287,27 +287,27 @@ means run `build.sh` first; `bundle <name> not in p2 cache` means set
 
 Every change:
 
-| Gate | Command | Bar |
-|------|---------|-----|
-| Types | `npm run typecheck` | exit 0 |
-| Tests and coverage | `npm run coverage` | all tests pass; 90% statements, branches, functions, and lines over `src/**` |
-| Architecture | `test/architecture/*.fitness.test.ts` (run by `npm test`) | module boundaries, module globals, no Node builtins in `src/`, SPDX headers |
-| Oracle refs | `test/golden/oracle-refs.test.ts` | committed refs consistent with manifest and `ELK_COMMIT` |
+| Gate               | Command                                                   | Bar                                                                          |
+| ------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Types              | `npm run typecheck`                                       | exit 0                                                                       |
+| Tests and coverage | `npm run coverage`                                        | all tests pass; 90% statements, branches, functions, and lines over `src/**` |
+| Architecture       | `test/architecture/*.fitness.test.ts` (run by `npm test`) | module boundaries, module globals, no Node builtins in `src/`, SPDX headers  |
+| Oracle refs        | `test/golden/oracle-refs.test.ts`                         | committed refs consistent with manifest and `ELK_COMMIT`                     |
 
 Changes to `tools/oracle/`, the manifest, or the patch series also need:
 
-| Gate | Command | Bar |
-|------|---------|-----|
-| Oracle build | `tools/oracle/build.sh` | exit 0 |
-| Oracle run | `tools/oracle/run.sh <outDir> <input.json>...` | exit 0, no `ERROR` lines |
+| Gate             | Command                                                                       | Bar                                                               |
+| ---------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Oracle build     | `tools/oracle/build.sh`                                                       | exit 0                                                            |
+| Oracle run       | `tools/oracle/run.sh <outDir> <input.json>...`                                | exit 0, no `ERROR` lines                                          |
 | Golden stability | `tools/oracle/regen-goldens.sh`, then `git diff --exit-code test/golden/refs` | no diff, unless the change is meant to move refs and is journaled |
-| Shell | `shellcheck tools/oracle/*.sh` | clean |
+| Shell            | `shellcheck tools/oracle/*.sh`                                                | clean                                                             |
 
 Changes to `tools/oracle/` or `tools/corpus/` also need:
 
-| Gate | Command | Bar |
-|------|---------|-----|
-| Census | `npx tsx tools/corpus/census.ts` | exit 0 (no drift) |
-| Generated stability | `tools/oracle/regen-generated.sh`, then `git diff --exit-code test/corpus/generated` | no diff |
-| Sweep | `tools/oracle/sweep.sh` (or `--filter`/`--limit` for a sample) | exit 0: no `oracle-error` |
-| Parity report | `npx tsx tools/corpus/parity-report.ts` | exit 0 (committed report current); regenerate with `--write` |
+| Gate                | Command                                                                              | Bar                                                          |
+| ------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| Census              | `npx tsx tools/corpus/census.ts`                                                     | exit 0 (no drift)                                            |
+| Generated stability | `tools/oracle/regen-generated.sh`, then `git diff --exit-code test/corpus/generated` | no diff                                                      |
+| Sweep               | `tools/oracle/sweep.sh` (or `--filter`/`--limit` for a sample)                       | exit 0: no `oracle-error`                                    |
+| Parity report       | `npx tsx tools/corpus/parity-report.ts`                                              | exit 0 (committed report current); regenerate with `--write` |

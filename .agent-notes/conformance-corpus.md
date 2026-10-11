@@ -5,6 +5,7 @@
 Planning-time notes are in `conformance-corpus-planning.md`.
 
 ## Observation: no Maven 3.9 on the dev machine
+
 - **Context**: T3, refreshing `oracle-build.json` for the D0 jars.
 - **Finding**: Maven is installed via Homebrew at 3.10.0 (user-confirmed); no 3.9 exists; the Tycho build needs 3.9.x. The jars
   were already built, so `tools/oracle/build.sh --record-only` rewrites the manifest without Maven.
@@ -12,6 +13,7 @@ Planning-time notes are in `conformance-corpus-planning.md`.
 - **Confidence**: High
 
 ## Observation: Xtext standalone `.elkt` loading needs equinox.common
+
 - **Context**: T3 classpath for `ElkGraphStandaloneSetup.doSetup()`.
 - **Finding**: Guice reflection loads `org.eclipse.core.runtime.OperationCanceledException`, so
   `org.eclipse.equinox.common` must be on the classpath though no manifest-derived list names it.
@@ -21,6 +23,7 @@ Planning-time notes are in `conformance-corpus-planning.md`.
 - **Confidence**: High
 
 ## Observation: an existing fitness test used graph.text as its out-of-scope example
+
 - **Context**: T2, adding D0 bundles to `IN_SCOPE_SUFFIXES`.
 - **Finding**: `module-boundaries.fitness.test.ts` "keeps only in-scope ELK bundles" filtered
   `graph.text`; D0 put it in scope. User approved swapping the fixture to `core.service`.
@@ -29,6 +32,7 @@ Planning-time notes are in `conformance-corpus-planning.md`.
 - **Confidence**: High
 
 ## Observation: concurrent oracle runs share `harness-classes`
+
 - **Context**: Batch 2, T4 census and T5 harness edits in parallel.
 - **Finding**: `run.sh` recompiles `tools/oracle/harness/*.java` (when any source is newer) into
   `$ELK_ORACLE_DIR/harness-classes`. Two tasks editing and running the harness in one tree
@@ -38,6 +42,7 @@ Planning-time notes are in `conformance-corpus-planning.md`.
 - **Confidence**: High
 
 ## Observation: ELK property setting mutates EMF containment
+
 - **Context**: T5 retarget overlay.
 - **Finding**: `setProperty` adds a contained property-map entry, so setting properties while
   iterating `root.eAllContents()` throws `ConcurrentModificationException`; collect nodes first.
@@ -48,16 +53,18 @@ Planning-time notes are in `conformance-corpus-planning.md`.
 - **Confidence**: High
 
 ## Observation: radial and vertiflex reject non-tree graphs
+
 - **Context**: T5 sample sweep, 183 ptolemy models × 9 algorithms (1,647 cases).
 - **Finding**: 1,546 ok, 101 throws (IllegalArgumentException 62, IndexOutOfBoundsException 30,
   IllegalStateException 9); radial throws `IllegalArgumentException: The given graph is not a
-  tree!`; vertiflex throws `UnsupportedConfigurationException` with the same message. No `@hex`
+tree!`; vertiflex throws `UnsupportedConfigurationException` with the same message. No `@hex`
   tokens appeared in any message.
 - **Impact**: The retarget tier for tree algorithms will be throws-heavy; `throws` matching is
   still a valid conformance verdict (D4).
 - **Confidence**: High
 
 ## Observation: ELK's JSON exporter renames colliding ids with an unseeded Random
+
 - **Context**: T6, exporting grandom-generated graphs.
 - **Finding**: `JsonExporter.xtend:505` resolves id collisions with
   `"_g" + new Random().nextInt(1000000)`. grandom leaves the root unnamed; the exporter numbers it
@@ -68,6 +75,7 @@ Planning-time notes are in `conformance-corpus-planning.md`.
 - **Confidence**: High
 
 ## Observation: grandom generation details
+
 - **Context**: T6 configs.
 - **Finding**: `GRandomStandaloneSetup.doSetup()` + `new RandomGraphGenerator(null).generate(cfg)`
   works standalone; the generator seeds its own `Random(seed)`. Needs `org.eclipse.xtext.xbase` on
@@ -78,6 +86,7 @@ Planning-time notes are in `conformance-corpus-planning.md`.
 - **Confidence**: High
 
 ## Observation: sources of oracle nondeterminism (first full sweep)
+
 - **Context**: T8, 18,023 cases × 2 JVMs.
 - **Finding**: Export artifacts: `JsonExporter` `_g` id-collision suffixes (unseeded `Random`,
   fixed by seam patch 0001 + `exportSeed=1`) and disco's `debug.discoGraph` identity hash
@@ -89,6 +98,7 @@ Planning-time notes are in `conformance-corpus-planning.md`.
 - **Confidence**: High
 
 ## Observation: build.sh patch-subject parsing and Maven
+
 - **Context**: First seam patch.
 - **Finding**: `git format-patch` folds subjects > ~78 chars; `build.sh` now unfolds them. Maven
   3.9.11 lives at `.tools/apache-maven-3.9.11` (gitignored); Homebrew's 3.10.0 cannot start Tycho

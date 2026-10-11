@@ -23,9 +23,7 @@ const TEST_SUFFIX = '.test.ts';
 const TS_SUFFIX = '.ts';
 const JS_SUFFIX = '.js';
 
-const committed: BundleDeps = JSON.parse(
-  readFileSync(join(REPO_ROOT, COMMITTED_JSON_RELATIVE), 'utf8'),
-) as BundleDeps;
+const committed: BundleDeps = JSON.parse(readFileSync(join(REPO_ROOT, COMMITTED_JSON_RELATIVE), 'utf8')) as BundleDeps;
 
 const IMPORT_PATTERNS: readonly RegExp[] = [
   /\b(?:import|export)\b[^'";]*?\bfrom\s*['"]([^'"]+)['"]/g,
@@ -35,18 +33,14 @@ const IMPORT_PATTERNS: readonly RegExp[] = [
 
 /** Relative import specifiers found in TypeScript source text. */
 export function extractRelativeSpecifiers(source: string): string[] {
-  const found = IMPORT_PATTERNS.flatMap((pattern) =>
-    [...source.matchAll(pattern)].map((m) => m[1] ?? ''),
-  );
+  const found = IMPORT_PATTERNS.flatMap((pattern) => [...source.matchAll(pattern)].map((m) => m[1] ?? ''));
   return found.filter((spec) => spec.startsWith('.'));
 }
 
 /** Resolves a relative specifier from a repo-relative file to a repo-relative `.ts` path. */
 export function resolveTarget(fromFile: string, specifier: string): string {
   const joined = posix.normalize(posix.join(posix.dirname(fromFile), specifier));
-  return joined.endsWith(JS_SUFFIX)
-    ? joined.slice(0, -JS_SUFFIX.length) + TS_SUFFIX
-    : joined;
+  return joined.endsWith(JS_SUFFIX) ? joined.slice(0, -JS_SUFFIX.length) + TS_SUFFIX : joined;
 }
 
 function isUnder(path: string, dir: string): boolean {
@@ -60,16 +54,10 @@ export function bundleOf(path: string, deps: BundleDeps): string | undefined {
     .sort((a, b) => b.length - a.length)[0];
 }
 
-function violationFor(
-  file: string,
-  target: string,
-  deps: BundleDeps,
-): string | undefined {
+function violationFor(file: string, target: string, deps: BundleDeps): string | undefined {
   const edge = `${file} -> ${target}`;
   if (isUnder(file, JAVA_DIR)) {
-    return isUnder(target, JAVA_DIR)
-      ? undefined
-      : `${edge}: src/java may import only src/java`;
+    return isUnder(target, JAVA_DIR) ? undefined : `${edge}: src/java may import only src/java`;
   }
   if (isUnder(file, GUAVA_DIR)) {
     return isUnder(target, GUAVA_DIR) || isUnder(target, JAVA_DIR)
@@ -92,11 +80,7 @@ function violationFor(
 }
 
 /** Boundary violations for one file's source text (repo-relative `file`). */
-export function checkFile(
-  file: string,
-  source: string,
-  deps: BundleDeps,
-): string[] {
+export function checkFile(file: string, source: string, deps: BundleDeps): string[] {
   if (file === INDEX_FILE) {
     return [];
   }
@@ -112,17 +96,12 @@ function listSourceFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true, recursive: true })
     .filter((e) => e.isFile() && e.name.endsWith(TS_SUFFIX))
     .filter((e) => !e.name.endsWith(TEST_SUFFIX))
-    .map((e) =>
-      relative(REPO_ROOT, resolve(e.parentPath, e.name)).split(sep).join('/'),
-    );
+    .map((e) => relative(REPO_ROOT, resolve(e.parentPath, e.name)).split(sep).join('/'));
 }
 
 function unmappedFile(file: string, deps: BundleDeps): string | undefined {
   const exempt =
-    file === INDEX_FILE ||
-    isUnder(file, JAVA_DIR) ||
-    isUnder(file, GUAVA_DIR) ||
-    bundleOf(file, deps) !== undefined;
+    file === INDEX_FILE || isUnder(file, JAVA_DIR) || isUnder(file, GUAVA_DIR) || bundleOf(file, deps) !== undefined;
   return exempt ? undefined : `${file}: unmapped directory`;
 }
 
@@ -132,11 +111,7 @@ describe('committed bundle-deps.json', () => {
   });
 
   it('layered requires common, core, graph', () => {
-    expect(committed.bundles['src/alg/layered']?.requires).toEqual([
-      'src/alg/common',
-      'src/core',
-      'src/graph',
-    ]);
+    expect(committed.bundles['src/alg/layered']?.requires).toEqual(['src/alg/common', 'src/core', 'src/graph']);
   });
 
   it('maps graph.json to src/graph/json requiring core and graph', () => {
@@ -201,15 +176,11 @@ describe('manifest parsing', () => {
   });
 
   it('rejects non-ELK bundle names', () => {
-    expect(() => buildBundleDeps({ 'com.example.x': '' }, 'abc')).toThrow(
-      'Not an ELK bundle: com.example.x',
-    );
+    expect(() => buildBundleDeps({ 'com.example.x': '' }, 'abc')).toThrow('Not an ELK bundle: com.example.x');
   });
 
   it('serializes with 2-space indent and trailing newline', () => {
-    expect(serializeBundleDeps({ elkCommit: 'a', bundles: {} })).toBe(
-      '{\n  "elkCommit": "a",\n  "bundles": {}\n}\n',
-    );
+    expect(serializeBundleDeps({ elkCommit: 'a', bundles: {} })).toBe('{\n  "elkCommit": "a",\n  "bundles": {}\n}\n');
   });
 
   it('resolves the ELK dir from arg, env, then default', () => {
@@ -237,66 +208,44 @@ describe('boundary self-checks', () => {
   });
 
   it('reports force -> layered naming both files', () => {
-    const v = checkFile(
-      'src/alg/force/X.ts',
-      "import { Y } from '../layered/Y.js';",
-      committed,
-    );
-    expect(v).toEqual([
-      'src/alg/force/X.ts -> src/alg/layered/Y.ts: src/alg/force may not import src/alg/layered',
-    ]);
+    const v = checkFile('src/alg/force/X.ts', "import { Y } from '../layered/Y.js';", committed);
+    expect(v).toEqual(['src/alg/force/X.ts -> src/alg/layered/Y.ts: src/alg/force may not import src/alg/layered']);
   });
 
   it('resolves graph.json -> graph by longest prefix and allows it', () => {
     expect(bundleOf('src/graph/json/A.ts', committed)).toBe('src/graph/json');
     expect(bundleOf('src/graph/B.ts', committed)).toBe('src/graph');
-    expect(
-      checkFile('src/graph/json/A.ts', "import { B } from '../B.js';", committed),
-    ).toEqual([]);
+    expect(checkFile('src/graph/json/A.ts', "import { B } from '../B.js';", committed)).toEqual([]);
   });
 
   it('forbids graph -> graph.json (not required)', () => {
-    expect(
-      checkFile('src/graph/A.ts', "import { J } from './json/J.js';", committed),
-    ).toHaveLength(1);
+    expect(checkFile('src/graph/A.ts', "import { J } from './json/J.js';", committed)).toHaveLength(1);
   });
 
   it('allows importing src/java everywhere, and java -> java only', () => {
     const imp = "import { R } from '../../java/util/Random.js';";
     expect(checkFile('src/alg/layered/A.ts', imp, committed)).toEqual([]);
-    expect(
-      checkFile('src/java/util/A.ts', "import { B } from './B.js';", committed),
-    ).toEqual([]);
-    expect(
-      checkFile('src/java/util/A.ts', "import { G } from '../../graph/G.js';", committed),
-    ).toEqual([
+    expect(checkFile('src/java/util/A.ts', "import { B } from './B.js';", committed)).toEqual([]);
+    expect(checkFile('src/java/util/A.ts', "import { G } from '../../graph/G.js';", committed)).toEqual([
       'src/java/util/A.ts -> src/graph/G.ts: src/java may import only src/java',
     ]);
   });
 
   it('flags unmapped source and target directories', () => {
-    expect(
-      checkFile('src/mystery/A.ts', "import { B } from './B.js';", committed),
-    ).toEqual([
+    expect(checkFile('src/mystery/A.ts', "import { B } from './B.js';", committed)).toEqual([
       'src/mystery/A.ts -> src/mystery/B.ts: unmapped directory for src/mystery/A.ts',
     ]);
-    expect(
-      checkFile('src/core/A.ts', "import { B } from '../mystery/B.js';", committed),
-    ).toEqual([
+    expect(checkFile('src/core/A.ts', "import { B } from '../mystery/B.js';", committed)).toEqual([
       'src/core/A.ts -> src/mystery/B.ts: unmapped directory for src/mystery/B.ts',
     ]);
   });
 
   it('exempts src/index.ts as a source', () => {
-    expect(
-      checkFile('src/index.ts', "export * from './mystery/B.js';", committed),
-    ).toEqual([]);
+    expect(checkFile('src/index.ts', "export * from './mystery/B.js';", committed)).toEqual([]);
   });
 
   it('flags files in directories that belong to no bundle', () => {
-    expect(unmappedFile('src/mystery/A.ts', committed)).toBe(
-      'src/mystery/A.ts: unmapped directory',
-    );
+    expect(unmappedFile('src/mystery/A.ts', committed)).toBe('src/mystery/A.ts: unmapped directory');
     expect(unmappedFile('src/index.ts', committed)).toBeUndefined();
     expect(unmappedFile('src/java/util/R.ts', committed)).toBeUndefined();
     expect(unmappedFile('src/core/A.ts', committed)).toBeUndefined();
@@ -307,16 +256,12 @@ describe('src tree respects bundle boundaries', () => {
   const files = listSourceFiles(join(REPO_ROOT, TS_ROOT));
 
   it('has no import-direction violations', () => {
-    const violations = files.flatMap((file) =>
-      checkFile(file, readFileSync(join(REPO_ROOT, file), 'utf8'), committed),
-    );
+    const violations = files.flatMap((file) => checkFile(file, readFileSync(join(REPO_ROOT, file), 'utf8'), committed));
     expect(violations).toEqual([]);
   });
 
   it('has no unmapped directories', () => {
-    const unmapped = files
-      .map((file) => unmappedFile(file, committed))
-      .filter((v): v is string => v !== undefined);
+    const unmapped = files.map((file) => unmappedFile(file, committed)).filter((v): v is string => v !== undefined);
     expect(unmapped).toEqual([]);
   });
 });
@@ -374,9 +319,7 @@ describe('grammar bundles (conformance-corpus D0)', () => {
   it('resolves src/graph/json/text to graph.json.text, not graph.json', () => {
     const dir = bundleOf('src/graph/json/text/X.ts', committed);
     expect(dir).toBe('src/graph/json/text');
-    expect(committed.bundles[dir ?? '']?.bundle).toBe(
-      'org.eclipse.elk.graph.json.text',
-    );
+    expect(committed.bundles[dir ?? '']?.bundle).toBe('org.eclipse.elk.graph.json.text');
   });
 
   it('resolves reference-only src/core/debug to core, not grandom (known hole)', () => {
@@ -386,58 +329,26 @@ describe('grammar bundles (conformance-corpus D0)', () => {
 
 describe('src/guava boundary (java-foundations M6)', () => {
   it('lets src/guava import src/java', () => {
-    expect(
-      checkFile(
-        'src/guava/Lists.ts',
-        "import { Int32 } from '../java/lang/Int32.js';",
-        committed,
-      ),
-    ).toEqual([]);
+    expect(checkFile('src/guava/Lists.ts', "import { Int32 } from '../java/lang/Int32.js';", committed)).toEqual([]);
   });
 
   it('forbids src/guava importing a bundle, naming both files', () => {
-    expect(
-      checkFile(
-        'src/guava/Lists.ts',
-        "import { G } from '../graph/G.js';",
-        committed,
-      ),
-    ).toEqual([
+    expect(checkFile('src/guava/Lists.ts', "import { G } from '../graph/G.js';", committed)).toEqual([
       'src/guava/Lists.ts -> src/graph/G.ts: src/guava may import only src/guava and src/java',
     ]);
   });
 
   it('lets src/guava import src/guava', () => {
-    expect(
-      checkFile(
-        'src/guava/Lists.ts',
-        "import { Iterables } from './Iterables.js';",
-        committed,
-      ),
-    ).toEqual([]);
+    expect(checkFile('src/guava/Lists.ts', "import { Iterables } from './Iterables.js';", committed)).toEqual([]);
   });
 
   it('lets bundles and src/index.ts import src/guava', () => {
-    expect(
-      checkFile(
-        'src/alg/layered/X.ts',
-        "import { Lists } from '../../guava/Lists.js';",
-        committed,
-      ),
-    ).toEqual([]);
-    expect(
-      checkFile('src/index.ts', "export * from './guava/Lists.js';", committed),
-    ).toEqual([]);
+    expect(checkFile('src/alg/layered/X.ts', "import { Lists } from '../../guava/Lists.js';", committed)).toEqual([]);
+    expect(checkFile('src/index.ts', "export * from './guava/Lists.js';", committed)).toEqual([]);
   });
 
   it('forbids src/java importing src/guava', () => {
-    expect(
-      checkFile(
-        'src/java/util/A.ts',
-        "import { Lists } from '../../guava/Lists.js';",
-        committed,
-      ),
-    ).toEqual([
+    expect(checkFile('src/java/util/A.ts', "import { Lists } from '../../guava/Lists.js';", committed)).toEqual([
       'src/java/util/A.ts -> src/guava/Lists.ts: src/java may import only src/java',
     ]);
   });

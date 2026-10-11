@@ -16,12 +16,12 @@ an oracle.
 
 ## Environment variables
 
-| Variable | Default | Meaning |
-|----------|---------|---------|
-| `ELK_SOURCE_DIR` | `<repo>/../elk` | ELK git clone |
-| `ELK_ORACLE_DIR` | `<repo>/../elk-oracle` | worktree created here |
-| `ELK_MVN` | `mvn` | Maven executable (must be 3.9.x) |
-| `MAVEN_OPTS` | `-Xmx3g` | JVM options for Maven |
+| Variable         | Default                | Meaning                          |
+| ---------------- | ---------------------- | -------------------------------- |
+| `ELK_SOURCE_DIR` | `<repo>/../elk`        | ELK git clone                    |
+| `ELK_ORACLE_DIR` | `<repo>/../elk-oracle` | worktree created here            |
+| `ELK_MVN`        | `mvn`                  | Maven executable (must be 3.9.x) |
+| `MAVEN_OPTS`     | `-Xmx3g`               | JVM options for Maven            |
 
 ## Usage
 
@@ -64,7 +64,7 @@ and exports the generated graph without layout (see Generated graphs). Output is
 (so ids are unique across folders). One result line per case on stdout:
 
 ```json
-{"id":"...","status":"ok|throws|oracle-error|timeout","exception":{"class":"...","message":"..."},"ms":12}
+{ "id": "...", "status": "ok|throws|oracle-error|timeout", "exception": { "class": "...", "message": "..." }, "ms": 12 }
 ```
 
 `exception` is present unless `ok`. `throws`: the ELK call threw (JSON

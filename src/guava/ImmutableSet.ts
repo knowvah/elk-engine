@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
-import { UnsupportedOperationException } from "../java/lang/UnsupportedOperationException.js";
+import { UnsupportedOperationException } from '../java/lang/UnsupportedOperationException.js';
 
-const REJECT_MESSAGE = "ImmutableSet is read-only";
+const REJECT_MESSAGE = 'ImmutableSet is read-only';
 
 /**
  * An insertion-ordered set whose mutators throw `UnsupportedOperationException` (M5).

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
-import { IndexOutOfBoundsException } from "../java/lang/IndexOutOfBoundsException.js";
-import { NoSuchElementException } from "../java/util/NoSuchElementException.js";
+import { IndexOutOfBoundsException } from '../java/lang/IndexOutOfBoundsException.js';
+import { NoSuchElementException } from '../java/util/NoSuchElementException.js';
 
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Iterables.html#concat(java.lang.Iterable...) */
 export function concat<T>(...inputs: Iterable<T>[]): Iterable<T> {
@@ -39,10 +39,7 @@ export function isEmpty(iterable: Iterable<unknown>): boolean {
 }
 
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Iterables.html#filter(java.lang.Iterable,com.google.common.base.Predicate) */
-export function filter<T>(
-  unfiltered: Iterable<T>,
-  predicate: (element: T) => boolean,
-): Iterable<T> {
+export function filter<T>(unfiltered: Iterable<T>, predicate: (element: T) => boolean): Iterable<T> {
   return {
     *[Symbol.iterator](): Iterator<T> {
       for (const element of unfiltered) {
@@ -55,10 +52,7 @@ export function filter<T>(
 }
 
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Iterables.html#transform(java.lang.Iterable,com.google.common.base.Function) */
-export function transform<F, T>(
-  fromIterable: Iterable<F>,
-  fn: (from: F) => T,
-): Iterable<T> {
+export function transform<F, T>(fromIterable: Iterable<F>, fn: (from: F) => T): Iterable<T> {
   return {
     *[Symbol.iterator](): Iterator<T> {
       for (const element of fromIterable) {
@@ -83,10 +77,7 @@ export function getFirst<T, D>(iterable: Iterable<T>, defaultValue: D): T | D {
  */
 export function getLast<T>(iterable: Iterable<T>): T;
 export function getLast<T, D>(iterable: Iterable<T>, defaultValue: D): T | D;
-export function getLast<T, D>(
-  iterable: Iterable<T>,
-  ...defaultValue: [] | [D]
-): T | D {
+export function getLast<T, D>(iterable: Iterable<T>, ...defaultValue: [] | [D]): T | D {
   let found = false;
   let last: T | undefined;
   for (const element of iterable) {
@@ -105,9 +96,7 @@ export function getLast<T, D>(
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Iterables.html#get(java.lang.Iterable,int) */
 export function get<T>(iterable: Iterable<T>, position: number): T {
   if (position < 0) {
-    throw new IndexOutOfBoundsException(
-      `position (${position}) must not be negative`,
-    );
+    throw new IndexOutOfBoundsException(`position (${position}) must not be negative`);
   }
   let skipped = 0;
   for (const element of iterable) {
@@ -122,10 +111,7 @@ export function get<T>(iterable: Iterable<T>, position: number): T {
 }
 
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Iterables.html#all(java.lang.Iterable,com.google.common.base.Predicate) */
-export function all<T>(
-  iterable: Iterable<T>,
-  predicate: (element: T) => boolean,
-): boolean {
+export function all<T>(iterable: Iterable<T>, predicate: (element: T) => boolean): boolean {
   for (const element of iterable) {
     if (!predicate(element)) {
       return false;
@@ -135,10 +121,7 @@ export function all<T>(
 }
 
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/Iterables.html#any(java.lang.Iterable,com.google.common.base.Predicate) */
-export function any<T>(
-  iterable: Iterable<T>,
-  predicate: (element: T) => boolean,
-): boolean {
+export function any<T>(iterable: Iterable<T>, predicate: (element: T) => boolean): boolean {
   for (const element of iterable) {
     if (predicate(element)) {
       return true;

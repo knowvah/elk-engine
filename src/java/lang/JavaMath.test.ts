@@ -154,7 +154,10 @@ const numeric = JSON.parse(readNumericFile(NUMERIC_URL, 'utf8')) as NumericVecto
 function toBitsHex(x: number): string {
   const view = new DataView(new ArrayBuffer(BITS_BYTES));
   view.setFloat64(0, x);
-  return view.getBigUint64(0).toString(HEX_RADIX).padStart(BITS_BYTES * 2, '0');
+  return view
+    .getBigUint64(0)
+    .toString(HEX_RADIX)
+    .padStart(BITS_BYTES * 2, '0');
 }
 
 describe('l2i', () => {

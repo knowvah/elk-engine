@@ -64,23 +64,23 @@ user. Never loosen a tolerance, delete a case, or regenerate a ref to get green.
 
 Full list: [`docs/translation-rules.md`](docs/translation-rules.md). Core rows:
 
-| Java concept                   | TypeScript                                          |
-| ------------------------------ | --------------------------------------------------- |
-| `int`                          | `number`, wrapped via `src/java/lang/Int32` ops     |
-| `long`                         | `number`; `bigint` only beyond 2^53, document site  |
-| `double`                       | `number`                                            |
-| `(int)` of `double`/`float`    | saturating `d2i` shim (NaN → 0, clamps to int32)    |
-| `(int)` of `long`              | wraps to low 32 bits: `l2i` shim (vector needed first); ELK's `(int) Math.round(x)` is this case |
-| `Math.round`                   | shim per Javadoc (closest long, ties → +∞; NaN → 0) |
-| integer division / `%`         | truncating `Int32.div`/`Int32.rem` (throw on zero, no `-0`); `floorDiv`/`floorMod` have no in-scope caller |
-| `char`                         | UTF-16 code unit as `number`; strings via `charAt`  |
-| `String`                       | `string` (UTF-16, same as Java)                     |
-| `Comparator` / `compareTo`     | `(a, b) => number`; `Double.compare` shim for NaN   |
-| `Linked*` / `Enum*` / `Hash*`  | per AD-10: `Map`/`Set`; ordinal-ordered; enum keys are identity-hashed; `JavaHashMap` only for value-hashed keys (KVector-derived `TEdge`/`TTriangle`, e.g. `NaiveMinST`); identity-hashed → insertion order, journal the site |
-| Guava                          | small local helpers; never a dependency             |
-| EMF (ElkGraph)                 | plain classes, Java accessor names (AD-11)          |
-| `assert`                       | dev-only check helper, no production cost           |
-| checked exceptions             | plain `Error` subclasses; keep throw sites          |
+| Java concept                  | TypeScript                                                                                                                                                                                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `int`                         | `number`, wrapped via `src/java/lang/Int32` ops                                                                                                                                                                                |
+| `long`                        | `number`; `bigint` only beyond 2^53, document site                                                                                                                                                                             |
+| `double`                      | `number`                                                                                                                                                                                                                       |
+| `(int)` of `double`/`float`   | saturating `d2i` shim (NaN → 0, clamps to int32)                                                                                                                                                                               |
+| `(int)` of `long`             | wraps to low 32 bits: `l2i` shim (vector needed first); ELK's `(int) Math.round(x)` is this case                                                                                                                               |
+| `Math.round`                  | shim per Javadoc (closest long, ties → +∞; NaN → 0)                                                                                                                                                                            |
+| integer division / `%`        | truncating `Int32.div`/`Int32.rem` (throw on zero, no `-0`); `floorDiv`/`floorMod` have no in-scope caller                                                                                                                     |
+| `char`                        | UTF-16 code unit as `number`; strings via `charAt`                                                                                                                                                                             |
+| `String`                      | `string` (UTF-16, same as Java)                                                                                                                                                                                                |
+| `Comparator` / `compareTo`    | `(a, b) => number`; `Double.compare` shim for NaN                                                                                                                                                                              |
+| `Linked*` / `Enum*` / `Hash*` | per AD-10: `Map`/`Set`; ordinal-ordered; enum keys are identity-hashed; `JavaHashMap` only for value-hashed keys (KVector-derived `TEdge`/`TTriangle`, e.g. `NaiveMinST`); identity-hashed → insertion order, journal the site |
+| Guava                         | small local helpers; never a dependency                                                                                                                                                                                        |
+| EMF (ElkGraph)                | plain classes, Java accessor names (AD-11)                                                                                                                                                                                     |
+| `assert`                      | dev-only check helper, no production cost                                                                                                                                                                                      |
+| checked exceptions            | plain `Error` subclasses; keep throw sites                                                                                                                                                                                     |
 
 Hazards: Java `int` arithmetic wraps at 32 bits; field defaults are zero/null/
 false, not `undefined`; `Random` draws (`nextInt`, `nextDouble`, `nextFloat`,
@@ -173,11 +173,11 @@ like any other source.
 
 Defaults are relative to the repo root (AD-15); never hardcode absolute paths.
 
-| Variable         | Default                           | Holds                                   |
-| ---------------- | --------------------------------- | --------------------------------------- |
-| `ELK_SOURCE_DIR` | `../elk`                          | ELK Java source at the pinned commit    |
-| `ELK_ORACLE_DIR` | `../elk-oracle`                   | detached worktree + built oracle        |
-| `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models`    | corpus, pinned `ac5af2ba…` in `test/corpus/manifest.json`, not vendored |
+| Variable         | Default                        | Holds                                                                   |
+| ---------------- | ------------------------------ | ----------------------------------------------------------------------- |
+| `ELK_SOURCE_DIR` | `../elk`                       | ELK Java source at the pinned commit                                    |
+| `ELK_ORACLE_DIR` | `../elk-oracle`                | detached worktree + built oracle                                        |
+| `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | corpus, pinned `ac5af2ba…` in `test/corpus/manifest.json`, not vendored |
 
 Only `tools/` and `test/` read these variables. Library code in `src/` never
 reads env vars. The oracle needs Maven ≥ 3.9 and JDK 21 (fallback JDK 17).

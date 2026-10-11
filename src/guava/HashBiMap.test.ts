@@ -135,7 +135,10 @@ describe('HashBiMap JVM+Guava replay (guava.json biMap)', () => {
 
   it('records the duplicate-value rejection as IllegalArgumentException', () => {
     const script = vectors.biMap.find((s) => s.name === 'integer-duplicate-value') as Script;
-    expect(script.steps[2]?.result).toEqual({ throws: 'IllegalArgumentException', message: 'value already present: 1' });
+    expect(script.steps[2]?.result).toEqual({
+      throws: 'IllegalArgumentException',
+      message: 'value already present: 1',
+    });
   });
 });
 
@@ -190,7 +193,10 @@ describe('HashBiMap', () => {
       ['c', 1],
     ]);
     expect(bimap.forcePut('d', 2)).toBeUndefined();
-    expect(bimap.entries()).toEqual([['c', 1], ['d', 2]]);
+    expect(bimap.entries()).toEqual([
+      ['c', 1],
+      ['d', 2],
+    ]);
   });
 
   it('inverse() is a live view in both directions and its inverse is the original', () => {

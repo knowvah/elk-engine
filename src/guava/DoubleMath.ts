@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
-import { compare } from "../java/lang/DoubleCompare.js";
-import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
+import { compare } from '../java/lang/DoubleCompare.js';
+import { IllegalArgumentException } from '../java/lang/IllegalArgumentException.js';
 
 function checkTolerance(tolerance: number): void {
   // `!(tolerance >= 0)` also rejects NaN.
@@ -19,9 +19,7 @@ function checkTolerance(tolerance: number): void {
 export function fuzzyEquals(a: number, b: number, tolerance: number): boolean {
   checkTolerance(tolerance);
   // `a === b` covers equal infinities (where a - b is NaN); the NaN pair mirrors Double.equals.
-  return (
-    Math.abs(a - b) <= tolerance || a === b || (Number.isNaN(a) && Number.isNaN(b))
-  );
+  return Math.abs(a - b) <= tolerance || a === b || (Number.isNaN(a) && Number.isNaN(b));
 }
 
 /**

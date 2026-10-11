@@ -55,9 +55,7 @@ function collectSrc(dir: string): string[] {
 }
 
 function findAllGlobals(): Global[] {
-  return collectSrc(SRC).flatMap((f) =>
-    findGlobals(relative(ROOT, f).split('\\').join('/'), readFileSync(f, 'utf8')),
-  );
+  return collectSrc(SRC).flatMap((f) => findGlobals(relative(ROOT, f).split('\\').join('/'), readFileSync(f, 'utf8')));
 }
 
 describe('fitness: module-level globals (per-run state only)', () => {

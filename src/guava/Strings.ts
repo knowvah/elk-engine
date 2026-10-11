@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
+import { IllegalArgumentException } from '../java/lang/IllegalArgumentException.js';
 
 /** @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/base/Strings.html#isNullOrEmpty(java.lang.String) */
 export function isNullOrEmpty(string: string | null | undefined): boolean {

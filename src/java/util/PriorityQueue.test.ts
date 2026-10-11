@@ -24,8 +24,7 @@ interface Script {
   readonly steps: readonly Step[];
 }
 
-const scripts = (JSON.parse(readFileSync(VECTORS_URL, 'utf8')) as { priorityQueue: Script[] })
-  .priorityQueue;
+const scripts = (JSON.parse(readFileSync(VECTORS_URL, 'utf8')) as { priorityQueue: Script[] }).priorityQueue;
 
 const byKey = (a: Elem, b: Elem): number => a.key - b.key;
 

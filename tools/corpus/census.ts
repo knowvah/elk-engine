@@ -1,13 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { spawnSync } from 'node:child_process';
-import {
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  realpathSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { loadManifest, repoRoot, resolveModelsDir } from '../../test/corpus/corpus.js';
@@ -46,11 +39,7 @@ export const WRITE_FLAG = '--write';
 export const ELK_ALGORITHM_PREFIX = 'org.eclipse.elk.';
 export const ELK_SHORT_PREFIX = 'elk.';
 export const DEFAULT_ALGORITHM = `${ELK_ALGORITHM_PREFIX}layered`;
-export const ALGORITHM_OPTION_KEYS: readonly string[] = [
-  'algorithm',
-  'elk.algorithm',
-  'org.eclipse.elk.algorithm',
-];
+export const ALGORITHM_OPTION_KEYS: readonly string[] = ['algorithm', 'elk.algorithm', 'org.eclipse.elk.algorithm'];
 export const OPTION_CONTAINERS: readonly string[] = ['layoutOptions', 'properties'];
 export const MODEL_FOLDERS: readonly Folder[] = ['examples', 'tests', 'tickets', 'realworld'];
 export const MODEL_EXTENSIONS: readonly string[] = ['elkg', 'elkt', 'json'];
@@ -136,11 +125,7 @@ function emptyTally(): Tally {
 }
 
 /** Pure classification of one parsed (oracle parse-mode) ELK JSON graph. */
-export function classifyModel(
-  parsed: unknown,
-  id: string,
-  formats: readonly string[],
-): CensusModel {
+export function classifyModel(parsed: unknown, id: string, formats: readonly string[]): CensusModel {
   const sorted = [...formats].sort();
   const tally = emptyTally();
   const ok = isRecord(parsed);
@@ -191,11 +176,7 @@ export function discoverModels(modelsDir: string): DiscoveredModel[] {
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
-export function assembleCensus(
-  models: readonly CensusModel[],
-  modelsCommit: string,
-  elkCommit: string,
-): Census {
+export function assembleCensus(models: readonly CensusModel[], modelsCommit: string, elkCommit: string): Census {
   const sorted = [...models].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   for (let i = 1; i < sorted.length; i++) {
     if (sorted[i]?.id === sorted[i - 1]?.id) {
@@ -239,23 +220,16 @@ function sourcePath(modelsDir: string, model: DiscoveredModel): string {
   return path.join(modelsDir, `${model.id}.${ext}`);
 }
 
-function runOracleParse(
-  modelsDir: string,
-  models: readonly DiscoveredModel[],
-  scratch: string,
-): OracleResult[] {
+function runOracleParse(modelsDir: string, models: readonly DiscoveredModel[], scratch: string): OracleResult[] {
   rmSync(scratch, { recursive: true, force: true });
   mkdirSync(scratch, { recursive: true });
   const casesFile = path.join(scratch, 'cases.jsonl');
-  const lines = models.map((m) =>
-    JSON.stringify({ id: m.id, input: sourcePath(modelsDir, m), mode: PARSE_MODE }),
-  );
+  const lines = models.map((m) => JSON.stringify({ id: m.id, input: sourcePath(modelsDir, m), mode: PARSE_MODE }));
   writeFileSync(casesFile, `${lines.join('\n')}\n`);
-  const run = spawnSync(
-    path.join(repoRoot(), RUN_SCRIPT_RELATIVE),
-    ['--cases', casesFile, path.join(scratch, 'out')],
-    { encoding: 'utf8', maxBuffer: MAX_BUFFER },
-  );
+  const run = spawnSync(path.join(repoRoot(), RUN_SCRIPT_RELATIVE), ['--cases', casesFile, path.join(scratch, 'out')], {
+    encoding: 'utf8',
+    maxBuffer: MAX_BUFFER,
+  });
   if (run.status !== 0) throw new Error(`Oracle run failed (${run.status}): ${run.stderr}`);
   return run.stdout
     .split('\n')
@@ -300,9 +274,7 @@ export function buildCensus(modelsDir: string, scratch: string): CensusRun {
   if (bad.length > 0 || results.length !== models.length) {
     throw new Error(`Oracle harness fault: ${JSON.stringify(bad)}`);
   }
-  const classified = models.map((m) =>
-    classifyModel(readParsed(scratch, byId.get(m.id), m.id), m.id, m.formats),
-  );
+  const classified = models.map((m) => classifyModel(readParsed(scratch, byId.get(m.id), m.id), m.id, m.formats));
   const elkCommit = readFileSync(path.join(repoRoot(), ELK_COMMIT_RELATIVE), 'utf8').trim();
   return {
     census: assembleCensus(classified, loadManifest().commit, elkCommit),

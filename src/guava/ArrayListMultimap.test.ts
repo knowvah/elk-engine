@@ -13,9 +13,11 @@ interface Thrown {
   readonly message: string;
 }
 
-const negative = (JSON.parse(readFileSync(VECTORS_URL, 'utf8')) as {
-  negativeExpectedSize: { arrayListKeys: Thrown; arrayListValuesPerKey: Thrown };
-}).negativeExpectedSize;
+const negative = (
+  JSON.parse(readFileSync(VECTORS_URL, 'utf8')) as {
+    negativeExpectedSize: { arrayListKeys: Thrown; arrayListValuesPerKey: Thrown };
+  }
+).negativeExpectedSize;
 
 function newMultimap(): ReturnType<typeof ArrayListMultimap.create<string, number>> {
   return ArrayListMultimap.create<string, number>(STRING, INTEGER);

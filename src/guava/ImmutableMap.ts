@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: EPL-2.0
-import { UnsupportedOperationException } from "../java/lang/UnsupportedOperationException.js";
-import { IllegalArgumentException } from "../java/lang/IllegalArgumentException.js";
+import { UnsupportedOperationException } from '../java/lang/UnsupportedOperationException.js';
+import { IllegalArgumentException } from '../java/lang/IllegalArgumentException.js';
 
-const REJECT_MESSAGE = "ImmutableMap is read-only";
+const REJECT_MESSAGE = 'ImmutableMap is read-only';
 
 function requireNonNull(value: unknown, what: string): void {
   if (value === null || value === undefined) {
@@ -21,8 +21,8 @@ export class ImmutableMap<K, V> extends Map<K, V> {
   constructor(entries: Iterable<readonly [K, V]>) {
     super();
     for (const [key, value] of entries) {
-      requireNonNull(key, "key");
-      requireNonNull(value, "value");
+      requireNonNull(key, 'key');
+      requireNonNull(value, 'value');
       if (this.has(key)) {
         throw new IllegalArgumentException(`Multiple entries with same key: ${String(key)}`);
       }

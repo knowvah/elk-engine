@@ -1,0 +1,18 @@
+# Generated or frozen artifacts
+dist/
+coverage/
+node_modules/
+package-lock.json
+test/golden/
+test/corpus/
+# Written by tools/bundle-deps.ts; the fitness test compares it byte-for-byte
+test/architecture/bundle-deps.json
+
+# Mission archaeology: never rewritten (CLAUDE.md)
+plans/
+
+# Local tooling state
+.claude/
+.serena/
+.tools/
+.idea/
