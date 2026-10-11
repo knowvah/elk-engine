@@ -4,13 +4,19 @@
 # source-built oracle (AD-3).
 # Usage: run.sh <outDir> <input.json|input.elkt>...
 #        run.sh --cases <cases.jsonl> <outDir>
-# Case file: JSON Lines {"id","input","mode":"layout"|"parse"}; output is
-# <outDir>/<id with "/" replaced by "__">.json, one JSON result line per
-# case on stdout.
+#        run.sh --list-algorithms
+# Case file: JSON Lines {"id","input","mode":"layout"|"parse",
+# "algorithm"?,"variant"?}; output is <outDir>/<id with "/" replaced by
+# "__">.json, one JSON result line per case on stdout. Each case is bounded
+# by ELK_SWEEP_TIMEOUT_MS (default 30000); a JVM that hit a timeout exits
+# with code 75 and is restarted on the cases without a result line.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 HARNESS_DIR="$ROOT/tools/oracle/harness"
+VARIANTS_FILE="$ROOT/test/corpus/variants.json"
+EXIT_TIMEOUT=75 # keep in sync with ElkOracle.EXIT_TIMEOUT
+DEFAULT_TIMEOUT_MS=30000
 ELK_ORACLE_DIR="${ELK_ORACLE_DIR:-$ROOT/../elk-oracle}"
 P2_BUNDLES="${P2_BUNDLES:-$HOME/.m2/repository/p2/osgi/bundle}"
 # Third-party bundles named by Require-Bundle in the in-scope manifests, plus
@@ -75,14 +81,64 @@ compile_harness() { # compile_harness <classpath> <classesDir>
   javac -nowarn -encoding UTF-8 -cp "$1" -d "$2" "$HARNESS_DIR"/*.java
 }
 
+cleanup() {
+  rm -rf "${WORK_DIR:-}"
+}
+
+oracle_java() { # oracle_java <timeoutMs> <args...>; runs the harness JVM
+  local timeout="$1"
+  shift
+  java -Delk.oracle.variants="$VARIANTS_FILE" -Delk.oracle.timeoutMs="$timeout" \
+    -cp "$CLASSES:$CP" ElkOracle "$@"
+}
+
+run_cases() { # run_cases <cases.jsonl> <outDir>; restarts the JVM after a timeout
+  local timeout="${ELK_SWEEP_TIMEOUT_MS:-$DEFAULT_TIMEOUT_MS}"
+  local cur="$WORK_DIR/cases.cur" iter="$WORK_DIR/iter.out" rc overall=0 done_count
+  case "$timeout" in '' | *[!0-9]*) die "ELK_SWEEP_TIMEOUT_MS must be a non-negative integer" ;; esac
+  awk 'NF' "$1" >"$cur"
+  while true; do
+    rc=0
+    oracle_java "$timeout" --cases "$cur" "$2" | tee "$iter" || rc=$?
+    if [ "$rc" -eq "$EXIT_TIMEOUT" ]; then
+      done_count="$(wc -l <"$iter")"
+      tail -n +"$((done_count + 1))" "$cur" >"$cur.next"
+      mv "$cur.next" "$cur"
+      [ -s "$cur" ] || break
+    elif [ "$rc" -eq 1 ]; then
+      overall=1
+      break
+    else
+      overall="$rc"
+      break
+    fi
+  done
+  return "$overall"
+}
+
 main() {
-  local classes="$ELK_ORACLE_DIR/harness-classes" cp
-  [ "$#" -ge 2 ] || die "usage: run.sh <outDir> <input>... | run.sh --cases <cases.jsonl> <outDir>"
+  CLASSES="$ELK_ORACLE_DIR/harness-classes"
+  [ "$#" -ge 1 ] || die "usage: run.sh <outDir> <input>... | run.sh --cases <cases.jsonl> <outDir> | run.sh --list-algorithms"
   [ -f "$ELK_ORACLE_DIR/oracle-build.json" ] ||
     die "$ELK_ORACLE_DIR/oracle-build.json missing; run tools/oracle/build.sh"
-  cp="$(build_classpath)"
-  compile_harness "$cp" "$classes"
-  exec java -cp "$classes:$cp" ElkOracle "$@"
+  CP="$(build_classpath)"
+  compile_harness "$CP" "$CLASSES"
+  case "${1:-}" in
+    --list-algorithms)
+      [ "$#" -eq 1 ] || die "--list-algorithms takes no arguments"
+      oracle_java 0 --list-algorithms
+      ;;
+    --cases)
+      [ "$#" -eq 3 ] || die "usage: run.sh --cases <cases.jsonl> <outDir>"
+      WORK_DIR="$(mktemp -d)"
+      trap cleanup EXIT
+      run_cases "$2" "$3"
+      ;;
+    *)
+      [ "$#" -ge 2 ] || die "usage: run.sh <outDir> <input>... "
+      oracle_java 0 "$@"
+      ;;
+  esac
 }
 
 main "$@"

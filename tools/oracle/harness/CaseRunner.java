@@ -4,21 +4,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 import org.eclipse.elk.core.RecursiveGraphLayoutEngine;
 import org.eclipse.elk.core.util.BasicProgressMonitor;
 import org.eclipse.elk.graph.ElkNode;
 import org.eclipse.elk.graph.json.ElkGraphJson;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-/** Runs one case: read the model, optionally lay it out, write the JSON. */
+/** Runs one case: read the model, overlay, optionally lay it out, write the JSON. */
 final class CaseRunner {
-
-    static final String MODE_LAYOUT = "layout";
-    static final String MODE_PARSE = "parse";
 
     private static final String OUTPUT_EXTENSION = ".json";
     private static final String ID_SEPARATOR = "/";
@@ -27,42 +20,34 @@ final class CaseRunner {
 
     private final Path outDir;
     private final ElkModelReader reader = new ElkModelReader();
+    private final GraphOverlay overlay;
 
-    CaseRunner(final Path outDir) {
+    CaseRunner(final Path outDir, final GraphOverlay overlay) {
         this.outDir = outDir;
-    }
-
-    /** Parses a case-file line; throws if it is not a valid case. */
-    static JsonObject parseCase(final String line) {
-        JsonObject json = JsonParser.parseString(line).getAsJsonObject();
-        for (String key : List.of("id", "input", "mode")) {
-            if (!json.has(key) || !json.get(key).isJsonPrimitive()) {
-                throw new IllegalArgumentException("case lacks string field '" + key + "'");
-            }
-        }
-        String mode = json.get("mode").getAsString();
-        if (!MODE_LAYOUT.equals(mode) && !MODE_PARSE.equals(mode)) {
-            throw new IllegalArgumentException("unknown mode '" + mode + "'");
-        }
-        return json;
+        this.overlay = overlay;
     }
 
     static String outputName(final String id) {
         return id.replace(ID_SEPARATOR, ID_REPLACEMENT) + OUTPUT_EXTENSION;
     }
 
+    Path outputPath(final String id) {
+        return outDir.resolve(outputName(id));
+    }
+
     /** Runs one case; never throws. */
-    CaseResult run(final String id, final String input, final String mode) {
+    CaseResult run(final CaseSpec spec) {
         long start = System.nanoTime();
         String status = CaseResult.OK;
         Throwable failure = null;
         try {
-            ElkNode graph = reader.read(Paths.get(input));
-            if (MODE_LAYOUT.equals(mode)) {
+            ElkNode graph = reader.read(Paths.get(spec.input()));
+            overlay.apply(graph, spec.algorithm(), spec.variant());
+            if (CaseSpec.MODE_LAYOUT.equals(spec.mode())) {
                 new RecursiveGraphLayoutEngine().layout(graph, new BasicProgressMonitor());
             }
-            write(outDir.resolve(outputName(id)), export(graph));
-        } catch (IOException e) {
+            write(outputPath(spec.id()), export(graph));
+        } catch (IOException | OracleFault e) {
             status = CaseResult.ORACLE_ERROR;
             failure = e;
         } catch (Exception | StackOverflowError e) {
@@ -71,9 +56,10 @@ final class CaseRunner {
         }
         long ms = (System.nanoTime() - start) / NANOS_PER_MILLI;
         if (failure == null) {
-            return new CaseResult(id, status, null, null, ms);
+            return new CaseResult(spec.id(), status, null, null, ms);
         }
-        return new CaseResult(id, status, failure.getClass().getName(), failure.getMessage(), ms);
+        return new CaseResult(spec.id(), status, failure.getClass().getName(),
+                CaseResult.normalizeMessage(failure.getMessage()), ms);
     }
 
     static String export(final ElkNode graph) {

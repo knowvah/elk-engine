@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: EPL-2.0
+import java.util.regex.Pattern;
+
 import com.google.gson.JsonObject;
 
 /**
  * One case outcome, printed as a JSON line on stdout.
  *
  * @param id the case id
- * @param status {@code ok}, {@code throws} or {@code oracle-error}
+ * @param status {@code ok}, {@code throws}, {@code oracle-error} or {@code timeout}
  * @param exceptionClass the exception class name, or null when ok
  * @param message the exception message, or null
  * @param ms the elapsed milliseconds
@@ -15,6 +17,15 @@ record CaseResult(String id, String status, String exceptionClass, String messag
     static final String OK = "ok";
     static final String THROWS = "throws";
     static final String ORACLE_ERROR = "oracle-error";
+    static final String TIMEOUT = "timeout";
+
+    private static final Pattern IDENTITY_HASH = Pattern.compile("@[0-9a-f]+");
+    private static final String HASH_PLACEHOLDER = "@<hash>";
+
+    /** Replaces every identity-hash token with {@code @<hash>} (D4). */
+    static String normalizeMessage(final String message) {
+        return message == null ? null : IDENTITY_HASH.matcher(message).replaceAll(HASH_PLACEHOLDER);
+    }
 
     String toJsonLine() {
         JsonObject json = new JsonObject();
