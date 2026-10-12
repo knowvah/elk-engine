@@ -100,7 +100,7 @@ criteria imply; patch/minor versions within D1; fix commits to satisfy a gate.
 | 7 | cs da es et fi | T11–T15 | 6 + review | [x] |
 | 8 | fr hu is it ja | T16–T20 | 7 | [x] |
 | 9 | ko nl no pl pt-br | T21–T25 | 8 | [x] |
-| 10 | ro ru sk sv tr | T26–T30 | 9 | [ ] |
+| 10 | ro ru sk sv tr | T26–T30 | 9 | [x] |
 | 11 | zh-cn zh-tw | T31–T32 | 10 | [ ] |
 | 12 | Close-out | T33 | 11 | [ ] |
 
