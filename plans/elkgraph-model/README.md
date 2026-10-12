@@ -101,7 +101,7 @@ Parallel agents never run `npm run coverage` (shared `coverage/` dir); the orche
 | 2 | core.math, EMF runtime | T5–T6 | 1 | [x] |
 | 3 | Property classes + ElkReflect, model interfaces + base impls | T7–T8 | 2 | [x] |
 | 4 | Model completion + ElkGraphUtil + vector replay | T9 | 3 | [x] |
-| 5 | GraphIdentifierGenerator, docs | T10–T11 | 4 | [ ] |
+| 5 | GraphIdentifierGenerator, docs | T10–T11 | 4 | [x] |
 
 ## Document index
 
@@ -121,3 +121,35 @@ mission (3: core metadata slice + `.melk` codegen).
 
 1. Re-read this file. 2. Re-read `decision-journal.md`. 3. First batch with `[ ]` →
 its `overview.md` → first incomplete task.
+
+## Mission summary (2026-10-12)
+
+- **Tasks:** 11 of 11 planned (T1–T11) in 5 batches; 16 commits on `feature/elkgraph-model`
+  (11 task commits including one `fix(T7)`, 5 `docs(plans)`), merged to `main` with a merge commit.
+- **Delivered:** `src/java` shims (`IllegalStateException`, `ListIterator`/`ArrayListIterator`,
+  `LinkedList`, `EnumSet`, `Comparable`); `src/core/options` (`PortSide`, `Direction`,
+  `SizeConstraint`); `src/core/math` (`KVector`, `KVectorChain`, `Spacing`, `ElkMargin`,
+  `ElkPadding`) + `IDataObject`; `src/emf` (14 files: EList family, `EcoreEMap`,
+  `BasicEObjectImpl`, `EcoreUtil`, `ECollections`); `src/graph/properties` (interfaces, `Property`,
+  `MapPropertyHolder`, `PropertyHolderComparator`, `GraphFeature`, annotation registries);
+  `src/graph` interfaces + guards + `ElkGraphPackage` constants + `ElkGraphFactory`;
+  `src/graph/impl` (all 12 impls); `src/graph/util` (`ElkReflect`, `ElkGraphUtil`,
+  `GraphIdentifierGenerator`). 60 source files, 34 test files; ported JUnit: `KVectorTest`,
+  `KVectorChainTest`, `PropertyTest`, `ElkGraphUtilTest` — every assertion unchanged.
+- **Vectors (D9):** `test/golden/refs/java/graph.json` — 40 scenarios, 654 steps, byte-identical
+  across 5 regenerations; **654/654 steps replay** against the TS model with 0 model revisions.
+- **Decisions:** 27 journal rows; 3 amendments/notes flagged for review (D2: recursion check lives
+  in the generated setters, not the lists; D6: `isCloneable` also accepts registered classes; D5:
+  `PROPERTY` has no `compare`), 3 judgment calls (T2 scenarios data file; `JavaString`-shaped
+  helpers parked in `IDataObject.ts`/`Property.ts`; T7 launched before batch 2 closed).
+- **Gates at mission end:** format:check clean; typecheck 0; coverage 98 files / 2018 tests,
+  99.91% statements, 99.72% branches, 100% functions, 99.9% lines (uncovered: 3 unreachable
+  rethrow/iterator arms); frozen vectors unchanged; lizard clean on every changed file;
+  docs:build green; `npm test` ≈ 4.4 s.
+- **Known issues / follow-ups:** move `javaSplit`/`javaTrim`/`compareStrings` into
+  `src/java/lang/JavaString.ts`; export `isPropertyValueProxy` from `MapPropertyHolder.ts`; consider
+  `LinkedList.clone()` instead of the D6 extension; a `docs/architecture/` page for the EMF detail
+  the 500-line cap dropped from §5; `docs/translation-rules-collections.md` V1 wording names the
+  wrong bundle; `LayoutMetaDataService.initElkReflect` (mission 5) replaces the `Property.test.ts`
+  cloner seam.
+- **Next roadmap mission:** 3 — core metadata slice + `.melk` codegen.
