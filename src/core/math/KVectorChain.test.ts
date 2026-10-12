@@ -429,3 +429,18 @@ describe('KVectorChain.reverse', () => {
     expect(chain.get(0)).toBe(a);
   });
 });
+
+describe('KVectorChain.clone', () => {
+  it('keeps the run-time class and shares the vectors (shallow, as Object.clone)', () => {
+    const a = new KVector(1, 2);
+    const b = new KVector(3, 4);
+    const chain = new KVectorChain(a, b);
+    const copy = chain.clone();
+    expect(copy).toBeInstanceOf(KVectorChain);
+    expect(copy).not.toBe(chain);
+    expect(copy.toString()).toBe('(1.0,2.0; 3.0,4.0)');
+    expect(copy.get(0)).toBe(a);
+    copy.removeLast();
+    expect(chain.size()).toBe(2);
+  });
+});

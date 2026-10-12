@@ -124,6 +124,18 @@ export class LinkedList<E> implements Iterable<E> {
     return [...this.#items];
   }
 
+  /**
+   * Returns a shallow copy of this list; the elements themselves are not copied. As with
+   * `Object.clone`, the copy has the run-time class of the original, so a subclass (`KVectorChain`)
+   * clones to an instance of itself. The presence of this method is what makes a list `Cloneable`
+   * for `ElkReflect.isCloneable`, as `LinkedList implements Cloneable` does in Java.
+   */
+  clone(): this {
+    const copy = new (this.constructor as new () => this)();
+    copy.#items.push(...this.#items);
+    return copy;
+  }
+
   [Symbol.iterator](): Iterator<E> {
     return this.iterator();
   }
