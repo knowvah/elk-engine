@@ -180,12 +180,30 @@ describe('shipped English goldens', () => {
   });
 });
 
-describe('registered locales translate every golden id', () => {
-  const IDS = readJson<{ golden: { id: string }[] }>('../corpus/manifest.json').golden.map((g) => g.id);
+/**
+ * Golden ids in `test/corpus/manifest.json` when the shipped translations were
+ * completed (decision D7, close-out T33). Every registered locale must translate
+ * all of these; an id added to the manifest later falls back to English in the
+ * gallery and is reported by `docs:i18n-status`, not failed here.
+ */
+const FROZEN_GOLDEN_IDS: readonly string[] = [
+  'ptolemy-scrambler',
+  'ptolemy-clockdrift-hierarchy',
+  'ptolemy-afdx-multicast',
+  'ptolemy-crossbar-switch',
+];
+
+describe('registered locales translate every frozen golden id', () => {
+  it('freezes ids that still exist in the manifest', () => {
+    const manifestIds = readJson<{ golden: { id: string }[] }>('../corpus/manifest.json').golden.map((g) => g.id);
+    expect(FROZEN_GOLDEN_IDS.filter((id) => !manifestIds.includes(id))).toEqual([]);
+    expect(FROZEN_GOLDEN_IDS).toHaveLength(4);
+  });
+
   for (const prefix of Object.keys(LOCALES).sort()) {
-    it(`${prefix} covers all ${IDS.length} ids`, () => {
+    it(`${prefix} covers all ${FROZEN_GOLDEN_IDS.length} frozen ids`, () => {
       const tr = readJson<Record<string, unknown>>(`../../docs-site/.vitepress/locales/goldens/${prefix}.json`);
-      const missing = IDS.filter((id) => typeof tr[id] !== 'string' || (tr[id] as string).trim() === '');
+      const missing = FROZEN_GOLDEN_IDS.filter((id) => typeof tr[id] !== 'string' || (tr[id] as string).trim() === '');
       expect(missing.map((id) => `${prefix}: ${id}`)).toEqual([]);
     });
   }
