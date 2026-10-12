@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "範例集",
+    "indexHeading": "範例集：黃金語料庫",
+    "indexIntro": "本節中的每個圖都是 ELK Java 參考實作（基準實作，從原始碼建置）所產生的 **{total} 個黃金版面配置**之一。它們以 ELK JSON 儲存，並由該 JSON **在您的瀏覽器中即時**轉譯。每個版面配置演算法各有一頁：",
+    "indexRowCount": "{count} 個黃金案例",
+    "indexOutro": "每張卡片顯示基準實作的版面配置、簡短說明，以及（已摺疊的）繪製該圖所用的「ELK JSON 原始碼」。TypeScript 移植必須符合這些版面配置（請見{conformance}）。",
+    "conformanceLabel": "一致性",
+    "algorithmTitle": "{algorithm} 黃金案例",
+    "algorithmHeading": "{algorithm}：{count} 個黃金案例",
+    "algorithmIntro": "下方的每個圖都是基準實作的版面配置，由其 ELK JSON 在您的瀏覽器中即時轉譯。",
+    "blurbs": {
+      "layered": "以階層（Sugiyama 風格）為基礎的版面配置，適用於含連接埠與階層的節點連線圖。"
+    }
+  },
+  "ptolemy-scrambler": "最小的階層式 Ptolemy 模型：一個含連接埠與節點標籤的複合節點（12 個節點、22 個連接埠、11 個標籤，深度 2），以 layered 的預設設定與預設種子進行版面配置。",
+  "ptolemy-clockdrift-hierarchy": "兩層巢狀子節點，含跨階層的邊（12 個節點、31 個連接埠、11 個標籤，深度 3），以 layered 的預設設定與預設種子進行版面配置。",
+  "ptolemy-afdx-multicast": "跨越複合節點連接埠的多播扇出邊，連接埠的側邊與索引皆為固定（15 個節點、30 個連接埠、14 個標籤，深度 2）。",
+  "ptolemy-crossbar-switch": "連接埠密集的模型，每個節點約有三個連接埠，用來考驗連接埠的排序（13 個節點、40 個連接埠、12 個標籤，深度 2）。"
+}
