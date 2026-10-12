@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galerie",
+    "indexHeading": "Galerie: het golden-corpus",
+    "indexIntro": "Elke graaf in dit gedeelte is een van de **{total} golden-layouts** die door de ELK-Java-referentie-implementatie (het orakel, gebouwd vanuit de broncode) zijn geproduceerd. Ze zijn opgeslagen als ELK JSON en worden **live in uw browser** uit die JSON gerenderd. Eén pagina per layoutalgoritme:",
+    "indexRowCount": "{count} goldens",
+    "indexOutro": "Elke kaart toont de orakel-layout, een korte beschrijving en, ingeklapt, de ELK JSON-bron waaruit hij is getekend. Dit zijn de layouts waaraan de TypeScript-portering wordt gehouden (zie {conformance}).",
+    "conformanceLabel": "Conformiteit",
+    "algorithmTitle": "{algorithm}-goldens",
+    "algorithmHeading": "{algorithm}: {count} goldens",
+    "algorithmIntro": "Elke graaf hieronder is een orakel-layout die live in uw browser uit zijn ELK JSON wordt gerenderd.",
+    "blurbs": {
+      "layered": "Laaggebaseerde layout (in de stijl van Sugiyama) voor knoop-kantdiagrammen met poorten en hiërarchie."
+    }
+  },
+  "ptolemy-scrambler": "Het kleinste hiërarchische Ptolemy-model: één samengestelde knoop met poorten en knooplabels (12 knopen, 22 poorten, 11 labels, diepte 2), uitgelegd met de standaardinstellingen van layered en de standaardseed.",
+  "ptolemy-clockdrift-hierarchy": "Twee niveaus van geneste kinderen met hiërarchieoverschrijdende kanten (12 knopen, 31 poorten, 11 labels, diepte 3), uitgelegd met de standaardinstellingen van layered en de standaardseed.",
+  "ptolemy-afdx-multicast": "Multicast-waaierkanten over poorten van samengestelde knopen heen, met vaste poortzijden en -indices (15 knopen, 30 poorten, 14 labels, diepte 2).",
+  "ptolemy-crossbar-switch": "Een poortdicht model met ongeveer drie poorten per knoop, dat de poortvolgorde zwaar belast (13 knopen, 40 poorten, 12 labels, diepte 2)."
+}
