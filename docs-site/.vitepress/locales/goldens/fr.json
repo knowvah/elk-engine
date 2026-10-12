@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galerie",
+    "indexHeading": "Galerie : le corpus golden",
+    "indexIntro": "Chaque graphe de cette section est l’un des **{total} layouts golden** produits par l’implémentation de référence Java d’ELK (l’oracle, compilé depuis les sources). Ils sont stockés en ELK JSON et rendus **en direct dans votre navigateur** à partir de ce JSON. Une page par algorithme de layout :",
+    "indexRowCount": "{count} goldens",
+    "indexOutro": "Chaque carte affiche le layout de l’oracle, une courte description et, repliée, la Source ELK JSON dont il est tiré. Ce sont les layouts auxquels le portage TypeScript est tenu (voir {conformance}).",
+    "conformanceLabel": "Conformité",
+    "algorithmTitle": "Goldens {algorithm}",
+    "algorithmHeading": "{algorithm} : {count} goldens",
+    "algorithmIntro": "Chaque graphe ci-dessous est un layout de l’oracle, rendu en direct dans votre navigateur à partir de son ELK JSON.",
+    "blurbs": {
+      "layered": "Layout par couches (de style Sugiyama) pour les diagrammes nœuds-arêtes avec ports et hiérarchie."
+    }
+  },
+  "ptolemy-scrambler": "Le plus petit modèle Ptolemy hiérarchique : un nœud composite avec des ports et des étiquettes de nœud (12 nœuds, 22 ports, 11 étiquettes, profondeur 2), disposé avec les paramètres par défaut de layered et la graine par défaut.",
+  "ptolemy-clockdrift-hierarchy": "Deux niveaux d’enfants imbriqués avec des arêtes traversant la hiérarchie (12 nœuds, 31 ports, 11 étiquettes, profondeur 3), disposés avec les paramètres par défaut de layered et la graine par défaut.",
+  "ptolemy-afdx-multicast": "Arêtes de diffusion multicast à travers les ports de nœuds composites, avec côtés et indices de port fixes (15 nœuds, 30 ports, 14 étiquettes, profondeur 2).",
+  "ptolemy-crossbar-switch": "Un modèle dense en ports, environ trois ports par nœud, qui met à l’épreuve l’ordre des ports (13 nœuds, 40 ports, 12 étiquettes, profondeur 2)."
+}
