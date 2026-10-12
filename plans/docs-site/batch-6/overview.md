@@ -8,4 +8,4 @@ does not start until the user approves German or requests changes.
 
 | ID | Language | Agents | Writes | Depends On | Done |
 |----|----------|--------|--------|------------|------|
-| [T10](T10-translate-de.md) | German | 2 technical-writer + orchestrator | `docs-site/de/**`, `docs-site/.vitepress/locales/de.ts`, `docs-site/.vitepress/locales/goldens/de.json`, `plans/docs-site/translation-spec.md` (glossary column) | T1–T9 | [ ] |
+| [T10](T10-translate-de.md) | German | 2 technical-writer + orchestrator | `docs-site/de/**`, `docs-site/.vitepress/locales/de.ts`, `docs-site/.vitepress/locales/goldens/de.json`, `plans/docs-site/translation-spec.md` (glossary column) | T1–T9 | [x] |
