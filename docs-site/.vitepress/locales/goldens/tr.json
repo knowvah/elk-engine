@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galeri",
+    "indexHeading": "Galeri: golden derlemi",
+    "indexIntro": "Bu bölümdeki her grafik, ELK Java referans uygulamasının (kaynaktan derlenmiş oracle) ürettiği **{total} golden yerleşimden** biridir. ELK JSON olarak saklanırlar ve bu JSON'dan **tarayıcınızda canlı** olarak işlenirler. Yerleşim algoritması başına bir sayfa:",
+    "indexRowCount": "{count} golden",
+    "indexOutro": "Her kart, oracle yerleşimini, kısa bir açıklamayı ve katlanmış halde, çizildiği ELK JSON kaynağını gösterir. TypeScript taşıması bu yerleşimlere bağlıdır ({conformance} sayfasına bakın).",
+    "conformanceLabel": "Uygunluk",
+    "algorithmTitle": "{algorithm} golden'ları",
+    "algorithmHeading": "{algorithm}: {count} golden",
+    "algorithmIntro": "Aşağıdaki her grafik, ELK JSON kaynağından tarayıcınızda canlı olarak işlenen bir oracle yerleşimidir.",
+    "blurbs": {
+      "layered": "Port ve hiyerarşi içeren düğüm-kenar diyagramları için katman tabanlı (Sugiyama tarzı) yerleşim."
+    }
+  },
+  "ptolemy-scrambler": "En küçük hiyerarşik Ptolemy modeli: port ve düğüm etiketleri olan tek bir bileşik düğüm (12 düğüm, 22 port, 11 etiket, derinlik 2); varsayılan layered ayarları ve varsayılan tohumla yerleştirilmiştir.",
+  "ptolemy-clockdrift-hierarchy": "Hiyerarşik kenarlı iki düzey iç içe çocuk (12 düğüm, 31 port, 11 etiket, derinlik 3); varsayılan layered ayarları ve varsayılan tohumla yerleştirilmiştir.",
+  "ptolemy-afdx-multicast": "Sabit port kenarları ve indeksleriyle bileşik düğüm portları arasında çoklu yayın dağılım kenarları (15 düğüm, 30 port, 14 etiket, derinlik 2).",
+  "ptolemy-crossbar-switch": "Düğüm başına yaklaşık üç port içeren, port sıralamasını zorlayan port yoğun bir model (13 düğüm, 40 port, 12 etiket, derinlik 2)."
+}
