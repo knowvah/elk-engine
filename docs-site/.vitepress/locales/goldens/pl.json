@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galeria",
+    "indexHeading": "Galeria: korpus golden",
+    "indexIntro": "Każdy graf w tej sekcji to jeden z **{total} layoutów golden** wytworzonych przez referencyjną implementację ELK w Javie (wyrocznię, zbudowaną ze źródeł). Są przechowywane jako ELK JSON i renderowane **na żywo w Twojej przeglądarce** z tego JSON-a. Jedna strona na algorytm layoutu:",
+    "indexRowCount": "{count} goldenów",
+    "indexOutro": "Każda karta pokazuje layout wyroczni, krótki opis oraz, zwinięty, ELK JSON, z którego jest rysowany (kontrolka „Kod źródłowy ELK JSON”). To są layouty, do których musi się stosować port w TypeScript (zobacz {conformance}).",
+    "conformanceLabel": "Zgodność",
+    "algorithmTitle": "Goldeny {algorithm}",
+    "algorithmHeading": "{algorithm}: {count} goldenów",
+    "algorithmIntro": "Każdy graf poniżej to layout wyroczni renderowany na żywo w Twojej przeglądarce z jego ELK JSON.",
+    "blurbs": {
+      "layered": "Layout warstwowy (w stylu Sugiyamy) dla diagramów węzłów i krawędzi z portami i hierarchią."
+    }
+  },
+  "ptolemy-scrambler": "Najmniejszy hierarchiczny model Ptolemy: jeden węzeł złożony z portami i etykietami węzłów (12 węzłów, 22 porty, 11 etykiet, głębokość 2), ułożony z domyślnymi ustawieniami layered i domyślnym seedem.",
+  "ptolemy-clockdrift-hierarchy": "Dwa poziomy zagnieżdżonych węzłów potomnych z krawędziami hierarchicznymi (12 węzłów, 31 portów, 11 etykiet, głębokość 3), ułożone z domyślnymi ustawieniami layered i domyślnym seedem.",
+  "ptolemy-afdx-multicast": "Krawędzie rozgałęziające multicast przez porty węzłów złożonych, ze stałymi stronami i indeksami portów (15 węzłów, 30 portów, 14 etykiet, głębokość 2).",
+  "ptolemy-crossbar-switch": "Model gęsty w porty, około trzech portów na węzeł, który obciąża kolejność portów (13 węzłów, 40 portów, 12 etykiet, głębokość 2)."
+}
