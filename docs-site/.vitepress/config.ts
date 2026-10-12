@@ -103,6 +103,21 @@ export function rewriteIncludedHref(href: string, sourceDir: string): string {
   return canonical.includes('#') ? canonical : `${canonical}${fragment}`;
 }
 
+/**
+ * Heading ids exactly as GitHub computes them (github-slugger): lowercase, drop
+ * every character that is not a letter, number, mark, space or hyphen, then
+ * turn spaces into hyphens. Diacritics stay. The canonical docs under `docs/`
+ * are written for GitHub, where `## 1. Oracle` is `#1-oracle` and `## 2.0 How …`
+ * is `#20-how-…`; VitePress's default (`_1-oracle`, `2-0-how-…`) makes every
+ * such in-page link silently miss on the site. The client scrolls by
+ * `getElementById`, so a leading digit is safe. Translated pages follow the
+ * same rule, so their anchors keep umlauts (`#1a-konformitätseinheit`).
+ */
+const NOT_SLUG_CHARS = /[^\p{L}\p{N}\p{M}\s-]/gu;
+export function headingSlug(text: string): string {
+  return text.trim().toLowerCase().replace(NOT_SLUG_CHARS, '').replace(/\s/g, '-');
+}
+
 type LinkOpenRule = NonNullable<MarkdownRenderer['renderer']['rules']['link_open']>;
 
 /** Wraps markdown-it's `link_open` so included pages get rewritten hrefs. */
@@ -131,7 +146,11 @@ export default defineConfigWithTheme<SiteThemeConfig>({
   lang: 'en-US',
   cleanUrls: true,
   locales: localesConfig(),
-  markdown: { config: installIncludeLinkRewrite },
+  markdown: {
+    anchor: { slugify: headingSlug },
+    toc: { slugify: headingSlug },
+    config: installIncludeLinkRewrite,
+  },
   head: [
     // The mark comes from @knowvah/theme, copied into docs-site/public/ by
     // `npm run docs:brand` (docs-site/copy-brand-assets.mjs).
