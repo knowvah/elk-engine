@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
   assertLocaleComplete,
@@ -138,7 +139,16 @@ describe('component strings', () => {
 });
 
 describe('LOCALES', () => {
-  it('is empty while no locale module exists', () => {
-    expect(Object.keys(LOCALES)).toEqual([]);
+  // Registration is discovery: the registry must equal the module files on disk, no more, no less.
+  it('registers exactly the locale modules on disk', () => {
+    const dir = fileURLToPath(new URL('../../docs-site/.vitepress/locales/', import.meta.url));
+    const modules = existsSync(dir)
+      ? readdirSync(dir)
+          .filter((f) => f.endsWith('.ts'))
+          .map((f) => f.slice(0, -3))
+          .sort()
+      : [];
+    expect(Object.keys(LOCALES).sort()).toEqual(modules);
+    for (const loc of Object.values(LOCALES)) expect(stringsForLang(loc.lang)).toBe(loc.components);
   });
 });
