@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galerie",
+    "indexHeading": "Galerie: korpus golden testů",
+    "indexIntro": "Každý graf v této sekci je jedno z **{total} golden rozvržení** vytvořených referenční implementací ELK v Javě (orákulem, sestaveným ze zdrojů). Jsou uložena jako ELK JSON a **živě ve vašem prohlížeči** se z tohoto JSON vykreslují. Jedna stránka na každý algoritmus rozvržení:",
+    "indexRowCount": "{count} golden testů",
+    "indexOutro": "Každá karta ukazuje rozvržení z orákula, krátký popis a, sbalený, Zdrojový kód ELK JSON, ze kterého se kreslí. Těmto rozvržením je portování v TypeScriptu zavázáno (viz {conformance}).",
+    "conformanceLabel": "Shoda",
+    "algorithmTitle": "Goldeny {algorithm}",
+    "algorithmHeading": "{algorithm}: {count} golden testů",
+    "algorithmIntro": "Každý graf níže je rozvržení z orákula, které se živě ve vašem prohlížeči vykresluje ze svého ELK JSON.",
+    "blurbs": {
+      "layered": "Vrstvové rozvržení (ve stylu Sugiyamy) pro diagramy uzlů a hran s porty a hierarchií."
+    }
+  },
+  "ptolemy-scrambler": "Nejmenší hierarchický model Ptolemy: jeden složený uzel s porty a popisky uzlů (12 uzlů, 22 portů, 11 popisků, hloubka 2), rozvržený s výchozím nastavením layered a výchozím seedem.",
+  "ptolemy-clockdrift-hierarchy": "Dvě úrovně vnořených potomků s hranami napříč hierarchií (12 uzlů, 31 portů, 11 popisků, hloubka 3), rozvržených s výchozím nastavením layered a výchozím seedem.",
+  "ptolemy-afdx-multicast": "Multicastové rozvětvující hrany přes porty složených uzlů s pevnými stranami a indexy portů (15 uzlů, 30 portů, 14 popisků, hloubka 2).",
+  "ptolemy-crossbar-switch": "Model s hustými porty, asi tři porty na uzel, který zkouší řazení portů (13 uzlů, 40 portů, 12 popisků, hloubka 2)."
+}
