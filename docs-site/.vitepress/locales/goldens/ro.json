@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galerie",
+    "indexHeading": "Galerie: corpusul golden",
+    "indexIntro": "Fiecare graf din această secțiune este unul dintre cele **{total} layouturi golden** produse de implementarea de referință ELK în Java (oracolul, compilat din surse). Sunt stocate ca ELK JSON și randate **în direct în browserul dumneavoastră** pornind de la acel JSON. O pagină pentru fiecare algoritm de layout:",
+    "indexRowCount": "{count} goldens",
+    "indexOutro": "Fiecare card afișează layoutul oracolului, o scurtă descriere și, ascuns, Codul sursă ELK JSON din care este desenat. Acestea sunt layouturile la care este ținută portarea TypeScript (vezi {conformance}).",
+    "conformanceLabel": "Conformitate",
+    "algorithmTitle": "Goldens {algorithm}",
+    "algorithmHeading": "{algorithm}: {count} goldens",
+    "algorithmIntro": "Fiecare graf de mai jos este un layout al oracolului, randat în direct în browserul dumneavoastră pornind de la ELK JSON-ul său.",
+    "blurbs": {
+      "layered": "Layout pe straturi (în stilul Sugiyama) pentru diagrame nod-muchie cu porturi și ierarhie."
+    }
+  },
+  "ptolemy-scrambler": "Cel mai mic model Ptolemy ierarhic: un nod compus cu porturi și etichete de nod (12 noduri, 22 de porturi, 11 etichete, adâncime 2), cu layout aplicat folosind setările implicite layered și seed-ul implicit.",
+  "ptolemy-clockdrift-hierarchy": "Două niveluri de noduri copil imbricate, cu muchii care traversează ierarhia (12 noduri, 31 de porturi, 11 etichete, adâncime 3), cu layout aplicat folosind setările implicite layered și seed-ul implicit.",
+  "ptolemy-afdx-multicast": "Muchii multicast în evantai peste porturile unor noduri compuse, cu laturi și indici de port fixe (15 noduri, 30 de porturi, 14 etichete, adâncime 2).",
+  "ptolemy-crossbar-switch": "Un model dens în porturi, cu aproximativ trei porturi per nod, care pune la încercare ordinea porturilor (13 noduri, 40 de porturi, 12 etichete, adâncime 2)."
+}
