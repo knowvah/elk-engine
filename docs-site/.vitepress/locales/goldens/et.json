@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galerii",
+    "indexHeading": "Galerii: golden-korpus",
+    "indexIntro": "Iga selle jaotise graaf on üks **{total} golden-paigutusest**, mille lõi ELK-i Java võrdlusrealisatsioon (oraakel, lähtekoodist ehitatud). Need on salvestatud ELK JSON-ina ja renderdatakse sellest JSON-ist **otse Teie brauseris**. Üks leht iga paigutusalgoritmi kohta:",
+    "indexRowCount": "{count} goldenit",
+    "indexOutro": "Iga kaart näitab oraakli paigutust, lühikirjeldust ja kokku volditult ELK JSON-i lähtekoodi, millest see joonistatakse. Just nendele paigutustele allub TypeScripti portimine (vt {conformance}).",
+    "conformanceLabel": "Vastavus",
+    "algorithmTitle": "{algorithm} goldenid",
+    "algorithmHeading": "{algorithm}: {count} goldenit",
+    "algorithmIntro": "Iga allolev graaf on oraakli paigutus, mis renderdatakse otse Teie brauseris selle ELK JSON-ist.",
+    "blurbs": {
+      "layered": "Kihipõhine (Sugiyama stiilis) paigutus sõlm-serv-diagrammidele, millel on pordid ja hierarhia."
+    }
+  },
+  "ptolemy-scrambler": "Väikseim hierarhiline Ptolemy mudel: üks liitsõlm portide ja sõlmesiltidega (12 sõlme, 22 porti, 11 silti, sügavus 2), paigutatud layered'i vaikeseadetega ja vaikeseemnega.",
+  "ptolemy-clockdrift-hierarchy": "Kaks pesastatud laste taset hierarhiat ületavate servadega (12 sõlme, 31 porti, 11 silti, sügavus 3), paigutatud layered'i vaikeseadetega ja vaikeseemnega.",
+  "ptolemy-afdx-multicast": "Multicast-lehvikservad üle liitsõlmede portide, fikseeritud portide külgede ja indeksitega (15 sõlme, 30 porti, 14 silti, sügavus 2).",
+  "ptolemy-crossbar-switch": "Portidega tihe mudel, umbes kolm porti sõlme kohta, mis proovile paneb portide järjestuse (13 sõlme, 40 porti, 12 silti, sügavus 2)."
+}
