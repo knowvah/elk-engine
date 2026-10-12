@@ -28,6 +28,13 @@ Years of user-reported bugs and layout quirks are encoded in the Java. Rules:
 - **Port the JUnit tests too.** Each encodes a known correct behavior; port
   them alongside the code they test.
 
+**Carve-out, prose only.** A typo in ELK's human-readable text (a
+description, label, or message string nothing branches on) is corrected
+proactively, not reproduced: fix it at the port site with a comment naming the
+upstream text, assert the corrected string in the ported test, and list the
+case under "upstream typos" in `docs/conformance.md`. Behaviour, identifiers,
+and anything compared against the oracle stay verbatim.
+
 When in doubt, read the Java. Still in doubt: keep the Java behavior and
 journal the question. On any divergence, instrument the oracle and dump actual
 values before hypothesizing — the default stance is "my port differs — find where."

@@ -44,8 +44,8 @@ export class GraphFeature {
   static readonly COMPOUND: GraphFeature = new GraphFeature(
     'COMPOUND',
     5,
-    // The Java concatenation omits the space ("levelsand"); kept verbatim, the ported test asserts it.
-    'Edges that connect nodes from different hierarchy levels' + 'and are incident to compound nodes.',
+    // Upstream concatenates without the space ("levelsand"); accepted divergence, see docs/conformance.md.
+    'Edges that connect nodes from different hierarchy levels ' + 'and are incident to compound nodes.',
   );
   /** Edges that connect nodes from different clusters, but not the cluster parent nodes. */
   static readonly CLUSTERS: GraphFeature = new GraphFeature(
