@@ -133,6 +133,15 @@ test or fixture it affects. Accepted classes:
   identity-hashed objects is non-deterministic in Java itself. Journal the site
   and port with insertion order; goldens must not depend on it. Value-hashed
   keys (String, Integer) must reproduce Java order.
+- **Upstream typos in human-readable text.** A defect in ELK's own prose (a
+  description, label, or message string nothing branches on) is corrected
+  proactively rather than reproduced, with a comment at the site naming the
+  upstream text. Each case is listed here; the ported test asserts the
+  corrected string. Behaviour, identifiers, and oracle-compared values are
+  never in this class (policy set 2026-10-12, `CLAUDE.md` carve-out).
+  - `GraphFeature.COMPOUND` description: upstream concatenates
+    `"...hierarchy levels" + "and are..."` with no space ("levelsand");
+    the port reads "levels and". Decided 2026-10-12 on PR 3.
 - **Time-seeded `Random`.** With `randomSeed = 0` ELK seeds from the clock
   (`core/Core.melk:608`), so output is not reproducible. Golden inputs must
   leave the seed unset or non-zero (layered default seed is `1`).

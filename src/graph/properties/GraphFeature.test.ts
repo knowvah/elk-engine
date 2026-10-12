@@ -28,8 +28,9 @@ describe('GraphFeature', () => {
     expect(GraphFeature.MULTI_EDGES.getDescription()).toBe('Multiple edges with the same source and target node.');
     expect(GraphFeature.EDGE_LABELS.getDescription()).toBe('Labels that are associated with edges.');
     expect(GraphFeature.PORTS.getDescription()).toBe('Edges are connected to nodes over ports.');
+    // Upstream reads "levelsand" (missing space); accepted divergence, see docs/conformance.md.
     expect(GraphFeature.COMPOUND.getDescription()).toBe(
-      'Edges that connect nodes from different hierarchy levelsand are incident to compound nodes.',
+      'Edges that connect nodes from different hierarchy levels and are incident to compound nodes.',
     );
     expect(GraphFeature.CLUSTERS.getDescription()).toBe(
       'Edges that connect nodes from different clusters, but not the cluster parent nodes.',
