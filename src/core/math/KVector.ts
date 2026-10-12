@@ -6,7 +6,8 @@ import { reverse as integerReverse } from '../../java/lang/JavaInteger.js';
 import { NumberFormatException } from '../../java/lang/NumberFormatException.js';
 import { toString as doubleToString } from '../../java/lang/DoubleToString.js';
 import type { Random } from '../../java/util/Random.js';
-import { type IDataObject, javaSplit, javaTrim } from '../util/IDataObject.js';
+import * as JavaString from '../../java/lang/JavaString.js';
+import type { IDataObject } from '../util/IDataObject.js';
 
 /** the default fuzzyness used when comparing two vectors fuzzily. */
 const DEFAULT_FUZZYNESS = 0.05;
@@ -420,13 +421,13 @@ export class KVector implements IDataObject {
     if (start >= end) {
       throw new IllegalArgumentException('The given string does not contain any numbers.');
     }
-    const tokens = javaSplit(string.substring(start, end), TOKEN_SEPARATORS);
+    const tokens = JavaString.split(string.substring(start, end), TOKEN_SEPARATORS);
     if (tokens.length !== COORDINATE_COUNT) {
       throw new IllegalArgumentException('Exactly two numbers are expected, ' + tokens.length + ' were found.');
     }
     try {
-      this.x = parseDouble(javaTrim(tokens[0]));
-      this.y = parseDouble(javaTrim(tokens[1]));
+      this.x = parseDouble(JavaString.trim(tokens[0]));
+      this.y = parseDouble(JavaString.trim(tokens[1]));
     } catch (exception) {
       if (exception instanceof NumberFormatException) {
         throw new IllegalArgumentException(

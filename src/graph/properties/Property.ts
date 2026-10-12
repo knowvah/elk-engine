@@ -16,25 +16,6 @@ export function isIProperty(o: unknown): o is IProperty<unknown> {
 }
 
 /**
- * `String.compareTo`: the difference of the first differing UTF-16 code units, else the difference of
- * the lengths. Belongs with the `java.lang.String` shims and moves to `src/java/lang/JavaString.ts`
- * when that file is next opened for a task that owns it.
- *
- * @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html#compareTo(java.lang.String)
- */
-export function compareStrings(a: string, b: string): number {
-  const limit = Math.min(a.length, b.length);
-  for (let k = 0; k < limit; k++) {
-    const c1 = a.charCodeAt(k);
-    const c2 = b.charCodeAt(k);
-    if (c1 !== c2) {
-      return c1 - c2;
-    }
-  }
-  return a.length - b.length;
-}
-
-/**
  * Definition of a property that can be set on an {@link IPropertyHolder}. A property is described
  * by its identifier, which is a String. Properties may have a default value which is returned by
  * a property holder if the property is not set on it. Properties may also define lower and upper
@@ -159,6 +140,6 @@ export class Property<T> implements IProperty<T>, Comparable<IProperty<unknown>>
   }
 
   compareTo(other: IProperty<unknown>): number {
-    return compareStrings(this.id, other.getId());
+    return JavaString.compareTo(this.id, other.getId());
   }
 }

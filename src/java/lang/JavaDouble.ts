@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import * as JavaString from './JavaString.js';
 import { NumberFormatException } from './NumberFormatException.js';
 
 const DOUBLE_BYTES = 8;
@@ -13,7 +14,6 @@ const SUBNORMAL_KEEP_OFFSET = 1075n;
 /** Anything with leading-bit exponent below this rounds to zero. */
 const UNDERFLOW_EXPONENT = -1076n;
 const HEX_BITS_PER_DIGIT = 4n;
-const TRIM_LIMIT = 0x20;
 const EMPTY_STRING_MESSAGE = 'empty String';
 const MULTIPLE_POINTS_MESSAGE = 'multiple points';
 
@@ -60,15 +60,6 @@ export function longBitsToDouble(bits: bigint): number {
 export function hashCode(v: number): number {
   const bits = BigInt.asUintN(LONG_BITS, doubleToLongBits(v));
   return Number(BigInt.asIntN(INT_BITS, bits ^ (bits >> HALF_WORD_SHIFT)));
-}
-
-/** `String.trim`: strips code units up to U+0020 from both ends. */
-function trimJava(s: string): string {
-  let start = 0;
-  let end = s.length;
-  while (start < end && s.charCodeAt(start) <= TRIM_LIMIT) start++;
-  while (end > start && s.charCodeAt(end - 1) <= TRIM_LIMIT) end--;
-  return s.slice(start, end);
 }
 
 function bitLength(m: bigint): bigint {
@@ -138,7 +129,7 @@ function parseMagnitude(body: string): DecimalOutcome {
  * @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Double.html#parseDouble(java.lang.String)
  */
 export function parseDouble(s: string): number {
-  const trimmed = trimJava(s);
+  const trimmed = JavaString.trim(s);
   if (trimmed.length === 0) throw new NumberFormatException(EMPTY_STRING_MESSAGE);
   const negative = trimmed.startsWith('-');
   const signed = negative || trimmed.startsWith('+');

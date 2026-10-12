@@ -3,7 +3,7 @@ import * as DoubleCompare from '../../java/lang/DoubleCompare.js';
 import type { Comparable } from '../../java/lang/Comparable.js';
 import type { IProperty } from './IProperty.js';
 import type { IPropertyHolder } from './IPropertyHolder.js';
-import { compareStrings } from './Property.js';
+import * as JavaString from '../../java/lang/JavaString.js';
 
 /**
  * The values `T extends Comparable<T>` can take here: a `Comparable`, or one of the JS primitives that
@@ -17,7 +17,7 @@ function compareNaturally(a: unknown, b: unknown): number {
     return DoubleCompare.compare(a, b);
   }
   if (typeof a === 'string' && typeof b === 'string') {
-    return compareStrings(a, b);
+    return JavaString.compareTo(a, b);
   }
   if (typeof a === 'boolean' && typeof b === 'boolean') {
     return Number(a) - Number(b);
