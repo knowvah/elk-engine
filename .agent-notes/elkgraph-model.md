@@ -74,3 +74,72 @@ Planning-time notes are in `elkgraph-model-planning.md`.
 - **Impact**: when a shim must be checked against the Javadoc, fetch it in the orchestrator and
   paste the relevant text into the agent prompt.
 - **Confidence**: High
+
+## Observation: `KVectorChain.pointOnLine`/`angleOnLine` never measure the last segment backwards
+
+- **Context**: T5 porting `KVectorChain` with hand-derived expectations.
+- **Finding**: for a negative distance the Java starts at `listIterator(size() - 1).previous()`,
+  i.e. index `size - 2`, so the last segment is skipped; on a 2-point chain a negative distance
+  throws `NoSuchElementException`, and past the end `pointOnLine` returns the first point.
+  `KVector.parse("5,a")` sets `x = 5` before throwing; `Spacing`/`KVectorChain.parse` likewise
+  keep the fields/vectors completed before the failing token.
+- **Impact**: ported as is and pinned by tests; do not "fix" when a later caller looks odd.
+- **Confidence**: High
+
+## Observation: `hash.json` `kvectorHash` is a bit-pattern grid, not hand-picked rows
+
+- **Context**: T5 acceptance asked for the `(1.0, 2.0)` row.
+- **Finding**: the 256 rows cover a grid of bit patterns; `(1.0, 2.0)` is absent. The test asserts
+  the `(1.0, 1.0)`/`(1.0, -1.0)` rows, a derived `(1.0, 2.0)` literal and the whole grid.
+- **Impact**: future briefs should check row presence before naming a specific vector row.
+- **Confidence**: High
+
+## Observation: JDK `HashMap` never orders `Property` keys by `compareTo`
+
+- **Context**: T7 deciding whether `PROPERTY` needs a `compare`.
+- **Finding**: `Property implements Comparable<IProperty<?>>`, not `Comparable<Property>`; the
+  JDK tree bins use comparison order only when the key's `Comparable` type argument is its own
+  class, so colliding `Property` keys fall back to identity order (observable only with ≥ 8
+  equal `String.hashCode` ids in one bin). Not vector-backed.
+- **Impact**: `PROPERTY` has `hash`/`equals` only; revisit only if a golden ever hits the case.
+- **Confidence**: Medium
+
+## Observation: a failed EMF `addAt(-k, e)` still grows the backing array
+
+- **Context**: T6 reproducing the JVM messages of `list-index-errors`.
+- **Finding**: `grow` runs before the failing `arraycopy`, so later messages report the larger
+  capacity (a full 4-element list goes to `array[10]`); EMF's `grow` is `old + old/2 + 4`
+  (4 → 10 → 19). `FixedLayoutProvider.java:174-177` calls `sections.remove()` with no `next()`,
+  which throws `IllegalStateException` with EMF's iterator whenever an edge has > 1 section — a
+  latent ELK bug the port must keep.
+- **Impact**: byte-exact replays depend on the capacity policy; expect the latent bug in goldens.
+- **Confidence**: High
+
+## Observation: ElkGraph feature ids collide across classes
+
+- **Context**: T9 tests needing a "foreign" feature id.
+- **Finding**: `ELK_EDGE_SECTION_FEATURE_COUNT` (12) equals `ELK_NODE__CONTAINED_EDGES`; a
+  foreign id in a test must exceed every class's feature count (tests use 99).
+  `ElkEdgeImpl.toString` joins the lazily created `sources`/`targets` fields directly; only the
+  preceding `isHyperedge()` call initializes them (reordering would hand `Joiner` a null).
+- **Impact**: keep statement order in the hand-written `toString`s; pick foreign ids ≥ 99.
+- **Confidence**: High
+
+## Observation: the complexity hook counts lines after Prettier
+
+- **Context**: T9 `test/helpers/graph-vectors.ts` reached 492 lines.
+- **Finding**: Prettier expands single-line object entries, so a file that looks under 500 lines
+  when written can exceed the cap after `prettier --write`; `ElkGraphUtil.ts` needed one-line
+  Javadoc and no blank lines inside bodies to land at 487.
+- **Impact**: budget helper/util files at ~450 pre-Prettier lines; add new ops to a helper from a
+  new test file rather than growing the helper.
+- **Confidence**: High
+
+## Observation: an unquoted `$FILES` list voids a lizard gate under zsh
+
+- **Context**: batch 2 gate `lizard … $(git diff --name-only …)`.
+- **Finding**: zsh passed the newline-joined list as one argument; lizard parsed 0 functions and
+  exited 0, so the gate "passed" without checking anything. `xargs lizard < list.txt` found the
+  real warning (`Property.test.ts` `javaEquals` CCN 13).
+- **Impact**: a lizard summary with 0 or 1 functions is a misrun, not a pass; use `xargs`.
+- **Confidence**: High
