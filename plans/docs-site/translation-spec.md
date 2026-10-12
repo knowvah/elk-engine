@@ -88,19 +88,19 @@ others; each later locale appends its own terms to its commit body rather than e
 
 | English | de |
 |---|---|
-| node | |
-| edge | |
-| port (ElkPort) | |
-| label | |
-| hierarchy / compound node | |
-| layout algorithm | |
-| oracle (ELK built from source) | |
-| golden (test case) | |
-| conformance / divergence | |
-| tolerance | |
-| vector (JVM reference vector) | |
-| shim (Java runtime shim) | |
-| port (of ELK to TypeScript) | |
+| node | Knoten |
+| edge | Kante |
+| port (ElkPort) | Port |
+| label | Beschriftung |
+| hierarchy / compound node | Hierarchie / zusammengesetzter Knoten |
+| layout algorithm | Layoutalgorithmus |
+| oracle (ELK built from source) | Orakel (aus den Quellen gebautes ELK) |
+| golden (test case) | Golden (Plural: Goldens; Testfall) |
+| conformance / divergence | Konformität / Abweichung |
+| tolerance | Toleranz |
+| vector (JVM reference vector) | Vektor (JVM-Referenzvektor) |
+| shim (Java runtime shim) | Shim (Java-Laufzeit-Shim) |
+| port (of ELK to TypeScript) | Portierung |
 
 ## Tone
 
