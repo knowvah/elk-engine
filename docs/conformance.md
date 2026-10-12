@@ -141,7 +141,8 @@ test or fixture it affects. Accepted classes:
   never in this class (policy set 2026-10-12, `CLAUDE.md` carve-out).
   - `GraphFeature.COMPOUND` description: upstream concatenates
     `"...hierarchy levels" + "and are..."` with no space ("levelsand");
-    the port reads "levels and". Decided 2026-10-12 on PR 3.
+    the port reads "levels and". Decided 2026-10-12 on PR 3; fix proposed
+    upstream as [eclipse-elk/elk#1202](https://github.com/eclipse-elk/elk/pull/1202).
 - **Time-seeded `Random`.** With `randomSeed = 0` ELK seeds from the clock
   (`core/Core.melk:608`), so output is not reproducible. Golden inputs must
   leave the seed unset or non-zero (layered default seed is `1`).
