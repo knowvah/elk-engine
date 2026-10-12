@@ -12,8 +12,8 @@ Planning-time notes are in `elkgraph-model-planning.md`.
   `OutOfMemoryError`), and `elementLabeledBy`, `containingGraph`, `isDescendant`,
   `findBestEdgeContainment` loop forever. Only the generated setters (`setParent`,
   `setContainingNode`) throw `IllegalArgumentException("Recursive containment not allowed for "
-  + element.toString())` via `EcoreUtil.isAncestor`. A later `setParent(node, outside)` breaks
-  the cycle without throwing. An edge can never be in a cycle (it cannot contain a node).
+  - element.toString())`via`EcoreUtil.isAncestor`. A later `setParent(node, outside)` breaks
+    the cycle without throwing. An edge can never be in a cycle (it cannot contain a node).
 - **Impact**: the TS port must not add a check to the lists (faithful); callers that build
   graphs through the lists can create unbounded walks exactly as in Java.
 - **Confidence**: High
