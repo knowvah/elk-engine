@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galerie",
+    "indexHeading": "Galerie: der Golden-Korpus",
+    "indexIntro": "Jeder Graph in diesem Abschnitt ist eines von **{total} Golden-Layouts**, die von der ELK-Java-Referenzimplementierung (dem Orakel, aus den Quellen gebaut) erzeugt wurden. Sie liegen als ELK JSON vor und werden **live in Ihrem Browser** aus diesem JSON gerendert. Eine Seite pro Layoutalgorithmus:",
+    "indexRowCount": "{count} Goldens",
+    "indexOutro": "Jede Karte zeigt das Orakel-Layout, eine kurze Beschreibung und, eingeklappt, den ELK-JSON-Quelltext, aus dem es gezeichnet wird. Auf diese Layouts wird die TypeScript-Portierung verpflichtet (siehe {conformance}).",
+    "conformanceLabel": "Konformität",
+    "algorithmTitle": "{algorithm}-Goldens",
+    "algorithmHeading": "{algorithm}: {count} Goldens",
+    "algorithmIntro": "Jeder Graph unten ist ein Orakel-Layout, das live in Ihrem Browser aus seinem ELK JSON gerendert wird.",
+    "blurbs": {
+      "layered": "Schichtenbasiertes Layout (im Stil von Sugiyama) für Knoten-Kanten-Diagramme mit Ports und Hierarchie."
+    }
+  },
+  "ptolemy-scrambler": "Das kleinste hierarchische Ptolemy-Modell: ein zusammengesetzter Knoten mit Ports und Knotenbeschriftungen (12 Knoten, 22 Ports, 11 Beschriftungen, Tiefe 2), gelayoutet mit den Standardeinstellungen von layered und dem Standard-Seed.",
+  "ptolemy-clockdrift-hierarchy": "Zwei Ebenen verschachtelter Kindknoten mit hierarchieübergreifenden Kanten (12 Knoten, 31 Ports, 11 Beschriftungen, Tiefe 3), gelayoutet mit den Standardeinstellungen von layered und dem Standard-Seed.",
+  "ptolemy-afdx-multicast": "Multicast-Auffächerungskanten über Ports zusammengesetzter Knoten hinweg, mit festen Portseiten und -indizes (15 Knoten, 30 Ports, 14 Beschriftungen, Tiefe 2).",
+  "ptolemy-crossbar-switch": "Ein portdichtes Modell mit etwa drei Ports pro Knoten, das die Portreihenfolge auf die Probe stellt (13 Knoten, 40 Ports, 12 Beschriftungen, Tiefe 2)."
+}
