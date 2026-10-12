@@ -97,7 +97,7 @@ Parallel agents never run `npm run coverage` (shared `coverage/` dir); the orche
 
 | Batch | Name | Tasks | Depends on | Status |
 |-------|------|-------|------------|--------|
-| 1 | Shims, vectors, property interfaces, enums | T1–T4 | — | [ ] |
+| 1 | Shims, vectors, property interfaces, enums | T1–T4 | — | [x] |
 | 2 | core.math, EMF runtime | T5–T6 | 1 | [ ] |
 | 3 | Property classes + ElkReflect, model interfaces + base impls | T7–T8 | 2 | [ ] |
 | 4 | Model completion + ElkGraphUtil + vector replay | T9 | 3 | [ ] |
