@@ -14,19 +14,31 @@ import { ElkReflect } from '../util/ElkReflect.js';
 import type { IProperty } from './IProperty.js';
 import { Property, compareStrings, isIProperty } from './Property.js';
 
+function hasEquals(a: unknown): a is { equals(o: unknown): boolean } {
+  return typeof a === 'object' && a !== null && 'equals' in a && typeof a.equals === 'function';
+}
+
+function setsEqual(a: Set<unknown>, b: Set<unknown>): boolean {
+  return a.size === b.size && [...a].every((x) => [...b].some((y) => javaEquals(x, y)));
+}
+
+function arraysEqual(a: unknown[], b: unknown[]): boolean {
+  return a.length === b.length && a.every((x, i) => javaEquals(x, b[i]));
+}
+
 /** Java `Object.equals` for the value kinds `PropertyTest` uses (value equality, element-wise for collections). */
 function javaEquals(a: unknown, b: unknown): boolean {
-  if (typeof a === 'object' && a !== null && 'equals' in a && typeof a.equals === 'function') {
-    return (a.equals as (o: unknown) => boolean)(b);
+  if (hasEquals(a)) {
+    return a.equals(b);
   }
   if (a instanceof Set && b instanceof Set) {
-    return a.size === b.size && [...a].every((x) => [...b].some((y) => javaEquals(x, y)));
+    return setsEqual(a, b);
   }
   if (a instanceof LinkedList && b instanceof LinkedList) {
-    return javaEquals([...a], [...b]);
+    return arraysEqual([...a], [...b]);
   }
   if (Array.isArray(a) && Array.isArray(b)) {
-    return a.length === b.length && a.every((x, i) => javaEquals(x, b[i]));
+    return arraysEqual(a, b);
   }
   return a === b;
 }
