@@ -52,8 +52,10 @@
     "docs:brand": "node docs-site/copy-brand-assets.mjs",
     "docs:copy-goldens": "node docs-site/copy-goldens.mjs",
     "docs:copy-reports": "node docs-site/copy-reports.mjs",
-    "docs:dev": "npm run docs:brand && npm run docs:copy-goldens && npm run docs:copy-reports && vitepress dev docs-site",
-    "docs:build": "npm run docs:brand && npm run docs:copy-goldens && npm run docs:copy-reports && vitepress build docs-site",
+    "docs:dev": "npm run docs:brand && npm run docs:copy-goldens && npm run docs:copy-reports && npm run docs:i18n-hashes && vitepress dev docs-site",
+    "docs:build": "npm run docs:brand && npm run docs:copy-goldens && npm run docs:copy-reports && npm run docs:i18n-hashes && vitepress build docs-site",
+    "docs:i18n-status": "node scripts/docs-i18n-status.mjs",
+    "docs:i18n-hashes": "node scripts/docs-i18n-status.mjs --write-hashes",
     "docs:preview": "vitepress preview docs-site"
   },
   "engines": {
