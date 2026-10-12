@@ -7,9 +7,11 @@ on:
   pull_request:
     branches: [main]
 
-# Least-privilege GITHUB_TOKEN; the job only reads the repo.
+# Least-privilege GITHUB_TOKEN; the job only reads the repo and the @knowvah
+# packages on GitHub Packages (see .npmrc).
 permissions:
   contents: read
+  packages: read
 
 jobs:
   ci:
@@ -20,12 +22,22 @@ jobs:
         with:
           node-version: '26'
           cache: npm
+          # Writes the npm.pkg.github.com auth line so `@knowvah/*` (the docs
+          # theme is on GitHub Packages only) resolves; the scope mapping
+          # itself is in the repo's .npmrc.
+          registry-url: https://npm.pkg.github.com
+          scope: '@knowvah'
       - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm run format:check
       - run: npm run typecheck
       # `coverage` = `vitest run --coverage`: same suite as `npm test`, plus
       # the vitest.config.ts coverage thresholds and a Cobertura report.
       - run: npm run coverage
+      # PR gate for the docs site: locale completeness, dead links, and the
+      # generated showcase and parity pages all fail the build.
+      - run: npm run docs:build
       - uses: actions/upload-artifact@v7
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         with:

@@ -27,7 +27,8 @@ I/O adapter, and the first npm publish freezes this surface.
 
 ## Development
 
-Requires Node 22 or newer (Node 26 is used in CI).
+The library requires Node 22 or newer; the docs scripts require Node 24.2 or newer (Node 26 is
+used in CI).
 
 | Command             | Purpose                                 |
 | ------------------- | --------------------------------------- |
@@ -57,6 +58,22 @@ Defaults are relative to the repository root.
 - [`docs/conformance.md`](docs/conformance.md)
 - [`docs/translation-rules.md`](docs/translation-rules.md)
 - [`plans/roadmap.md`](plans/roadmap.md)
+
+## Documentation site
+
+The site is published at <https://elk-engine.knowvah.com>.
+
+| Command                | Purpose                                                                 |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `npm run docs:dev`     | Copy brand assets, goldens and reports, then start the dev server       |
+| `npm run docs:build`   | Same copy steps, then a production build in `docs-site/.vitepress/dist` |
+| `npm run docs:preview` | Serve the last production build locally                                 |
+
+The docs scripts need Node 24.2 or newer because they use `import.meta.main` (CI and volta use
+Node 26). The site's brand theme, `@knowvah/theme`, installs from GitHub Packages through the
+`@knowvah` scope mapping in `.npmrc`; locally, authentication comes from `~/.npmrc` and needs a
+token with `read:packages`. Localization and maintenance are described in
+[`docs-site/.vitepress/README.md`](docs-site/.vitepress/README.md).
 
 ## License
 
