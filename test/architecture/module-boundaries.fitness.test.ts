@@ -18,6 +18,7 @@ import {
 
 const JAVA_DIR = `${TS_ROOT}/java`;
 const GUAVA_DIR = `${TS_ROOT}/guava`;
+const EMF_DIR = `${TS_ROOT}/emf`;
 const INDEX_FILE = `${TS_ROOT}/index.ts`;
 const TEST_SUFFIX = '.test.ts';
 const TS_SUFFIX = '.ts';
@@ -64,7 +65,12 @@ function violationFor(file: string, target: string, deps: BundleDeps): string | 
       ? undefined
       : `${edge}: src/guava may import only src/guava and src/java`;
   }
-  if (isUnder(target, JAVA_DIR) || isUnder(target, GUAVA_DIR)) {
+  if (isUnder(file, EMF_DIR)) {
+    return isUnder(target, EMF_DIR) || isUnder(target, JAVA_DIR) || isUnder(target, GUAVA_DIR)
+      ? undefined
+      : `${edge}: src/emf may import only src/emf, src/java and src/guava`;
+  }
+  if (isUnder(target, JAVA_DIR) || isUnder(target, GUAVA_DIR) || isUnder(target, EMF_DIR)) {
     return undefined;
   }
   const from = bundleOf(file, deps);
@@ -101,7 +107,11 @@ function listSourceFiles(dir: string): string[] {
 
 function unmappedFile(file: string, deps: BundleDeps): string | undefined {
   const exempt =
-    file === INDEX_FILE || isUnder(file, JAVA_DIR) || isUnder(file, GUAVA_DIR) || bundleOf(file, deps) !== undefined;
+    file === INDEX_FILE ||
+    isUnder(file, JAVA_DIR) ||
+    isUnder(file, GUAVA_DIR) ||
+    isUnder(file, EMF_DIR) ||
+    bundleOf(file, deps) !== undefined;
   return exempt ? undefined : `${file}: unmapped directory`;
 }
 
@@ -355,5 +365,42 @@ describe('src/guava boundary (java-foundations M6)', () => {
 
   it('does not treat src/guava as an unmapped directory', () => {
     expect(unmappedFile('src/guava/Lists.ts', committed)).toBeUndefined();
+  });
+});
+
+describe('src/emf boundary (elkgraph-model D1)', () => {
+  it('lets src/emf import src/emf, src/java and src/guava', () => {
+    const source = [
+      "import { BasicEList } from '../common/util/BasicEList.js';",
+      "import { Int32 } from '../../java/lang/Int32.js';",
+      "import { Lists } from '../../guava/Lists.js';",
+    ].join('\n');
+    expect(checkFile('src/emf/ecore/EObject.ts', source, committed)).toEqual([]);
+  });
+
+  it('forbids src/emf importing a bundle, naming both files', () => {
+    expect(checkFile('src/emf/ecore/EObject.ts', "import { C } from '../../core/C.js';", committed)).toEqual([
+      'src/emf/ecore/EObject.ts -> src/core/C.ts: src/emf may import only src/emf, src/java and src/guava',
+    ]);
+  });
+
+  it('lets bundles and src/index.ts import src/emf', () => {
+    const imp = "import { EList } from '../emf/common/util/EList.js';";
+    expect(checkFile('src/graph/ElkNode.ts', imp, committed)).toEqual([]);
+    expect(checkFile('src/index.ts', "export * from './emf/ecore/EObject.js';", committed)).toEqual([]);
+  });
+
+  it('forbids src/java and src/guava importing src/emf', () => {
+    const imp = "import { EList } from '../../emf/common/util/EList.js';";
+    expect(checkFile('src/java/util/A.ts', imp, committed)).toEqual([
+      'src/java/util/A.ts -> src/emf/common/util/EList.ts: src/java may import only src/java',
+    ]);
+    expect(checkFile('src/guava/Lists.ts', "import { EList } from '../emf/common/util/EList.js';", committed)).toEqual([
+      'src/guava/Lists.ts -> src/emf/common/util/EList.ts: src/guava may import only src/guava and src/java',
+    ]);
+  });
+
+  it('does not treat src/emf as an unmapped directory', () => {
+    expect(unmappedFile('src/emf/ecore/EObject.ts', committed)).toBeUndefined();
   });
 });
