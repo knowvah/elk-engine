@@ -97,7 +97,7 @@ criteria imply; patch/minor versions within D1; fix commits to satisfy a gate.
 | 4 | Drift tracking + workflows | T7–T8 | 3 | [x] |
 | 5 | Translation lint | T9 | 4 | [x] |
 | 6 | German (review stop) | T10 | 5 | [x] |
-| 7 | cs da es et fi | T11–T15 | 6 + review | [ ] |
+| 7 | cs da es et fi | T11–T15 | 6 + review | [x] |
 | 8 | fr hu is it ja | T16–T20 | 7 | [ ] |
 | 9 | ko nl no pl pt-br | T21–T25 | 8 | [ ] |
 | 10 | ro ru sk sv tr | T26–T30 | 9 | [ ] |
