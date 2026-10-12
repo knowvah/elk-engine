@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galéria",
+    "indexHeading": "Galéria: korpus golden testov",
+    "indexIntro": "Každý graf v tejto sekcii je jedným z **{total} golden rozložení** vytvorených referenčnou implementáciou ELK v Jave (orákulom, zostaveným zo zdrojov). Sú uložené ako ELK JSON a **vykresľujú sa naživo vo vašom prehliadači** z tohto JSON. Jedna stránka na každý algoritmus rozloženia:",
+    "indexRowCount": "{count} goldenov",
+    "indexOutro": "Každá karta zobrazuje rozloženie z orákula, krátky popis a, zložený, zdrojový kód ELK JSON, z ktorého sa kreslí. Na tieto rozloženia je viazané portovanie do TypeScriptu (pozri {conformance}).",
+    "conformanceLabel": "Zhoda",
+    "algorithmTitle": "Goldeny {algorithm}",
+    "algorithmHeading": "{algorithm}: {count} goldenov",
+    "algorithmIntro": "Každý graf nižšie je rozloženie z orákula vykresľované naživo vo vašom prehliadači z jeho ELK JSON.",
+    "blurbs": {
+      "layered": "Vrstvové rozloženie (v štýle Sugiyama) pre diagramy uzlov a hrán s portmi a hierarchiou."
+    }
+  },
+  "ptolemy-scrambler": "Najmenší hierarchický model Ptolemy: jeden zložený uzol s portmi a popiskami uzlov (12 uzlov, 22 portov, 11 popiskov, hĺbka 2), rozložený s predvolenými nastaveniami layered a predvoleným seedom.",
+  "ptolemy-clockdrift-hierarchy": "Dve úrovne vnorených potomkov s hranami cez hierarchiu (12 uzlov, 31 portov, 11 popiskov, hĺbka 3), rozložených s predvolenými nastaveniami layered a predvoleným seedom.",
+  "ptolemy-afdx-multicast": "Multicastové rozvetvené hrany cez porty zložených uzlov s pevnými stranami a indexmi portov (15 uzlov, 30 portov, 14 popiskov, hĺbka 2).",
+  "ptolemy-crossbar-switch": "Model s hustými portmi, približne tri porty na uzol, ktorý preveruje poradie portov (13 uzlov, 40 portov, 12 popiskov, hĺbka 2)."
+}
