@@ -91,7 +91,7 @@ criteria imply; patch/minor versions within D1; fix commits to satisfy a gate.
 
 | Batch | Name | Tasks | Depends on | Status |
 |-------|------|-------|------------|--------|
-| 1 | VitePress scaffold | T1 | — | [ ] |
+| 1 | VitePress scaffold | T1 | — | [x] |
 | 2 | Registry, English content, ELK renderer | T2–T4 | 1 | [ ] |
 | 3 | Showcase + reports | T5–T6 | 2 | [ ] |
 | 4 | Drift tracking + workflows | T7–T8 | 3 | [ ] |
