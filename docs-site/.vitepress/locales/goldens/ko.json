@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "쇼케이스",
+    "indexHeading": "쇼케이스: 골든 코퍼스",
+    "indexIntro": "이 섹션의 모든 그래프는 ELK Java 참조 구현(소스에서 빌드한 오라클)이 만든 **{total}개의 골든 레이아웃** 중 하나입니다. 이 레이아웃은 ELK JSON으로 저장되며, 해당 JSON으로부터 **브라우저에서 실시간으로** 렌더링됩니다. 레이아웃 알고리즘마다 페이지가 하나씩 있습니다.",
+    "indexRowCount": "골든 {count}개",
+    "indexOutro": "각 카드에는 오라클 레이아웃, 짧은 설명, 그리고 접어 둔 상태의 그래프를 그리는 데 쓰인 ELK JSON 소스가 표시됩니다. TypeScript 포팅은 이 레이아웃을 기준으로 검증합니다({conformance} 참조).",
+    "conformanceLabel": "적합성",
+    "algorithmTitle": "{algorithm} 골든",
+    "algorithmHeading": "{algorithm}: 골든 {count}개",
+    "algorithmIntro": "아래의 각 그래프는 ELK JSON으로부터 브라우저에서 실시간으로 렌더링한 오라클 레이아웃입니다.",
+    "blurbs": {
+      "layered": "포트와 계층이 있는 노드-링크 다이어그램을 위한 계층 기반(Sugiyama 방식) 레이아웃입니다."
+    }
+  },
+  "ptolemy-scrambler": "가장 작은 계층형 Ptolemy 모델입니다. 포트와 노드 레이블이 있는 복합 노드 하나로 구성되며(노드 12개, 포트 22개, 레이블 11개, 깊이 2), 기본 layered 설정과 기본 시드로 레이아웃했습니다.",
+  "ptolemy-clockdrift-hierarchy": "계층 간 엣지가 있는 두 단계의 중첩된 자식 노드입니다(노드 12개, 포트 31개, 레이블 11개, 깊이 3). 기본 layered 설정과 기본 시드로 레이아웃했습니다.",
+  "ptolemy-afdx-multicast": "고정된 포트 방향과 인덱스를 가진 복합 노드 포트에 걸친 멀티캐스트 팬아웃 엣지입니다(노드 15개, 포트 30개, 레이블 14개, 깊이 2).",
+  "ptolemy-crossbar-switch": "노드당 포트가 약 세 개인 포트 밀집 모델로, 포트 순서를 집중적으로 시험합니다(노드 13개, 포트 40개, 레이블 12개, 깊이 2)."
+}
