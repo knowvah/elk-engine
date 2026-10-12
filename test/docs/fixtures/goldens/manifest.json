@@ -1,0 +1,25 @@
+{
+  "golden": [
+    {
+      "id": "g-one",
+      "path": "refs/g-one.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
+      "note": "First golden"
+    },
+    {
+      "id": "g-two",
+      "path": "refs/g-two.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
+      "note": "Second golden"
+    },
+    {
+      "id": "g-three",
+      "path": "refs/g-three.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "Third golden"
+    }
+  ]
+}
