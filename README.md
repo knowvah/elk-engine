@@ -75,6 +75,11 @@ Node 26). The site's brand theme, `@knowvah/theme`, installs from GitHub Package
 token with `read:packages`. Localization and maintenance are described in
 [`docs-site/.vitepress/README.md`](docs-site/.vitepress/README.md).
 
+The site is served in English and 23 other languages: Čeština, Dansk, Deutsch, Español, Eesti,
+Suomi, Français, Magyar, Íslenska, Italiano, 日本語, 한국어, Nederlands, Norsk, Polski,
+Português (Brasil), Română, Русский, Slovenčina, Svenska, Türkçe, 简体中文 and 繁體中文. The
+reference pages (translation rules, port map, inventory, roadmap, parity) stay English.
+
 ## License
 
 [EPL-2.0](LICENSE), the same license as upstream ELK. See [NOTICE.md](NOTICE.md) for attribution

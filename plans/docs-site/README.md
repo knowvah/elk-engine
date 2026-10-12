@@ -101,8 +101,8 @@ criteria imply; patch/minor versions within D1; fix commits to satisfy a gate.
 | 8 | fr hu is it ja | T16–T20 | 7 | [x] |
 | 9 | ko nl no pl pt-br | T21–T25 | 8 | [x] |
 | 10 | ro ru sk sv tr | T26–T30 | 9 | [x] |
-| 11 | zh-cn zh-tw | T31–T32 | 10 | [ ] |
-| 12 | Close-out | T33 | 11 | [ ] |
+| 11 | zh-cn zh-tw | T31–T32 | 10 | [x] |
+| 12 | Close-out | T33 | 11 | [x] |
 
 Locale batches run 2 technical-writer agents per locale (parts a/b, [translation-spec.md](translation-spec.md#page-split)),
 all dispatched in one message; the orchestrator writes each locale module and commits per locale.
@@ -129,3 +129,32 @@ follow-ups (enable HTTPS enforcement after `docs.yml` runs), and anything journa
 
 1. Re-read this file. 2. Re-read `decision-journal.md`. 3. First batch with `[ ]` → its
 `overview.md` → first incomplete task.
+
+## Mission summary (2026-10-12)
+
+- **Tasks:** 33 of 33 done (T1–T33); 23 of 23 locales committed; **no locale quarantined**; no
+  re-dispatch was needed. 47 commits on `feature/docs-site`: 9 task commits, 23 locale commits,
+  3 fix commits (`fix(T2)` registry test, `fix(T10)` table realignment, `fix(docs)` GitHub-compatible
+  heading ids), 12 `docs(plans)` commits.
+- **Decisions journaled:** 51 rows in [decision-journal.md](decision-journal.md). Resolved with
+  the user at the German review: build-time cap replaced by an absolute 5-minute cap; the T2
+  registry-test change confirmed; the English conformance TOC anchors fixed by a `markdown.anchor`
+  /`toc` slugifier in `config.ts` (write-set extended). Push-forwards of note: the include-link
+  rewrite in `config.ts`, SPDX comment after front matter on site pages, `verification` added to
+  `NavLabels`, fixture directories added to T5/T7 write-sets, 4 goldens (not 5) derived from the
+  manifest, orchestrator-applied one-line fixes requested by translators (de, et, fi, fr, sk).
+- **Gates (final tree):** format:check, typecheck, coverage (60 files / 1412 tests;
+  100/100/100/100 on `src/**`), `docs:build` (0 dead links, 199 pages, 0 unresolved in-page anchors
+  on every page), `docs:i18n-status` all zero for 23 locales, lizard on every changed `.ts`/`.mjs`,
+  no change under `src/`, `test/golden/`, `test/corpus/`.
+- **Measurements:** `docs:build` cold 5.53 / 5.65 / 6.01 s (T1 one-page baseline 1.64–2.00 s;
+  English-complete 2.86–4.52 s; cap 5 min). Search index: English 176,827 B; locales 58,182
+  (nl) – 78,801 (ru) B, i.e. 0.33–0.45× English (cap 3×). HTML: 15 English + 8 per locale.
+- **Follow-ups:** enable HTTPS enforcement after the first `docs.yml` deploy; TypeDoc at first
+  publish (TS 6 bridge); ESLint when typescript-eslint supports the TS 7.1 API; playground once the
+  core engine exists; `npm audit` esbuild advisory has no fix inside VitePress 1.6.x; the
+  stale-banner path has never rendered with a real locale (all hashes current): after merge, edit
+  an English source and confirm the banner on the translated page.
+- **Landing:** push `feature/docs-site`; open a PR titled
+  `feat(docs): add the documentation site with 24 locales`; merge with "Create a merge commit"
+  using the admin bypass for the signature rule (D10). The mission did not push.

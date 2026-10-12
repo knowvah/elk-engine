@@ -8,8 +8,8 @@ Write-sets are disjoint across locales. Requires the user's approval of German (
 
 | ID | Language | Agents | Writes | Depends On | Done |
 |----|----------|--------|--------|------------|------|
-| [T31](T31-translate-zh-cn.md) | Simplified Chinese | 2 technical-writer + orchestrator | `docs-site/zh-cn/**`, `docs-site/.vitepress/locales/zh-cn.ts`, `docs-site/.vitepress/locales/goldens/zh-cn.json` | T10 | [ ] |
-| [T32](T32-translate-zh-tw.md) | Traditional Chinese | 2 technical-writer + orchestrator | `docs-site/zh-tw/**`, `docs-site/.vitepress/locales/zh-tw.ts`, `docs-site/.vitepress/locales/goldens/zh-tw.json` | T10 | [ ] |
+| [T31](T31-translate-zh-cn.md) | Simplified Chinese | 2 technical-writer + orchestrator | `docs-site/zh-cn/**`, `docs-site/.vitepress/locales/zh-cn.ts`, `docs-site/.vitepress/locales/goldens/zh-cn.json` | T10 | [x] |
+| [T32](T32-translate-zh-tw.md) | Traditional Chinese | 2 technical-writer + orchestrator | `docs-site/zh-tw/**`, `docs-site/.vitepress/locales/zh-tw.ts`, `docs-site/.vitepress/locales/goldens/zh-tw.json` | T10 | [x] |
 
 Batch done when every locale is committed or quarantined (journaled), and `npm run docs:build`
 passes with all committed locales registered. Record build time vs the T1 baseline and each
