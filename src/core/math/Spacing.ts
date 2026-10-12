@@ -4,7 +4,8 @@ import { shl } from '../../java/lang/Int32.js';
 import { hashCode as doubleHashCode, parseDouble } from '../../java/lang/JavaDouble.js';
 import { NumberFormatException } from '../../java/lang/NumberFormatException.js';
 import { toString as doubleToString } from '../../java/lang/DoubleToString.js';
-import { type IDataObject, javaSplit, javaTrim } from '../util/IDataObject.js';
+import * as JavaString from '../../java/lang/JavaString.js';
+import type { IDataObject } from '../util/IDataObject.js';
 
 /** Characters skipped in front of the key-value pairs by {@link Spacing.parse}. */
 const LEADING_DELIMITERS = '([{"\' \t\r\n';
@@ -190,7 +191,7 @@ export abstract class Spacing implements IDataObject {
       end--;
     }
     if (start < end) {
-      this.parseTokens(javaSplit(string.substring(start, end), PAIR_SEPARATORS));
+      this.parseTokens(JavaString.split(string.substring(start, end), PAIR_SEPARATORS));
     }
   }
 
@@ -198,12 +199,12 @@ export abstract class Spacing implements IDataObject {
   private parseTokens(tokens: string[]): void {
     try {
       for (const token of tokens) {
-        const keyandvalue = javaSplit(token, KEY_VALUE_SEPARATOR);
+        const keyandvalue = JavaString.split(token, KEY_VALUE_SEPARATOR);
         if (keyandvalue.length !== PAIR_PART_COUNT) {
           throw new IllegalArgumentException('Expecting a list of key-value pairs.');
         }
-        const key = javaTrim(keyandvalue[0]);
-        const value = parseDouble(javaTrim(keyandvalue[1]));
+        const key = JavaString.trim(keyandvalue[0]);
+        const value = parseDouble(JavaString.trim(keyandvalue[1]));
         if (key === KEY_TOP) {
           this.top = value;
         } else if (key === KEY_LEFT) {

@@ -23,7 +23,8 @@ import { type ElkNode, isElkNode } from '../../src/graph/ElkNode.js';
 import { isElkPort } from '../../src/graph/ElkPort.js';
 import { isElkShape } from '../../src/graph/ElkShape.js';
 import { ElkPropertyToValueMapEntryImpl } from '../../src/graph/impl/ElkPropertyToValueMapEntryImpl.js';
-import { Property, compareStrings } from '../../src/graph/properties/Property.js';
+import * as JavaString from '../../src/java/lang/JavaString.js';
+import { Property } from '../../src/graph/properties/Property.js';
 import { ElkGraphUtil } from '../../src/graph/util/ElkGraphUtil.js';
 
 /** The recorded JVM vectors, relative to this file. */
@@ -292,7 +293,7 @@ function listMove(a: StepArgs): unknown {
 /** `ECollections.sort(children, identifier descending by String.compareTo)`. */
 function sortChildren(a: StepArgs): void {
   ECollections.sort(a.node('node').getChildren(), (x, y) =>
-    compareStrings(y.getIdentifier() as string, x.getIdentifier() as string),
+    JavaString.compareTo(y.getIdentifier() as string, x.getIdentifier() as string),
   );
 }
 

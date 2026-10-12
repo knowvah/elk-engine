@@ -12,7 +12,7 @@ import { EnumSet } from '../../java/util/EnumSet.js';
 import { LinkedList } from '../../java/util/LinkedList.js';
 import { ElkReflect } from '../util/ElkReflect.js';
 import type { IProperty } from './IProperty.js';
-import { Property, compareStrings, isIProperty } from './Property.js';
+import { Property, isIProperty } from './Property.js';
 
 function hasEquals(a: unknown): a is { equals(o: unknown): boolean } {
   return typeof a === 'object' && a !== null && 'equals' in a && typeof a.equals === 'function';
@@ -292,14 +292,6 @@ describe('Property', () => {
     it('compares UTF-16 code units, not code points', () => {
       // U+FF5E (BMP) versus U+1F600 (surrogate pair, first unit 0xD83D)
       expect(compare('～', '\u{1f600}')).toBe(0xff5e - 0xd83d);
-    });
-  });
-
-  describe('compareStrings', () => {
-    it('follows String.compareTo', () => {
-      expect(compareStrings('a', 'c')).toBe(-2);
-      expect(compareStrings('abcd', 'ab')).toBe(2);
-      expect(compareStrings('z', 'z')).toBe(0);
     });
   });
 

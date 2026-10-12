@@ -7,7 +7,8 @@ import { NumberFormatException } from '../../java/lang/NumberFormatException.js'
 import { toString as doubleToString } from '../../java/lang/DoubleToString.js';
 import { LinkedList } from '../../java/util/LinkedList.js';
 import type { ListIterator } from '../../java/util/ListIterator.js';
-import { type IDataObject, javaSplit, javaTrim } from '../util/IDataObject.js';
+import * as JavaString from '../../java/lang/JavaString.js';
+import type { IDataObject } from '../util/IDataObject.js';
 import { KVector } from './KVector.js';
 
 /** The token delimiters of {@link KVectorChain.parse}: Java regex `,|;|\(|\)|\[|\]|\{|\}| |\t|\n`. */
@@ -91,7 +92,7 @@ export class KVectorChain extends LinkedList<KVector> implements IDataObject {
    * loop of the `try` block is {@link KVectorChain.parseTokens}.
    */
   parse(string: string): void {
-    const tokens = javaSplit(string, TOKEN_DELIMITERS);
+    const tokens = JavaString.split(string, TOKEN_DELIMITERS);
     // String::split may contain empty strings whenever two delimiters follow each other
     // e.g. ";]{" would result in an array of 3 empty strings.
     // We ignore empty strings.
@@ -117,7 +118,7 @@ export class KVectorChain extends LinkedList<KVector> implements IDataObject {
     let y = 0;
     while (i < tokens.length) {
       // Java also tests `tokens[i] != null`; split results never hold null
-      if (javaTrim(tokens[i]).length > 0) {
+      if (JavaString.trim(tokens[i]).length > 0) {
         if (xy % COORDINATE_COUNT === 0) {
           x = parseDouble(tokens[i]);
         } else {
