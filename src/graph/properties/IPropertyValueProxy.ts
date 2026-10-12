@@ -13,3 +13,11 @@ export interface IPropertyValueProxy {
    */
   resolveValue<T>(property: IProperty<T>): T | null;
 }
+
+/**
+ * Type guard for the Java `instanceof IPropertyValueProxy` test (TypeScript interfaces vanish at
+ * run time): an object with a `resolveValue` function.
+ */
+export function isPropertyValueProxy(o: unknown): o is IPropertyValueProxy {
+  return typeof o === 'object' && o !== null && 'resolveValue' in o && typeof o.resolveValue === 'function';
+}

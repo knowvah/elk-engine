@@ -9,7 +9,7 @@ import { type EMapPropertyHolder, isEMapPropertyHolder } from '../EMapPropertyHo
 import { ElkGraphPackage, registerImpl } from '../ElkGraphPackage.js';
 import type { IProperty } from '../properties/IProperty.js';
 import type { IPropertyHolder } from '../properties/IPropertyHolder.js';
-import type { IPropertyValueProxy } from '../properties/IPropertyValueProxy.js';
+import { isPropertyValueProxy } from '../properties/IPropertyValueProxy.js';
 import { PROPERTY } from '../properties/MapPropertyHolder.js';
 import type { PropertyMap } from '../properties/PropertyMap.js';
 import { ElkReflect } from '../util/ElkReflect.js';
@@ -17,11 +17,6 @@ import { ElkPropertyToValueMapEntryImpl } from './ElkPropertyToValueMapEntryImpl
 
 /** The property map type: `IProperty` keys (equal by id, D5) to values, held in contained entries. */
 type PropertiesEMap = EcoreEMap<IProperty<unknown>, unknown, ElkPropertyToValueMapEntryImpl>;
-
-/** Type guard for the Java `instanceof IPropertyValueProxy` test: an object with a `resolveValue` function. */
-function isPropertyValueProxy(o: unknown): o is IPropertyValueProxy {
-  return typeof o === 'object' && o !== null && 'resolveValue' in o && typeof o.resolveValue === 'function';
-}
 
 /**
  * EMF's `EcoreEMap.newEntry(hash, key, value)`: the package factory creates the entry

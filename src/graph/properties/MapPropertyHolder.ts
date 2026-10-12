@@ -5,7 +5,7 @@ import { JavaHashMap } from '../../java/util/JavaHashMap.js';
 import { ElkReflect } from '../util/ElkReflect.js';
 import type { IProperty } from './IProperty.js';
 import type { IPropertyHolder } from './IPropertyHolder.js';
-import type { IPropertyValueProxy } from './IPropertyValueProxy.js';
+import { isPropertyValueProxy } from './IPropertyValueProxy.js';
 import type { PropertyMap } from './PropertyMap.js';
 
 /**
@@ -19,11 +19,6 @@ export const PROPERTY: HashStrategy<IProperty<unknown>> = {
   hash: (property) => JavaString.hashCode(property.getId()),
   equals: (a, b) => a.getId() === b.getId(),
 };
-
-/** Type guard for the Java `instanceof IPropertyValueProxy` test: an object with a `resolveValue` function. */
-function isPropertyValueProxy(o: unknown): o is IPropertyValueProxy {
-  return typeof o === 'object' && o !== null && 'resolveValue' in o && typeof o.resolveValue === 'function';
-}
 
 type PropertyHashMap = JavaHashMap<IProperty<unknown>, unknown>;
 
