@@ -8,6 +8,6 @@ needs the EMF runtime and the property interfaces.
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
 | T7 | `Property`, `MapPropertyHolder`, `PropertyHolderComparator`, `GraphFeature`, annotation registries, `ElkReflect` + ported `PropertyTest` | typescript-pro | src/graph/properties/{Property,MapPropertyHolder,PropertyHolderComparator,GraphFeature,AdvancedPropertyValue,ExperimentalPropertyValue}.ts, src/graph/util/ElkReflect.ts (+ tests) | T3, T4, T5 | [x] |
-| T8 | ElkGraph interfaces, type guards, `ElkGraphPackage` constants, base impls | typescript-pro | src/graph/{EMapPropertyHolder,ElkGraphElement,ElkShape,ElkLabel,ElkConnectableShape,ElkNode,ElkPort,ElkEdge,ElkBendPoint,ElkEdgeSection,ElkGraphFactory,ElkGraphPackage}.ts, src/graph/impl/{EMapPropertyHolderImpl,ElkGraphElementImpl,ElkShapeImpl,ElkLabelImpl,ElkBendPointImpl,ElkPropertyToValueMapEntryImpl}.ts (+ tests) | T3, T6 | [ ] |
+| T8 | ElkGraph interfaces, type guards, `ElkGraphPackage` constants, base impls | typescript-pro | src/graph/{EMapPropertyHolder,ElkGraphElement,ElkShape,ElkLabel,ElkConnectableShape,ElkNode,ElkPort,ElkEdge,ElkBendPoint,ElkEdgeSection,ElkGraphFactory,ElkGraphPackage}.ts, src/graph/impl/{EMapPropertyHolderImpl,ElkGraphElementImpl,ElkShapeImpl,ElkLabelImpl,ElkBendPointImpl,ElkPropertyToValueMapEntryImpl}.ts (+ tests) | T3, T6 | [x] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green.
