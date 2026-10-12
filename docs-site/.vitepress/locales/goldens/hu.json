@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galéria",
+    "indexHeading": "Galéria: a golden korpusz",
+    "indexIntro": "Ebben a szakaszban minden gráf a **{total} golden elrendezés** egyike, amelyet az ELK Java referencia-implementációja (az orákulum, forrásból fordítva) állított elő. ELK JSON formátumban vannak tárolva, és **élőben, az Ön böngészőjében** renderelődnek ebből a JSON-ból. Elrendezési algoritmusonként egy oldal:",
+    "indexRowCount": "{count} golden",
+    "indexOutro": "Minden kártya megjeleníti az orákulum elrendezését, egy rövid leírást, és összecsukva az ELK JSON forráskódot, amelyből kirajzolódik. Ezekhez az elrendezésekhez kötött a TypeScript-portolás (lásd: {conformance}).",
+    "conformanceLabel": "Megfelelőség",
+    "algorithmTitle": "{algorithm} goldenek",
+    "algorithmHeading": "{algorithm}: {count} golden",
+    "algorithmIntro": "Az alábbi gráfok mindegyike egy orákulum-elrendezés, amely élőben, az Ön böngészőjében renderelődik az ELK JSON-jából.",
+    "blurbs": {
+      "layered": "Rétegalapú (Sugiyama-stílusú) elrendezés portokkal és hierarchiával rendelkező csomópont–él diagramokhoz."
+    }
+  },
+  "ptolemy-scrambler": "A legkisebb hierarchikus Ptolemy-modell: egy összetett csomópont portokkal és csomópontcímkékkel (12 csomópont, 22 port, 11 címke, mélység 2), a layered alapbeállításaival és az alapértelmezett seeddel elrendezve.",
+  "ptolemy-clockdrift-hierarchy": "Beágyazott gyermekcsomópontok két szintje hierarchiákon átnyúló élekkel (12 csomópont, 31 port, 11 címke, mélység 3), a layered alapbeállításaival és az alapértelmezett seeddel elrendezve.",
+  "ptolemy-afdx-multicast": "Multicast szétágazó élek összetett csomópontok portjain át, rögzített portoldalakkal és indexekkel (15 csomópont, 30 port, 14 címke, mélység 2).",
+  "ptolemy-crossbar-switch": "Portsűrű modell, csomópontonként nagyjából három porttal, amely próbára teszi a portsorrendet (13 csomópont, 40 port, 12 címke, mélység 2)."
+}
