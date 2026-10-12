@@ -33,3 +33,12 @@ docs-site/.vitepress/dist/
 
 # Brand assets copied from @knowvah/theme by docs-site/copy-brand-assets.mjs
 docs-site/public/knowvah_logo.svg
+
+# Generated at build by docs:copy-goldens / docs:copy-reports / docs:i18n-status
+# (sources: test/corpus/manifest.json, test/golden/refs/elk/, test/corpus/PARITY.md).
+docs-site/showcase/
+docs-site/*/showcase/
+docs-site/.vitepress/goldens.json
+docs-site/.vitepress/goldens.*.json
+docs-site/parity.md
+docs-site/.vitepress/i18n-hashes.json

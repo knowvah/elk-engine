@@ -8,9 +8,15 @@ import '@knowvah/theme/vitepress';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/700.css';
 import './custom.css';
+import ElkDiagram from './ElkDiagram.vue';
+import GoldenGallery from './GoldenGallery.vue';
 
-// This file is the single place site components get registered (T5 adds the
-// showcase components, T7 the stale banner).
+// This file is the single place site components get registered (T7 adds the
+// stale banner).
 export default {
   extends: DefaultTheme,
+  enhanceApp({ app }) {
+    app.component('GoldenGallery', GoldenGallery);
+    app.component('ElkDiagram', ElkDiagram);
+  },
 } satisfies Theme;

@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Showcase",
+    "indexHeading": "Showcase: the golden corpus",
+    "indexIntro": "Every graph in this section is one of **{total} golden layouts** produced by the ELK Java reference implementation (the oracle, built from source). They are stored as ELK JSON and rendered **live in your browser** from that JSON. One page per layout algorithm:",
+    "indexRowCount": "{count} goldens",
+    "indexOutro": "Each card shows the oracle layout, a short description, and, folded away, the ELK JSON it is drawn from. These are the layouts the TypeScript port is held to (see {conformance}).",
+    "conformanceLabel": "Conformance",
+    "algorithmTitle": "{algorithm} goldens",
+    "algorithmHeading": "{algorithm}: {count} goldens",
+    "algorithmIntro": "Each graph below is an oracle layout rendered live in your browser from its ELK JSON.",
+    "blurbs": {
+      "layered": "Layer-based (Sugiyama-style) layout for node-link diagrams with ports and hierarchy."
+    }
+  },
+  "ptolemy-scrambler": "The smallest hierarchical Ptolemy model: one composite with ports and node labels (12 nodes, 22 ports, 11 labels, depth 2), laid out with default layered settings and the default seed.",
+  "ptolemy-clockdrift-hierarchy": "Two levels of nested children with hierarchical edges (12 nodes, 31 ports, 11 labels, depth 3), laid out with default layered settings and the default seed.",
+  "ptolemy-afdx-multicast": "Multicast fan-out edges across composite ports with fixed port sides and indices (15 nodes, 30 ports, 14 labels, depth 2).",
+  "ptolemy-crossbar-switch": "A port-dense model, about three ports per node, that stresses port ordering (13 nodes, 40 ports, 12 labels, depth 2)."
+}
