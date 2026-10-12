@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galleria",
+    "indexHeading": "Galleria: il corpus golden",
+    "indexIntro": "Ogni grafo in questa sezione è uno dei **{total} layout golden** prodotti dall'implementazione di riferimento Java di ELK (l'oracolo, compilato dai sorgenti). Sono memorizzati come ELK JSON e visualizzati **in tempo reale nel tuo browser** a partire da quel JSON. Una pagina per algoritmo di layout:",
+    "indexRowCount": "{count} golden",
+    "indexOutro": "Ogni scheda mostra il layout dell'oracolo, una breve descrizione e, ripiegato, il Sorgente ELK JSON da cui viene disegnato. Sono i layout a cui è vincolato il porting TypeScript (vedi {conformance}).",
+    "conformanceLabel": "Conformità",
+    "algorithmTitle": "Golden {algorithm}",
+    "algorithmHeading": "{algorithm}: {count} golden",
+    "algorithmIntro": "Ogni grafo qui sotto è un layout dell'oracolo visualizzato in tempo reale nel tuo browser a partire dal suo ELK JSON.",
+    "blurbs": {
+      "layered": "Layout a livelli (in stile Sugiyama) per diagrammi nodo-arco con porte e gerarchia."
+    }
+  },
+  "ptolemy-scrambler": "Il più piccolo modello Ptolemy gerarchico: un composito con porte ed etichette dei nodi (12 nodi, 22 porte, 11 etichette, profondità 2), con layout calcolato con le impostazioni predefinite di layered e il seed predefinito.",
+  "ptolemy-clockdrift-hierarchy": "Due livelli di figli annidati con archi gerarchici (12 nodi, 31 porte, 11 etichette, profondità 3), con layout calcolato con le impostazioni predefinite di layered e il seed predefinito.",
+  "ptolemy-afdx-multicast": "Archi di diffusione multicast attraverso porte di nodi compositi con lati e indici di porta fissi (15 nodi, 30 porte, 14 etichette, profondità 2).",
+  "ptolemy-crossbar-switch": "Un modello denso di porte, circa tre porte per nodo, che mette alla prova l'ordinamento delle porte (13 nodi, 40 porte, 12 etichette, profondità 2)."
+}
