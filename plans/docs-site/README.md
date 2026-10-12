@@ -94,7 +94,7 @@ criteria imply; patch/minor versions within D1; fix commits to satisfy a gate.
 | 1 | VitePress scaffold | T1 | — | [x] |
 | 2 | Registry, English content, ELK renderer | T2–T4 | 1 | [x] |
 | 3 | Showcase + reports | T5–T6 | 2 | [x] |
-| 4 | Drift tracking + workflows | T7–T8 | 3 | [ ] |
+| 4 | Drift tracking + workflows | T7–T8 | 3 | [x] |
 | 5 | Translation lint | T9 | 4 | [ ] |
 | 6 | German (review stop) | T10 | 5 | [ ] |
 | 7 | cs da es et fi | T11–T15 | 6 + review | [ ] |
