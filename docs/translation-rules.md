@@ -301,7 +301,7 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 - `src/emf/` is a minimal EMF runtime (D1); EMF is EPL-2.0, so unlike OpenJDK (AD-9) its source may
   be read and ported. It mirrors EMF's paths and class names (`EList`, `EObject`, `EcoreEMap`,
   `EcoreUtil`), D2/D4 surface only (no notifications, adapters, proxies, `eGet/eSet/eIsSet`,
-  resources). Fitness: `src/emf` imports only `src/java`/`src/guava`.
+  resources). Detail: [architecture/elkgraph-model.md](architecture/elkgraph-model.md).
 - List contract (D2), HIGH: `test/golden/refs/java/graph.json` (40 JVM scenarios, 654 steps,
   `tools/vectors/GraphVectors.java`; replay `src/graph/impl/ElkGraph.replay.test.ts`). Lists are
   live and unique (`add` of a present element returns `false`; `set` throws

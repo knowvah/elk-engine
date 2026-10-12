@@ -42,7 +42,8 @@ Test files: 147 attached to the bundles above, plus 46 in `org.eclipse.elk.alg.t
 - **Strategy:** `hand port` | `EMF → plain class (AD-11)` | `melk codegen (AD-12)` | `Xtend → hand
 port` | `not ported` + reason. Rows may combine strategies per file; the cell says which.
 - **`(EMF types → AD-11)`** marks hand-ported packages that import `org.eclipse.emf.*`; those types
-  resolve to the `src/graph/` classes and the minimal EMF runtime `src/emf/` (D1; not a bundle).
+  resolve to the `src/graph/` classes and the minimal EMF runtime `src/emf/` (D1; not a bundle;
+  detail in [elkgraph-model.md](elkgraph-model.md)).
 - Guava (`com.google.common`) and Gson (`com.google.gson`) imports are not flagged per row; see
   AD-10 and [translation rules](../translation-rules.md).
 - `alg.layered` is split out for length: [port-map-alg-layered.md](port-map-alg-layered.md).
