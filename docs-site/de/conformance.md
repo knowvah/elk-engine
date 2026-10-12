@@ -15,8 +15,8 @@ Der Komparator ist [`test/golden/compare-json.ts`](https://github.com/knowvah/el
 dieses Dokument beschreibt, was er umsetzt. Die Portierungsregeln stehen in
 [`docs/translation-rules.md`](/guide/translation-rules).
 
-| #   | Abschnitt                                         | Beantwortet                                    |
-| --- | ------------------------------------------------- | ---------------------------------------------- |
+| #   | Abschnitt                                          | Beantwortet                                    |
+| --- | -------------------------------------------------- | ---------------------------------------------- |
 | 1   | [Orakel](#_1-orakel)                               | Was ist „korrekt“, und bei welchem Commit?     |
 | 1a  | [Konformitätseinheit](#_1a-konformitatseinheit)    | Was ist ein Fall, und welche Fälle gibt es?    |
 | 2   | [Konformitätskriterium](#_2-konformitatskriterium) | Was gilt als gleich?                           |
