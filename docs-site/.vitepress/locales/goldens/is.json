@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Sýningarsalur",
+    "indexHeading": "Sýningarsalur: golden-safnið",
+    "indexIntro": "Hver einasti graf í þessum hluta er eitt af **{total} golden-uppröðunum** sem ELK Java-viðmiðunarútfærslan (véfréttin, byggð úr frumkóða) býr til. Þær eru geymdar sem ELK JSON og teiknaðar **beint í vafranum þínum** úr því JSON. Ein síða fyrir hvert uppröðunaralgrím:",
+    "indexRowCount": "{count} golden-tilvik",
+    "indexOutro": "Hvert spjald sýnir uppröðun véfréttarinnar, stutta lýsingu og, samanbrotinn, ELK JSON-frumkóðann sem hún er teiknuð úr. Þetta eru uppraðanirnar sem TypeScript-yfirfærslan er mæld við (sjá {conformance}).",
+    "conformanceLabel": "Samræmi",
+    "algorithmTitle": "{algorithm}: golden-tilvik",
+    "algorithmHeading": "{algorithm}: {count} golden-tilvik",
+    "algorithmIntro": "Hver graf hér að neðan er uppröðun véfréttarinnar, teiknuð beint í vafranum þínum úr ELK JSON.",
+    "blurbs": {
+      "layered": "Lagskipt uppröðun (að hætti Sugiyama) fyrir hnúta-leggja-myndrit með portum og stigveldi."
+    }
+  },
+  "ptolemy-scrambler": "Minnsta stigveldislíkan Ptolemy: einn samsettur hnútur með portum og merkjum á hnútum (12 hnútar, 22 port, 11 merki, dýpt 2), raðað upp með sjálfgefnum stillingum layered og sjálfgefnu fræi.",
+  "ptolemy-clockdrift-hierarchy": "Tvö stig hreiðraðra undirhnúta með leggjum yfir stigveldi (12 hnútar, 31 port, 11 merki, dýpt 3), raðað upp með sjálfgefnum stillingum layered og sjálfgefnu fræi.",
+  "ptolemy-afdx-multicast": "Fjölvarpsleggir sem greinast yfir port samsettra hnúta með föstum hliðum og vísum porta (15 hnútar, 30 port, 14 merki, dýpt 2).",
+  "ptolemy-crossbar-switch": "Portaþétt líkan, um þrjú port á hvern hnút, sem reynir á röðun porta (13 hnútar, 40 port, 12 merki, dýpt 2)."
+}
