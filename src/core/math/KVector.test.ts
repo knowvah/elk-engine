@@ -14,7 +14,6 @@ function assertEquals(expected: number, actual: number, delta: number): void {
 }
 
 const HASH_PATH = resolve(dirname(fileURLToPath(import.meta.url)), '../../../test/golden/refs/java/hash.json');
-const HEX_RADIX = 16;
 /** Row of `kvectorHash`: x bits, y bits (16 hex digits each), `new KVector(x, y).hashCode()`. */
 type HashRow = [string, string, number];
 

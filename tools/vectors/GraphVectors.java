@@ -7,7 +7,6 @@
 // move(int,E), clear), EObject.eContainer/eAllContents/eGet, ECollections.sort. This program only CALLS
 // ELK/EMF and records results; it embeds no ELK or EMF implementation.
 // Run: tools/vectors/graph-vectors.sh <outDir>  (java -cp ... GraphVectors.java <outDir> <scenarios>)
-//
 // Scenarios: tools/vectors/graph-scenarios.txt, fixed text (no randomness). "scenario <name>" opens a scenario;
 // every other non-blank, non-# line is one step "op arg,arg,...". Arguments split on ","; "~" is null; an empty
 // token is the empty string (an empty list for list-typed args). Types: element id (default), :s string, :i int,
@@ -15,7 +14,6 @@
 // step when absent (createLabel without text calls createLabel(parent); createBendPoint without x,y calls
 // createBendPoint(section)). Script op "listMoveElement" is recorded as op "listMove" with an "element"
 // argument (EList.move(int, E)); "listMove" with a "from" argument is EList.move(int, int).
-//
 // Output: {jdk, elkCommit, scenarios: [{name, steps: [step]}]}. A step holds "op", its arguments by
 // name, "result" when the op returns a value (elements as ids), "throws" ({class: simple name,
 // message}) when it threw, then the snapshot taken after the step:
@@ -366,13 +364,17 @@ public class GraphVectors {
         if (NULL_TOKEN.equals(token)) {
             return null;
         }
-        return switch (type) {
-            case "i" -> Integer.valueOf(token);
-            case "d" -> Double.valueOf(token);
-            case "b" -> Boolean.valueOf(token);
-            case "l" -> token.isEmpty() ? List.of() : Arrays.asList(token.split(LIST_SEP));
-            default -> token;
-        };
+        try {
+            return switch (type) {
+                case "i" -> Integer.valueOf(token);
+                case "d" -> Double.valueOf(token);
+                case "b" -> Boolean.valueOf(token);
+                case "l" -> token.isEmpty() ? List.of() : Arrays.asList(token.split(LIST_SEP));
+                default -> token;
+            };
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("bad :" + type + " literal in scenario: " + token, e);
+        }
     }
 
     // ---- snapshot ----
@@ -488,6 +490,7 @@ public class GraphVectors {
     }
 
     private static Map<String, Object> map(Object... kv) {
+        if ((kv.length & 1) != 0) { throw new IllegalArgumentException("map() takes key/value pairs, got " + kv.length); }
         Map<String, Object> m = new LinkedHashMap<>();
         for (int i = 0; i < kv.length; i += 2) {
             m.put((String) kv[i], kv[i + 1]);
