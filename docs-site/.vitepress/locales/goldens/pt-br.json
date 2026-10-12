@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galeria",
+    "indexHeading": "Galeria: o corpus golden",
+    "indexIntro": "Cada grafo desta seção é um de **{total} layouts golden** produzidos pela implementação de referência em Java do ELK (o oráculo, compilado a partir do código-fonte). Eles são armazenados como ELK JSON e renderizados **ao vivo no seu navegador** a partir desse JSON. Uma página por algoritmo de layout:",
+    "indexRowCount": "{count} goldens",
+    "indexOutro": "Cada cartão mostra o layout do oráculo, uma descrição curta e, recolhido, o Código-fonte ELK JSON a partir do qual ele é desenhado. Estes são os layouts aos quais o port em TypeScript é submetido (veja {conformance}).",
+    "conformanceLabel": "Conformidade",
+    "algorithmTitle": "Goldens de {algorithm}",
+    "algorithmHeading": "{algorithm}: {count} goldens",
+    "algorithmIntro": "Cada grafo abaixo é um layout do oráculo renderizado ao vivo no seu navegador a partir do seu ELK JSON.",
+    "blurbs": {
+      "layered": "Layout em camadas (no estilo Sugiyama) para diagramas de nós e arestas com portas e hierarquia."
+    }
+  },
+  "ptolemy-scrambler": "O menor modelo hierárquico do Ptolemy: um composto com portas e rótulos de nós (12 nós, 22 portas, 11 rótulos, profundidade 2), com layout feito nas configurações padrão do layered e na seed padrão.",
+  "ptolemy-clockdrift-hierarchy": "Dois níveis de filhos aninhados com arestas hierárquicas (12 nós, 31 portas, 11 rótulos, profundidade 3), com layout feito nas configurações padrão do layered e na seed padrão.",
+  "ptolemy-afdx-multicast": "Arestas de distribuição multicast entre portas de compostos, com lados e índices de porta fixos (15 nós, 30 portas, 14 rótulos, profundidade 2).",
+  "ptolemy-crossbar-switch": "Um modelo denso em portas, com cerca de três portas por nó, que testa a ordenação das portas (13 nós, 40 portas, 12 rótulos, profundidade 2)."
+}
