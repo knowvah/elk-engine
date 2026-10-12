@@ -44,7 +44,7 @@ export class GraphFeature {
   static readonly COMPOUND: GraphFeature = new GraphFeature(
     'COMPOUND',
     5,
-    'Edges that connect nodes from different hierarchy levels' + 'and are incident to compound nodes.',
+    'Edges that connect nodes from different hierarchy levels ' + 'and are incident to compound nodes.',
   );
   /** Edges that connect nodes from different clusters, but not the cluster parent nodes. */
   static readonly CLUSTERS: GraphFeature = new GraphFeature(
