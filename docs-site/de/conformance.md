@@ -15,15 +15,15 @@ Der Komparator ist [`test/golden/compare-json.ts`](https://github.com/knowvah/el
 dieses Dokument beschreibt, was er umsetzt. Die Portierungsregeln stehen in
 [`docs/translation-rules.md`](/guide/translation-rules).
 
-| #   | Abschnitt                                          | Beantwortet                                    |
-| --- | -------------------------------------------------- | ---------------------------------------------- |
-| 1   | [Orakel](#_1-orakel)                               | Was ist „korrekt“, und bei welchem Commit?     |
-| 1a  | [Konformitätseinheit](#_1a-konformitatseinheit)    | Was ist ein Fall, und welche Fälle gibt es?    |
-| 2   | [Konformitätskriterium](#_2-konformitatskriterium) | Was gilt als gleich?                           |
-| 3   | [Goldens und Korpus](#_3-goldens-und-korpus)       | Woher stammen die Referenzausgaben?            |
-| 4   | [Seam-Patches](#_4-seam-patches)                   | Wie ändern wir das Orakel?                     |
-| 5   | [Orakel-Betrieb](#_5-orakel-betrieb-runbook)       | Was tue ich, wenn es kaputtgeht?               |
-| 6   | [Gates](#_6-gates)                                 | Was muss bestehen, bevor eine Änderung landet? |
+| #   | Abschnitt                                         | Beantwortet                                    |
+| --- | ------------------------------------------------- | ---------------------------------------------- |
+| 1   | [Orakel](#1-orakel)                               | Was ist „korrekt“, und bei welchem Commit?     |
+| 1a  | [Konformitätseinheit](#1a-konformitätseinheit)    | Was ist ein Fall, und welche Fälle gibt es?    |
+| 2   | [Konformitätskriterium](#2-konformitätskriterium) | Was gilt als gleich?                           |
+| 3   | [Goldens und Korpus](#3-goldens-und-korpus)       | Woher stammen die Referenzausgaben?            |
+| 4   | [Seam-Patches](#4-seam-patches)                   | Wie ändern wir das Orakel?                     |
+| 5   | [Orakel-Betrieb](#5-orakel-betrieb-runbook)       | Was tue ich, wenn es kaputtgeht?               |
+| 6   | [Gates](#6-gates)                                 | Was muss bestehen, bevor eine Änderung landet? |
 
 ## 1. Orakel
 
