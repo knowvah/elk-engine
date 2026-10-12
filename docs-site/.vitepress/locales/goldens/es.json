@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galería",
+    "indexHeading": "Galería: el corpus golden",
+    "indexIntro": "Cada grafo de esta sección es uno de **{total} layouts golden** producidos por la implementación de referencia de ELK en Java (el oráculo, compilado desde el código fuente). Están almacenados como ELK JSON y se renderizan **en vivo en tu navegador** a partir de ese JSON. Una página por algoritmo de layout:",
+    "indexRowCount": "{count} goldens",
+    "indexOutro": "Cada tarjeta muestra el layout del oráculo, una descripción breve y, plegado, el Código fuente ELK JSON a partir del cual se dibuja. Son los layouts con los que se mide el portado a TypeScript (consulta {conformance}).",
+    "conformanceLabel": "Conformidad",
+    "algorithmTitle": "Goldens de {algorithm}",
+    "algorithmHeading": "{algorithm}: {count} goldens",
+    "algorithmIntro": "Cada grafo de abajo es un layout del oráculo renderizado en vivo en tu navegador a partir de su ELK JSON.",
+    "blurbs": {
+      "layered": "Layout por capas (al estilo Sugiyama) para diagramas de nodos y aristas con puertos y jerarquía."
+    }
+  },
+  "ptolemy-scrambler": "El modelo Ptolemy jerárquico más pequeño: un compuesto con puertos y etiquetas de nodo (12 nodos, 22 puertos, 11 etiquetas, profundidad 2), con layout calculado con la configuración por defecto de layered y la semilla por defecto.",
+  "ptolemy-clockdrift-hierarchy": "Dos niveles de hijos anidados con aristas jerárquicas (12 nodos, 31 puertos, 11 etiquetas, profundidad 3), con layout calculado con la configuración por defecto de layered y la semilla por defecto.",
+  "ptolemy-afdx-multicast": "Aristas de difusión multicast a través de puertos de nodos compuestos con lados e índices de puerto fijos (15 nodos, 30 puertos, 14 etiquetas, profundidad 2).",
+  "ptolemy-crossbar-switch": "Un modelo denso en puertos, con unos tres puertos por nodo, que pone a prueba el orden de los puertos (13 nodos, 40 puertos, 12 etiquetas, profundidad 2)."
+}
