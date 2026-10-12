@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { h } from 'vue';
 import DefaultTheme from 'vitepress/theme';
 import type { Theme } from 'vitepress';
 // Brand: the Warm Studio palette as VitePress variables, the brand mono
@@ -10,11 +11,13 @@ import '@fontsource/jetbrains-mono/700.css';
 import './custom.css';
 import ElkDiagram from './ElkDiagram.vue';
 import GoldenGallery from './GoldenGallery.vue';
+import StaleBanner from './StaleBanner.vue';
 
-// This file is the single place site components get registered (T7 adds the
-// stale banner).
+// This file is the single place site components get registered.
 export default {
   extends: DefaultTheme,
+  // Localized "English source changed" notice above translated pages.
+  Layout: () => h(DefaultTheme.Layout, null, { 'doc-before': () => h(StaleBanner) }),
   enhanceApp({ app }) {
     app.component('GoldenGallery', GoldenGallery);
     app.component('ElkDiagram', ElkDiagram);

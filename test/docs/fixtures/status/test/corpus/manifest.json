@@ -1,0 +1,6 @@
+{
+  "golden": [
+    { "id": "g-one", "path": "a.json", "algorithm": "org.eclipse.elk.layered", "variant": "default", "note": "n" },
+    { "id": "g-two", "path": "b.json", "algorithm": "org.eclipse.elk.layered", "variant": "default", "note": "n" }
+  ]
+}
