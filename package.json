@@ -75,5 +75,10 @@
   },
   "volta": {
     "node": "26.3.1"
+  },
+  "overrides": {
+    "vitepress": {
+      "vite": "^6.4.4"
+    }
   }
 }

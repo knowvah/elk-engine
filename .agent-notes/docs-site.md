@@ -83,3 +83,15 @@ the quote as`\x22`/`\x27`/`\x60`or building the pattern with`new RegExp` avoids 
   server only); `npm audit` reports 3 findings with "No fix available".
 - **Impact**: Accepted under D1; revisit on a VitePress 1.6.5+ or stable 2.x.
 - **Confidence**: High
+
+## Observation: `overrides` lifts VitePress 1.6.4 onto vite 6 cleanly
+
+- **Context**: Fixing the 4 Dependabot alerts (vite ≤ 6.4.2 ×3, esbuild ≤ 0.24.2) on 2026-10-12.
+- **Finding**: vite 5.x has no patched release (5.4.21 is the last). `"overrides": { "vitepress":
+{ "vite": "^6.4.4" } }` in `package.json` resolves vite 6.4.4 + esbuild 0.25.12 under vitepress
+  1.6.4; `@vitejs/plugin-vue` 5.2.4 already peers on vite 6. `npm audit` reports 0, and
+  `docs:build`, `typecheck`, and `coverage` are unchanged. Supersedes the "no fix inside VitePress
+  1.6.x" observation above.
+- **Impact**: D1 (VitePress 1.6.4 line) stands. Drop the override when moving to VitePress 2.x,
+  which depends on vite 8 directly.
+- **Confidence**: High
