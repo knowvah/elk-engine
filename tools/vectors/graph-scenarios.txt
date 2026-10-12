@@ -1,0 +1,778 @@
+# SPDX-License-Identifier: EPL-2.0
+# Scripted scenarios for tools/vectors/GraphVectors.java (graph.json). Format: see the header of
+# GraphVectors.java. One step per line; "scenario <name>" opens a scenario. Fixed text, no randomness.
+# Edit only together with a regeneration of test/golden/refs/java/graph.json (AD-13).
+
+# ElkGraphUtilTest.testFindBestEdgeContainment: setup, then createEdgeWithoutContainment + the assertion per edge
+scenario elk-graph-util-test-find-best-edge-containment
+createGraph graph1
+createNode node1,graph1
+createNode node2,graph1
+createNode node3,graph1
+createNode node3_1,node3
+createNode node3_1_1,node3_1
+createNode node4,graph1
+createNode node4_1,node4
+createGraph graph2
+createNode nodeA,graph2
+createEdge sameLevelEdge,~
+listAdd sameLevelEdge,sources,node1
+listAdd sameLevelEdge,targets,node2
+findBestEdgeContainment sameLevelEdge
+createEdge selfLoopEdge,~
+listAdd selfLoopEdge,sources,node1
+listAdd selfLoopEdge,targets,node1
+findBestEdgeContainment selfLoopEdge
+createEdge downLevelEdge,~
+listAdd downLevelEdge,sources,node1
+listAdd downLevelEdge,targets,node3_1
+findBestEdgeContainment downLevelEdge
+createEdge upLevelEdge,~
+listAdd upLevelEdge,sources,node3_1
+listAdd upLevelEdge,targets,node2
+findBestEdgeContainment upLevelEdge
+createEdge toChildEdge,~
+listAdd toChildEdge,sources,node3
+listAdd toChildEdge,targets,node3_1
+findBestEdgeContainment toChildEdge
+createEdge toParentEdge,~
+listAdd toParentEdge,sources,node3_1
+listAdd toParentEdge,targets,node3
+findBestEdgeContainment toParentEdge
+createEdge toGrandChildEdge,~
+listAdd toGrandChildEdge,sources,node3
+listAdd toGrandChildEdge,targets,node3_1_1
+findBestEdgeContainment toGrandChildEdge
+createEdge toGrandParentEdge,~
+listAdd toGrandParentEdge,sources,node3_1_1
+listAdd toGrandParentEdge,targets,node3
+findBestEdgeContainment toGrandParentEdge
+createEdge crossHierarchyEdge,~
+listAdd crossHierarchyEdge,sources,node3_1
+listAdd crossHierarchyEdge,targets,node4_1
+findBestEdgeContainment crossHierarchyEdge
+createEdge crossGraphEdge,~
+listAdd crossGraphEdge,sources,node1
+listAdd crossGraphEdge,targets,nodeA
+findBestEdgeContainment crossGraphEdge
+createEdge sourceMissingEdge,~
+listAdd sourceMissingEdge,targets,node1
+findBestEdgeContainment sourceMissingEdge
+createEdge targetMissingEdge,~
+listAdd targetMissingEdge,sources,node1
+findBestEdgeContainment targetMissingEdge
+
+# ElkGraphUtilTest: expected IllegalArgumentException
+scenario elk-graph-util-test-find-best-edge-containment-with-unconnected-edge
+createEdge edge,~
+findBestEdgeContainment edge
+
+# ElkGraphUtilTest: expected NullPointerException
+scenario elk-graph-util-test-find-best-edge-containment-with-null-pointer
+findBestEdgeContainment ~
+
+# elementLabeledBy / containingGraph through label chains on nodes, edges, ports and detached labels
+scenario label-of-label-chain
+createGraph g
+createNode n1,g
+createLabel l1,n1,outer
+createLabel l2,l1,middle
+createLabel l3,l2
+elementLabeledBy l3
+elementLabeledBy l2
+elementLabeledBy l1
+containingGraph l3
+containingGraph n1
+containingGraph g
+createLabel lFree,~,free
+createLabel lFree2,lFree,inner
+elementLabeledBy lFree
+elementLabeledBy lFree2
+containingGraph lFree2
+createEdge e1,g
+createLabel le,e1
+createLabel le2,le
+elementLabeledBy le2
+containingGraph le2
+createPort p1,n1
+createLabel lp,p1
+createLabel lp2,lp
+elementLabeledBy lp2
+containingGraph lp2
+containingGraph p1
+setParent l1,~
+elementLabeledBy l3
+containingGraph l3
+
+# outer sections carry incoming/outgoing shapes; outgoingSections <-> incomingSections inverse
+scenario hyperedge-outer-and-inner-sections
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,g
+createNode n4,g
+createHyperedge e1,n1 n2,n3 n4
+createEdgeSection s1,e1
+setIncomingShape s1,n1
+createEdgeSection s2,e1
+setIncomingShape s2,n2
+createEdgeSection s3,e1
+createEdgeSection s4,e1
+setOutgoingShape s4,n3
+createEdgeSection s5,e1
+setOutgoingShape s5,n4
+listAdd s1,outgoingSections,s3
+listAdd s2,outgoingSections,s3
+listAdd s3,outgoingSections,s4
+listAdd s4,incomingSections,s3
+listAdd s5,incomingSections,s3
+isHyperedge e1
+isSelfloop e1
+listRemove s3,incomingSections,s1
+listRemoveAt s3,outgoingSections,0
+listAdd s3,incomingSections,s1
+setIncomingShape s1,~
+listRemove e1,sections,s3
+
+# setParent moves nodes; e1 stays in n1.containedEdges
+scenario set-parent-moves-node-between-parents
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,n1
+createNode n4,n1
+createSimpleEdge e1,n3,n4
+setParent n3,n2
+setParent n1,n2
+setParent n4,~
+setParent n4,g
+findBestEdgeContainment e1
+
+# setParent moves a subtree to another graph; e2 stays in g1.containedEdges
+scenario set-parent-moves-node-between-graphs
+createGraph g1
+createGraph g2
+createNode n1,g1
+createNode n2,n1
+createNode n3,n1
+createNode n4,g1
+createSimpleEdge e1,n2,n3
+createSimpleEdge e2,n1,n4
+setParent n1,g2
+findBestEdgeContainment e2
+containingGraph n1
+containingGraph e2
+setParent n4,g2
+findBestEdgeContainment e2
+
+# EList uniqueness: add of a present element returns false (direct and via the inverse)
+scenario list-add-duplicate-returns-false
+createGraph g
+createNode n1,g
+createNode n2,g
+createEdge e1,g
+listAdd e1,sources,n1
+listAdd e1,sources,n1
+listAdd n1,outgoingEdges,e1
+listAdd e1,targets,n1
+listAdd g,children,n1
+listAdd n2,incomingEdges,e1
+listAdd e1,targets,n2
+listAdd g,containedEdges,e1
+
+# EList uniqueness: set to an element present at another index throws
+scenario list-set-duplicate-throws
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,g
+createEdge e1,g
+listAdd e1,sources,n1
+listAdd e1,sources,n2
+listSet e1,sources,0,n2
+listSet e1,sources,0,n1
+listSet e1,sources,0,n3
+listSet g,children,0,n2
+listSet g,children,0,n1
+createNode n4,n3
+listSet g,children,1,n4
+
+# setParent checks EcoreUtil.isAncestor and throws on a containment cycle
+scenario recursive-containment-node
+createGraph g
+createNode n1,g
+createNode n2,n1
+createNode n3,n2
+setParent n1,n3
+setParent n1,n2
+setParent n1,n1
+setParent g,n1
+setParent g,n3
+setParent n3,g
+setParent n1,n3
+
+# EList.add/add(int) on children has no recursion check: cycles form; setParent breaks them
+scenario recursive-containment-node-via-list
+createGraph g
+createNode n1,g
+createNode n2,n1
+createNode n3,n2
+listAdd n2,children,n1
+setParent n1,g
+listAdd n1,children,n1
+setParent n1,g
+listAddAt n3,children,0,g
+setParent g,~
+
+# label setParent cycles throw; an edge's containing node never forms a cycle
+scenario recursive-containment-label-and-edge
+createGraph g
+createNode n1,g
+createNode n2,n1
+createLabel l1,n1,a
+createLabel l2,l1,b
+setParent l1,l2
+setParent l1,l1
+createEdge e1,n2
+createLabel l3,e1,c
+setContainingNode e1,n1
+setContainingNode e1,n2
+listAdd l3,labels,l2
+setParent l1,l3
+setParent l3,l1
+listAdd n2,containedEdges,e1
+listAdd n1,containedEdges,e1
+setParent n1,n2
+setContainingNode e1,g
+
+# EList.add on labels has no recursion check: label cycles form; setParent breaks them
+scenario recursive-containment-label-via-list
+createGraph g
+createNode n1,g
+createLabel l1,n1,a
+createLabel l2,l1,b
+listAdd l1,labels,l1
+setParent l1,n1
+listAdd l2,labels,l1
+setParent l1,n1
+
+# EList.move(int, int), including out-of-range indices
+scenario list-move-by-index
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,g
+createNode n4,g
+listMove g,children,0,3
+listMove g,children,3,0
+listMove g,children,1,1
+listMove g,children,4,0
+listMove g,children,0,-1
+listMove g,children,0,4
+
+# EList.move(int, E) on containment and inverse lists, absent element, out-of-range index
+scenario list-move-by-element
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,g
+createEdge e1,g
+listAdd e1,sources,n1
+listAdd e1,sources,n2
+listAdd e1,sources,n3
+listMoveElement g,children,2,n1
+listMoveElement e1,sources,0,n3
+createNode n4,~
+listMoveElement g,children,0,n4
+listMoveElement g,children,5,n2
+listMoveElement g,children,1,n2
+
+# ECollections.sort keeps containment
+scenario sort-children-by-identifier-descending
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,g
+createNode n4,g
+setIdentifier n1,b
+setIdentifier n2,d
+setIdentifier n3,a
+setIdentifier n4,c
+createSimpleEdge e1,n1,n2
+sortChildren g
+sortChildren g
+setIdentifier n4,e
+sortChildren g
+
+# EcoreEMap: removeKey then put appends
+scenario remove-property-then-set-appends
+createGraph g
+createNode n1,g
+setProperty n1,org.test.a,v1
+setProperty n1,org.test.b,v2
+setProperty n1,org.test.c,v3
+removeProperty n1,org.test.a
+setProperty n1,org.test.a,v4
+removeProperty n1,org.test.z
+removeProperty n1,org.test.b
+removeProperty n1,org.test.c
+removeProperty n1,org.test.a
+
+# EcoreEMap: put on an existing key replaces the value in place
+scenario set-property-existing-key-keeps-position
+createGraph g
+createNode n1,g
+setProperty n1,org.test.a,v1
+setProperty n1,org.test.b,v2
+setProperty n1,org.test.c,v3
+setProperty n1,org.test.b,v9
+setProperty n1,org.test.a,v8
+setProperty n1,org.test.c,v3
+
+# copyProperties between nodes, sections, edges; null source; self
+scenario copy-properties-between-holders
+createGraph g
+createNode n1,g
+createNode n2,g
+createEdge e1,g
+createEdgeSection s1,e1
+setProperty n1,org.test.a,v1
+setProperty n1,org.test.b,v2
+setProperty n2,org.test.c,v3
+setProperty n2,org.test.a,old
+copyProperties n2,n1
+copyProperties s1,n2
+copyProperties n1,~
+copyProperties n1,n1
+copyProperties e1,s1
+
+# eAllContents pre-order; features in ecore declaration order regardless of creation order
+scenario e-all-contents-declaration-order
+createGraph g
+setProperty g,org.test.a,v1
+createLabel lg,g,graph
+createNode n1,g
+createPort p1,n1
+createLabel lp1,p1,port
+setProperty p1,org.test.b,v2
+createLabel ln1,n1,node
+createNode n2,n1
+createNode n3,g
+createPort p2,n3
+createSimpleEdge e1,p1,p2
+createLabel le1,e1,edge
+createEdgeSection s1,e1
+setProperty s1,org.test.c,v3
+createBendPoint b1,s1,1,2
+createBendPoint b2,s1,3,4
+createEdgeSection s2,e1
+createEdge e2,n1
+setProperty e1,org.test.d,v4
+createLabel lln1,ln1,inner
+setProperty ln1,org.test.e,v5
+
+# firstEdgeSection(edge, false, false) with 3 sections
+scenario first-edge-section-keep-all
+createGraph g
+createNode n1,g
+createNode n2,g
+createSimpleEdge e1,n1,n2
+createEdgeSection s1,e1
+setStartLocation s1,1,2
+setEndLocation s1,3,4
+createBendPoint b1,s1,5,6
+createBendPoint b2,s1,7,8
+createEdgeSection s2,e1
+createBendPoint b3,s2,9,10
+createEdgeSection s3,e1
+setStartLocation s3,11,12
+firstEdgeSection e1,false,false
+
+# firstEdgeSection(edge, true, false) with 3 sections
+scenario first-edge-section-reset-only
+createGraph g
+createNode n1,g
+createNode n2,g
+createSimpleEdge e1,n1,n2
+createEdgeSection s1,e1
+setStartLocation s1,1,2
+setEndLocation s1,3,4
+createBendPoint b1,s1,5,6
+createBendPoint b2,s1,7,8
+createEdgeSection s2,e1
+createBendPoint b3,s2,9,10
+createEdgeSection s3,e1
+setStartLocation s3,11,12
+firstEdgeSection e1,true,false
+
+# firstEdgeSection(edge, false, true) with 3 sections
+scenario first-edge-section-remove-others-only
+createGraph g
+createNode n1,g
+createNode n2,g
+createSimpleEdge e1,n1,n2
+createEdgeSection s1,e1
+setStartLocation s1,1,2
+setEndLocation s1,3,4
+createBendPoint b1,s1,5,6
+createBendPoint b2,s1,7,8
+createEdgeSection s2,e1
+createBendPoint b3,s2,9,10
+createEdgeSection s3,e1
+setStartLocation s3,11,12
+firstEdgeSection e1,false,true
+
+# firstEdgeSection(edge, true, true) with 3 sections
+scenario first-edge-section-reset-and-remove-others
+createGraph g
+createNode n1,g
+createNode n2,g
+createSimpleEdge e1,n1,n2
+createEdgeSection s1,e1
+setStartLocation s1,1,2
+setEndLocation s1,3,4
+createBendPoint b1,s1,5,6
+createBendPoint b2,s1,7,8
+createEdgeSection s2,e1
+createBendPoint b3,s2,9,10
+createEdgeSection s3,e1
+setStartLocation s3,11,12
+firstEdgeSection e1,true,true
+
+# firstEdgeSection creates a section (auto-named <edge>.s<n>) when the edge has none
+scenario first-edge-section-creates-when-empty
+createGraph g
+createNode n1,g
+createNode n2,g
+createSimpleEdge e1,n1,n2
+firstEdgeSection e1,true,true
+firstEdgeSection e1,false,false
+createEdge e2,~
+firstEdgeSection e2,false,true
+listClear e2,sections
+firstEdgeSection e2,false,false
+
+# GraphIdentifierGenerator assertValid + assertExists over invalid, empty, null and duplicate ids
+scenario generate-identifiers
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,g
+createNode n4,g
+createNode n5,g
+createNode n6,g
+createNode n7,g
+createNode n8,n1
+setIdentifier n1,a b
+setIdentifier n2,1x
+setIdentifier n3,
+setIdentifier n4,~
+setIdentifier n5,ok
+setIdentifier n6,ok
+setIdentifier n7,N2
+createPort p1,n1
+createPort p2,n1
+setIdentifier p2,ok
+createLabel l1,n1,label
+createLabel l2,l1,inner
+createSimpleEdge e1,n1,n2
+createEdgeSection s1,e1
+createEdgeSection s2,e1
+setIdentifier s2,s 2
+createSimpleEdge e2,n3,n4
+createLabel l3,e2,el
+generateIdentifiers g
+
+# root naming (G1), a non-root start node, existing N1/G1, idempotent rerun
+scenario generate-identifiers-root-and-subgraph
+createGraph g
+setIdentifier g,my graph
+createNode n1,g
+createNode n2,n1
+createNode n3,n1
+setIdentifier n3,N1
+generateIdentifiers n1
+generateIdentifiers g
+createGraph g2
+createNode m1,g2
+setIdentifier m1,G1
+generateIdentifiers g2
+generateIdentifiers g2
+
+# clear on containment lists: containers become null; containedEdges unaffected
+scenario list-clear-containment
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,g
+createNode n4,n1
+createLabel l1,n1,a
+createLabel l2,n1,b
+createSimpleEdge e1,n1,n2
+listClear g,children
+listClear n1,labels
+listClear n1,children
+listClear g,containedEdges
+
+# clear on inverse lists updates the opposite lists
+scenario list-clear-inverse
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,g
+createHyperedge e1,n1 n2,n3
+createSimpleEdge e2,n1,n3
+listClear e1,sources
+listClear n3,incomingEdges
+listClear n1,outgoingEdges
+createEdgeSection s1,e1
+createEdgeSection s2,e1
+listAdd s1,outgoingSections,s2
+listClear s2,incomingSections
+
+# add(int)/remove(int)/set out of range; add(int) of a duplicate
+scenario list-index-errors
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,~
+createEdge e1,g
+listAdd e1,sources,n1
+listAddAt g,children,5,n3
+listAddAt g,children,-1,n3
+listRemoveAt g,children,7
+listRemoveAt e1,sources,-1
+listSet g,children,9,n3
+listAddAt e1,targets,1,n2
+listAddAt g,children,0,n1
+listAddAt g,children,0,n3
+listRemoveAt g,children,0
+listAddAt e1,sources,0,n2
+listRemoveAt e1,sources,1
+listRemoveAt e1,sources,1
+
+# isSelfloop / isHyperedge / isHierarchical / isConnected, true and false
+scenario edge-predicates
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,n2
+createPort p1,n1
+createPort p2,n1
+createSimpleEdge loop,n1,n1
+isSelfloop loop
+isHyperedge loop
+isHierarchical loop
+isConnected loop
+createSimpleEdge portLoop,p1,p2
+isSelfloop portLoop
+createSimpleEdge simple,n1,n2
+isSelfloop simple
+isHyperedge simple
+isHierarchical simple
+createSimpleEdge hier,n1,n3
+isHierarchical hier
+isSelfloop hier
+createHyperedge hyper,n1 n2,n2
+isHyperedge hyper
+isSelfloop hyper
+isConnected hyper
+isHierarchical hyper
+createHyperedge multiLoop,n1 p1,p2
+isSelfloop multiLoop
+isHyperedge multiLoop
+createEdge dangling,g
+isConnected dangling
+isSelfloop dangling
+isHierarchical dangling
+isHyperedge dangling
+listAdd dangling,sources,n1
+isConnected dangling
+listAdd dangling,targets,n3
+isConnected dangling
+isHierarchical dangling
+
+# containment chosen by createSimpleEdge / createHyperedge / createEdge; null endpoints
+scenario create-edge-containment
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,n1
+createNode n4,n3
+createPort p1,n4
+createPort p2,n2
+createSimpleEdge e1,n1,n2
+createSimpleEdge e2,n1,n3
+createSimpleEdge e3,n3,n1
+createSimpleEdge e4,p1,p2
+createSimpleEdge e5,n3,n4
+createHyperedge e6,n4,n3 p2
+createHyperedge e7,,n3
+createHyperedge e8,,
+createEdge e9,n2
+createEdge e10,~
+createSimpleEdge e11,~,n1
+createSimpleEdge e12,n1,~
+
+# setContainingNode to another node, to null, back; containedEdges list ops
+scenario set-containing-node-null-and-other
+createGraph g
+createNode n1,g
+createNode n2,g
+createSimpleEdge e1,n1,n2
+createLabel l1,e1,lbl
+setContainingNode e1,n1
+containingGraph l1
+setContainingNode e1,~
+containingGraph l1
+setContainingNode e1,g
+listAdd n2,containedEdges,e1
+listRemove n2,containedEdges,e1
+
+# listAdd/listAddAt into another owner's containment list moves the element
+scenario port-and-label-moves-between-owners
+createGraph g
+createNode n1,g
+createNode n2,g
+createPort p1,n1
+createPort p2,n1
+createLabel l1,n1,a
+createSimpleEdge e1,p1,n2
+listAdd n2,ports,p1
+listAddAt n2,ports,0,p2
+listAdd e1,labels,l1
+listAdd p2,labels,l1
+listAddAt n1,labels,0,l1
+listAdd g,labels,l1
+setParent p1,n1
+setParent l1,~
+
+# updateContainment after sources/targets change, cross-graph, unconnected
+scenario update-containment-after-endpoint-change
+createGraph g
+createGraph g2
+createNode n1,g
+createNode n2,g
+createNode n3,n1
+createNode n4,g2
+createSimpleEdge e1,n1,n2
+listSet e1,targets,0,n3
+updateContainment e1
+listRemove e1,sources,n1
+updateContainment e1
+listAdd e1,sources,n4
+updateContainment e1
+listClear e1,sources
+listClear e1,targets
+updateContainment e1
+
+# findLowestCommonAncestor and isDescendant
+scenario lowest-common-ancestor-and-is-descendant
+createGraph g
+createNode n1,g
+createNode n2,n1
+createNode n3,n2
+createNode n4,g
+createNode n5,n4
+createGraph g2
+createNode n6,g2
+findLowestCommonAncestor n3,n5
+findLowestCommonAncestor n3,n3
+findLowestCommonAncestor n3,n1
+findLowestCommonAncestor n1,n3
+findLowestCommonAncestor n3,n6
+findLowestCommonAncestor g,g
+isDescendant n3,g
+isDescendant n3,n1
+isDescendant n1,n3
+isDescendant n3,n3
+isDescendant n3,n6
+isDescendant g,g
+
+# remove(Object) / remove(int) on containment and inverse lists
+scenario list-remove-containment-and-inverse
+createGraph g
+createNode n1,g
+createNode n2,g
+createNode n3,g
+createSimpleEdge e1,n1,n2
+createLabel l1,n1,x
+listRemove g,children,n1
+listRemove g,children,n1
+listRemoveAt e1,targets,0
+listRemove n1,outgoingEdges,e1
+listRemove n1,labels,l1
+listRemove n3,labels,l1
+
+# sections and bend points: create, move between owners, detach
+scenario edge-sections-and-bend-points
+createGraph g
+createNode n1,g
+createNode n2,g
+createSimpleEdge e1,n1,n2
+createSimpleEdge e2,n2,n1
+createEdgeSection s1,e1
+createBendPoint b1,s1
+createBendPoint b2,s1,3.5,4
+createBendPoint b3,~,1,2
+listAdd s1,bendPoints,b3
+setParent s1,e2
+createEdgeSection s2,e1
+listAdd s2,bendPoints,b1
+listMove s1,bendPoints,0,1
+listAddAt s2,bendPoints,0,b2
+setParent s2,~
+listAdd e2,sections,s2
+listRemove e2,sections,s1
+createEdgeSection s3,~
+setIdentifier s3,sec
+
+# scalar setters and the ElkNode/ElkPort/ElkEdge/ElkLabel toString variants
+scenario setters-and-to-string
+createGraph g
+createNode n1,g
+setLocation n1,1.5,2
+setDimensions n1,30,40.25
+createLabel l1,n1,Node Label
+createNode n2,g
+setIdentifier n2,two
+createLabel l2,n2,ignored
+createNode n3,g
+createLabel l3,n3
+setIdentifier n3,
+setText l3,from label
+createPort p1,n1
+setIdentifier p1,P
+setLocation p1,-1,0.1
+createPort p2,n1
+createLabel lp2,p2,port label
+createSimpleEdge e1,n1,n2
+setIdentifier e1,edge one
+createHyperedge e2,n1 n2,n3
+createLabel le2,e2,hyper
+createSimpleEdge e3,p1,p2
+setText l1,
+setText l1,~
+setLocation l1,5,6
+setDimensions l1,7,8
+createEdgeSection s1,e1
+setStartLocation s1,1,2
+setEndLocation s1,3,4
+setIdentifier s1,sec
+createBendPoint b1,s1,0.5,-0.5
+setIdentifier l1,lab
+
+# createLabel(parent) vs createLabel(text, parent), null parent, null text
+scenario create-label-overloads
+createGraph g
+createNode n1,g
+createLabel l1,n1
+createLabel l2,n1,text
+createLabel l3,~,orphan
+createLabel l4,~
+createLabel l5,n1,~
+createLabel l6,l2,sub
+createEdge e1,g
+createLabel l7,e1,el
+createPort p1,n1
+createLabel l8,p1,pl
