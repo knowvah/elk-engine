@@ -102,9 +102,9 @@ describe('ElkReflect', () => {
       expect(ElkReflect.isCloneable({ clone: () => 1 })).toBe(true);
     });
 
-    it('accepts an object whose class has a registered clone function', () => {
+    it('rejects an object whose class is registered but has no clone() method (Java: not Cloneable)', () => {
       ElkReflect.registerClone(RegisteredNoCloneMethod, () => new RegisteredNoCloneMethod());
-      expect(ElkReflect.isCloneable(new RegisteredNoCloneMethod())).toBe(true);
+      expect(ElkReflect.isCloneable(new RegisteredNoCloneMethod())).toBe(false);
     });
 
     it('rejects primitives, null, undefined, plain objects and non-function clone members', () => {

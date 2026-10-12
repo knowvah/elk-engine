@@ -84,9 +84,10 @@ function clone<T>(clonee: T): T | null {
 
 /**
  * Port of the Java `instanceof Cloneable` test, which TypeScript cannot express. An object is
- * cloneable when it is an `Array`, `Set`, `Map` or {@link EnumSet}, has a `clone()` method, or
- * its class has a registered clone function (needed for `LinkedList` and `KVectorChain`, which
- * are `Cloneable` in Java but expose no `clone()` method here).
+ * cloneable when it is an `Array`, `Set`, `Map` or {@link EnumSet}, or has a `clone()` method
+ * (D6). Being registered with a clone function is deliberately not enough: Java registers
+ * `IndividualSpacings`, which is not `Cloneable`, and `Property.getDefault` /
+ * `MapPropertyHolder.getProperty` must keep handing out that shared default uncloned.
  */
 function isCloneable(o: unknown): boolean {
   if (Array.isArray(o) || o instanceof Set || o instanceof Map || o instanceof EnumSet) {
@@ -95,7 +96,7 @@ function isCloneable(o: unknown): boolean {
   if (typeof o !== 'object' || o === null) {
     return false;
   }
-  return typeof (o as { clone?: unknown }).clone === 'function' || REGISTRY_CLONE.has(o.constructor);
+  return typeof (o as { clone?: unknown }).clone === 'function';
 }
 
 /**

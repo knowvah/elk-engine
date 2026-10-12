@@ -190,3 +190,28 @@ describe('LinkedList.listIterator', () => {
     expect(l.listIterator(3).hasNext()).toBe(false);
   });
 });
+
+describe('LinkedList.clone', () => {
+  it('returns a shallow copy: same elements, independent list', () => {
+    const o1 = { n: 1 };
+    const o2 = { n: 2 };
+    const l = new LinkedList([o1, o2]);
+    const copy = l.clone();
+    expect(copy).not.toBe(l);
+    expect(copy).toBeInstanceOf(LinkedList);
+    expect(copy.toArray()).toEqual([o1, o2]);
+    expect(copy.get(0)).toBe(o1);
+    copy.add({ n: 3 });
+    copy.removeFirst();
+    expect(copy.toArray()).toEqual([o2, { n: 3 }]);
+    expect(l.toArray()).toEqual([o1, o2]);
+    l.clear();
+    expect(copy.size()).toBe(2);
+  });
+
+  it('clones an empty list to an empty list', () => {
+    const copy = new LinkedList<string>().clone();
+    expect(copy.size()).toBe(0);
+    expect(copy.isEmpty()).toBe(true);
+  });
+});
