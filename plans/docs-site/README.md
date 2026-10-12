@@ -133,9 +133,9 @@ follow-ups (enable HTTPS enforcement after `docs.yml` runs), and anything journa
 ## Mission summary (2026-10-12)
 
 - **Tasks:** 33 of 33 done (T1–T33); 23 of 23 locales committed; **no locale quarantined**; no
-  re-dispatch was needed. 47 commits on `feature/docs-site`: 9 task commits, 23 locale commits,
+  re-dispatch was needed. 48 commits on `feature/docs-site`: 9 task commits, 23 locale commits,
   3 fix commits (`fix(T2)` registry test, `fix(T10)` table realignment, `fix(docs)` GitHub-compatible
-  heading ids), 12 `docs(plans)` commits.
+  heading ids), 13 `docs(plans)` commits including the close-out.
 - **Decisions journaled:** 51 rows in [decision-journal.md](decision-journal.md). Resolved with
   the user at the German review: build-time cap replaced by an absolute 5-minute cap; the T2
   registry-test change confirmed; the English conformance TOC anchors fixed by a `markdown.anchor`
