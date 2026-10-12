@@ -26,3 +26,10 @@ coverage/
 
 # Local toolchain (Maven 3.9.x for the oracle build; not committed)
 .tools/
+
+# VitePress docs site: build cache and output
+docs-site/.vitepress/cache/
+docs-site/.vitepress/dist/
+
+# Brand assets copied from @knowvah/theme by docs-site/copy-brand-assets.mjs
+docs-site/public/knowvah_logo.svg

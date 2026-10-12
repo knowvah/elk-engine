@@ -16,3 +16,8 @@ plans/
 .serena/
 .tools/
 .idea/
+
+# VitePress docs site: build cache, output, and copied static assets
+docs-site/.vitepress/cache/
+docs-site/.vitepress/dist/
+docs-site/public/
