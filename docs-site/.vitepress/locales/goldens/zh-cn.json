@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "示例集",
+    "indexHeading": "示例集：黄金语料库",
+    "indexIntro": "本节中的每个图都是由 ELK Java 参考实现（基准实现，从源码构建）生成的 **{total} 个黄金布局**之一。它们以 ELK JSON 存储，并**在您的浏览器中**根据该 JSON **实时渲染**。每种布局算法对应一个页面：",
+    "indexRowCount": "{count} 个黄金用例",
+    "indexOutro": "每张卡片显示基准实现的布局、一段简短说明，以及折叠起来的、绘制该图所用的 ELK JSON 源代码。TypeScript 移植必须与这些布局保持一致（参见 {conformance}）。",
+    "conformanceLabel": "一致性",
+    "algorithmTitle": "{algorithm} 黄金用例",
+    "algorithmHeading": "{algorithm}：{count} 个黄金用例",
+    "algorithmIntro": "下面的每个图都是基准实现的布局，由其 ELK JSON 在您的浏览器中实时渲染。",
+    "blurbs": {
+      "layered": "基于分层（Sugiyama 风格）的布局，适用于带有端口和层级的节点-边图。"
+    }
+  },
+  "ptolemy-scrambler": "最小的层级 Ptolemy 模型：一个带有端口和节点标签的复合节点（12 个节点、22 个端口、11 个标签，深度为 2），使用 layered 的默认设置和默认种子进行布局。",
+  "ptolemy-clockdrift-hierarchy": "两层嵌套子节点，带有跨层级的边（12 个节点、31 个端口、11 个标签，深度为 3），使用 layered 的默认设置和默认种子进行布局。",
+  "ptolemy-afdx-multicast": "跨越复合节点端口的多播扇出边，端口侧和索引均固定（15 个节点、30 个端口、14 个标签，深度为 2）。",
+  "ptolemy-crossbar-switch": "端口密集的模型，平均每个节点约三个端口，用于考验端口排序（13 个节点、40 个端口、12 个标签，深度为 2）。"
+}
