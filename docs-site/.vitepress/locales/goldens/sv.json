@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galleri",
+    "indexHeading": "Galleri: golden-korpusen",
+    "indexIntro": "Varje graf i det här avsnittet är en av **{total} golden-layouter** som skapats av ELK:s Java-referensimplementation (oraklet, byggt från källkod). De lagras som ELK JSON och renderas **live i din webbläsare** från den JSON:en. En sida per layoutalgoritm:",
+    "indexRowCount": "{count} goldens",
+    "indexOutro": "Varje kort visar orakellayouten, en kort beskrivning och, ihopfälld, den ELK JSON-källa den ritas från. Det är de här layouterna som TypeScript-porteringen hålls till (se {conformance}).",
+    "conformanceLabel": "Överensstämmelse",
+    "algorithmTitle": "{algorithm}-goldens",
+    "algorithmHeading": "{algorithm}: {count} goldens",
+    "algorithmIntro": "Varje graf nedan är en orakellayout som renderas live i din webbläsare från sin ELK JSON.",
+    "blurbs": {
+      "layered": "Lagerbaserad layout (i Sugiyama-stil) för nod-kant-diagram med portar och hierarki."
+    }
+  },
+  "ptolemy-scrambler": "Den minsta hierarkiska Ptolemy-modellen: en sammansatt nod med portar och nodetiketter (12 noder, 22 portar, 11 etiketter, djup 2), utlagd med layereds standardinställningar och standardseeden.",
+  "ptolemy-clockdrift-hierarchy": "Två nivåer av nästlade barn med hierarkiöverskridande kanter (12 noder, 31 portar, 11 etiketter, djup 3), utlagd med layereds standardinställningar och standardseeden.",
+  "ptolemy-afdx-multicast": "Multicast-utspridda kanter över portar på sammansatta noder med fasta portsidor och portindex (15 noder, 30 portar, 14 etiketter, djup 2).",
+  "ptolemy-crossbar-switch": "En portrik modell, cirka tre portar per nod, som sätter portordningen på prov (13 noder, 40 portar, 12 etiketter, djup 2)."
+}
