@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galleri",
+    "indexHeading": "Galleri: golden-korpusset",
+    "indexIntro": "Hver graf i dette afsnit er et af **{total} golden-layouts** produceret af ELK's Java-referenceimplementering (oraklet, bygget fra kildekode). De er gemt som ELK JSON og gengives **live i din browser** ud fra den JSON. Én side pr. layoutalgoritme:",
+    "indexRowCount": "{count} goldens",
+    "indexOutro": "Hvert kort viser orakel-layoutet, en kort beskrivelse og, foldet væk, den ELK JSON-kilde, det er tegnet ud fra. Det er disse layouts, TypeScript-porteringen holdes op mod (se {conformance}).",
+    "conformanceLabel": "Overensstemmelse",
+    "algorithmTitle": "{algorithm}-goldens",
+    "algorithmHeading": "{algorithm}: {count} goldens",
+    "algorithmIntro": "Hver graf nedenfor er et orakel-layout, der gengives live i din browser ud fra sin ELK JSON.",
+    "blurbs": {
+      "layered": "Lagbaseret (Sugiyama-stil) layout til knude-kant-diagrammer med porte og hierarki."
+    }
+  },
+  "ptolemy-scrambler": "Den mindste hierarkiske Ptolemy-model: én sammensat knude med porte og knudeetiketter (12 knuder, 22 porte, 11 etiketter, dybde 2), lagt ud med layereds standardindstillinger og standardseedet.",
+  "ptolemy-clockdrift-hierarchy": "To niveauer af indlejrede børn med hierarkiske kanter (12 knuder, 31 porte, 11 etiketter, dybde 3), lagt ud med layereds standardindstillinger og standardseedet.",
+  "ptolemy-afdx-multicast": "Multicast-udvidelseskanter på tværs af porte på sammensatte knuder med faste portsider og -indekser (15 knuder, 30 porte, 14 etiketter, dybde 2).",
+  "ptolemy-crossbar-switch": "En portrig model med omkring tre porte pr. knude, der udfordrer portrækkefølgen (13 knuder, 40 porte, 12 etiketter, dybde 2)."
+}
