@@ -1,0 +1,20 @@
+{
+  "$showcase": {
+    "indexTitle": "Galleria",
+    "indexHeading": "Galleria: golden-korpus",
+    "indexIntro": "Jokainen tämän osion kaavio on yksi **{total} golden-asettelusta**, jotka ELKin Java-referenssitoteutus (oraakkeli, käännetty lähdekoodista) on tuottanut. Ne on tallennettu ELK JSON -muodossa ja renderöidään **suoraan selaimessasi** tuosta JSONista. Yksi sivu asettelualgoritmia kohden:",
+    "indexRowCount": "{count} goldenia",
+    "indexOutro": "Jokainen kortti näyttää oraakkelin asettelun, lyhyen kuvauksen ja, taitettuna, ELK JSON -lähdekoodin, josta se piirretään. Näihin asetteluihin TypeScript-porttaus on sidottu (katso {conformance}).",
+    "conformanceLabel": "Yhdenmukaisuus",
+    "algorithmTitle": "{algorithm}-goldenit",
+    "algorithmHeading": "{algorithm}: {count} goldenia",
+    "algorithmIntro": "Jokainen alla oleva kaavio on oraakkelin asettelu, joka renderöidään suoraan selaimessasi sen ELK JSONista.",
+    "blurbs": {
+      "layered": "Kerrospohjainen (Sugiyama-tyylinen) asettelu solmu-särmä-kaavioille, joissa on portteja ja hierarkiaa."
+    }
+  },
+  "ptolemy-scrambler": "Pienin hierarkkinen Ptolemy-malli: yksi yhdistelmäsolmu, jossa on portteja ja solmujen nimiöitä (12 solmua, 22 porttia, 11 nimiötä, syvyys 2), asetettu layeredin oletusasetuksilla ja oletussiemenellä.",
+  "ptolemy-clockdrift-hierarchy": "Kaksi sisäkkäisten lapsisolmujen tasoa hierarkian yli kulkevine särmineen (12 solmua, 31 porttia, 11 nimiötä, syvyys 3), asetettu layeredin oletusasetuksilla ja oletussiemenellä.",
+  "ptolemy-afdx-multicast": "Monilähetyksen haarautuvat särmät yhdistelmäsolmujen porttien yli, kiinteillä porttien sivuilla ja indekseillä (15 solmua, 30 porttia, 14 nimiötä, syvyys 2).",
+  "ptolemy-crossbar-switch": "Porttitiheä malli, noin kolme porttia solmua kohden, joka koettelee porttien järjestystä (13 solmua, 40 porttia, 12 nimiötä, syvyys 2)."
+}
