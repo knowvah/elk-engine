@@ -298,44 +298,26 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 
 ## 5. EMF (ElkGraph, AD-11)
 
-- Plain classes keep the accessor names (`getChildren`, `getSources`, `getProperty`); no `EObject`.
-  14 files outside `graph` import `org.eclipse.emf` (`G -l 'org\.eclipse\.emf'`: 41 files, 27 in
-  `graph`): XMI persistence (4 files in `core/.../util/persistence`), `LoggedGraph`, `NGraph`,
-  `ECollections.sort` (2), and `GridElkNode`, a 523-line class that **implements the whole EMF
-  `ElkNode` interface by delegation** (`alg.topdownpacking/src/.../GridElkNode.java:44`): it needs a
-  narrower interface or an explicit adapter under AD-11.
-- Containment lists move elements: `ElkNodeImpl.getChildren()` is an
-  `EObjectContainmentWithInverseEList` (`graph/src/.../impl/ElkNodeImpl.java:136`); `setParent` first
-  removes the node from its old container, then inverse-adds (`graph/src/.../impl/ElkPortImpl.java:97`,
-  `:99`). A unique `EList` ignores a duplicate `add` and returns `false` (EMF 2.9.0
-  `AbstractEList#add` Javadoc; that `getChildren()` is unique is MEDIUM). The list is _live_: take a
-  snapshot before mutating while iterating (`alg.radial/src/.../RadialUtil.java:56`).
-- Recursive containment throws `IllegalArgumentException`: `graph/src/.../impl/ElkPortImpl.java:93`,
-  also `ElkEdgeImpl.java:176`, `ElkLabelImpl.java:114`, `ElkEdgeSectionImpl.java:356`.
-- Inverse references keep two sides in sync: `edge.getSources()` is an
-  `EObjectWithInverseResolvingEList.ManyInverse` (`graph/src/.../impl/ElkEdgeImpl.java:197`), so adding
-  a source also appends the edge to `source.getOutgoingEdges()`. Edge containment is separate:
-  `containedEdges` (`graph/src/.../impl/ElkNodeImpl.java:189`) set through
-  `ElkGraphUtil.updateContainment` / `findBestEdgeContainment`
-  (`graph/src/.../util/ElkGraphUtil.java:316`, `:334`).
-- `EMapPropertyHolder`: properties are an `EMap<IProperty, Object>`; `getAllProperties()` resolves
-  `IPropertyValueProxy` values on read, then returns `props.map()`
-  (`graph/src/.../impl/EMapPropertyHolderImpl.java:180-196`). Keys are `IProperty` with **id-based
-  equality** (`graph/src/.../properties/Property.java:102`, `:111`): key by `getId()`. Iteration order is
-  the entry-list order (insertion) (MEDIUM: EMF behaviour, confirm against the oracle). Layered's
-  `MapPropertyHolder` is a real `HashMap` (collections V1). `Property.getDefault` **clones** mutable
-  defaults through `ElkReflect.clone` (`graph/src/.../properties/Property.java:134`); `ElkReflect`
-  (`graph/src/.../util/ElkReflect.java:43`) is a `Class`-keyed registry of constructors/cloners, replaced
-  by constructor-function keys.
-- Notifications, adapters, reflection are not ported (AD-11): `eNotify`
-  (`graph/src/.../impl/ElkPortImpl.java:103`), `eAdapters`, `eGet/eSet`. `eContainer()`
-  (`core/src/.../util/ElkUtil.java:1154`) becomes a `parent`/`containingNode` accessor.
-- `eAllContents()` is a depth-first pre-order walk over containment features in declaration order:
-  `properties`, `labels`, `ports`, `children`, `containedEdges`, then an edge's `sections`
-  (`org.eclipse.elk.graph/model/elkgraph.ecore:56`, `:67`, `:163`, `:169`, `:181`, `:227`; MEDIUM).
-  It drives generated ids: `graph/src/.../util/GraphIdentifierGenerator.java:348`,
-  `core/src/.../util/ElkUtil.java:989`. Implement one `allContents()` generator and test id output.
-- `EcoreUtil.copy` is used only for debug logging (`core/src/.../util/BasicProgressMonitor.java:433`).
+- `src/emf/` is a minimal EMF runtime (D1); EMF is EPL-2.0, so unlike OpenJDK (AD-9) its source may
+  be read and ported. It mirrors EMF's paths and class names (`EList`, `EObject`, `EcoreEMap`,
+  `EcoreUtil`), D2/D4 surface only (no notifications, adapters, proxies, `eGet/eSet/eIsSet`,
+  resources). Fitness: `src/emf` imports only `src/java`/`src/guava`.
+- List contract (D2), HIGH: `test/golden/refs/java/graph.json` (40 JVM scenarios, 654 steps,
+  `tools/vectors/GraphVectors.java`; replay `src/graph/impl/ElkGraph.replay.test.ts`). Lists are
+  live and unique (`add` of a present element returns `false`; `set` throws
+  `IllegalArgumentException`); inverse lists sync both ends; containment lists move elements between
+  containers; `EcoreEMap` is insertion-ordered, `put` in place, `put` after `removeKey` appends.
+- **Only the generated setters check recursive containment** (`setParent`, `setContainingNode`, via
+  `EcoreUtil.isAncestor`); a containment-list `add` can build a cycle, after which `eAllContents()`
+  never terminates (D2 amendment).
+- Model (D3): interface/impl split in `src/graph/` and `src/graph/impl/`, Java accessor names;
+  `instanceof <interface>` is an exported guard (`isElkNode(o)`) over a registry in
+  `src/graph/ElkGraphPackage.ts` (constants only). D4: `eContainer`, `eContents`, `eAllContents`
+  (pre-order: `properties`, `labels`, `ports`, `children`, `containedEdges`, then
+  `sections`/`bendPoints`). D10: identity-hash `toString()`s drop the `@hash`; NPE is `TypeError`.
+- `IProperty` equality is by id (D5, `src/graph/properties/MapPropertyHolder.ts`); `ElkReflect` keys
+  by constructor (D6), cloners come from `LayoutMetaDataService` (mission 5), until then
+  `Property.test.ts`; annotations: registries (D7); `KVectorChain` is a `LinkedList` (D8).
 
 ## 6. Java language
 
@@ -400,24 +382,24 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 
 ### 6.7 Exceptions: checked, language-raised, and caught
 
-- ELK defines 6 custom exceptions, all `RuntimeException` (`G 'extends (Exception|RuntimeException)'`),
-  e.g. `core/src/.../UnsupportedGraphException.java:22`. The checked ones are JDK: `IOException`
-  (6 catches), `InstantiationException`/`IllegalAccessException` (reflection, 7), `NoSuchFieldException`
-  (2). TS has no checked exceptions: plain `Error` subclasses, keep every throw site and message
-  (JLS ch. 11 distinguishes the classes only at compile time). CLAUDE.md row confirmed. Classes
-  (M5): `src/java/lang/{IllegalArgumentException,NumberFormatException,IndexOutOfBoundsException,
-ArrayIndexOutOfBoundsException,ArithmeticException}.ts`,
-  `src/java/util/NoSuchElementException.ts`.
-  `src/java/lang/UnsupportedOperationException.ts` (M5 amendment): immutable Guava helpers throw it.
-- **Language-raised exceptions that ELK catches** (10 sites, `G 'catch \((Array)?IndexOutOfBounds'`):
-  array indexing outside bounds throws in Java, yields `undefined` in JS.
-  `alg.common/src/.../polyomino/structures/TwoBitGrid.java:224` wraps `ArrayIndexOutOfBoundsException`
-  into `IndexOutOfBoundsException`; `.../polyomino/structures/PlanarGrid.java:79` catches
-  `IndexOutOfBoundsException`. Rule: port with an explicit bounds check that throws the same type and
-  message. Likewise `NumberFormatException` from
-  `Double.parseDouble` (`core/src/.../math/KVector.java:531`): `Number(s)` accepts `""` (0) and hex,
-  Java rejects them and accepts a trailing `d`/`f` and surrounding whitespace (Javadoc trims) ->
-  `JavaDouble.parseDouble` (`src/java/lang/JavaDouble.ts`; `text.json` `parseDouble`, 96 rows).
+- The 6 custom ELK exceptions are all `RuntimeException`, e.g.
+  `core/src/.../UnsupportedGraphException.java:22` (`G 'extends (Exception|RuntimeException)'`).
+  Checked ones are JDK: `IOException` (6 catches), `InstantiationException`/`IllegalAccessException`
+  (reflection, 7), `NoSuchFieldException` (2). TS has no checked exceptions: plain `Error`
+  subclasses, keep every throw site and message. Classes (M5), in `src/java/lang/`:
+  `IllegalArgumentException`, `NumberFormatException`, `IndexOutOfBoundsException`,
+  `ArrayIndexOutOfBoundsException`, `ArithmeticException`; amendments
+  `UnsupportedOperationException` (immutable helpers), `IllegalStateException`
+  (`Property.getDefault`, unregistered cloneable); `src/java/util/NoSuchElementException.ts`.
+- **Language-raised exceptions that ELK catches** (10 sites,
+  `G 'catch \((Array)?IndexOutOfBounds'`): array indexing outside bounds throws in Java, yields
+  `undefined` in JS. `alg.common/src/.../polyomino/structures/TwoBitGrid.java:224` wraps
+  `ArrayIndexOutOfBoundsException` into `IndexOutOfBoundsException`;
+  `.../polyomino/structures/PlanarGrid.java:79` catches `IndexOutOfBoundsException`. Rule: port with
+  an explicit bounds check that throws the same type and message. Likewise `NumberFormatException`
+  from `Double.parseDouble` (`core/src/.../math/KVector.java:531`): `Number(s)` accepts `""` (0) and
+  hex, Java rejects them and accepts a trailing `d`/`f` and surrounding whitespace (Javadoc trims)
+  -> `JavaDouble.parseDouble` (`src/java/lang/JavaDouble.ts`; `text.json` `parseDouble`, 96 rows).
 - `catch (Exception e)` that cleans up and rethrows (`core/src/.../RecursiveGraphLayoutEngine.java:463`,
   disposes the provider, `throw exception`): a plain `try/catch` rethrow in TS.
 

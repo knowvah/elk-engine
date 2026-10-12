@@ -41,8 +41,8 @@ Test files: 147 attached to the bundles above, plus 46 in `org.eclipse.elk.alg.t
   included.
 - **Strategy:** `hand port` | `EMF → plain class (AD-11)` | `melk codegen (AD-12)` | `Xtend → hand
 port` | `not ported` + reason. Rows may combine strategies per file; the cell says which.
-- **`(EMF types → AD-11)`** marks hand-ported packages that import `org.eclipse.emf.*` (`EList`,
-  `EObject`, `EcoreUtil`); those types resolve to the plain ElkGraph classes and local helpers.
+- **`(EMF types → AD-11)`** marks hand-ported packages that import `org.eclipse.emf.*`; those types
+  resolve to the `src/graph/` classes and the minimal EMF runtime `src/emf/` (D1; not a bundle).
 - Guava (`com.google.common`) and Gson (`com.google.gson`) imports are not flagged per row; see
   AD-10 and [translation rules](../translation-rules.md).
 - `alg.layered` is split out for length: [port-map-alg-layered.md](port-map-alg-layered.md).
@@ -114,22 +114,22 @@ provider, each `algorithm` adds one `*Options` class. 13 `.melk` files yield 27 
 
 14 package directories, 112 Java + 0 Xtend files, 20,414 LOC (`plugins/org.eclipse.elk.core/src`).
 
-| Java package (`org.eclipse.elk.` omitted) | TS directory                | Files |   LOC | Strategy                                                                                                           |
-| ----------------------------------------- | --------------------------- | ----: | ----: | ------------------------------------------------------------------------------------------------------------------ |
-| `core`                                    | `src/core`                  |     7 | 1,173 | hand port; hosts `Core.melk`                                                                                       |
-| `core.alg`                                | `src/core/alg`              |     7 |   881 | hand port                                                                                                          |
-| `core.comments`                           | `src/core/comments`         |    16 | 2,625 | hand port                                                                                                          |
-| `core.data`                               | `src/core/data`             |     9 | 2,372 | hand port                                                                                                          |
-| `core.labels`                             | `src/core/labels`           |     1 |    46 | hand port; hosts `Labels.melk`; melk codegen (AD-12) output lands here                                             |
-| `core.math`                               | `src/core/math`             |    10 | 3,595 | hand port                                                                                                          |
-| `core.options`                            | `src/core/options`          |    21 | 1,845 | hand port; melk codegen (AD-12) output lands here                                                                  |
-| `core.testing`                            | `src/core/testing`          |     2 |   253 | hand port (white-box test hooks, consumed by the `alg.test` framework helpers)                                     |
-| `core.util`                               | `src/core/util`             |    25 | 5,738 | hand port (EMF types → AD-11)                                                                                      |
-| `core.util.adapters`                      | `src/core/util/adapters`    |     2 |   838 | hand port (EMF types → AD-11)                                                                                      |
-| `core.util.internal`                      | `src/core/util/internal`    |     1 |    97 | hand port                                                                                                          |
-| `core.util.persistence`                   | `src/core/util/persistence` |     4 |   288 | not ported: EMF XMI resource/serializer (`ElkGraphResource*`, `ElkGraphXMI*`); no TS counterpart (AD-11 drops EMF) |
-| `core.util.selection`                     | `src/core/util/selection`   |     2 |   165 | hand port (EMF types → AD-11)                                                                                      |
-| `core.validation`                         | `src/core/validation`       |     5 |   498 | hand port                                                                                                          |
+| Java package (`org.eclipse.elk.` omitted) | TS directory                | Files |   LOC | Strategy                                                                                                                                                    |
+| ----------------------------------------- | --------------------------- | ----: | ----: | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `core`                                    | `src/core`                  |     7 | 1,173 | hand port; hosts `Core.melk`                                                                                                                                |
+| `core.alg`                                | `src/core/alg`              |     7 |   881 | hand port                                                                                                                                                   |
+| `core.comments`                           | `src/core/comments`         |    16 | 2,625 | hand port                                                                                                                                                   |
+| `core.data`                               | `src/core/data`             |     9 | 2,372 | hand port                                                                                                                                                   |
+| `core.labels`                             | `src/core/labels`           |     1 |    46 | hand port; hosts `Labels.melk`; melk codegen (AD-12) output lands here                                                                                      |
+| `core.math`                               | `src/core/math`             |    10 | 3,595 | hand port; `KVector`, `KVectorChain`, `Spacing`, `ElkMargin`, `ElkPadding` delivered early by mission 2 with `KVectorTest`/`KVectorChainTest`; rest pending |
+| `core.options`                            | `src/core/options`          |    21 | 1,845 | hand port; melk codegen (AD-12) output lands here; `PortSide`, `Direction`, `SizeConstraint` delivered early by mission 2; rest with the `.melk` codegen    |
+| `core.testing`                            | `src/core/testing`          |     2 |   253 | hand port (white-box test hooks, consumed by the `alg.test` framework helpers)                                                                              |
+| `core.util`                               | `src/core/util`             |    25 | 5,738 | hand port (EMF types → AD-11); `IDataObject` delivered by mission 2                                                                                         |
+| `core.util.adapters`                      | `src/core/util/adapters`    |     2 |   838 | hand port (EMF types → AD-11)                                                                                                                               |
+| `core.util.internal`                      | `src/core/util/internal`    |     1 |    97 | hand port                                                                                                                                                   |
+| `core.util.persistence`                   | `src/core/util/persistence` |     4 |   288 | not ported: EMF XMI resource/serializer (`ElkGraphResource*`, `ElkGraphXMI*`); no TS counterpart (AD-11 drops EMF)                                          |
+| `core.util.selection`                     | `src/core/util/selection`   |     2 |   165 | hand port (EMF types → AD-11)                                                                                                                               |
+| `core.validation`                         | `src/core/validation`       |     5 |   498 | hand port                                                                                                                                                   |
 
 Generated by AD-12 (not in the Java repo; produced at build time by the `.melk` compiler):
 
@@ -160,12 +160,12 @@ JUnit: `org.eclipse.elk.core.test` (8 package directories, 20 files, 2,554 LOC) 
 
 4 package directories, 40 Java + 0 Xtend files, 11,449 LOC (`plugins/org.eclipse.elk.graph/src`).
 
-| Java package (`org.eclipse.elk.` omitted) | TS directory           | Files |   LOC | Strategy                                                                                                                                                          |
-| ----------------------------------------- | ---------------------- | ----: | ----: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `graph`                                   | `src/graph`            |    13 | 3,646 | EMF → plain class (AD-11); `ElkGraphPackage` (EMF metamodel) not ported                                                                                           |
-| `graph.impl`                              | `src/graph/impl`       |    13 | 5,005 | EMF → plain class (AD-11); `ElkGraphPackageImpl` not ported (EMF metamodel registry)                                                                              |
-| `graph.properties`                        | `src/graph/properties` |     9 |   685 | hand port                                                                                                                                                         |
-| `graph.util`                              | `src/graph/util`       |     5 | 2,113 | hand port: `ElkGraphUtil`, `ElkReflect`, `GraphIdentifierGenerator`; not ported: `ElkGraphAdapterFactory`, `ElkGraphSwitch` (EMF adapter/visitor plumbing, AD-11) |
+| Java package (`org.eclipse.elk.` omitted) | TS directory           | Files |   LOC | Strategy                                                                                                                                                                                                       |
+| ----------------------------------------- | ---------------------- | ----: | ----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `graph`                                   | `src/graph`            |    13 | 3,646 | EMF → plain class (AD-11); delivered: interfaces, type guards, `ElkGraphPackage` (constants only), `ElkGraphFactory`                                                                                           |
+| `graph.impl`                              | `src/graph/impl`       |    13 | 5,005 | EMF → plain class (AD-11); delivered: every `*Impl` on the `src/emf/` runtime; `ElkGraphPackageImpl` not ported (EMF metamodel registry)                                                                       |
+| `graph.properties`                        | `src/graph/properties` |     9 |   685 | hand port; delivered: `Property`, `MapPropertyHolder`, `PropertyHolderComparator`, `GraphFeature`, annotation registries, interfaces                                                                           |
+| `graph.util`                              | `src/graph/util`       |     5 | 2,113 | hand port; delivered: `ElkGraphUtil`, `ElkReflect`, `GraphIdentifierGenerator`; not ported: `ElkGraphAdapterFactory`, `ElkGraphSwitch` (EMF adapter/visitor plumbing, AD-11; the generator uses a guard chain) |
 
 JUnit: `org.eclipse.elk.graph.test` (1 package directory, 1 file, 161 LOC) → colocated tests:
 
