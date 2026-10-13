@@ -115,7 +115,7 @@ Generated files are written only by `npm run melk:generate`, never by Write/Edit
 | 1b | Validation + `ElkUtil`, vendored `.melk`, JVM metadata dump | T5–T7 | — | [x] |
 | 2 | Option data, `.melk` parser | T8–T9 | 1a, 1b | [x] |
 | 3 | Algorithm/category data, option model | T10–T11 | 2 | [x] |
-| 4 | Algorithm model + pending types | T12 | 3 | [ ] |
+| 4 | Algorithm model + pending types | T12 | 3 | [x] |
 | 5 | Emitter + `LabelManagementOptions` | T13 | 4 | [ ] |
 | 6 | `LayoutMetaDataService` + `CoreOptions` | T14 | 5 | [ ] |
 | 7 | Replacer, content assist, held-back emission | T15–T17 | 6 | [ ] |
