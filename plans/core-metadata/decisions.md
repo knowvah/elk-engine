@@ -133,3 +133,15 @@ its manifest sha. Excluded: `Libavoid.melk`, `Graphviz.melk`, `Gmf.melk`.
 `LayoutDataContentAssistTest.Other.testAlgorithmSpecificKnown` and `…Unknown` set the algorithm to
 `Box/FixedLayouterOptions.ALGORITHM_ID` and need those algorithms registered (held back by C1). They
 are ported unchanged in mission 5; the deferral is journaled and listed in `docs/conformance.md`.
+
+## C3 amendment — `LayoutOptionData` (2026-10-13, user, T8 stop 10)
+
+`LayoutOptionData` cannot meet the complexity limits in one file (Java `parseValue` alone: CCN 17,
+48 NLOC; the class with its nested types ≈ 850 lines). Its four nested types therefore get their own
+files in `src/core/data/`, prefixed with the outer name because `LayoutAlgorithmData` and
+`LayoutCategoryData` also nest a `Builder`: `LayoutOptionDataType.ts`, `LayoutOptionDataTarget.ts`,
+`LayoutOptionDataVisibility.ts`, `LayoutOptionDataBuilder.ts` (each `@see` the outer class), re-exposed
+on `LayoutOptionData` as `Type`/`Target`/`Visibility`/`Builder` members. `parseValue`,
+`getDefaultDefault` and `enumForString` may split into private helpers, one per Java `switch` arm or
+`try` branch, in Java order, each named after the arm it holds and journaled. No `complexity-ignore`
+entry (C6 unchanged). T8's write-set grows by those four files and their tests.

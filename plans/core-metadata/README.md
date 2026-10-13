@@ -113,7 +113,7 @@ Generated files are written only by `npm run melk:generate`, never by Write/Edit
 |-------|------|-------|------------|--------|
 | 1a | Option enums, util closure, progress monitor | T1–T4 | — | [x] |
 | 1b | Validation + `ElkUtil`, vendored `.melk`, JVM metadata dump | T5–T7 | — | [x] |
-| 2 | Option data, `.melk` parser | T8–T9 | 1a, 1b | [ ] |
+| 2 | Option data, `.melk` parser | T8–T9 | 1a, 1b | [x] |
 | 3 | Algorithm/category data, option model | T10–T11 | 2 | [ ] |
 | 4 | Algorithm model + pending types | T12 | 3 | [ ] |
 | 5 | Emitter + `LabelManagementOptions` | T13 | 4 | [ ] |
