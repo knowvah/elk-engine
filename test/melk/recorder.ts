@@ -168,16 +168,16 @@ export class RecordingRegistry implements ILayoutMetaDataProvider.Registry {
     const optionClass = data.getOptionClass();
     return {
       id: data.getId(),
-      group: data.getGroup() ?? '',
-      name: data.getName() ?? '',
+      group: orEmpty(data.getGroup()),
+      name: orEmpty(data.getName()),
       description: data.getDescription(),
-      type: data.getType()?.name() ?? '',
+      type: enumNameOrEmpty(data.getType()),
       optionClass: optionClass === null ? '' : simpleNameOf(optionClass),
       default: encodeValue(data.getDefault(), shape),
       lowerBound: encodeBound(data.getLowerBound(), shape),
       upperBound: encodeBound(data.getUpperBound(), shape),
       targets: names(data.getTargets()),
-      visibility: data.getVisibility()?.name() ?? '',
+      visibility: enumNameOrEmpty(data.getVisibility()),
       legacyIds: data.getLegacyIds(),
     };
   }
@@ -208,3 +208,13 @@ export class RecordingRegistry implements ILayoutMetaDataProvider.Registry {
 }
 
 type RegistryCallData<K extends 'registerOption' | 'registerAlgorithm'> = Extract<RegistryCall, { call: K }>['data'];
+
+/** `text`, or `''` when the getter returned `null`. */
+function orEmpty(text: string | null): string {
+  return text ?? '';
+}
+
+/** The constant's `name()`, or `''` when the getter returned `null`. */
+function enumNameOrEmpty(constant: { name(): string } | null): string {
+  return constant === null ? '' : constant.name();
+}
