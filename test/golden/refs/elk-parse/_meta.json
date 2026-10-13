@@ -1,0 +1,23 @@
+{
+  "elkCommit": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "patches": [
+    "0001-graph.json-seedable-JsonExporter-id-collision-random.patch"
+  ],
+  "exportSeed": 1,
+  "gsonVersion": "2.11.0",
+  "jdk": "openjdk version \"21.0.1\" 2023-10-17 LTS",
+  "generatedBy": "tools/oracle/regen-parse-refs.sh",
+  "transform": "delete layoutOptions keys resolvedAlgorithm|*.resolvedAlgorithm recursively; JSON.stringify(obj, null, 2) + newline",
+  "inputSha256": {
+    "ptolemy-afdx-multicast.json": "f78404632ed813db6740c87c01e8d97e41791cead5fe6a0d42d6f745b9a6fb1e",
+    "ptolemy-clockdrift-hierarchy.json": "09e4d64e72a8147e708efd608f37709110da53a6b108f50234a88dff95af02fb",
+    "ptolemy-crossbar-switch.json": "13e14107014f636aed57a928fb9e69ee4fabf6f78b65a4d7883d40c9e3ee20cf",
+    "ptolemy-scrambler.json": "8c89f59a91c87d32cc65c4744aef8e9389d0be757328b465a43b1117e1fa8997"
+  },
+  "strippedSha256": {
+    "ptolemy-afdx-multicast.json": "ec7d0a621e7176296d0a24d075de02ee642fec893a00d1bff9bd15ae1caa99af",
+    "ptolemy-clockdrift-hierarchy.json": "86a1692a224f25b6f6417c1a583cbca6b6b64e7842de41a9f8f335011de5f89a",
+    "ptolemy-crossbar-switch.json": "819bd9cbb89bac2811d0687898e60920d68786fc29c2b835c0597def66d7d55a",
+    "ptolemy-scrambler.json": "2f0e5a3085ff8394d263554f16381be1e1c5596289329de3d9aaac827938b064"
+  }
+}
