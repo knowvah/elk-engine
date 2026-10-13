@@ -85,6 +85,10 @@ Value encoding (every value, recursively):
 A value with no row here is a stop condition. TS compares `double` text with
 `src/java/lang/DoubleToString.ts`.
 
+**Amendment (2026-10-13, user, T7 stop 6):** an unset bound — `getLowerBound()`/`getUpperBound()`
+returning the `Property.NEGATIVE_INFINITY`/`POSITIVE_INFINITY` sentinel — encodes as `null`. Lossless:
+the getters never return `null`, and lower vs. upper is known from the field name.
+
 ## C5 — Parser scope
 
 The `.melk` parser implements all `MetaData.xtext` rules (`MdModel` … `Path`, lines 19–111) and,
