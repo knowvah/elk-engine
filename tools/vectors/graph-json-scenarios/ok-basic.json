@@ -1,0 +1,11 @@
+{"id":"root","x":1,"y":2.5,"width":100,"height":80.25,
+ "labels":[{"text":"Root","x":1,"y":2,"width":30,"height":10,"id":"rl"}],
+ "ports":[{"id":"rp","x":0,"y":10,"width":5,"height":5,"labels":[{"text":"P","width":4,"height":4}]}],
+ "children":[
+  {"id":"a","x":10,"y":10,"width":30,"height":20,"labels":[{"text":"A"}],
+   "ports":[{"id":"ap","x":30,"y":5,"width":4,"height":4}],
+   "children":[{"id":"a1","x":2,"y":2,"width":5,"height":5}]},
+  {"id":"b","x":60,"y":10,"width":30,"height":20}],
+ "edges":[
+  {"id":"e1","source":"a","target":"b","labels":[{"text":"E","id":"el","x":1,"y":1,"width":5,"height":5}]},
+  {"id":"e2","source":"a","sourcePort":"ap","target":"b"}]}

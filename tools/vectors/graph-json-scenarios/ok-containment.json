@@ -1,0 +1,5 @@
+{"id":"r","children":[
+  {"id":"a","children":[{"id":"a1","ports":[{"id":"a1p"}]},{"id":"a2"}],
+   "edges":[{"id":"inner","source":"a1","target":"a2"},{"id":"up","source":"a1","sourcePort":"a1p","target":"b"}]},
+  {"id":"b","children":[{"id":"b1"}]}],
+ "edges":[{"id":"down","source":"a","target":"b1"},{"id":"loop","source":"b","target":"b"},{"id":"toChild","source":"b","target":"b1"},{"id":"cross","source":"a2","target":"b1"}]}

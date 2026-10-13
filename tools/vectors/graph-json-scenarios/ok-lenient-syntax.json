@@ -1,0 +1,4 @@
+// comment
+{id: 'r', /* block */ children: [{id: 'a'}, {id: "b"}],
+ edges: [{id: 'e', source: 'a', target: 'b'}],
+ layoutOptions: {'org.eclipse.elk.direction': RIGHT}}

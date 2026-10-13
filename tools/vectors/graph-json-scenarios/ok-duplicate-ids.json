@@ -1,0 +1,8 @@
+{"id":"r","children":[
+  {"id":"a","x":1,"ports":[{"id":"p","x":1},{"id":"p","x":2}]},
+  {"id":"a","x":2},
+  {"id":"b"}],
+ "edges":[
+  {"id":"e","source":"a","target":"b"},
+  {"id":"e","source":"b","target":"a"},
+  {"id":"f","sources":["a","p"],"targets":["b"]}]}

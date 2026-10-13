@@ -1,0 +1,16 @@
+{"id":"r","children":[{"id":"a","ports":[{"id":"ap"}]},{"id":"b"},{"id":"c"}],
+ "edges":[
+  {"id":"plain","sources":["a"],"targets":["b"],"sections":[
+    {"id":"p1","startPoint":{"x":0,"y":0},"endPoint":{"x":1,"y":1}}]},
+  {"id":"ports","sources":["ap"],"targets":["b"],"sections":[
+    {"id":"p2","startPoint":{"x":0,"y":0},"endPoint":{"x":1,"y":1}}]},
+  {"id":"hyper","sources":["a","b"],"targets":["c"],"sections":[
+    {"id":"p3","startPoint":{"x":0,"y":0},"endPoint":{"x":1,"y":1}}]},
+  {"id":"two","sources":["a"],"targets":["c"],"sections":[
+    {"id":"p4","startPoint":{"x":0,"y":0},"endPoint":{"x":1,"y":1}},
+    {"id":"p5","startPoint":{"x":1,"y":1},"endPoint":{"x":2,"y":2}}]},
+  {"id":"half","sources":["b"],"targets":["c"],"sections":[
+    {"id":"p6","startPoint":{"x":0,"y":0},"endPoint":{"x":1,"y":1},"incomingShape":"c"}]},
+  {"id":"set","sources":["b"],"targets":["c"],"sections":[
+    {"id":"p7","startPoint":{"x":0,"y":0},"endPoint":{"x":1,"y":1},"incomingShape":"c","outgoingShape":"b"}]},
+  {"id":"none","sources":["b"],"targets":["c"],"sections":[]}]}

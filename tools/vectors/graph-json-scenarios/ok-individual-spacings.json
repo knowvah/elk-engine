@@ -1,0 +1,6 @@
+{"id":"r","children":[
+  {"id":"a","individualSpacings":{"org.eclipse.elk.spacing.nodeNode":5,"edgeEdge":"3.5","unknown.key":9,"org.eclipse.elk.spacing.edgeNode":"junk"}},
+  {"id":"b","layoutOptions":{"org.eclipse.elk.spacing.individual":"org.eclipse.elk.spacing.nodeNode:11"},
+   "individualSpacings":{"org.eclipse.elk.spacing.edgeNode":4}},
+  {"id":"c","individualSpacings":{}},
+  {"id":"d","individualSpacings":{"org.eclipse.elk.direction":"LEFT"}}]}

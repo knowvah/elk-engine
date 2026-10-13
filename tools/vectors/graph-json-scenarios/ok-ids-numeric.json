@@ -1,0 +1,7 @@
+{"id":"r","children":[
+  {"id":3,"x":1},{"id":3.0,"x":2},{"id":"3","x":3},{"id":2147483648,"x":4},{"id":7,"x":5},{"id":-4,"x":6}],
+ "edges":[
+  {"id":1,"sources":[3],"targets":["3"]},
+  {"id":2,"sources":[2147483648],"targets":[7]},
+  {"id":"2","sources":[-4],"targets":[3.0]},
+  {"id":1.0,"source":3,"target":"3"}]}

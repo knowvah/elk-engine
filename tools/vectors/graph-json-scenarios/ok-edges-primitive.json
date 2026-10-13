@@ -1,0 +1,12 @@
+{"id":"r","children":[
+  {"id":"a","ports":[{"id":"ap"}]},{"id":"b","ports":[{"id":"bp"}]},{"id":"c"}],
+ "edges":[
+  {"id":"e1","source":"a","target":"b"},
+  {"id":"e2","source":"a","sourcePort":"ap","target":"b","targetPort":"bp",
+   "sourcePoint":{"x":1,"y":2},"targetPoint":{"x":30,"y":40},"bendPoints":[{"x":5,"y":6},{"x":7.5,"y":8.25}],
+   "layoutOptions":{"org.eclipse.elk.edge.type":"DIRECTED"},
+   "labels":[{"text":"two","id":"l2"}]},
+  {"id":"e3","source":"a","target":"c","bendPoints":[{"x":1,"y":1}]},
+  {"id":"e4","source":"a","target":"c","sourcePoint":{"x":0,"y":0}},
+  {"id":"e5","source":"c","sourcePort":"ghost","target":"a","targetPort":"phantom"},
+  {"id":"e6","source":"a","target":"a","bendPoints":[]}]}

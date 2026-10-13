@@ -1,0 +1,5 @@
+{"id":"r","layoutOptions":{"org.eclipse.elk.json.shapeCoords":"ROOT","org.eclipse.elk.json.edgeCoords":"PARENT"},
+ "children":[
+  {"id":"a","x":5,"y":5,"width":50,"height":50,"layoutOptions":{"org.eclipse.elk.json.shapeCoords":"PARENT","org.eclipse.elk.json.edgeCoords":"ROOT"},
+   "children":[{"id":"a1","layoutOptions":{"org.eclipse.elk.json.edgeCoords":"CONTAINER","org.eclipse.elk.json.shapeCoords":"INHERIT"}}]},
+  {"id":"b","layoutOptions":{"json.shapeCoords":"nonsense"}}]}
