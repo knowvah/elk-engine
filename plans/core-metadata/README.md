@@ -118,7 +118,7 @@ Generated files are written only by `npm run melk:generate`, never by Write/Edit
 | 4 | Algorithm model + pending types | T12 | 3 | [x] |
 | 5 | Emitter + `LabelManagementOptions` | T13 | 4 | [x] |
 | 6 | `LayoutMetaDataService` + `CoreOptions` | T14 | 5 | [x] |
-| 7 | Replacer, content assist, held-back emission | T15–T17 | 6 | [ ] |
+| 7 | Replacer, content assist, held-back emission | T15–T17 | 6 | [x] |
 | 8 | Docs + close-out | T18 | 7 | [ ] |
 
 Batches 1a and 1b are independent and may run together.
