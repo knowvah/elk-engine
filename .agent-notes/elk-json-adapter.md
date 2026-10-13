@@ -64,3 +64,21 @@
 - **Impact**: when a generator takes escaped data, assert at least one decoded control character in
   its output; port agents must report missing rows rather than probe the JVM (J1/AD-13).
 - **Confidence**: High
+
+## Observation: hot loops under vitest pay for imported bindings
+
+- **Context**: T7 1 MB parse benchmark
+- **Finding**: reading imported module bindings inside the reader's inner loop cost ~2× under vitest's
+  module transform; copying them into local `const`s and indexing stacks by a size counter took the
+  parse from 350–450 ms to 57–134 ms. V8 coverage instrumentation adds ~3×.
+- **Impact**: performance-sensitive ports (layout inner loops) should hoist imports into locals;
+  timing assertions need a separate budget under coverage.
+- **Confidence**: Medium
+
+## Observation: Gson strict-mode locations come from `isLiteral`
+
+- **Context**: T7 parse rows
+- **Finding**: `isLiteral` calls `checkLenient()` on `/ \ ; # =`, so strict `[1;2]` reports column 2
+  (the number start), not the `;`; `consumeNonExecutePrefix` does not count the `\n` of `)]}'\n`.
+- **Impact**: location text in messages cannot be derived from "where the bad char is"; use rows.
+- **Confidence**: High
