@@ -1,0 +1,19 @@
+{
+  id: "root",
+  properties: { 
+    'elk.algorithm': 'random'
+  },
+  children: [
+    { id: "n1", width: 10, height: 10 },
+    { id: "n2", width: 10, height: 10 }
+  ],
+  edges: [{
+    id: "e1", sources: [ "n1" ], targets: [ "n2" ],
+    sections: [{
+      id: "xyz",
+      startPoint: { x: 0, y: 0 },
+      bendPoints: [{ x: 20, y: 0 }],
+      endPoint: { x: 50, y: 0 }
+    }]
+  }]
+}

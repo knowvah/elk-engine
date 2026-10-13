@@ -1,0 +1,18 @@
+{
+    "id": "root",
+    "properties": { "algorithm": "layered" },
+    "children": [
+        { "id": "n1", "width": 30, "height": 30 },
+        { "id": "n2", "width": 30, "height": 30 }
+    ],
+    "edges": [
+        { "id": "e1", "sources": [ "n1" ], "targets": [ "n2" ],
+            "sections": [ {
+                "id": "imp",
+                "startPoint": { "x": 0, "y": 0 },
+                "endPoint": { "x": 5, "y": 5 },
+                "incomingShape": "n1",
+                "outgoingShape": "n2"
+            } ] }
+    ]
+}

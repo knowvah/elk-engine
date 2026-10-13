@@ -1,0 +1,41 @@
+{
+    "id": "root",
+    "properties": {
+        "algorithm": "layered",
+        "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN"
+    },
+    "children": [
+        { "id": "A",
+            "properties": { "org.eclipse.elk.json.shapeCoords": "ROOT" },
+            "labels": [ { "text": "A", "width": 10, "height": 12 } ],
+            "children": [
+                { "id": "x", "width": 50, "height": 90 },
+                { "id": "B",
+                    "properties": {
+                        "org.eclipse.elk.json.shapeCoords": "PARENT",
+                        "org.eclipse.elk.json.edgeCoords": "ROOT"
+                    },
+                    "children": [
+                        { "id": "y", "width": 50, "height": 90 },
+                        { "id": "z", "width": 50, "height": 90 }
+                    ],
+                    "edges": [
+                        { "id": "e1", "sources": [ "y" ], "targets": [ "z" ],
+                            "labels": [
+                                { "text": "head", "width": 20, "height": 12,
+                                    "layoutOptions": { "edgeLabels.placement": "HEAD" } },
+                                { "text": "center", "width": 30, "height": 12 }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "edges": [
+                { "id": "e2", "sources": [ "x" ], "targets": [ "B" ],
+                    "labels": [ { "text": "e2", "width": 20, "height": 12 } ]
+                },
+                { "id": "e3", "sources": [ "x" ], "targets": [ "z" ] }
+            ]
+        }
+    ]
+}

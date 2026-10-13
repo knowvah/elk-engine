@@ -1,0 +1,34 @@
+{
+    "id": "root",
+    "properties": {
+        "algorithm": "layered",
+        "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN"
+    },
+    "children": [
+        { "id": "A",
+            "children": [
+                { "id": "x", "width": 50, "height": 90 },
+                { "id": "B",
+                    "labels": [ { "text": "B", "width": 10, "height": 12 } ],
+                    "ports": [
+                        { "id": "p", "width": 10, "height": 10,
+                            "labels": [ { "text": "p", "width": 10, "height": 12 } ]
+                        }
+                    ],
+                    "children": [
+                        { "id": "y", "width": 50, "height": 90 },
+                        { "id": "z", "width": 50, "height": 90 }
+                    ],
+                    "edges": [
+                        { "id": "e1", "sources": [ "y" ], "targets": [ "z" ] },
+                        { "id": "e2", "sources": [ "x" ], "targets": [ "z" ],
+                            "labels": [ { "text": "e2", "width": 20, "height": 12 } ]
+                        },
+                        { "id": "e3", "sources": [ "x" ], "targets": [ "p" ] },
+                        { "id": "e4", "sources": [ "p" ], "targets": [ "y" ] }
+                    ]
+                }
+            ]
+        }
+    ]
+}
