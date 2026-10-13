@@ -54,3 +54,13 @@
   Layout-created sections have a null identifier; transfer names them `<edgeId>_s<i>`.
 - **Impact**: T16 replay must apply post-layout containment as recorded.
 - **Confidence**: High
+
+## Observation: vector generators reading escaped text must decode it
+
+- **Context**: T6 found `gson.json` write rows holding literal `\u0000` text
+- **Finding**: `GsonVectors` read `gson-cases.txt` string cases verbatim, so 71 rows recorded
+  backslash text instead of control chars / U+2028 / surrogates; the gap surfaced only when a port
+  agent filled it with throwaway JVM probes. Fixed in place (user decision).
+- **Impact**: when a generator takes escaped data, assert at least one decoded control character in
+  its output; port agents must report missing rows rather than probe the JVM (J1/AD-13).
+- **Confidence**: High
