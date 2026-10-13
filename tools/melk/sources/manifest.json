@@ -1,0 +1,70 @@
+{
+  "elkCommit": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "files": [
+    {
+      "name": "Core.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.core/src/org/eclipse/elk/core/Core.melk",
+      "blobSha": "a742f7e784bf8ba2803d43166db5fa9b98371ebe"
+    },
+    {
+      "name": "Labels.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.core/src/org/eclipse/elk/core/labels/Labels.melk",
+      "blobSha": "5a309f45c42e39d9dc6c3938aecb7d1de2f63a62"
+    },
+    {
+      "name": "Polyomino.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.common/src/org/eclipse/elk/alg/common/compaction/Polyomino.melk",
+      "blobSha": "c0c6bd23ccb9dd01d3c13ca173d622bbbe9c11e3"
+    },
+    {
+      "name": "Disco.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/Disco.melk",
+      "blobSha": "23efe32d59f312e47c7a9309acb0574732ccc563"
+    },
+    {
+      "name": "Force.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.force/src/org/eclipse/elk/alg/force/Force.melk",
+      "blobSha": "c8cdefd64e2aacbd6e8a60e8edca4289a9636972"
+    },
+    {
+      "name": "Stress.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.force/src/org/eclipse/elk/alg/force/stress/Stress.melk",
+      "blobSha": "d4f55fcd93513f5afac7f51818f5e38e8dd40dfd"
+    },
+    {
+      "name": "Layered.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/Layered.melk",
+      "blobSha": "b708c49108770138fc89a71e0479b4907df98156"
+    },
+    {
+      "name": "Tree.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.mrtree/src/org/eclipse/elk/alg/mrtree/Tree.melk",
+      "blobSha": "dbdec759f52e65a7818a8bf587618383569e9744"
+    },
+    {
+      "name": "Radial.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/Radial.melk",
+      "blobSha": "aa980a65a3b8e233d5add38dc53263ea64b611c2"
+    },
+    {
+      "name": "RectPacking.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.rectpacking/src/org/eclipse/elk/alg/rectpacking/RectPacking.melk",
+      "blobSha": "7cf99e6e546f7ead666b6ee8c177abb03500492e"
+    },
+    {
+      "name": "SPOrE.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/SPOrE.melk",
+      "blobSha": "234b4c506064054a709f19226ce4c07703bf0a5c"
+    },
+    {
+      "name": "Topdownpacking.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.topdownpacking/src/org/eclipse/elk/alg/topdownpacking/Topdownpacking.melk",
+      "blobSha": "e24ec28bfbdc73b0f63bd4411228b7cca99a3e30"
+    },
+    {
+      "name": "VertiFlex.melk",
+      "upstreamPath": "plugins/org.eclipse.elk.alg.vertiflex/src/org/eclipse/elk/alg/vertiflex/VertiFlex.melk",
+      "blobSha": "3550f70905ddab360ee7d5a44e0b9e92973ae27d"
+    }
+  ]
+}
