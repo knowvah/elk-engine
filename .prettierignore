@@ -5,6 +5,9 @@ node_modules/
 package-lock.json
 test/golden/
 test/corpus/
+# Vector inputs: malformed/lenient JSON whose exact bytes are the test input
+tools/vectors/graph-json-scenarios/
+tools/vectors/transfer-scenarios/
 # Written by tools/bundle-deps.ts; the fitness test compares it byte-for-byte
 test/architecture/bundle-deps.json
 
