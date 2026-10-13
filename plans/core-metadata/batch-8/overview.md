@@ -7,6 +7,6 @@ regeneration runbook.
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T18 | `melk-codegen.md`, port-map rows, translation-rules pointer, conformance gaps, journal close-out | documentation-engineer | docs/architecture/melk-codegen.md, docs/architecture/port-map.md, docs/translation-rules.md, docs/conformance.md, plans/core-metadata/{README,decision-journal}.md, .agent-notes/core-metadata.md | T15, T16, T17 | [ ] |
+| T18 | `melk-codegen.md`, port-map rows, translation-rules pointer, conformance gaps, journal close-out | documentation-engineer | docs/architecture/melk-codegen.md, docs/architecture/port-map.md, docs/translation-rules.md, docs/conformance.md, plans/core-metadata/{README,decision-journal}.md, .agent-notes/core-metadata.md | T15, T16, T17 | [x] |
 
 Batch done when the acceptance criteria pass and the README gates are green.

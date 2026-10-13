@@ -119,7 +119,7 @@ Generated files are written only by `npm run melk:generate`, never by Write/Edit
 | 5 | Emitter + `LabelManagementOptions` | T13 | 4 | [x] |
 | 6 | `LayoutMetaDataService` + `CoreOptions` | T14 | 5 | [x] |
 | 7 | Replacer, content assist, held-back emission | T15–T17 | 6 | [x] |
-| 8 | Docs + close-out | T18 | 7 | [ ] |
+| 8 | Docs + close-out | T18 | 7 | [x] |
 
 Batches 1a and 1b are independent and may run together.
 
@@ -142,3 +142,43 @@ for the user, next roadmap mission (4: ELK JSON adapter).
 
 1. Re-read this file. 2. Re-read `decision-journal.md`. 3. First batch with `[ ]` →
 its `overview.md` → first incomplete task.
+
+## Mission summary (2026-10-13)
+
+**Tasks:** 18/18 complete (T1–T18), one commit each plus one gate fix (`fix(T13)`); plan updates in
+`docs(plans)` commits. Merged to `main` with a merge commit.
+
+**Delivered:** `core.options` enums (15 hand-ported + `PackingMode`, `ITopdownSizeApproximator`);
+`core.util` closure (`Pair`, `ExclusiveBounds`, `IFactory`, `InstancePool`, `GraphAdapters`,
+`IElkCancelIndicator`, `IElkProgressMonitor`, `LoggedGraph`, `IGraphElementVisitor`,
+`ElkUtil.printElementPath`, `IndividualSpacings`); `core.validation` (`GraphIssue`,
+`IValidatingGraphElementVisitor`); `core.data` (`ILayoutMetaData`, `ILayoutMetaDataProvider`,
+`LayoutOptionData` + 4 nested-type files, `LayoutCategoryData`, `LayoutAlgorithmData`,
+`LayoutMetaDataService`, `DeprecatedLayoutOptionReplacer`, `LayoutDataContentAssist`);
+`AbstractLayoutProvider`, `IGraphLayoutEngine`, `ILabelManager`; java shims (`ClassCastException`,
+`StringBuilder`, `IdentityHashCode`, `JavaClass`, `BoxedComparable`); generated `CoreOptions.ts` and
+`LabelManagementOptions.ts`. Generator `tools/melk/` (parser → model → emit; 13 vendored `.melk`
+files). JVM golden `test/golden/refs/java/metadata.json`.
+
+**Generator coverage:** all 13 `.melk` files parse and resolve; the model's registry calls equal the
+JVM dump for all 27 generated classes; Core and Labels are emitted and committed, and the TS
+registry equals the dump minus C1's held-back set; the three held-back algorithm classes are emitted
+in a test against stub providers (T17) and match the dump.
+
+**Held back (C1, mission 5):** algorithms fixed/box/random, the `topdown.sizeCategories` dependency,
+the derived `""`/"Other" backup category. **Deferred tests (C10, mission 5):**
+`LayoutDataContentAssistTest.Other.testAlgorithmSpecificKnown`/`Unknown`.
+
+**Decisions:** 4 user decisions (C4 bound sentinels → `null`; C3 amendment for `LayoutOptionData`;
+`BoxedComparable` write-set extension; standing rules for complexity splits and colocated tests);
+~25 journaled judgment rows. None pending review.
+
+**Final gates:** see the last journal row (format, typecheck, coverage, vectors, lizard, freshness).
+
+**Follow-ups:**
+- Replace the `Property.test.ts` `ElkReflect` seam with `LayoutMetaDataService.initElkReflect()` —
+  needs the user's approval (AD-13).
+- `BoxedComparable.toString` int/double text when `LayoutOptionValidator` is ported.
+- Snapshot-vs-live collection views (service getters, `getKnownOptionIds`) — see
+  `docs/conformance.md#temporary-gaps`.
+- Next roadmap mission: 4 — ELK JSON adapter.
