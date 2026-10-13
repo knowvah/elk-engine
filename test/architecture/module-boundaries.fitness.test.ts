@@ -19,6 +19,7 @@ import {
 const JAVA_DIR = `${TS_ROOT}/java`;
 const GUAVA_DIR = `${TS_ROOT}/guava`;
 const EMF_DIR = `${TS_ROOT}/emf`;
+const GSON_DIR = `${TS_ROOT}/gson`;
 const INDEX_FILE = `${TS_ROOT}/index.ts`;
 const TEST_SUFFIX = '.test.ts';
 const TS_SUFFIX = '.ts';
@@ -65,12 +66,22 @@ function violationFor(file: string, target: string, deps: BundleDeps): string | 
       ? undefined
       : `${edge}: src/guava may import only src/guava and src/java`;
   }
+  if (isUnder(file, GSON_DIR)) {
+    return isUnder(target, GSON_DIR) || isUnder(target, JAVA_DIR)
+      ? undefined
+      : `${edge}: src/gson may import only src/gson and src/java`;
+  }
   if (isUnder(file, EMF_DIR)) {
     return isUnder(target, EMF_DIR) || isUnder(target, JAVA_DIR) || isUnder(target, GUAVA_DIR)
       ? undefined
       : `${edge}: src/emf may import only src/emf, src/java and src/guava`;
   }
-  if (isUnder(target, JAVA_DIR) || isUnder(target, GUAVA_DIR) || isUnder(target, EMF_DIR)) {
+  if (
+    isUnder(target, JAVA_DIR) ||
+    isUnder(target, GUAVA_DIR) ||
+    isUnder(target, EMF_DIR) ||
+    isUnder(target, GSON_DIR)
+  ) {
     return undefined;
   }
   const from = bundleOf(file, deps);
@@ -111,6 +122,7 @@ function unmappedFile(file: string, deps: BundleDeps): string | undefined {
     isUnder(file, JAVA_DIR) ||
     isUnder(file, GUAVA_DIR) ||
     isUnder(file, EMF_DIR) ||
+    isUnder(file, GSON_DIR) ||
     bundleOf(file, deps) !== undefined;
   return exempt ? undefined : `${file}: unmapped directory`;
 }
@@ -402,5 +414,52 @@ describe('src/emf boundary (elkgraph-model D1)', () => {
 
   it('does not treat src/emf as an unmapped directory', () => {
     expect(unmappedFile('src/emf/ecore/EObject.ts', committed)).toBeUndefined();
+  });
+});
+
+describe('src/gson boundary (elk-json-adapter J1)', () => {
+  it('lets src/gson import src/gson and src/java', () => {
+    const source = [
+      "import { JsonElement } from './JsonElement.js';",
+      "import { Int32 } from '../java/lang/Int32.js';",
+    ].join('\n');
+    expect(checkFile('src/gson/JsonObject.ts', source, committed)).toEqual([]);
+  });
+
+  it('forbids src/gson importing a bundle, naming both files', () => {
+    expect(checkFile('src/gson/JsonObject.ts', "import { G } from '../graph/G.js';", committed)).toEqual([
+      'src/gson/JsonObject.ts -> src/graph/G.ts: src/gson may import only src/gson and src/java',
+    ]);
+  });
+
+  it('forbids src/gson importing src/guava or src/emf', () => {
+    expect(checkFile('src/gson/JsonObject.ts', "import { Lists } from '../guava/Lists.js';", committed)).toEqual([
+      'src/gson/JsonObject.ts -> src/guava/Lists.ts: src/gson may import only src/gson and src/java',
+    ]);
+    expect(checkFile('src/gson/JsonObject.ts', "import { E } from '../emf/E.js';", committed)).toEqual([
+      'src/gson/JsonObject.ts -> src/emf/E.ts: src/gson may import only src/gson and src/java',
+    ]);
+  });
+
+  it('lets graph.json, other bundles and src/index.ts import src/gson', () => {
+    const imp = "import { JsonObject } from '../../gson/JsonObject.js';";
+    expect(checkFile('src/graph/json/JsonAdapter.ts', imp, committed)).toEqual([]);
+    expect(checkFile('src/index.ts', "export * from './gson/JsonObject.js';", committed)).toEqual([]);
+  });
+
+  it('forbids src/java, src/guava and src/emf importing src/gson', () => {
+    expect(checkFile('src/java/util/A.ts', "import { J } from '../../gson/J.js';", committed)).toEqual([
+      'src/java/util/A.ts -> src/gson/J.ts: src/java may import only src/java',
+    ]);
+    expect(checkFile('src/guava/Lists.ts', "import { J } from '../gson/J.js';", committed)).toEqual([
+      'src/guava/Lists.ts -> src/gson/J.ts: src/guava may import only src/guava and src/java',
+    ]);
+    expect(checkFile('src/emf/ecore/E.ts', "import { J } from '../../gson/J.js';", committed)).toEqual([
+      'src/emf/ecore/E.ts -> src/gson/J.ts: src/emf may import only src/emf, src/java and src/guava',
+    ]);
+  });
+
+  it('does not treat src/gson as an unmapped directory', () => {
+    expect(unmappedFile('src/gson/JsonObject.ts', committed)).toBeUndefined();
   });
 });
