@@ -348,3 +348,18 @@ function narrowToFloat(value: NumberValue): number {
   }
   return Math.fround(value.n);
 }
+
+/**
+ * The fully qualified name of a class written as `typePath` in a file: through the imports, as written when it starts
+ * with a package segment, else in the given default package (the package of the generated class).
+ */
+export function qualifiedClassName(typePath: readonly string[], scope: ImportScope, defaultPackage: string): string {
+  const first = typePath[0];
+  const imported = first === undefined ? undefined : scope.get(first);
+  if (imported !== undefined) {
+    return [imported, ...typePath.slice(1)].join(NAME_SEPARATOR);
+  }
+  return /^[a-z]/.test(first ?? '')
+    ? typePath.join(NAME_SEPARATOR)
+    : [defaultPackage, ...typePath].join(NAME_SEPARATOR);
+}

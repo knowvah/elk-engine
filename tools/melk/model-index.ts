@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-import type { MdBundleMember, MdOption, MelkFile } from './ast.js';
+import type { MdBundleMember, MdCategory, MdOption, MelkFile } from './ast.js';
 import { buildImportScope, type ImportScope } from './expr.js';
 import { ModelError } from './model-errors.js';
 import { constantName, memberId, scopedName } from './model-names.js';
@@ -24,7 +24,16 @@ export interface IndexedOption {
 /** All options of all files: by scoped name for reference resolution, by file in registration order. */
 export interface OptionIndex {
   readonly byScopedName: ReadonlyMap<string, IndexedOption>;
+  /** Categories by package-based name, the names `category` clauses of algorithms refer to. */
+  readonly categories: ReadonlyMap<string, IndexedCategory>;
   readonly byFile: ReadonlyMap<string, readonly IndexedOption[]>;
+}
+
+/** A category and the file that declares it. */
+export interface IndexedCategory {
+  readonly category: MdCategory;
+  readonly file: MelkFile;
+  readonly id: string;
 }
 
 interface Definition {
@@ -65,11 +74,34 @@ function indexFile(file: MelkFile): IndexedOption[] {
   }));
 }
 
+function indexCategories(file: MelkFile, categories: Map<string, IndexedCategory>): void {
+  for (const member of file.members) {
+    if (member.kind === 'category') {
+      categories.set(scopedName(file, [], member.name), {
+        category: member,
+        file,
+        id: memberId(file, [], member.name),
+      });
+    }
+  }
+}
+
+/** Resolves the category of an algorithm: relative to the package, then as written. */
+export function resolveCategoryReference(index: OptionIndex, file: MelkFile, text: string): IndexedCategory {
+  const found = index.categories.get(`${file.packageName ?? ''}${SEPARATOR}${text}`) ?? index.categories.get(text);
+  if (found === undefined) {
+    throw new ModelError(`${file.fileName}: cannot resolve category '${text}'`);
+  }
+  return found;
+}
+
 /** Indexes the options of every file that has a package (a file without one defines no bundle). */
 export function buildOptionIndex(files: readonly MelkFile[]): OptionIndex {
   const byScopedName = new Map<string, IndexedOption>();
   const byFile = new Map<string, readonly IndexedOption[]>();
+  const categories = new Map<string, IndexedCategory>();
   for (const file of files.filter((candidate) => candidate.packageName !== null)) {
+    indexCategories(file, categories);
     const entries = indexFile(file);
     byFile.set(file.fileName, entries);
     for (const entry of entries) {
@@ -79,7 +111,7 @@ export function buildOptionIndex(files: readonly MelkFile[]): OptionIndex {
       byScopedName.set(entry.scopedName, entry);
     }
   }
-  return { byScopedName, byFile };
+  return { byScopedName, categories, byFile };
 }
 
 /**

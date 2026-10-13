@@ -1,45 +1,32 @@
 // SPDX-License-Identifier: EPL-2.0
-import { LayoutOptionDataTarget } from '../../src/core/data/LayoutOptionDataTarget.js';
-import { EnumSet } from '../../src/java/util/EnumSet.js';
-import type { Expr, MdCategory, MdOption, MelkFile } from './ast.js';
-import { evaluate, type ImportScope, type ValueTarget } from './expr.js';
-import { buildOptionIndex, resolveOptionReference, type IndexedOption, type OptionIndex } from './model-index.js';
-import {
-  bundleClassName,
-  defaultConstantName,
-  dependencyConstantName,
-  lowerBoundConstantName,
-  memberId,
-  shrinkWhiteSpace,
-  upperBoundConstantName,
-} from './model-names.js';
-import type { OptionTypeInfo } from './model-types.js';
-import type { CategoryData, EncodedValue, OptionData, RegistryCall } from './model-value.js';
+import type { MdAlgorithm, MdCategory, MelkFile } from './ast.js';
+import { loadUpstreamPaths } from './config.js';
+import { resolveAlgorithm, type AlgorithmEnvironment, type ResolvedAlgorithm } from './model-algorithms.js';
+import { buildOptionIndex, type IndexedOption, type OptionIndex } from './model-index.js';
+import { bundleClassName, memberId, shrinkWhiteSpace } from './model-names.js';
+import { optionCalls, resolveOption, type ResolvedOption } from './model-option.js';
+import { firstReason, pendingReason, type PendingContext } from './model-pending.js';
+import type { CategoryData, RegistryCall } from './model-value.js';
+import { buildImportScope } from './expr.js';
 
 export type { AlgorithmData, CategoryData, EncodedValue, OptionData, RegistryCall } from './model-value.js';
+export type { ResolvedAlgorithm, ResolvedSupport } from './model-algorithms.js';
+export { valueTargetOf, type ResolvedDependency, type ResolvedOption } from './model-option.js';
 
 const SEPARATOR = '.';
-const VISIBILITY_HIDDEN = 'HIDDEN';
-const VISIBILITY_ADVANCED = 'ADVANCED';
-const VISIBILITY_VISIBLE = 'VISIBLE';
 
-/** A `requires` clause with its target resolved and its required value encoded. */
-export interface ResolvedDependency {
-  readonly constantName: string;
-  readonly target: IndexedOption;
-  readonly expression: Expr | null;
-  readonly value: EncodedValue;
+/** A registration moved out of `calls` because it references a pending type (decision C1). */
+export interface HeldBackCall {
+  readonly call: RegistryCall;
+  readonly reason: string;
 }
 
-/** An option with the registry data and the names the emitter needs. */
-export interface ResolvedOption {
-  /** The option in its file: groups, ids, imports, declared type and the unevaluated expressions. */
-  readonly entry: IndexedOption;
-  readonly data: OptionData;
-  readonly defaultConstantName: string;
-  readonly lowerBoundConstantName: string;
-  readonly upperBoundConstantName: string;
-  readonly dependencies: readonly ResolvedDependency[];
+/** Options of `resolveAll`. */
+export interface ResolveOptions {
+  /** Fully qualified names of types that are not ported yet; registrations referencing them are held back. */
+  readonly pendingTypes?: readonly string[];
+  /** Upstream path of each `.melk` file by file name; defaults to the vendored sources' manifest. */
+  readonly upstreamPaths?: ReadonlyMap<string, string>;
 }
 
 /** The model of one `.melk` file: the registry calls its generated bundle class makes, and the options behind them. */
@@ -48,91 +35,12 @@ export interface ResolvedBundle {
   readonly packageName: string;
   /** Fully qualified name of the generated bundle class, the key of `metadata.json`'s `providers`. */
   readonly bundleClass: string;
+  /** What `apply(registry)` records, minus the held-back registrations: options, dependencies, categories, algorithms. */
   readonly calls: readonly RegistryCall[];
+  readonly heldBack: readonly HeldBackCall[];
   readonly options: readonly ResolvedOption[];
+  readonly algorithms: readonly ResolvedAlgorithm[];
   readonly source: MelkFile;
-}
-
-export function valueTargetOf(type: OptionTypeInfo): ValueTarget {
-  return { kind: type.valueKind, elementClass: type.elementClass };
-}
-
-/** Evaluates an optional expression written in `scope`'s file for a value of `type`; absent is `null`. */
-function evaluateOptional(expr: Expr | null, scope: ImportScope, type: OptionTypeInfo): EncodedValue {
-  return expr === null ? null : evaluate(expr, scope, valueTargetOf(type));
-}
-
-function visibilityOf(option: MdOption): string {
-  switch (option.modifier) {
-    case 'programmatic':
-    case 'output':
-    case 'global':
-      return VISIBILITY_HIDDEN;
-    case 'advanced':
-      return VISIBILITY_ADVANCED;
-    case null:
-      return VISIBILITY_VISIBLE;
-  }
-}
-
-/** The target names in `EnumSet` (ordinal) order. */
-function targetNames(option: MdOption): string[] {
-  if (option.targets.length === 0) {
-    return [];
-  }
-  const [first, ...rest] = option.targets.map((target) => LayoutOptionDataTarget.valueOf(target.toUpperCase()));
-  return first === undefined ? [] : [...EnumSet.of(first, ...rest)].map((target) => target.name());
-}
-
-function optionData(entry: IndexedOption): OptionData {
-  const { option, type } = entry;
-  return {
-    id: entry.id,
-    group: entry.groups.join(SEPARATOR),
-    name: shrinkWhiteSpace(option.label ?? option.name) ?? option.name,
-    description: shrinkWhiteSpace(option.description),
-    type: type.type,
-    optionClass: type.optionClass,
-    default: evaluateOptional(option.defaultValue, entry.scope, type),
-    lowerBound: evaluateOptional(option.lowerBound, entry.scope, type),
-    upperBound: evaluateOptional(option.upperBound, entry.scope, type),
-    targets: targetNames(option),
-    visibility: visibilityOf(option),
-    legacyIds: option.legacyIds.length === 0 ? null : option.legacyIds,
-  };
-}
-
-function resolveDependencies(entry: IndexedOption, index: OptionIndex): ResolvedDependency[] {
-  return entry.option.dependencies.map((dependency, position) => {
-    const target = resolveOptionReference(index, entry, dependency.target);
-    return {
-      constantName: dependencyConstantName(entry.constantName, target.constantName, position),
-      target,
-      expression: dependency.value,
-      value: evaluateOptional(dependency.value, entry.scope, target.type),
-    };
-  });
-}
-
-function resolveOption(entry: IndexedOption, index: OptionIndex): ResolvedOption {
-  return {
-    entry,
-    data: optionData(entry),
-    defaultConstantName: defaultConstantName(entry.constantName),
-    lowerBoundConstantName: lowerBoundConstantName(entry.constantName),
-    upperBoundConstantName: upperBoundConstantName(entry.constantName),
-    dependencies: resolveDependencies(entry, index),
-  };
-}
-
-function optionCalls(option: ResolvedOption): RegistryCall[] {
-  const dependencyCalls = option.dependencies.map((dependency): RegistryCall => ({
-    call: 'addDependency',
-    source: option.data.id,
-    target: dependency.target.id,
-    value: dependency.value,
-  }));
-  return [{ call: 'registerOption', data: option.data }, ...dependencyCalls];
 }
 
 function categoryData(file: MelkFile, category: MdCategory): CategoryData {
@@ -143,30 +51,99 @@ function categoryData(file: MelkFile, category: MdCategory): CategoryData {
   };
 }
 
-function resolveBundle(file: MelkFile, packageName: string, index: OptionIndex): ResolvedBundle {
-  const entries = index.byFile.get(file.fileName) ?? [];
-  const options = entries.map((entry) => resolveOption(entry, index));
-  const categoryCalls = file.members
+/** A call with the reason it is held back (null when it is registered). */
+interface Candidate {
+  readonly call: RegistryCall;
+  readonly reason: string | null;
+}
+
+function contextOf(file: MelkFile, pendingTypes: ReadonlySet<string>): PendingContext {
+  return {
+    scope: buildImportScope(file.imports),
+    defaultPackage: bundleClassName(file).split(SEPARATOR).slice(0, -1).join(SEPARATOR),
+    pendingTypes,
+  };
+}
+
+function optionCandidates(option: ResolvedOption, context: PendingContext): Candidate[] {
+  const { option: md } = option.entry;
+  const [register, ...dependencyCalls] = optionCalls(option);
+  const registerReason = firstReason(
+    [md.defaultValue, md.lowerBound, md.upperBound].map((e) => pendingReason(e, context)),
+  );
+  const dependencies = dependencyCalls.map((call, position): Candidate => ({
+    call,
+    reason: pendingReason(option.dependencies[position]?.expression ?? null, context),
+  }));
+  return [{ call: register as RegistryCall, reason: registerReason }, ...dependencies];
+}
+
+function algorithmCandidates(algorithm: ResolvedAlgorithm): Candidate[] {
+  return algorithm.calls.map((call) => ({ call, reason: algorithm.heldBackReason }));
+}
+
+function resolveBundle(file: MelkFile, packageName: string, env: AlgorithmEnvironment): ResolvedBundle {
+  const context = contextOf(file, env.pendingTypes);
+  const options = (env.index.byFile.get(file.fileName) ?? []).map((entry) => requireOption(env, entry));
+  const categories = file.members
     .filter((member): member is MdCategory => member.kind === 'category')
-    .map((category): RegistryCall => ({ call: 'registerCategory', data: categoryData(file, category) }));
+    .map((category): Candidate => ({
+      call: { call: 'registerCategory', data: categoryData(file, category) },
+      reason: null,
+    }));
+  const algorithms = file.members
+    .filter((member): member is MdAlgorithm => member.kind === 'algorithm')
+    .map((algorithm) => resolveAlgorithm(file, algorithm, env));
+  const candidates = [
+    ...options.flatMap((option) => optionCandidates(option, context)),
+    ...categories,
+    ...algorithms.flatMap(algorithmCandidates),
+  ];
   return {
     file: file.fileName,
     packageName,
     bundleClass: bundleClassName(file),
-    calls: [...options.flatMap(optionCalls), ...categoryCalls],
+    calls: candidates.filter((c) => c.reason === null).map((c) => c.call),
+    heldBack: candidates.flatMap((c) => (c.reason === null ? [] : [{ call: c.call, reason: c.reason }])),
     options,
+    algorithms,
     source: file,
   };
 }
 
+function requireOption(env: AlgorithmEnvironment, entry: IndexedOption): ResolvedOption {
+  const option = env.options.get(entry);
+  if (option === undefined) {
+    throw new Error(`option ${entry.scopedName} was not resolved`);
+  }
+  return option;
+}
+
+function resolveOptions(index: OptionIndex): Map<IndexedOption, ResolvedOption> {
+  const options = new Map<IndexedOption, ResolvedOption>();
+  for (const entries of index.byFile.values()) {
+    for (const entry of entries) {
+      options.set(entry, resolveOption(entry, index));
+    }
+  }
+  return options;
+}
+
 /**
- * Turns parsed `.melk` files into the registry calls the generated Java makes (options with their dependencies, then
- * categories; the algorithm calls are added by the algorithm model). Files without a package define no bundle and are
+ * Turns parsed `.melk` files into the registry calls the generated Java makes, in the order the recorder sees them:
+ * options, each followed by its dependencies, then categories, then each algorithm's calls. Registrations that
+ * reference a pending type move from `calls` to `heldBack`. Files without a package define no bundle and are
  * skipped, as the inferrer skips them.
  *
  * @see org.eclipse.elk.core.meta/src/org/eclipse/elk/core/meta/jvmmodel/MetaDataJvmModelInferrer.xtend (infer)
  */
-export function resolveAll(files: readonly MelkFile[]): ResolvedBundle[] {
+export function resolveAll(files: readonly MelkFile[], options: ResolveOptions = {}): ResolvedBundle[] {
   const index = buildOptionIndex(files);
-  return files.flatMap((file) => (file.packageName === null ? [] : [resolveBundle(file, file.packageName, index)]));
+  const env: AlgorithmEnvironment = {
+    index,
+    options: resolveOptions(index),
+    upstreamPaths: options.upstreamPaths ?? loadUpstreamPaths(),
+    pendingTypes: new Set(options.pendingTypes ?? []),
+  };
+  return files.flatMap((file) => (file.packageName === null ? [] : [resolveBundle(file, file.packageName, env)]));
 }
