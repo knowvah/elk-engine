@@ -101,3 +101,13 @@ translation-rules §6.5 (`docs/translation-rules.md:363-376`) and §8 (`:450-478
 Four Java test files rely on an earlier test having initialised `LayoutMetaDataService`. Every
 ported file does `LayoutMetaDataService.unload(); LayoutMetaDataService.getInstance();` in
 `beforeEach` (the `PlainJavaInitialization` equivalent). No assertion changes.
+
+## J7 amendment (2026-10-13, user, T5 stop)
+
+ELK cannot re-import its own layout goldens: the layout export writes `resolvedAlgorithm`
+(`LayoutAlgorithmData`), and `JsonImporter.xtend:465` → `LayoutOptionData.java:155` throws
+`IllegalStateException`. Parse inputs are therefore the 4 committed goldens with every
+`resolvedAlgorithm` key removed from each `layoutOptions` object, by a scripted transform applied
+identically by `regen-parse-refs.sh` (oracle) and the T18 round-trip test (TS). No stripped inputs
+are committed. `refs/elk-parse/_meta.json` records the raw and the stripped sha256 per file. A
+`graph-json.json` import row (T3) pins the raw-import exception; TS must reproduce it.

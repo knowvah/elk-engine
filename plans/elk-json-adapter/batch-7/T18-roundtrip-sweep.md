@@ -53,3 +53,9 @@ Reversible — revert the commit.
 
 ## Boundaries
 No source edits; no edits to refs.
+
+## Amendment (2026-10-13, J7 amendment in decisions.md)
+Before TS import, delete every `resolvedAlgorithm` key (full id `org.eclipse.elk.resolvedAlgorithm`
+or any suffix the exporter wrote) from every `layoutOptions` object of the golden, exactly as
+`tools/oracle/regen-parse-refs.sh` does, and assert the stripped input's sha256 equals
+`_meta.json`. Also assert that importing the unstripped golden throws the T3-recorded exception.

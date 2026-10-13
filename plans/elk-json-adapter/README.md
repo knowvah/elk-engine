@@ -111,7 +111,7 @@ Parallel agents never run `npm run coverage` (shared `coverage/`); the orchestra
 
 | Batch | Name | Tasks | Depends on | Status |
 |-------|------|-------|------------|--------|
-| 1 | Vectors and goldens first | T1–T5 | — | [ ] |
+| 1 | Vectors and goldens first | T1–T5 | — | [x] |
 | 2 | Gson element model | T6 | 1 | [ ] |
 | 3 | Gson reader, writer; `JsonAdapter` | T7–T9 | 2 | [ ] |
 | 4 | Gson façade, importer core, exporter, converter | T10–T13 | 3 | [ ] |
