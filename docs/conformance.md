@@ -19,6 +19,7 @@ this document describes what it implements. Port rules live in
 | 4   | [Seam patches](#4-seam-patches)                   | How do we change the oracle?             |
 | 5   | [Oracle operations](#5-oracle-operations-runbook) | What do I do when it breaks?             |
 | 6   | [Gates](#6-gates)                                 | What must pass before a change lands?    |
+| 7   | [Temporary gaps](#temporary-gaps)                 | What differs from the Java for now?      |
 
 ## 1. Oracle
 
@@ -321,3 +322,37 @@ Changes to `tools/oracle/` or `tools/corpus/` also need:
 | Generated stability | `tools/oracle/regen-generated.sh`, then `git diff --exit-code test/corpus/generated` | no diff                                                      |
 | Sweep               | `tools/oracle/sweep.sh` (or `--filter`/`--limit` for a sample)                       | exit 0: no `oracle-error`                                    |
 | Parity report       | `npx tsx tools/corpus/parity-report.ts`                                              | exit 0 (committed report current); regenerate with `--write` |
+
+## Temporary gaps
+
+Known differences from the Java after mission 3 (core metadata), each with the mission that closes
+it. Generator background: [melk-codegen](architecture/melk-codegen.md).
+
+**Held-back registrations (C1).** Their providers are not ported, so the generator skips them;
+the registry check subtracts them (`test/melk/held-back.ts`).
+
+- Algorithm `org.eclipse.elk.fixed` (`FixedLayouterOptions`): closed by mission 5.
+- Algorithm `org.eclipse.elk.box` (`BoxLayouterOptions`): closed by mission 5.
+- Algorithm `org.eclipse.elk.random` (`RandomLayouterOptions`): closed by mission 5.
+- Dependency `topdown.sizeCategories` requires `sizeApproximator == FIXED_INTEGER_RATIO_BOXES`
+  (`Core.melk:920`): closed by mission 5.
+- Derived backup category `""`/`"Other"` that `Registry.applyDependencies` creates for the three
+  category-less algorithms: absent from the TS service, closed by mission 5.
+
+**Deferred JUnit cases (C10).** Ported unchanged once the algorithms above are registered.
+
+- `LayoutDataContentAssistTest.Other.testAlgorithmSpecificKnown`: closed by mission 5.
+- `LayoutDataContentAssistTest.Other.testAlgorithmSpecificUnknown`: closed by mission 5.
+
+**Behavioural divergences.**
+
+- `GraphIssue.hashCode` uses a WeakMap-and-counter identity hash, not the JVM's `identityHashCode`
+  (T5): values differ from the JVM, equal issues still hash equal; open.
+- `IElkProgressMonitor.getDebugFolder()` returns `string | null` for `java.nio.file.Path` (C8): open
+  by design.
+- `BoxedComparable.toString` prints a `Double` bound `0.0` as `0` (T8): fix when
+  `LayoutOptionValidator` is ported (its only `toString` consumer); open.
+- Service collection getters (`getAlgorithmData()`, `getOptionData()` and kin) return snapshot arrays, not live
+  unmodifiable views (T14): open.
+- `LayoutMetaDataService.getKnownOptionIds()` returns a snapshot `Set` in `JavaHashMap` key order,
+  not a live `keySet()` view (T10): open.

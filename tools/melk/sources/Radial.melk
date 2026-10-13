@@ -1,0 +1,171 @@
+/*******************************************************************************
+ * Copyright (c) 2017, 2020 Kiel University and others.
+ * 
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GPL-3.0 which is available at
+ * https://www.gnu.org/licenses/gpl-3.0-standalone.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-3.0-or-later
+ *******************************************************************************/
+package org.eclipse.elk.alg.radial
+
+import org.eclipse.elk.alg.radial.RadialLayoutProvider
+
+bundle {
+    metadataClass options.RadialMetaDataProvider
+    idPrefix org.eclipse.elk.radial
+}
+
+algorithm radial(RadialLayoutProvider) {
+    label "ELK Radial"
+    metadataClass options.RadialOptions
+    description
+        "A radial layout provider which is based on the algorithm of Peter Eades published in \"Drawing free trees.\", 
+         published by International Institute for Advanced Study of Social Information Science, Fujitsu Limited in 1991. 
+         The radial layouter takes a tree and places the nodes in radial order around the root. The nodes of the same 
+         tree level are placed on the same radius."
+    preview images/radial_layout.png
+    documentation "@radial.md"
+    category org.eclipse.elk.radial
+    supports org.eclipse.elk.position
+    supports org.eclipse.elk.spacing.nodeNode
+    // Common node micro layout
+    supports org.eclipse.elk.nodeSize.constraints
+    supports org.eclipse.elk.nodeSize.minimum
+    supports org.eclipse.elk.nodeSize.options
+    supports org.eclipse.elk.nodeLabels.placement
+    supports org.eclipse.elk.omitNodeMicroLayout
+    supports org.eclipse.elk.portLabels.placement
+    supports compactionStepSize
+    supports compactor
+    supports rotate
+    supports rotation.targetAngle
+    supports rotation.computeAdditionalWedgeSpace
+    supports rotation.outgoingEdgeAngles
+    supports optimizationCriteria
+    supports orderId
+    supports radius
+    supports sorter
+    supports wedgeCriteria
+    supports centerOnRoot
+}
+
+/////////////////////////////////Options///////////////////////////////
+option centerOnRoot: boolean {
+    label "Center On Root"
+    description 
+        "Centers the layout on the root of the tree i.e. so that the central node is also the center node of the
+         final layout. This introduces additional whitespace."
+    default = false
+    targets parents
+}
+option orderId: int {
+    label "Order ID "
+    description
+        "The id can be used to define an order for nodes of one radius. This can be used to sort them in the 
+         layer accordingly."
+    default = 0
+    targets nodes
+}
+
+option radius: double {
+    label "Radius"
+    description
+        "The radius option can be used to set the initial radius for the radial layouter."
+    default = 0.0
+    targets parents
+}
+
+// Rotation
+option rotate: boolean {
+    label "Rotate"
+    description
+        "The rotate option determines whether a rotation of the layout should be performed."
+    targets parents
+    default = false
+}
+
+group rotation {
+    option targetAngle: double {
+        label "Target Angle"
+        description
+            "The angle in radians that the layout should be rotated to after layout."
+        targets parents
+        default = 0
+        requires rotate
+    }
+    
+    advanced option computeAdditionalWedgeSpace: boolean {
+        label "Additional Wedge Space"
+        description
+            "If set to true, modifies the target angle by rotating further such that space is left
+             for an edge to pass in between the nodes. This option should only be used in conjunction
+             with top-down layout."
+        targets parents
+        default = false
+        requires rotate
+    }
+    
+    advanced option outgoingEdgeAngles: boolean {
+        label "Outgoing Edge Angles"
+        description 
+            "Calculate the required angle of connected nodes to leave space for an incoming edge. This
+             option should only be used in conjunction with top-down layout."
+        targets parents
+        default = false
+    }
+}
+
+
+//Compaction
+option compactor: CompactionStrategy {
+    label "Compaction"
+    description
+        "With the compacter option it can be determined how compaction on the graph is done. 
+         It can be chosen between none, the radial compaction or the compaction of wedges separately."
+    targets parents
+    default = CompactionStrategy.NONE
+}
+
+option compactionStepSize: int {
+    label "Compaction Step Size"
+    description
+        "Determine the size of steps with which the compaction is done. 
+         Step size 1 correlates to a compaction of 1 pixel per Iteration."
+    lowerBound = 0
+    default = 1
+    targets parents
+    requires compactor
+}
+
+option sorter: SortingStrategy {
+    label "Sorter"
+    description
+        "Sort the nodes per radius according to the sorting algorithm. The strategies are none, by the given order id, 
+         or sorting them by polar coordinates."
+    targets parents
+    default = SortingStrategy.NONE
+}
+
+option wedgeCriteria: AnnulusWedgeCriteria {
+    label "Annulus Wedge Criteria"
+    description
+        "Determine how the wedge for the node placement is calculated. 
+         It can be chosen between wedge determination by the number of leaves or by the maximum sum of diagonals."
+    targets parents
+    default = AnnulusWedgeCriteria.NODE_SIZE
+}
+
+option optimizationCriteria: RadialTranslationStrategy {
+    label "Translation Optimization"
+    description
+        "Find the optimal translation of the nodes of the first radii according to this criteria. 
+         For example edge crossings can be minimized."
+    default = RadialTranslationStrategy.NONE
+    targets parents
+}

@@ -1,0 +1,64 @@
+/*******************************************************************************
+ * Copyright (c) 2022 Kiel University and others.
+ * 
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GPL-3.0 which is available at
+ * https://www.gnu.org/licenses/gpl-3.0-standalone.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-3.0-or-later  
+ *******************************************************************************/
+package org.eclipse.elk.alg.topdownpacking
+
+import org.eclipse.elk.alg.topdownpacking.NodeArrangementStrategy
+import org.eclipse.elk.alg.topdownpacking.TopdownpackingLayoutProvider
+import org.eclipse.elk.alg.topdownpacking.WhitespaceEliminationStrategy
+import org.eclipse.elk.core.options.TopdownNodeTypes
+
+bundle {
+    metadataClass options.TopdownpackingMetaDataProvider
+    idPrefix org.eclipse.elk.topdownpacking
+}
+
+algorithm topdownpacking(TopdownpackingLayoutProvider) {
+    label "ELK Top-down Packing"
+    description "An algorithm for placing boxes of fixed sizes. Expands boxes horizontally to fill empty 
+                 whitespace. This algorithm can be used standalone or specifically for 
+                 {@link CoreOptions.TOPDOWN_LAYOUT}. In this use case it should be set for nodes whose
+                 {@link CoreOptions.TOPDOWN_NODE_TYPE} is set to {@link TopdownNodeTypes.PARALLEL_NODE}.
+                 This allows topdown layout to give children larger sizes based on their number of children."
+    metadataClass options.TopdownpackingOptions
+    supports org.eclipse.elk.padding
+    supports org.eclipse.elk.spacing.nodeNode
+    supports org.eclipse.elk.topdown.hierarchicalNodeWidth
+    supports org.eclipse.elk.topdown.hierarchicalNodeAspectRatio
+    supports org.eclipse.elk.topdownLayout
+    supports org.eclipse.elk.topdown.nodeType = TopdownNodeTypes.PARALLEL_NODE
+    
+    supports nodeArrangement.strategy
+    supports whitespaceElimination.strategy
+}
+
+group nodeArrangement {
+    
+    option strategy: NodeArrangementStrategy {
+        label "Node arrangement strategy"
+        description "Strategy for node arrangement. The strategy determines the size of the resulting graph."
+        default = NodeArrangementStrategy.LEFT_RIGHT_TOP_DOWN_NODE_PLACER
+        targets parents
+    }
+}
+
+group whitespaceElimination {
+    
+    option strategy: WhitespaceEliminationStrategy {
+        label "Whitespace elimination strategy"
+        description "Strategy for whitespace elimination."
+        default = WhitespaceEliminationStrategy.BOTTOM_ROW_EQUAL_WHITESPACE_ELIMINATOR
+        targets parents
+    }
+}

@@ -7,7 +7,7 @@ export default defineConfig({
     passWithNoTests: true,
     coverage: {
       provider: 'v8',
-      include: ['src/**'],
+      include: ['src/**', 'tools/melk/**/*.ts'],
       exclude: ['src/**/*.test.ts'],
       reporter: ['text', 'json-summary', 'cobertura'],
       thresholds: {

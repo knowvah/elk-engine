@@ -42,6 +42,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "melk:generate": "tsx tools/melk/generate.ts",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "build": "npm run build:js && npm run build:types",

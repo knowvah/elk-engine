@@ -145,8 +145,8 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   `(float) (newSize.x / oldSize.x)` `alg.layered/src/.../graph/LGraphUtil.java:95`; a list element
   rounded to float, then compared with a double
   `alg.layered/src/.../p5edges/orthogonal/HyperEdgeSegment.java:149`; metadata literal
-  `aspectRatio = 1.6f` `core/src/.../Core.melk:163` (AD-12 generator: `Math.fround(1.6)`
-  = 1.600000023841858). 89 `float` tokens in scope (`G '\bfloat\b'`).
+  `aspectRatio = 1.6f` `core/src/.../Core.melk:163` (AD-12 generator, [melk-codegen](architecture/melk-codegen.md):
+  `Math.fround(1.6)` = 1.600000023841858). 89 `float` tokens in scope (`G '\bfloat\b'`).
 - Shim `src/java/lang/Float32.ts`: `fromDouble` (narrowing; `numeric.json` `d2f`, 72 rows) and
   `add sub mul div` (`Math.fround(a op b)`; `f32`, 2704 rows). Also `roundFloat`; `random.json`
   `nextFloat` values are float bits widened to double. HIGH.

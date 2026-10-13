@@ -1,0 +1,130 @@
+/*******************************************************************************
+ * Copyright (c) 2015 - 2022 Kiel University and others.
+ * 
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
+ * 
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the Eclipse
+ * Public License v. 2.0 are satisfied: GPL-3.0 which is available at
+ * https://www.gnu.org/licenses/gpl-3.0-standalone.html.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-3.0-or-later
+ *******************************************************************************/
+package org.eclipse.elk.alg.mrtree
+
+import org.eclipse.elk.alg.mrtree.TreeLayoutProvider
+import org.eclipse.elk.alg.mrtree.options.OrderWeighting
+import org.eclipse.elk.alg.mrtree.options.TreeifyingOrder
+import org.eclipse.elk.core.math.ElkPadding
+import org.eclipse.elk.core.options.TopdownNodeTypes
+import org.eclipse.elk.core.options.Direction
+
+/**
+ * Declarations for the ELK Tree layout algorithm.
+ */
+bundle {
+    metadataClass options.MrTreeMetaDataProvider
+    idPrefix org.eclipse.elk.mrtree
+}
+
+algorithm mrtree(TreeLayoutProvider) {
+    label "ELK Mr. Tree"
+    description
+        "Tree-based algorithm provided by the Eclipse Layout Kernel. Computes a spanning tree of
+        the input graph and arranges all nodes according to the resulting parent-children
+        hierarchy. I pity the fool who doesn't use Mr. Tree Layout."
+    metadataClass options.MrTreeOptions
+    category org.eclipse.elk.tree
+    features disconnected
+    preview images/mrtree_layout.png
+    supports org.eclipse.elk.padding = new ElkPadding(20)
+    supports org.eclipse.elk.spacing.nodeNode = 20
+    supports org.eclipse.elk.spacing.edgeNode = 3
+    supports org.eclipse.elk.aspectRatio = 1.6f
+    supports org.eclipse.elk.priority = 1
+       documentation 
+           "Priorities set on nodes determine the order in which connected components are placed:
+            components with a higher sum of node priorities will end up
+            before components with a lower sum."
+    supports org.eclipse.elk.separateConnectedComponents = true
+    supports org.eclipse.elk.debugMode
+    supports org.eclipse.elk.direction = Direction.UNDEFINED
+    supports org.eclipse.elk.interactive
+    supports org.eclipse.elk.interactiveLayout
+    // Common node micro layout
+    supports org.eclipse.elk.nodeSize.constraints
+    supports org.eclipse.elk.nodeSize.fixedGraphSize
+    supports org.eclipse.elk.nodeSize.minimum
+    supports org.eclipse.elk.nodeSize.options
+    supports org.eclipse.elk.nodeLabels.placement
+    supports org.eclipse.elk.omitNodeMicroLayout
+    supports org.eclipse.elk.portLabels.placement
+    supports weighting
+    supports searchOrder
+    // topdown layout
+    supports org.eclipse.elk.topdownLayout
+    supports org.eclipse.elk.topdown.scaleFactor
+    supports org.eclipse.elk.topdown.hierarchicalNodeWidth
+    supports org.eclipse.elk.topdown.hierarchicalNodeAspectRatio
+    supports org.eclipse.elk.topdown.nodeType = TopdownNodeTypes.HIERARCHICAL_NODE
+    supports positionConstraint
+    supports edgeRoutingMode
+    supports treeLevel
+    supports compaction
+    supports edgeEndTextureLength
+}
+
+option compaction: boolean {
+    label "Position Constraint"
+    description "Turns on Tree compaction which decreases the size of the whole tree by placing nodes of multiple 
+        levels in one large level"
+    default = false
+    targets parents
+}
+
+option edgeEndTextureLength: double {
+    label "Edge End Texture Length"
+    description "Should be set to the length of the texture at the end of an edge. 
+        This value can be used to improve the Edge Routing."
+    default = 7
+    targets parents
+}
+
+output option treeLevel: int {
+    label "Tree Level"
+    description "The index for the tree level the node is in"
+    default = 0
+    lowerBound = 0
+    targets nodes
+}
+
+option positionConstraint: int {
+    label "Position Constraint"
+    description "When set to a positive number this option will force the algorithm to place the node to the 
+        specified position within the trees layer if weighting is set to constraint"
+    default = -1
+    targets nodes
+}
+
+option weighting: OrderWeighting {
+    label "Weighting of Nodes"
+    description "Which weighting to use when computing a node order."
+    default = OrderWeighting.MODEL_ORDER
+    targets parents
+}
+
+option edgeRoutingMode: EdgeRoutingMode {
+    label "Edge Routing Mode"
+    description "Chooses an Edge Routing algorithm."
+    default = EdgeRoutingMode.AVOID_OVERLAP
+    targets parents
+}
+
+option searchOrder: TreeifyingOrder {
+    label "Search Order"
+    description "Which search order to use when computing a spanning tree."
+    default = TreeifyingOrder.DFS
+    targets parents
+}
