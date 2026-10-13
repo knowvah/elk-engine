@@ -145,3 +145,12 @@ on `LayoutOptionData` as `Type`/`Target`/`Visibility`/`Builder` members. `parseV
 `getDefaultDefault` and `enumForString` may split into private helpers, one per Java `switch` arm or
 `try` branch, in Java order, each named after the arm it holds and journaled. No `complexity-ignore`
 entry (C6 unchanged). T8's write-set grows by those four files and their tests.
+
+## Standing rules (2026-10-13, user, T14 stops 10 and 1)
+
+- **Complexity splits.** When the lizard limits force it, a ported method may split into private
+  helpers, one per Java section / `switch` arm / loop, called in Java order and named after the
+  section; journal each. No stop needed. Reordering, merging, or helpers shared across methods
+  still stop (stop condition 10). First case: `Registry.applyDependencies` (CCN 16).
+- **Colocated tests.** A colocated `<Name>.test.ts` for any file in a task's write-set is
+  implicitly in that write-set.
