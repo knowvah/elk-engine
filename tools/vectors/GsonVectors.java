@@ -5,7 +5,7 @@
 // JsonObject / JsonArray / JsonPrimitive calls). This program only CALLS Gson and records results; it embeds no Gson
 // code and has its own JSON writer, so the recording does not depend on the recorded library.
 // Run: tools/vectors/gson-vectors.sh <outDir>  (java -cp <gson jar> GsonVectors.java <outDir> <gsonVersion> <cases>)
-// Cases: tools/vectors/gson-cases.txt (sections documented there; kept out of this file for the 500-line limit).
+// Cases: tools/vectors/gson-cases.txt (sections documented there; escapes decoded; token "lazy:<text>" = LazilyParsedNumber).
 // Output: {gsonVersion, jdk, parse, primitive, write, objectOps, arrayOps, equality}; keys sorted, 2-space indent.
 // <T> (a JsonElement) = null (JsonNull) | {"num":raw} | {"str":s} | {"bool":b} | {"arr":[T]} | {"obj":[[k,T]]}. A
 // number's raw text is getAsNumber().toString(). Every row has "id"; an exception is "throws": {class (simple name),
@@ -97,9 +97,7 @@ public class GsonVectors {
     }
 
     static List<String> numTypes(JsonElement e) {
-        Set<String> out = new TreeSet<>();
-        numTypes(e, out);
-        return new ArrayList<>(out);
+        Set<String> out = new TreeSet<>(); numTypes(e, out); return new ArrayList<>(out);
     }
 
     /** Encodes an op argument or result; JsonElement as a tree, VOID as null (callers drop it). */
@@ -139,7 +137,10 @@ public class GsonVectors {
         "bool", Boolean::valueOf, "str", GsonVectors::unescape);
 
     /** "kind:text" builds a JsonPrimitive of that Java type; anything else is JSON text parsed by JsonParser. */
+    static JsonElement lazy(String text) { return new JsonPrimitive(new com.google.gson.internal.LazilyParsedNumber(text)); }
+
     static JsonElement typed(String token) {
+        if (token.startsWith("lazy:")) return lazy(unescape(token.substring(5)));
         int colon = token.indexOf(':');
         if (colon > 0 && KINDS.containsKey(token.substring(0, colon))) {
             return el(KINDS.get(token.substring(0, colon)).apply(token.substring(colon + 1)));
@@ -194,9 +195,7 @@ public class GsonVectors {
             int tab = line.indexOf('\t');
             rows.add(new Object[] {line.substring(0, tab), unescape(line.substring(tab + 1))});
         }
-        for (String n : CASES.get("parseNumbers")) rows.add(new Object[] {"number-" + n, "[" + n + "]"});
-        rows.add(new Object[] {"number-in-object", "{\"a\":NaN}"});
-        rows.add(new Object[] {"top-nan", "NaN"});
+        for (String n : CASES.get("parseNumbers")) rows.add(new Object[] {"number-" + unescape(n), "[" + unescape(n) + "]"});
         for (int depth : new int[] {100, 255, 256, 300, 1000}) {
             rows.add(new Object[] {"deep-arrays-" + depth, "[".repeat(depth) + "]".repeat(depth)});
             rows.add(new Object[] {"deep-objects-" + depth, "{\"a\":".repeat(depth) + "1" + "}".repeat(depth)});
@@ -249,7 +248,8 @@ public class GsonVectors {
 
     static List<Object[]> primitiveValues() {
         List<Object[]> rows = typedRows("primitiveValues");
-        for (String s : CASES.get("primitiveStrings")) rows.add(new Object[] {"string-" + s, new JsonPrimitive(s)});
+        for (String c : CASES.get("primitiveStrings")) rows.add(new Object[] {"string-" + unescape(c), new JsonPrimitive(unescape(c))});
+        for (int n : new int[] {10000, 10001}) rows.add(new Object[] {"lazy-" + n + "-digits", lazy("1".repeat(n))});
         return rows;
     }
 
@@ -286,7 +286,7 @@ public class GsonVectors {
 
     static List<Object[]> writeCases() {
         List<Object[]> rows = typedRows("writeValues");
-        for (String s : CASES.get("writeStrings")) rows.add(new Object[] {"string-" + s, new JsonPrimitive(s)});
+        for (String c : CASES.get("writeStrings")) rows.add(new Object[] {"string-" + unescape(c), new JsonPrimitive(unescape(c))});
         rows.add(new Object[] {"key-specials", obj("<k>&=", 1, "a\"b", 2, "\u2028", 3, "\n", 4, "", 5)});
         rows.add(new Object[] {"string-members", obj("a", "<>&='", "b", "\u2028\u2029")});
         rows.add(new Object[] {"number-member", obj("width", 40.0, "height", 12)});

@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: EPL-2.0
 # Inputs for GsonVectors.java. "[section]" opens a section; "#" lines are comments; each other line is one case.
+# Every string case in every section is escape-decoded (so \u2028 etc. are the real characters; write \\ for a literal
+# backslash). Typed tokens ([primitiveValues], [writeValues], [equality]): "kind:text", kind in int long double float short
+# byte bigdecimal biginteger bool str lazy (lazy = new JsonPrimitive(new LazilyParsedNumber(text))); else JSON text.
 # Escapes: \n \r \t \b \f \" \\ \uXXXX; a line of just \e is the empty string. [parse] lines are "id<TAB>text".
 [parse]
 sloppy-graph	{\n  // the root node\n  id: \"root\",\n  /* Now the graph */ \n  \"children\": [ {\"id\": \"c\"}; {\"id\": \"c1\"} ],\n  'edges': [] // Endline comment\n}\n
@@ -45,6 +48,8 @@ bom	\uFEFF{}
 nbsp-space	[1,\u00a02]
 crlf	{\r\n\"a\":1\r\n}
 xssi-prefix	)]}'\n{}
+number-in-object	{\"a\":NaN}
+top-nan	NaN
 nested-mixed	{\"a\":[1,{\"b\":[]},{}],\"c\":{\"d\":\"e\"}}
 unicode-escape	\"\\u00e9\\u20ac\"
 surrogate-pair-escape	\"\\ud83d\\ude00\"
@@ -115,6 +120,18 @@ TRUE
 1.0
 .5
 5.
+\u0000
+\u0001\u001f
+\u007f
+\u0080\u009f
+\u2028
+\u2029
+\uD83D\uDE00
+\uD800
+a\"b
+a\\b
+tab\there
+nl\nx
 [writeStrings]
 plain
 < > & = '
@@ -186,6 +203,46 @@ boolean-false	bool:false
 json-null	null
 array	[1,"x"]
 object	{"a":1}
+string-chars	{"s":"a\u2028b\u2029c\u0000\u001f\u007f\u0080\ud83d\ude00\"\\<>&='"}
+array-chars	["\u2028","\u0001",null,"\ud800",{"n":null}]
+object-null-members	{"n":null,"a":[null],"o":{"x":null}}
+lazy-1e10000	lazy:1e10000
+lazy-1e-10000	lazy:1e-10000
+lazy--1e10000	lazy:-1e10000
+lazy-1e9999	lazy:1e9999
+lazy-1e-9999	lazy:1e-9999
+lazy-1e99999999999	lazy:1e99999999999
+lazy-1e-99999999999	lazy:1e-99999999999
+lazy-1.5e10000	lazy:1.5e10000
+lazy-empty	lazy:
+lazy-abc	lazy:abc
+lazy-minus	lazy:-
+lazy-plus	lazy:+
+lazy-dot	lazy:.
+lazy-1.2.3	lazy:1.2.3
+lazy-1e	lazy:1e
+lazy-e5	lazy:e5
+lazy-1.5	lazy:1.5
+lazy-2147483648	lazy:2147483648
+lazy-9223372036854775808	lazy:9223372036854775808
+lazy-12345678901234567890	lazy:12345678901234567890
+lazy-3.9	lazy:3.9
+lazy--3.9	lazy:-3.9
+lazy-1e2	lazy:1e2
+lazy-arabic-digit	lazy:\u0663
+lazy-space	lazy: 1
+lazy-1e+	lazy:1e+
+lazy-1e-	lazy:1e-
+lazy-1e1.5	lazy:1e1.5
+lazy-1e5e5	lazy:1e5e5
+lazy-1e2147483648	lazy:1e2147483648
+lazy-1e-2147483649	lazy:1e-2147483649
+lazy-1e999999999	lazy:1e999999999
+lazy-1e1000000000	lazy:1e1000000000
+lazy-1e\u0663	lazy:1e\u0663
+lazy-1.5.	lazy:1.5.
+lazy-0.0000001e2147483647	lazy:0.0000001e2147483647
+lazy-10000000000e-2147483648	lazy:10000000000e-2147483648
 [writeValues]
 double-40.0	double:40.0
 double-1.0E-5	double:1.0E-5
