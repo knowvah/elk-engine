@@ -7,7 +7,7 @@ code builds; T11 starts the generator's model and is checked against the JVM dum
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T10 | `LayoutCategoryData`, `LayoutAlgorithmData`, `AbstractLayoutProvider`, `IGraphLayoutEngine`, `ILabelManager`, `ITopdownSizeApproximator` | typescript-pro | src/core/data/{LayoutCategoryData,LayoutAlgorithmData}.ts, src/core/{AbstractLayoutProvider,IGraphLayoutEngine}.ts, src/core/labels/ILabelManager.ts, src/core/options/ITopdownSizeApproximator.ts (+ .test.ts) | T3, T4, T5, T8 | [ ] |
-| T11 | Model: options + categories (ids, groups, visibility, descriptions, defaults, bounds) | typescript-pro | tools/melk/model*.ts, tools/melk/expr.ts, test/melk/model-options.test.ts, test/melk/helpers.ts | T1, T2, T3, T7, T9 | [ ] |
+| T10 | `LayoutCategoryData`, `LayoutAlgorithmData`, `AbstractLayoutProvider`, `IGraphLayoutEngine`, `ILabelManager`, `ITopdownSizeApproximator` | typescript-pro | src/core/data/{LayoutCategoryData,LayoutAlgorithmData}.ts, src/core/{AbstractLayoutProvider,IGraphLayoutEngine}.ts, src/core/labels/ILabelManager.ts, src/core/options/ITopdownSizeApproximator.ts (+ .test.ts) | T3, T4, T5, T8 | [x] |
+| T11 | Model: options + categories (ids, groups, visibility, descriptions, defaults, bounds) | typescript-pro | tools/melk/model*.ts, tools/melk/expr.ts, test/melk/model-options.test.ts, test/melk/helpers.ts | T1, T2, T3, T7, T9 | [x] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green.
