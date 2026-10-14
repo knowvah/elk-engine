@@ -1,0 +1,8 @@
+{"id":"r","children":[{"id":"a"},{"id":"b"},{"id":"j"}],
+ "edges":[
+  {"id":"e","sources":["a"],"targets":["b","j"],"sections":[
+   {"id":44,"startPoint":{"x":0,"y":0},"endPoint":{"x":5,"y":5},"outgoingSections":["s1",45],"incomingShape":"a"},
+   {"id":"s1","startPoint":{"x":5,"y":5},"endPoint":{"x":9,"y":9},"incomingSections":[44],"outgoingShape":"b"},
+   {"id":45,"startPoint":{"x":5,"y":5},"endPoint":{"x":9,"y":1},"incomingSections":[44.0],"outgoingShape":"j"}]},
+  {"id":"e2","sources":["b"],"targets":["a"],"sections":[
+   {"id":"t2","startPoint":{"x":1,"y":1},"endPoint":{"x":2,"y":2},"incomingSections":["s1"]}]}]}

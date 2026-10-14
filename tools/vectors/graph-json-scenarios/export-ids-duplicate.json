@@ -1,0 +1,7 @@
+{"id":"r","children":[
+  {"id":"a","x":1,"ports":[{"id":"p","x":1},{"id":"p","x":2},{"id":"p","x":3}]},
+  {"id":"a","x":2},{"id":"a","x":3},
+  {"id":"b"}],
+ "edges":[
+  {"id":"e","sources":["b"],"targets":["b"],"sections":[{"id":"s","startPoint":{"x":0,"y":0},"endPoint":{"x":1,"y":1}},{"id":"s","startPoint":{"x":1,"y":1},"endPoint":{"x":2,"y":2},"incomingSections":["s"]}]},
+  {"id":"e","source":"a","target":"b"},{"id":"e","source":"b","target":"a"}]}

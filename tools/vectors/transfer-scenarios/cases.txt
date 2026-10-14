@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: EPL-2.0
+# One case per line: <name> <scenario file> [<key>=<value>]...
+# key=value adds a string property to the scenario's root "properties" object (as EdgeCoordsTest does);
+# seed=<n> sets org.eclipse.elk.randomSeed on the imported root (the JSON stays as in the test) because
+# seed 0 makes RandomLayoutProvider time-seeded.
+# Test-derived cases
+edgecoords-PARENT-CONTAINER edge-coords.json org.eclipse.elk.json.shapeCoords=PARENT org.eclipse.elk.json.edgeCoords=CONTAINER
+edgecoords-PARENT-PARENT edge-coords.json org.eclipse.elk.json.shapeCoords=PARENT org.eclipse.elk.json.edgeCoords=PARENT
+edgecoords-PARENT-ROOT edge-coords.json org.eclipse.elk.json.shapeCoords=PARENT org.eclipse.elk.json.edgeCoords=ROOT
+edgecoords-ROOT-CONTAINER edge-coords.json org.eclipse.elk.json.shapeCoords=ROOT org.eclipse.elk.json.edgeCoords=CONTAINER
+edgecoords-ROOT-PARENT edge-coords.json org.eclipse.elk.json.shapeCoords=ROOT org.eclipse.elk.json.edgeCoords=PARENT
+edgecoords-ROOT-ROOT edge-coords.json org.eclipse.elk.json.shapeCoords=ROOT org.eclipse.elk.json.edgeCoords=ROOT
+individual-spacings individual-spacings.json
+preserve-section-ids preserve-section-ids.json seed=42
+transfer-layout-edge-section-exists transfer-layout.json seed=42
+# Extras (branches the tests miss)
+mixed-modes mixed-modes.json
+junction-points junction-points.json
+imported-sections-layered imported-sections-layered.json
+two-sections-fixed two-sections.json algorithm=fixed

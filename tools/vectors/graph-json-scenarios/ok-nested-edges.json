@@ -1,0 +1,10 @@
+{"id":"r","children":[
+  {"id":"p1","children":[
+    {"id":"c1","ports":[{"id":"c1o"}]},
+    {"id":"c2","ports":[{"id":"c2i"}],"children":[{"id":"g1"}]}],
+   "ports":[{"id":"p1p"}]},
+  {"id":"p2","ports":[{"id":"p2p"}]}],
+ "edges":[
+  {"id":"x1","sources":["c1o"],"targets":["c2i"]},
+  {"id":"x2","sources":["p1p"],"targets":["p2p"]},
+  {"id":"x3","sources":["g1"],"targets":["p2"]}]}

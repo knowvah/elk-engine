@@ -236,3 +236,146 @@ describe('EcoreEMap views', () => {
     expect([...view].map(([k, v]) => `${k.id}=${v}`)).toEqual(['a=v1', 'b=v2']);
   });
 });
+
+/** Keys named `k<hash>`, hashing to that (possibly negative) number, so bucket positions can be derived by hand. */
+const NUMBERED: HashStrategy<Key> = {
+  hash: (k) => Number(k.id.slice(1)),
+  equals: (a, b) => a.id === b.id,
+};
+
+class NumberedHolder extends Holder {
+  override readonly properties = new EcoreEMap<Key, string, Entry>(
+    NUMBERED,
+    this,
+    PROPERTIES,
+    (k, v) => new Entry(k, v),
+  );
+}
+
+const numbered = (...hashes: number[]): NumberedHolder => {
+  const holder = new NumberedHolder();
+  for (const h of hashes) {
+    holder.properties.put(key(`k${h}`), `v${h}`);
+  }
+  return holder;
+};
+
+const viewIds = (map: EcoreEMap<Key, string, Entry>): string[] => [...map.map()].map(([k]) => k.id);
+
+describe('EcoreEMap map() iterates the hash buckets (BasicEMap.entrySet)', () => {
+  it('is empty for an empty map and keeps the list order for entries()', () => {
+    const map = new NumberedHolder().properties;
+    expect(viewIds(map)).toEqual([]);
+    expect(entryIds(numbered(3, 1).properties).map(([k]) => k)).toEqual(['k3', 'k1']);
+  });
+
+  it('puts the first key at capacity 1, then grows to 2 * 1 + 4 = 6 and rehashes', () => {
+    // put k3: capacity 1, bucket 0. put k1: grow(2) -> capacity 6, k3 -> bucket 3, k1 -> bucket 1.
+    // put k2: grow(3) fits, bucket 2. Scan: 1, 2, 3 while the list stays 3, 1, 2.
+    const map = numbered(3, 1, 2).properties;
+    expect(viewIds(map)).toEqual(['k1', 'k2', 'k3']);
+    expect(entryIds(map).map(([k]) => k)).toEqual(['k3', 'k1', 'k2']);
+  });
+
+  it('rehashes the old buckets in order into capacity 2 * 6 + 4 = 16 on the seventh key', () => {
+    // Puts 20, 3, 17, 1, 33, 0 fill capacity 6: buckets 0:[0] 1:[1] 2:[20] 3:[3,33] 5:[17].
+    // put 5: grow(7) -> capacity 16, rehash in old-bucket order: 0 -> 0; 1 -> 1; 20 -> 4;
+    // 3 -> 3; 33 -> 1 (after 1); 17 -> 1 (after 33). Then 5 -> bucket 5.
+    // Scan: b0 [0], b1 [1, 33, 17], b3 [3], b4 [20], b5 [5].
+    const map = numbered(20, 3, 17, 1, 33, 0, 5).properties;
+    expect(viewIds(map)).toEqual(['k0', 'k1', 'k33', 'k17', 'k3', 'k20', 'k5']);
+  });
+
+  it('masks negative hashes before taking the remainder', () => {
+    // put k2: capacity 1. put k-1: grow(2) -> capacity 6; (-1 & 0x7FFFFFFF) % 6 = 2147483647 % 6 = 1,
+    // k2 -> bucket 2. Scan: k-1, k2.
+    expect(viewIds(numbered(2, -1).properties)).toEqual(['k-1', 'k2']);
+  });
+
+  it('builds the buckets at capacity 2 * size + 1 from entries added through the list', () => {
+    // Three list adds with entryData still null: size 3. First map operation: capacity 7;
+    // k9 -> 2, k2 -> 2, k7 -> 0. Scan: k7, then bucket 2 in list order k9, k2.
+    const holder = new NumberedHolder();
+    const list = holder.properties.entryList();
+    for (const h of [9, 2, 7]) {
+      list.add(new Entry(key(`k${h}`), `v${h}`));
+    }
+    const map = holder.properties;
+    expect(map.get(key('k2'))).toBe('v2');
+    expect(viewIds(map)).toEqual(['k7', 'k9', 'k2']);
+    expect(entryIds(map).map(([k]) => k)).toEqual(['k9', 'k2', 'k7']);
+  });
+
+  it('answers containsKey from list-added entries and counts removals made before the buckets exist', () => {
+    // List adds k5, k3, k4, then removing k5 with entryData null leaves size 2: capacity 5,
+    // k3 -> 3, k4 -> 4. Scan: k3, k4.
+    const holder = new NumberedHolder();
+    const list = holder.properties.entryList();
+    for (const h of [5, 3, 4]) {
+      list.add(new Entry(key(`k${h}`), `v${h}`));
+    }
+    list.removeAt(0);
+    expect(holder.properties.containsKey(key('k3'))).toBe(true);
+    expect(holder.properties.containsKey(key('k5'))).toBe(false);
+    expect(viewIds(holder.properties)).toEqual(['k3', 'k4']);
+  });
+
+  it('drops removed keys from their bucket and starts over at capacity 1 after a clear', () => {
+    const map = numbered(4, 1, 2).properties;
+    expect(map.removeKey(key('k1'))).toBe('v1');
+    expect(viewIds(map)).toEqual(['k2', 'k4']);
+    expect(map.removeKey(key('k9'))).toBeUndefined();
+    map.clear();
+    expect(viewIds(map)).toEqual([]);
+    expect(map.containsKey(key('k4'))).toBe(false);
+    // After the clear, put k8: capacity 1. put k7: grow(2) -> capacity 6, k8 -> 2, k7 -> 1.
+    map.put(key('k8'), 'v8');
+    map.put(key('k7'), 'v7');
+    expect(viewIds(map)).toEqual(['k7', 'k8']);
+  });
+
+  it('keeps equal-key entries in list-entry order within a bucket and removes the entry itself', () => {
+    const map = numbered(1).properties;
+    const shadow = new Entry(key('k1'), 'shadow');
+    map.entryList().add(shadow);
+    expect(viewIds(map)).toEqual(['k1', 'k1']);
+    map.entryList().remove(shadow);
+    expect([...map.map()].map(([, v]) => v)).toEqual(['v1']);
+  });
+});
+
+describe('EcoreEMap null keys (BasicEMap.hashOf: null hashes to 0, keys compare by identity)', () => {
+  it('puts, gets, tests and removes a null key, apart from the key hashing to 0', () => {
+    const map = numbered(0).properties;
+    expect(map.get(null)).toBeUndefined();
+    expect(map.containsKey(null)).toBe(false);
+    expect(map.put(null, 'vn')).toBeUndefined();
+    expect(map.put(null, 'vn2')).toBe('vn');
+    expect(map.get(null)).toBe('vn2');
+    expect(map.get(key('k0'))).toBe('v0');
+    expect(map.containsKey(null)).toBe(true);
+    expect(map.size()).toBe(2);
+    expect(map.removeKey(null)).toBe('vn2');
+    expect(map.containsKey(null)).toBe(false);
+    expect(map.get(key('k0'))).toBe('v0');
+  });
+
+  it('finds a non-null key past a null-keyed entry in the same bucket', () => {
+    const map = new NumberedHolder().properties;
+    map.put(null, 'vn');
+    map.put(key('k0'), 'v0');
+    expect(map.get(key('k0'))).toBe('v0');
+    expect(map.removeKey(key('k0'))).toBe('v0');
+    expect(map.get(null)).toBe('vn');
+  });
+
+  it('places the null key in bucket 0 when iterating map()', () => {
+    // put k3: capacity 1. put null: grow(2) -> capacity 6, k3 -> bucket 3, null -> hash 0, bucket 0.
+    // put k1: bucket 1. Scan: null, k1, k3.
+    const map = new NumberedHolder().properties;
+    map.put(key('k3'), 'v3');
+    map.put(null, 'vn');
+    map.put(key('k1'), 'v1');
+    expect([...map.map()].map(([k]) => (k as Key | null)?.id ?? null)).toEqual([null, 'k1', 'k3']);
+  });
+});

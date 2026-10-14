@@ -1,0 +1,2 @@
+{"id":"r","children":[{"id":"a"},{"id":"b","ports":[{"id":"bp"}]}],
+ "edges":[{"id":"e1","source":"a","sourcePort":"bp","target":"b"}]}

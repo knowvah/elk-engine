@@ -1,0 +1,309 @@
+# SPDX-License-Identifier: EPL-2.0
+# Inputs for GsonVectors.java. "[section]" opens a section; "#" lines are comments; each other line is one case.
+# Every string case in every section is escape-decoded (so \u2028 etc. are the real characters; write \\ for a literal
+# backslash). Typed tokens ([primitiveValues], [writeValues], [equality]): "kind:text", kind in int long double float short
+# byte bigdecimal biginteger bool str lazy (lazy = new JsonPrimitive(new LazilyParsedNumber(text))); else JSON text.
+# Escapes: \n \r \t \b \f \" \\ \uXXXX; a line of just \e is the empty string. [parse] lines are "id<TAB>text".
+[parse]
+sloppy-graph	{\n  // the root node\n  id: \"root\",\n  /* Now the graph */ \n  \"children\": [ {\"id\": \"c\"}; {\"id\": \"c1\"} ],\n  'edges': [] // Endline comment\n}\n
+empty	
+whitespace	  \n 
+unquoted-key	{a:1}
+unquoted-value	{\"a\":b}
+single-quotes	{'a':'b'}
+line-comment	// c\n{\"a\":1}
+block-comment	/* c */{\"a\":1}
+hash-comment	# c\n{\"a\":1}
+open-block-comment	/* x
+array-semicolon	[1;2]
+object-semicolon	{\"a\":1;\"b\":2}
+equals-separator	{\"a\"=1}
+arrow-separator	{\"a\"=>1}
+missing-colon	{\"a\" 1}
+trailing-garbage	{\"a\":1} x
+two-values	{\"a\":1}{\"b\":2}
+trailing-comma-array	[1,]
+trailing-comma-object	{\"a\":1,}
+array-hole	[1,,2]
+leading-comma	[,1]
+only-comma	[,]
+top-array	[1,2]
+top-number	42
+top-decimal	1.0
+top-string	\"s\"
+top-true	true
+top-null	null
+top-bare-word	abc
+open-string	\"abc
+open-object	{\"a\":1
+open-array	[1,2
+duplicate-keys	{\"a\":1,\"a\":2}
+duplicate-keys-interleaved	{\"a\":1,\"b\":2,\"a\":3}
+null-members	{\"a\":null,\"b\":[null]}
+booleans	[true,false]
+capital-true	[True]
+short-true	[tru]
+empty-key	{\"\":1}
+bom	\uFEFF{}
+nbsp-space	[1,\u00a02]
+crlf	{\r\n\"a\":1\r\n}
+xssi-prefix	)]}'\n{}
+number-in-object	{\"a\":NaN}
+top-nan	NaN
+nested-mixed	{\"a\":[1,{\"b\":[]},{}],\"c\":{\"d\":\"e\"}}
+unicode-escape	\"\\u00e9\\u20ac\"
+surrogate-pair-escape	\"\\ud83d\\ude00\"
+raw-non-bmp	\"\uD83D\uDE00\"
+lone-surrogate-escape	\"\\ud800\"
+simple-escapes	\"\\b\\f\\n\\r\\t\\\"\\\\\\/\"
+bad-escape	\"\\x\"
+short-unicode-escape	\"\\u12\"
+bad-unicode-digits	\"\\u12zz\"
+single-quote-escape	'\\''
+raw-newline-in-string	\"a\nb\"
+raw-tab-in-string	\"a\tb\"
+raw-control-in-string	\"a\u0001b\"
+line-continuation	\"a\\\nb\"
+escaped-key	{\"\\u0061\":1}
+line-separator-in-string	\"a\u2028b\u2029c\"
+[parseNumbers]
+1
+1.0
+-0
+-0.0
+1e2
+1E+2
+0.1
+9007199254740993
+2147483648
+-2147483649
+1e400
+0e0
+1.5e-3
+12345678901234567890
+0x10
++1
+.5
+5.
+01
+-
+1_000
+1e
+1.2.3
+NaN
+Infinity
+-Infinity
++Infinity
+\"NaN\"
+10.0
+40.0
+[primitiveStrings]
+12
+ 12 
+NaN
+Infinity
+-Infinity
+1d
+0x1p3
+abc
+\e
+1e2
+1_0
++5
+\u0663
+12.5
+2147483648
+true
+TRUE
+1f
+0x10
+1.0
+.5
+5.
+\u0000
+\u0001\u001f
+\u007f
+\u0080\u009f
+\u2028
+\u2029
+\uD83D\uDE00
+\uD800
+a\"b
+a\\b
+tab\there
+nl\nx
+[writeStrings]
+plain
+< > & = '
+a\"b
+a\\b
+a/b
+tab\there
+nl\nx
+cr\rx
+\b\f
+\u0000
+\u0001\u001f
+\u007f
+\u0080\u009f
+\u2028
+\u2029
+\u00e9\u20ac
+\uD83D\uDE00
+\uD800
+\uDC00x
+\e
+</script>
+\\u0041
+[objectOps]
+add-existing-keeps-position	add a 1 ; add b 2 ; add a 3
+remove-then-add-moves-to-end	add a 1 ; add b 2 ; remove a ; add a 1
+add-property-existing-keeps-position	addPropertyInt a 1 ; addPropertyString b x ; addPropertyString a y
+add-property-kinds	addPropertyString s x ; addPropertyString sn ~ ; addPropertyBoolean b true ; addPropertyDouble d 40.0 ; addPropertyDouble nan NaN ; addPropertyInt i 7 ; get sn ; get d ; get nan
+add-null-values	add j null ; addJavaNull n ; get j ; get n ; has j ; has n
+add-null-key	addNullKey ~ 1
+missing-keys	add a 1 ; has x ; get x ; remove x ; getAsJsonObject x ; getAsJsonArray x ; getAsJsonPrimitive x
+typed-getters	add o {"k":1} ; add a [1] ; add p 1 ; getAsJsonObject o ; getAsJsonArray a ; getAsJsonPrimitive p ; getAsJsonObject p ; getAsJsonArray o ; getAsJsonPrimitive a
+insertion-order	add z 1 ; add a 2 ; add m 1 ; add 10 1 ; add 9 1 ; add \e 1 ; keySet ; size ; isEmpty
+empty	size ; isEmpty ; keySet
+deep-copy	add o {"k":1} ; deepCopy
+equals-different-order	add a 1 ; add b 2	add b 2 ; add a 1
+equals-different-values	add a 1	add a 2
+equals-nested-order	add o {"x":1,"y":2}	add o {"y":2,"x":1}
+equals-parsed-numbers	add a 1	add a 1.0
+[arrayOps]
+add-kinds	add ~ 1 ; addString ~ s ; addBoolean ~ true ; addDouble ~ 1.5 ; addInt ~ 3 ; addJavaNull ; addStringNull ; add ~ null ; size ; isEmpty
+get-out-of-range	get 0 ; add ~ 1 ; get 0 ; get 1 ; get -1 ; set 3 1 ; remove 1 ; remove 0 ; isEmpty
+set-and-remove	addInt ~ 1 ; addInt ~ 2 ; addInt ~ 3 ; set 1 "x" ; remove 0 ; size
+element-conversions	add ~ {"k":1} ; add ~ [1] ; addString ~ 12 ; addDouble ~ 2.5 ; elementAsObject 0 ; elementAsArray 1 ; elementAsObject 1 ; elementAsArray 0 ; elementAsString 2 ; elementAsDouble 2 ; elementAsDouble 3 ; elementAsString 3 ; elementAsString 0 ; elementAsDouble 0
+add-all-and-copy	addInt ~ 1 ; addAll ~ [2,3] ; deepCopy ; size
+[primitiveValues]
+parsed-1	1
+parsed-1.0	1.0
+parsed--0	-0
+parsed-1e2	1e2
+parsed-1E+2	1E+2
+parsed-0.1	0.1
+parsed-9007199254740993	9007199254740993
+parsed-2147483648	2147483648
+parsed--2147483649	-2147483649
+parsed-1e400	1e400
+parsed-3.7	3.7
+parsed-12345678901234567890	12345678901234567890
+parsed-10.0	10.0
+parsed--2.5	-2.5
+parsed-2147483647	2147483647
+double-40.0	double:40.0
+double-nan	double:NaN
+double-infinity	double:Infinity
+int-5	int:5
+long-max	long:9223372036854775807
+boolean-true	bool:true
+boolean-false	bool:false
+json-null	null
+array	[1,"x"]
+object	{"a":1}
+string-chars	{"s":"a\u2028b\u2029c\u0000\u001f\u007f\u0080\ud83d\ude00\"\\<>&='"}
+array-chars	["\u2028","\u0001",null,"\ud800",{"n":null}]
+object-null-members	{"n":null,"a":[null],"o":{"x":null}}
+lazy-1e10000	lazy:1e10000
+lazy-1e-10000	lazy:1e-10000
+lazy--1e10000	lazy:-1e10000
+lazy-1e9999	lazy:1e9999
+lazy-1e-9999	lazy:1e-9999
+lazy-1e99999999999	lazy:1e99999999999
+lazy-1e-99999999999	lazy:1e-99999999999
+lazy-1.5e10000	lazy:1.5e10000
+lazy-empty	lazy:
+lazy-abc	lazy:abc
+lazy-minus	lazy:-
+lazy-plus	lazy:+
+lazy-dot	lazy:.
+lazy-1.2.3	lazy:1.2.3
+lazy-1e	lazy:1e
+lazy-e5	lazy:e5
+lazy-1.5	lazy:1.5
+lazy-2147483648	lazy:2147483648
+lazy-9223372036854775808	lazy:9223372036854775808
+lazy-12345678901234567890	lazy:12345678901234567890
+lazy-3.9	lazy:3.9
+lazy--3.9	lazy:-3.9
+lazy-1e2	lazy:1e2
+lazy-arabic-digit	lazy:\u0663
+lazy-space	lazy: 1
+lazy-1e+	lazy:1e+
+lazy-1e-	lazy:1e-
+lazy-1e1.5	lazy:1e1.5
+lazy-1e5e5	lazy:1e5e5
+lazy-1e2147483648	lazy:1e2147483648
+lazy-1e-2147483649	lazy:1e-2147483649
+lazy-1e999999999	lazy:1e999999999
+lazy-1e1000000000	lazy:1e1000000000
+lazy-1e\u0663	lazy:1e\u0663
+lazy-1.5.	lazy:1.5.
+lazy-0.0000001e2147483647	lazy:0.0000001e2147483647
+lazy-10000000000e-2147483648	lazy:10000000000e-2147483648
+[writeValues]
+double-40.0	double:40.0
+double-1.0E-5	double:1.0E-5
+double-1.2345E7	double:1.2345E7
+double--0.0	double:-0.0
+double-0.0	double:0.0
+double-nan	double:NaN
+double-infinity	double:Infinity
+double--infinity	double:-Infinity
+double-0.1	double:0.1
+double-100.0	double:100.0
+double-1.0E7	double:1.0E7
+double-9999999.0	double:9999999.0
+double-123456789012.0	double:123456789012.0
+double-1.0E21	double:1.0E21
+double-min	double:4.9E-324
+double-max	double:1.7976931348623157E308
+int-0	int:0
+int--5	int:-5
+int-max	int:2147483647
+long-2^53+1	long:9007199254740993
+float-1.5	float:1.5
+float-max	float:3.4028235E38
+short-7	short:7
+byte--3	byte:-3
+bigdecimal-1.50	bigdecimal:1.50
+biginteger-big	biginteger:123456789012345678901234567890
+parsed-10.0	10.0
+parsed-1e2	1e2
+parsed--0	-0
+parsed-1E+2	1E+2
+parsed-2^53+1	9007199254740993
+parsed-1e400	1e400
+null-member	{"a":null,"b":1}
+null-only-member	{"a":null}
+null-element	[1,null,2]
+top-null	null
+top-true	true
+empty-object	{}
+empty-array	[]
+empty-nested	{"a":{},"b":[]}
+nested	{"id":"root","children":[{"id":"c","x":1.5},{"id":"d"}],"layoutOptions":{"k":"v","n":3},"edges":[]}
+array-of-arrays	[[1,2],[],[["x"]]]
+key-order	{"z":1,"a":2,"10":3,"9":4,"":5}
+[equality]
+parsed-1-vs-parsed-1.0	1	1.0
+parsed-1-vs-parsed-1	1	1
+int-1-vs-long-1	int:1	long:1
+int-1-vs-double-1.0	int:1	double:1.0
+double-1.0-vs-parsed-1.0	double:1.0	1.0
+parsed-1-vs-string-1	1	str:1
+nan-vs-nan	double:NaN	double:NaN
+0.0-vs--0.0	double:0.0	double:-0.0
+parsed-0-vs-parsed--0	0	-0
+float-1.5-vs-double-1.5	float:1.5	double:1.5
+big-parsed-vs-neighbour	9007199254740993	9007199254740992
+true-vs-true	bool:true	bool:true
+true-vs-false	bool:true	bool:false
+null-vs-null	null	null
+string-vs-string	str:a	str:a
+array-same	[1,2]	[1,2]
+array-reordered	[1,2]	[2,1]
+empty-object-vs-empty-array	{}	[]
+object-reordered	{"a":1,"b":2}	{"b":2,"a":1}

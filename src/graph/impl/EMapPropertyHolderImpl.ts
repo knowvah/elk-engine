@@ -22,14 +22,14 @@ type PropertiesEMap = EcoreEMap<IProperty<unknown>, unknown, ElkPropertyToValueM
  * EMF's `EcoreEMap.newEntry(hash, key, value)`: the package factory creates the entry
  * (`ElkGraphFactoryImpl.createElkPropertyToValueMapEntry()` is `new ElkPropertyToValueMapEntryImpl()`),
  * then hash, key and value are set in that order. The hash is `BasicEMap.hashOf(key)`, the key's
- * `hashCode()` (by id, D5).
+ * `hashCode()` (by id, D5), 0 for a `null` key.
  *
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkGraphFactoryImpl.java
  */
-function newPropertyEntry(key: IProperty<unknown>, value: unknown): ElkPropertyToValueMapEntryImpl {
+function newPropertyEntry(key: IProperty<unknown> | null, value: unknown): ElkPropertyToValueMapEntryImpl {
   const entry = new ElkPropertyToValueMapEntryImpl();
-  entry.setHash(PROPERTY.hash(key));
-  entry.setKey(key);
+  entry.setHash(key === null ? 0 : PROPERTY.hash(key));
+  entry.setTypedKey(key);
   entry.setValue(value);
   return entry;
 }

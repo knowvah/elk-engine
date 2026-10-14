@@ -1,0 +1,46 @@
+{
+  "id": "n0",
+  "children": [
+    {
+      "id": "outer",
+      "layoutOptions": {
+          "nodeLabels.padding": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "children": [
+        {
+          "id": "i1",
+          "labels": [
+            {
+              "text": "Node 1",
+              "width": 40.0,
+              "height": 15.0
+            }
+          ],
+          "layoutOptions": {
+            "nodeLabels.placement": "[H_CENTER, V_TOP, INSIDE]"
+          },
+          "width": 60.0,
+          "height": 40.0
+        },
+        {
+          "id": "i2",
+          "layoutOptions": {
+            "nodeLabels.placement": "[H_CENTER, V_TOP, INSIDE]"
+          },
+          "individualSpacings": {
+            "nodeLabels.padding": "[top=10.0,left=0.0,bottom=0.0,right=0.0]"
+          },
+          "labels": [
+            {
+              "text": "Node 2",
+              "width": 40.0,
+              "height": 15.0
+            }
+          ],
+          "width": 60.0,
+          "height": 40.0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "root",
+  "properties": {
+    "direction": "DOWN"
+  },
+  "children": [{"id": "n1"}, {"id": "n2"}],
+  "edges": [{"id": "e1", 
+    "sources": [ "n1" ], 
+    "targets": [ "n2" ],
+    "sections": [{
+        "id": "s1",
+        "startPoint": {x: 1, y: 1},
+        "endPoint": {x: 2, y: 2},
+        "incomingShape": "n1",
+        "outgoingSections": [ 44 ]
+    },{
+        "id": 44,
+        "startPoint": {x: 3, y: 3},
+        "endPoint": {x: 4, y: 4},
+        "incomingSections": [ "s1" ],
+        "outgoingShape": "n2"
+    }]
+  }]
+}

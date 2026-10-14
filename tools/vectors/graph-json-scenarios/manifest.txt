@@ -1,0 +1,285 @@
+# SPDX-License-Identifier: EPL-2.0
+# Manifest for tools/vectors/GraphJsonVectors.java (format: see its header). Fixed text, no randomness.
+# Edit only together with a regeneration of test/golden/refs/java/graph-json.json (AD-13).
+
+# ---- import errors and exception paths (lenient) ----
+import err-children-not-array
+import err-children-null-element
+import err-children-primitive-element
+import err-duplicate-equal-nodes
+import err-duplicate-equal-numeric-nodes
+import err-edge-no-id
+import err-edges-primitive-element
+import err-empty
+import err-extended-no-sources-numeric-id
+import err-extended-no-sources
+import err-extended-no-targets-key
+import err-id-array
+import err-id-boolean
+import err-id-fraction
+import err-id-null
+import err-id-object
+import err-individualspacings-not-object
+import err-individualspacings-null-value
+import err-label-id-object
+import err-label-text-null
+import err-label-text-object
+import err-labels-null-element
+import err-layoutoption-array
+import err-layoutoption-null
+import err-layoutoption-object
+import err-layoutoption-unknown-null
+import err-layoutoptions-not-object
+import err-malformed-garbage
+import err-malformed-trailing-comma
+import err-malformed-truncated
+import err-malformed-unquoted
+import err-node-no-id
+import err-port-no-id
+import err-ports-null-element
+import err-primitive-bendpoint-missing-y
+import err-primitive-source-missing-key
+import err-primitive-source-port-foreign
+import err-primitive-source-unknown-numeric-id
+import err-primitive-source-unknown
+import err-primitive-sourcepoint-missing-y
+import err-primitive-target-missing-key
+import err-primitive-target-port-foreign
+import err-primitive-target-unknown
+import err-resolved-algorithm
+import err-root-no-id
+import err-section-bendpoint-missing-x
+import err-section-end-missing-x
+import err-section-id-object
+import err-section-incoming-shape-unknown
+import err-section-incoming-unknown
+import err-section-no-end
+import err-section-no-id
+import err-section-no-start
+import err-section-outgoing-shape-unknown
+import err-section-outgoing-unknown
+import err-section-ref-id-invalid
+import err-section-start-missing-y
+import err-sections-primitive-element
+import err-shape-id-invalid
+import err-shape-unknown-source
+import err-shape-unknown-target
+import err-startpoint-not-object
+import err-top-array
+import err-top-null
+import err-top-primitive
+import err-x-boolean
+import err-x-empty-array
+import err-x-null
+import err-x-object
+import err-x-string-garbage
+import err-x-two-element-array
+
+# ---- strict-mode variants ----
+import err-malformed-unquoted strict
+import err-malformed-truncated strict
+import err-malformed-garbage strict
+import err-malformed-trailing-comma strict
+import err-empty strict
+import err-top-null strict
+import ok-lenient-syntax strict
+import ok-trailing-content strict
+import ok-basic strict
+
+# ---- import successes ----
+import ok-basic
+import ok-containment
+import ok-coordinate-modes
+import ok-duplicate-ids
+import ok-edges-extended
+import ok-edges-primitive
+import ok-empty-collections
+import ok-ids-numeric
+import ok-individual-spacings
+import ok-junction-points
+import ok-labels
+import ok-lenient-syntax
+import ok-nested-edges
+import ok-numbers
+import ok-option-values-edge-cases
+import ok-option-values
+import ok-options-precedence
+import ok-root-only
+import ok-section-props
+import ok-sections-linked
+import ok-single-section
+import ok-trailing-content
+import ok-unknown-options
+
+# ---- export: every success fixture x 16 pairwise flag combinations ----
+export ok-basic pairwise
+export ok-containment pairwise
+export ok-coordinate-modes pairwise
+export ok-edges-extended pairwise
+export ok-edges-primitive pairwise
+export ok-empty-collections pairwise
+export ok-ids-numeric pairwise seed
+export ok-individual-spacings pairwise
+export ok-junction-points pairwise
+export ok-labels pairwise
+export ok-lenient-syntax pairwise
+export ok-nested-edges pairwise
+export ok-numbers pairwise
+export ok-option-values-edge-cases pairwise
+export ok-option-values pairwise
+export ok-options-precedence pairwise
+export ok-root-only pairwise
+export ok-section-props pairwise
+export ok-sections-linked pairwise
+export ok-single-section pairwise
+export ok-trailing-content pairwise
+export ok-unknown-options pairwise
+
+# ---- export: all 64 flag combinations ----
+export export-rich all
+export export-rich all unknown
+export ok-edges-extended all
+# ---- export: other fixtures x pairwise ----
+export export-rich pairwise seed
+export ok-options-precedence pairwise unknown
+export ok-option-values pairwise unknown
+export ok-individual-spacings pairwise unknown
+export ok-basic pairwise unknown
+# ---- export: id collisions and generated identifiers (seed 1) ----
+export export-ids-duplicate pairwise seed
+export export-ids-duplicate all seed
+export ok-duplicate-ids pairwise seed
+export export-ids-empty pairwise seed
+export export-ids-missing pairwise seed clear=nodes clear=ports clear=edges clear=sections
+export export-ids-missing pairwise seed clear=nodes@0,2
+export export-ids-missing pairwise seed clear=nodes@1 clear=sections@0
+export ok-basic pairwise seed clear=nodes clear=ports clear=edges
+export ok-sections-linked pairwise seed clear=sections clear=edges
+# ---- export: edge endpoint outside the exported graph (J5) ----
+export ok-basic pairwise foreignTarget
+export ok-basic pairwise foreignSource
+export ok-edges-extended pairwise foreignTarget
+
+# ---- optionText ----
+# double
+option org.eclipse.elk.aspectRatio 1.5
+option org.eclipse.elk.aspectRatio 2
+option org.eclipse.elk.aspectRatio -0
+option org.eclipse.elk.aspectRatio 1e3
+option org.eclipse.elk.aspectRatio 1.0E10
+option org.eclipse.elk.aspectRatio 1E-5
+option org.eclipse.elk.aspectRatio 0.1
+option org.eclipse.elk.aspectRatio 123456789.123
+option org.eclipse.elk.aspectRatio 12345678.9
+option org.eclipse.elk.aspectRatio 0.001
+option org.eclipse.elk.aspectRatio 0.0001
+option org.eclipse.elk.aspectRatio Infinity
+option org.eclipse.elk.aspectRatio NaN
+option org.eclipse.elk.aspectRatio  7 
+option org.eclipse.elk.aspectRatio 1.5d
+option org.eclipse.elk.aspectRatio abc
+option org.eclipse.elk.aspectRatio 
+option org.eclipse.elk.spacing.nodeNode 22.50
+# int
+option org.eclipse.elk.priority 3
+option org.eclipse.elk.priority -7
+option org.eclipse.elk.priority 2147483647
+option org.eclipse.elk.priority 2147483648
+option org.eclipse.elk.priority 3.0
+option org.eclipse.elk.priority +5
+option org.eclipse.elk.priority 007
+option org.eclipse.elk.priority abc
+option org.eclipse.elk.priority 
+# boolean
+option org.eclipse.elk.debugMode true
+option org.eclipse.elk.debugMode false
+option org.eclipse.elk.debugMode TRUE
+option org.eclipse.elk.debugMode yes
+option org.eclipse.elk.debugMode 1
+# string
+option org.eclipse.elk.algorithm org.eclipse.elk.layered
+option org.eclipse.elk.font.name Helvetica Neue
+option org.eclipse.elk.font.name 
+option org.eclipse.elk.font.name "quoted"
+# enum
+option org.eclipse.elk.direction RIGHT
+option org.eclipse.elk.direction right
+option org.eclipse.elk.direction Right
+option org.eclipse.elk.direction DOWN
+option org.eclipse.elk.direction sideways
+option org.eclipse.elk.edgeRouting ORTHOGONAL
+option org.eclipse.elk.portConstraints FIXED_SIDE
+option org.eclipse.elk.port.side NORTH
+option org.eclipse.elk.json.shapeCoords ROOT
+option org.eclipse.elk.json.edgeCoords PARENT
+option org.eclipse.elk.edge.type DIRECTED
+option org.eclipse.elk.box.packingMode GROUP_MIXED
+option org.eclipse.elk.hierarchyHandling INCLUDE_CHILDREN
+option org.eclipse.elk.topdown.nodeType HIERARCHICAL_NODE
+# EnumSet
+option org.eclipse.elk.nodeSize.constraints [PORTS, NODE_LABELS]
+option org.eclipse.elk.nodeSize.constraints PORTS NODE_LABELS
+option org.eclipse.elk.nodeSize.constraints PORTS,NODE_LABELS
+option org.eclipse.elk.nodeSize.constraints PORTS, NODE_LABELS
+option org.eclipse.elk.nodeSize.constraints NODE_LABELS PORTS
+option org.eclipse.elk.nodeSize.constraints ports
+option org.eclipse.elk.nodeSize.constraints []
+option org.eclipse.elk.nodeSize.constraints 
+option org.eclipse.elk.nodeSize.constraints BOGUS
+option org.eclipse.elk.contentAlignment V_CENTER H_CENTER
+option org.eclipse.elk.contentAlignment [V_TOP, H_LEFT]
+option org.eclipse.elk.nodeLabels.placement H_LEFT V_TOP INSIDE
+option org.eclipse.elk.portLabels.placement INSIDE NEXT_TO_PORT_IF_POSSIBLE
+option org.eclipse.elk.nodeSize.options DEFAULT_MINIMUM_SIZE MINIMUM_SIZE_ACCOUNTS_FOR_PADDING
+# KVector
+option org.eclipse.elk.position (1.5, 2)
+option org.eclipse.elk.position 1,2
+option org.eclipse.elk.position [1,2]
+option org.eclipse.elk.position (1 2)
+option org.eclipse.elk.position 1;2
+option org.eclipse.elk.position (1)
+option org.eclipse.elk.position (a,b)
+option org.eclipse.elk.position (1,2
+option org.eclipse.elk.nodeSize.minimum 10,20
+option org.eclipse.elk.nodeSize.minimum (30, 20)
+option org.eclipse.elk.nodeSize.minimum 1e2,-0.0
+option org.eclipse.elk.port.anchor (0.5, 0.25)
+# KVectorChain
+option org.eclipse.elk.bendPoints (1,2; 3,4)
+option org.eclipse.elk.bendPoints 1,2; 3,4
+option org.eclipse.elk.bendPoints 1,2 3,4
+option org.eclipse.elk.bendPoints (1,2),(3,4)
+option org.eclipse.elk.bendPoints ()
+option org.eclipse.elk.bendPoints 
+option org.eclipse.elk.bendPoints (1,2; 3)
+option org.eclipse.elk.junctionPoints (0,0)
+option org.eclipse.elk.junctionPoints (1.5,2.25; -3,4e2)
+# ElkPadding
+option org.eclipse.elk.padding [top=1,left=2,bottom=3,right=4]
+option org.eclipse.elk.padding [top=1.5,left=2,bottom=3,right=4]
+option org.eclipse.elk.padding [left=2,top=1,right=4,bottom=3]
+option org.eclipse.elk.padding 1,2,3,4
+option org.eclipse.elk.padding (1,2,3,4)
+option org.eclipse.elk.padding [top=1]
+option org.eclipse.elk.padding 12
+option org.eclipse.elk.padding [top=a,left=2,bottom=3,right=4]
+option org.eclipse.elk.nodeLabels.padding [top=5,left=5,bottom=5,right=5]
+# ElkMargin
+option org.eclipse.elk.margins [top=1,left=2,bottom=3,right=4]
+option org.eclipse.elk.margins [top=0,left=0,bottom=0,right=0]
+option org.eclipse.elk.margins 1,2,3,4
+option org.eclipse.elk.spacing.portsSurrounding [top=1,left=2,bottom=3,right=4]
+# IndividualSpacings
+option org.eclipse.elk.spacing.individual org.eclipse.elk.spacing.nodeNode:5
+option org.eclipse.elk.spacing.individual nodeNode:5
+option org.eclipse.elk.spacing.individual org.eclipse.elk.spacing.nodeNode:5;,;edgeEdge:2.5
+option org.eclipse.elk.spacing.individual edgeEdge:2;,;nodeNode:3
+option org.eclipse.elk.spacing.individual nodeNode:abc
+option org.eclipse.elk.spacing.individual unknown:5
+option org.eclipse.elk.spacing.individual nodeNode
+option org.eclipse.elk.spacing.individual 
+
+# ---- NaN literal ----
+import ok-nan-literal
+import ok-nan-literal strict
+export ok-nan-literal pairwise

@@ -1,0 +1,5 @@
+{"id":"r","children":[{"id":"a"},{"id":"b"}],
+ "edges":[
+  {"id":"e1","sources":["a"],"targets":["b"],"junctionPoints":[{"x":1,"y":2},{"x":3,"y":4}]},
+  {"id":"e2","sources":["a"],"targets":["b"],"layoutOptions":{"org.eclipse.elk.junctionPoints":"(1.5,2; 3,4.5)"}},
+  {"id":"e3","sources":["a"],"targets":["b"],"layoutOptions":{"org.eclipse.elk.junctionPoints":"()"}}]}

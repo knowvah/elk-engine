@@ -1,0 +1,6 @@
+{"id":"r",
+ "layoutOptions":{"org.eclipse.elk.direction":"RIGHT"},
+ "properties":{"org.eclipse.elk.direction":"DOWN","org.eclipse.elk.edgeRouting":"ORTHOGONAL"},
+ "children":[
+  {"id":"legacy","properties":{"org.eclipse.elk.direction":"LEFT","org.eclipse.elk.priority":4}},
+  {"id":"empty-options","layoutOptions":{},"properties":{"org.eclipse.elk.direction":"UP"}}]}

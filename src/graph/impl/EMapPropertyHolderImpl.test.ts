@@ -32,7 +32,17 @@ function proxy(resolved: unknown): IPropertyValueProxy & { calls: number } {
 }
 
 /** The property ids of `holder.getAllProperties()` in iteration order. */
-function keys(holder: IPropertyHolder): string[] {
+/**
+ * The ids in entry-list order (D2: put on an existing key keeps its place, removeKey then put
+ * appends). `getAllProperties()` iterates EMF's hash buckets instead (`BasicEMap.entrySet`), so
+ * list order is read from the entry list itself.
+ */
+function keys(holder: EMapPropertyHolderImpl): string[] {
+  return [...holder.getProperties().entryList()].map((entry) => entry.getKey().getId());
+}
+
+/** The ids in `getAllProperties()` order: EMF hash-bucket order (`BasicEMap.entrySet`). */
+function mapKeys(holder: IPropertyHolder): string[] {
   return [...holder.getAllProperties()].map(([key]) => key.getId());
 }
 
@@ -89,6 +99,9 @@ describe('EMapPropertyHolderImpl', () => {
     holder.setProperty(A, null);
     holder.setProperty(A, '4');
     expect(keys(holder)).toEqual(['test.b', 'test.a']);
+    // map() order: String.hashCode("test.a") = -877171195, "test.b" = -877171194; capacity 6 after
+    // the second put (1 -> 2*1+4), buckets (h & 0x7fffffff) % 6 = 1 and 2, so a precedes b.
+    expect(mapKeys(holder)).toEqual(['test.a', 'test.b']);
   });
 
   it('getProperty returns the default without storing a non-cloneable one', () => {
