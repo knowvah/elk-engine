@@ -126,7 +126,7 @@ the orchestrator commits per task. `npm run docs:build` green before T24 is mark
 | 2a | Fitness, Xtext converters and naming, lexer | T6–T9 | 1 | [x] |
 | 2b | `LayoutOptionProxy`, Xtext validation base, `formatting2` | T10–T12 | 1 | [x] |
 | 3 | ElkGraph converters; Xtext scoping | T13–T14 | 2a, 2b | [x] |
-| 4 | Parser; Xtext linker | T15–T16 | 3 | [ ] |
+| 4 | Parser; Xtext linker | T15–T16 | 3 | [x] |
 | 5 | ElkGraph naming, scoping, linker | T17 | 4 | [ ] |
 | 6 | `ElkGraphText.load`; semantic sequencer | T18–T19 | 5 | [ ] |
 | 7 | Validator; formatter | T20–T21 | 6 | [ ] |

@@ -11,7 +11,7 @@ T14 scoping) and transitively on 2a/2b.
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T15 | `ElkGraphParser`: recursive-descent parser, value conversion, positions, reference records | typescript-pro | src/graph/text/parser/{ElkGraphParser,ElkGraphParserEdges,ParseRecords}.ts (+ .test.ts) | T3, T7, T9, T10, T11, T13 | [ ] |
-| T16 | Xtext linking core: `Linker`, `DefaultLinkingService`, diagnostics | typescript-pro | src/xtext/linking/**, src/xtext/diagnostics/** except Severity.ts (+ .test.ts) | T14, T7 | [ ] |
+| T15 | `ElkGraphParser`: recursive-descent parser, value conversion, positions, reference records | typescript-pro | src/graph/text/parser/{ElkGraphParser,ElkGraphParserEdges,ParseRecords}.ts (+ .test.ts) | T3, T7, T9, T10, T11, T13 | [x] |
+| T16 | Xtext linking core: `Linker`, `DefaultLinkingService`, diagnostics | typescript-pro | src/xtext/linking/**, src/xtext/diagnostics/** except Severity.ts (+ .test.ts) | T14, T7 | [x] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green.
