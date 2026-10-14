@@ -3,6 +3,13 @@ import { quoteJsonString } from '../JsonPrimitive.js';
 
 const NULL_TEXT = 'null';
 const NEWLINE = '\n';
+const HTML_UNSAFE = /[<>&=']/g;
+const HEX_RADIX = 16;
+const UNICODE_ESCAPE_WIDTH = 4;
+
+function htmlEscape(c: string): string {
+  return `\\u${c.charCodeAt(0).toString(HEX_RADIX).padStart(UNICODE_ESCAPE_WIDTH, '0')}`;
+}
 
 interface Scope {
   readonly isObject: boolean;
@@ -11,7 +18,7 @@ interface Scope {
 
 /**
  * A JSON text writer into a string sink. Only the Gson 2.11.0 behaviour graph.json uses is ported:
- * HTML escaping is off (ELK calls `disableHtmlEscaping()`), the output is compact unless an indent is
+ * HTML escaping is off unless `setHtmlSafe(true)`, the output is compact unless an indent is
  * set, and with `serializeNulls` false a `null` object member is dropped together with its name.
  * Numbers are written as their text, so `NaN`/`Infinity` come out bare. Calls out of grammar order
  * are not diagnosed (no caller makes them).
@@ -24,6 +31,7 @@ export class JsonWriter {
   private indent = '';
   private serializeNullsFlag = true;
   private deferredName: string | null = null;
+  private htmlSafeFlag = false;
 
   /** Java `setIndent`: an empty string selects compact output. */
   setIndent(indent: string): void {
@@ -33,6 +41,11 @@ export class JsonWriter {
   /** Java `setSerializeNulls`; default `true`. */
   setSerializeNulls(serializeNulls: boolean): void {
     this.serializeNullsFlag = serializeNulls;
+  }
+
+  /** Java `setHtmlSafe`: escapes `<`, `>`, `&`, `=` and `'` in string values and names as `\\u003c` etc.; default `false`. */
+  setHtmlSafe(htmlSafe: boolean): void {
+    this.htmlSafeFlag = htmlSafe;
   }
 
   beginObject(): this {
@@ -59,7 +72,7 @@ export class JsonWriter {
 
   /** Java `value(String)`. */
   value(value: string): this {
-    return this.literal(quoteJsonString(value));
+    return this.literal(this.quote(value));
   }
 
   /** Java `value(boolean)`. */
@@ -84,6 +97,11 @@ export class JsonWriter {
   /** The text written so far. */
   toString(): string {
     return this.out.join('');
+  }
+
+  private quote(text: string): string {
+    const quoted = quoteJsonString(text);
+    return this.htmlSafeFlag ? quoted.replace(HTML_UNSAFE, htmlEscape) : quoted;
   }
 
   private open(bracket: string, isObject: boolean): this {
@@ -112,7 +130,7 @@ export class JsonWriter {
     scope.count += 1;
     this.newline(this.scopes.length);
     if (scope.isObject) {
-      this.out.push(quoteJsonString(this.deferredName as string), this.indent === '' ? ':' : ': '); // a member has a name
+      this.out.push(this.quote(this.deferredName as string), this.indent === '' ? ':' : ': '); // a member has a name
       this.deferredName = null;
     }
   }

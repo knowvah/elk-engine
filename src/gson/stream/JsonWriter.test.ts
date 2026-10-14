@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: EPL-2.0
 // Drives the `write` rows of test/golden/refs/java/gson.json (Gson 2.11.0 on the oracle JVM, T1): the rows go through
-// `new GsonBuilder().disableHtmlEscaping()[.setPrettyPrinting()].create().toJson(JsonElement)`, built here as a
-// JsonWriter with indent "  " (pretty) and serializeNulls false. Rows whose numTypes include a Java number kind the
-// TS model lacks (UNMODELLED_NUMBER_TYPES) are skipped; graph.json never builds them.
+// `new GsonBuilder()[.disableHtmlEscaping()][.setPrettyPrinting()].create().toJson(JsonElement)`, built here as a
+// JsonWriter with indent "  " (pretty), serializeNulls false and
+// htmlSafe per the row (`htmlSafe: true`). Rows whose numTypes include a Java number kind the TS model lacks (UNMODELLED_NUMBER_TYPES) are skipped; graph.json never builds them.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseDouble } from '../../java/lang/JavaDouble.js';
@@ -27,7 +27,7 @@ const UNMODELLED_NUMBER_TYPES: ReadonlySet<string> = new Set([
 const PRETTY_INDENT = '  ';
 const INTEGER_TEXT = /^-?\d+$/;
 const SKIPPED_ROWS = 14;
-const DRIVEN_ROWS = 124;
+const DRIVEN_ROWS = 192;
 
 type Tree =
   | null
@@ -41,6 +41,7 @@ interface WriteRow {
   readonly tree: Tree;
   readonly numTypes: readonly string[];
   readonly pretty: boolean;
+  readonly htmlSafe?: boolean;
   readonly text: string;
 }
 
@@ -69,9 +70,10 @@ function build(tree: Tree, numTypes: readonly string[]): JsonElement {
   return object;
 }
 
-function toJson(element: JsonElement, pretty: boolean): string {
+function toJson(element: JsonElement, pretty: boolean, htmlSafe: boolean): string {
   const writer = new JsonWriter();
   writer.setSerializeNulls(false);
+  writer.setHtmlSafe(htmlSafe);
   if (pretty) writer.setIndent(PRETTY_INDENT);
   Streams.write(element, writer);
   return writer.toString();
@@ -84,11 +86,22 @@ describe('gson.json write rows', () => {
   });
 
   it.each(driven.map((row) => [row.id, row] as const))('%s', (_id, row) => {
-    expect(toJson(build(row.tree, row.numTypes), row.pretty)).toBe(row.text);
+    expect(toJson(build(row.tree, row.numTypes), row.pretty, row.htmlSafe === true)).toBe(row.text);
   });
 });
 
 describe('JsonWriter', () => {
+  it('escapes html characters in names and values only when html-safe', () => {
+    const write = (htmlSafe: boolean): string => {
+      const writer = new JsonWriter();
+      writer.setHtmlSafe(htmlSafe);
+      writer.beginObject().name("<&>='").value("<&>='").endObject();
+      return writer.toString();
+    };
+    expect(write(true)).toBe('{"\\u003c\\u0026\\u003e\\u003d\\u0027":"\\u003c\\u0026\\u003e\\u003d\\u0027"}');
+    expect(write(false)).toBe('{"<&>=\'":"<&>=\'"}');
+  });
+
   it('keeps null object members when nulls are serialized (the default)', () => {
     const writer = new JsonWriter();
     writer.beginObject().name('a').nullValue().name('b').booleanValue(false).endObject();
