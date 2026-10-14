@@ -9,6 +9,7 @@ import { JsonArray } from './JsonArray.js';
 import { JsonObject } from './JsonObject.js';
 import { JsonParser } from './JsonParser.js';
 import { JsonReader } from './stream/JsonReader.js';
+import { isCoverageRun } from '../../test/helpers/coverage-run.js';
 
 const VECTORS_URL = new URL('../../test/golden/refs/java/gson.json', import.meta.url);
 const PARSE_BUDGET_MS = 200;
@@ -16,12 +17,6 @@ const TIMED_RUNS = 3;
 // V8 coverage instrumentation slows tight loops about threefold; the looser bound still catches quadratic behaviour.
 const INSTRUMENTED_PARSE_BUDGET_MS = 1000;
 
-/** Whether this run is instrumented for coverage (vitest keeps its resolved config on the worker global). */
-function isCoverageRun(): boolean {
-  const worker = (globalThis as { __vitest_worker__?: { config?: { coverage?: { enabled?: boolean } } } })
-    .__vitest_worker__;
-  return worker?.config?.coverage?.enabled === true;
-}
 const ONE_MEGABYTE = 1_000_000;
 
 type Tree =
