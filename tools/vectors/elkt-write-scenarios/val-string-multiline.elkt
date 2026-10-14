@@ -1,0 +1,4 @@
+graph g
+s.newline: "line1
+line2"
+s.tab: "a	b"

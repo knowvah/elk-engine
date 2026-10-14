@@ -1,0 +1,7 @@
+graph g
+node a
+node b
+edge a -> b {
+  priority: 4
+  debugMode: false
+}

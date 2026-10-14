@@ -1,0 +1,8 @@
+graph g
+s.plain: "abc"
+s.dotted: "a.b"
+s.dotted3: "a.b.c"
+s.doubledot: "a..b"
+s.space: "a b"
+s.empty: ""
+s.trailingdot: "a."

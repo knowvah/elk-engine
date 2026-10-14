@@ -1,0 +1,19 @@
+graph g
+node a { port p }
+node b { port q }
+edge e0: a -> b { layout [ start: 0, 0 end: 0, 0 ] }
+edge e1: a -> b { layout [ start: 0, 0 end: 5, 0 ] }
+edge e2: a -> b { layout [ start: 0, 0 end: 0, 5 ] }
+edge e3: a -> b { layout [ start: 0, 0 end: 5, 5 ] }
+edge e4: a -> b { layout [ start: 5, 0 end: 0, 0 ] }
+edge e5: a -> b { layout [ start: 5, 0 end: 5, 0 ] }
+edge e6: a -> b { layout [ start: 5, 0 end: 0, 5 ] }
+edge e7: a -> b { layout [ start: 5, 0 end: 5, 5 ] }
+edge e8: a -> b { layout [ start: 0, 5 end: 0, 0 ] }
+edge e9: a -> b { layout [ start: 0, 5 end: 5, 0 ] }
+edge e10: a -> b { layout [ start: 0, 5 end: 0, 5 ] }
+edge e11: a -> b { layout [ start: 0, 5 end: 5, 5 ] }
+edge e12: a -> b { layout [ start: 5, 5 end: 0, 0 ] }
+edge e13: a -> b { layout [ start: 5, 5 end: 5, 0 ] }
+edge e14: a -> b { layout [ start: 5, 5 end: 0, 5 ] }
+edge e15: a -> b { layout [ start: 5, 5 end: 5, 5 ] }

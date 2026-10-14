@@ -1,0 +1,6 @@
+graph g
+direction: SIDEWAYS
+priority: abc
+debugMode: maybe
+nodeSize.constraints: "BOGUS"
+aspectRatio: "1 5"

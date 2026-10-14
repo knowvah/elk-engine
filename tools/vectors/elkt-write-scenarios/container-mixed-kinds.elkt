@@ -1,0 +1,17 @@
+graph g
+layout [ size: 1, 2 ]
+priority: 1
+node a {
+  layout [ size: 1, 2 ]
+  priority: 2
+  edge c -> d
+  label "l1"
+  node c
+  port p
+  node d
+  label "l2"
+  edge e1: c -> d
+  port q
+}
+label "root"
+edge a -> a

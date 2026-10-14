@@ -1,0 +1,6 @@
+graph g
+node a
+node b
+edge a -> b {
+  layout [ start: 1, 2 priority: 3 ]
+}

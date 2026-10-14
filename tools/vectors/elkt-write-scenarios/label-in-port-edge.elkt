@@ -1,0 +1,11 @@
+graph g
+node a {
+  port p {
+    label "p1"
+    label "p2" { label "p2a" }
+  }
+}
+edge e1: a.p -> a.p {
+  label "e1"
+  label el: "e2"
+}

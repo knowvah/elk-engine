@@ -1,0 +1,7 @@
+graph g
+label "root label"
+node a {
+  label "node label"
+  port p { label "port label" }
+}
+edge a -> a { label "edge label" }

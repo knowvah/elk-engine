@@ -1,0 +1,30 @@
+{
+  "id": "g",
+  "children": [{ "id": "a" }, { "id": "b" }],
+  "edges": [
+    {
+      "id": "e",
+      "sources": ["a"],
+      "targets": ["b"],
+      "sections": [
+        {
+          "id": "s1",
+          "startPoint": { "x": 1, "y": 2 },
+          "endPoint": { "x": 3, "y": 4 },
+          "bendPoints": [
+            { "x": 2, "y": 2 },
+            { "x": 0, "y": 0 }
+          ],
+          "outgoingSections": ["s2"]
+        },
+        {
+          "id": "s2",
+          "startPoint": { "x": 3, "y": 4 },
+          "endPoint": { "x": 5, "y": 6 },
+          "incomingShape": "a",
+          "outgoingShape": "b"
+        }
+      ]
+    }
+  ]
+}

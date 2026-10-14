@@ -1,0 +1,31 @@
+{
+  "id": "g",
+  "children": [
+    { "id": "a", "ports": [{ "id": "p" }] },
+    { "id": "b", "ports": [{ "id": "q" }] }
+  ],
+  "edges": [
+    {
+      "id": "e",
+      "sources": ["p"],
+      "targets": ["q"],
+      "sections": [
+        {
+          "id": "s1",
+          "incomingShape": "p",
+          "outgoingShape": "q",
+          "startPoint": { "x": 0, "y": 0 },
+          "endPoint": { "x": 4, "y": 0 }
+        },
+        {
+          "id": "s2",
+          "incomingShape": "a",
+          "outgoingShape": "b",
+          "startPoint": { "x": 4, "y": 0 },
+          "endPoint": { "x": 9, "y": 9 },
+          "bendPoints": [{ "x": 0, "y": 0 }]
+        }
+      ]
+    }
+  ]
+}

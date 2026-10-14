@@ -1,0 +1,5 @@
+graph g
+node ^layout { node ^size }
+node ^true
+edge ^layout.^size -> ^true
+edge ^true -> ^layout

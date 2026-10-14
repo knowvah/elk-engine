@@ -1,0 +1,12 @@
+graph g
+s.k_true: "true"
+s.k_false: "false"
+s.k_null: "null"
+s.float: "1.5"
+s.exp: "1e3"
+s.nan: "NaN"
+s.inf: "Infinity"
+s.hex: "0x1p3"
+s.d: "1d"
+s.digits: "1abc"
+s.int: "42"

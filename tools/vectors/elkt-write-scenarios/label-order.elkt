@@ -1,0 +1,10 @@
+graph g
+node a {
+  node c
+  label "l1"
+  port p
+  label "l2"
+  edge c -> c
+  label "l3"
+  node d
+}

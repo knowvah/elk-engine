@@ -1,0 +1,8 @@
+{
+  "id": "g",
+  "layoutOptions": {
+    "org.eclipse.elk.spacing.nodeNode": "NaN",
+    "org.eclipse.elk.spacing.edgeEdge": "Infinity",
+    "org.eclipse.elk.spacing.portPort": "-Infinity"
+  }
+}

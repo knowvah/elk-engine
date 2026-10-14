@@ -1,0 +1,8 @@
+graph g
+node a
+node b
+edge a -> b {
+  layout [
+    section s1 [ start: 1, 2 priority: 3 debugMode: true aspectRatio: 1.5 ]
+  ]
+}

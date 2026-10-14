@@ -1,0 +1,6 @@
+graph g
+my.option: 1
+org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers: 20
+org.example.key: abc
+a.b.c.d: x
+single: y

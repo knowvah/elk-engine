@@ -1,0 +1,8 @@
+graph g
+node a {
+  port p {
+    priority: 1
+    label "l1"
+    label "l2"
+  }
+}

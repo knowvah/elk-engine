@@ -1,0 +1,1 @@
+graph g layout[position:1,2 size:3,4]priority:1 node a{port p{label"l"}}edge a.p->a{layout[start:1,2 end:5,6 bends:1,2|3,4]}

@@ -1,0 +1,9 @@
+graph g
+node a {
+  port p
+  node b { port q }
+  node c
+  edge b.q -> c
+  edge c -> a.p
+  edge a.b -> a.b
+}

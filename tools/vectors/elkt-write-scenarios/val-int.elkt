@@ -1,0 +1,4 @@
+graph g
+org.eclipse.elk.priority: 3
+org.eclipse.elk.randomSeed: -7
+org.eclipse.elk.partitioning.partition: 2147483647

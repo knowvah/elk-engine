@@ -1,0 +1,5 @@
+graph g
+node ^node { port ^port }
+node ^edge
+edge ^node.^port -> ^edge
+edge ^node -> ^node.^port

@@ -1,0 +1,10 @@
+{
+  "id": "g",
+  "children": [
+    {
+      "id": "a",
+      "labels": [{ "id": "l", "text": "t", "labels": [{ "text": "inner" }] }],
+      "ports": [{ "id": "p", "labels": [{ "text": "pl" }] }]
+    }
+  ]
+}
