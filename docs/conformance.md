@@ -58,9 +58,9 @@ run, since the output name is the basename.
 
 **Patch series semantics.** The series holds one patch today:
 
-| Patch                                                                   | Effect                                                                                                                                                                                                                              | Paired TS seam                                                                                                                                    |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b) | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1` | Injectable `Random` in the `graph.json` port; pending that port (the TS `Random` shim already reproduces the stream: seed 1 gives 548985, 764588) |
+| Patch                                                                   | Effect                                                                                                                                                                                                                              | Paired TS seam                                                                                                                                                                                                                    |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b) | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1` | Optional `random` parameter of the `JsonExporter` constructor (J4, [elk-json.md](architecture/elk-json.md#exporter-random)); tests pass `new Random(1)` (the TS `Random` shim reproduces the stream: seed 1 gives 548985, 764588) |
 
 Patches exist only to add narrowly scoped seams that make JVM and JS behavior comparable;
 each is paired with a TS-side seam (section 4).
@@ -344,6 +344,22 @@ the registry check subtracts them (`test/melk/held-back.ts`).
 - `LayoutDataContentAssistTest.Other.testAlgorithmSpecificKnown`: closed by mission 5.
 - `LayoutDataContentAssistTest.Other.testAlgorithmSpecificUnknown`: closed by mission 5.
 
+**Deferred graph.json JUnit cases (J6).** `transferLayout` is covered meanwhile by the JVM replay
+`test/graph-json/transfer-replay.test.ts` (13 cases); 31 of the 36 upstream methods are ported.
+
+- `EdgeCoordsTest` (whole file, one method): needs the layered algorithm; closed by mission 7h.
+- `IndividualSpacingsTest.importIndividualSpacingsTest`: needs layered; closed by mission 7h.
+- `SectionsTest.preserveSectionIdsTest`: needs the `random` algorithm; closed by mission 5.
+- `TransferLayoutTest.transferLayoutEdgeSectionExistsTest`: needs the `random` algorithm; closed by
+  mission 5.
+- `LayoutOptionsTest.exportLayoutOptions`: layered's `priority.direction` (`Layered.melk:732`) makes
+  the suffix `direction` ambiguous on the JVM, so `getShortOptionKey` writes `elk.direction`; the
+  CoreOptions-only port (J10) writes `direction`; closed by mission 7h.
+- Converter rows for the algorithms `fixed`, `box`, `random` and the `""`/"Other" category
+  (`MISSION5_PROVIDERS`; `CoreOptions.ts` withholds them): closed by mission 5.
+- Parse inputs strip `layering.layerId` and `crossingMinimization.positionId` (J7 amendment,
+  `STRIP_KEYS`): closed by mission 7h. `resolvedAlgorithm` is stripped permanently (see the quirks).
+
 **Behavioural divergences.**
 
 - `GraphIssue.hashCode` uses a WeakMap-and-counter identity hash, not the JVM's `identityHashCode`
@@ -356,3 +372,36 @@ the registry check subtracts them (`test/melk/held-back.ts`).
   unmodifiable views (T14): open.
 - `LayoutMetaDataService.getKnownOptionIds()` returns a snapshot `Set` in `JavaHashMap` key order,
   not a live `keySet()` view (T10): open.
+- Identity-hash order (AD-10): `ok-sections-linked` section 44 `outgoingSections` is filled by the
+  JVM from a `HashMultimap` of identity-hashed `ElkEdgeSection` (`JsonImporter.xtend:313-314`) and
+  varies between runs; the port uses insertion order and the vectors record the id lists sorted.
+- JDK helpful-NPE messages embed compiled local names, so NPE vector rows compare by class only
+  (`TypeError`, D10).
+- Gson subset gaps: writer rows with `Long`/`Float`/`Short`/`Byte`/`BigDecimal`/`BigInteger`
+  numbers are not modelled (graph.json never builds them); `JsonWriter` writes parsed-number text
+  without the validation `JsonPrimitive.toString` applies; `JsonReader` misuse-error texts are
+  unrecorded.
+
+**Upstream quirks of `graph.json` (J5).** Each is vector-proven on the JVM and reproduced; all are
+"kept: upstream behaviour". Detail: [elk-json.md](architecture/elk-json.md).
+
+- Exporter `formatError(...)` is called without `throw` (`JsonExporter.xtend:183,196`): an edge
+  endpoint outside the exported graph fails in Gson `JsonPrimitive(null)` with a message-less
+  `NullPointerException`; kept: upstream behaviour.
+- A missing section or bend-point coordinate is a null-unboxing NPE; a missing shape coordinate is
+  0; kept: upstream behaviour.
+- Duplicate ids overwrite earlier map entries; kept: upstream behaviour.
+- `HashBiMap` rejects equal JSON node objects (`{"id":3}` equals `{"id":3.0}`) with
+  `IllegalArgumentException` "value already present"; kept: upstream behaviour.
+- Exporting an imported graph with linked sections throws an NPE whenever sections are exported
+  (`incomingSections +=` back-links a not-yet-registered section); `omitLayout` succeeds; kept:
+  upstream behaviour.
+- A lenient trailing comma in an array yields a null element, then `IllegalStateException` "Not a
+  JSON Object: null"; kept: upstream behaviour.
+- `transferLayout` only adds keys (stale keys stay); `sections` is removed and re-added, so it moves
+  to the end; a layout-created label throws an NPE; a layout-created section that is linked raises
+  `implementationError` ("Severe implementation error in the Json to ElkGraph importer."); kept:
+  upstream behaviour.
+- An input containing `resolvedAlgorithm` (any layout export) fails on import with
+  `IllegalStateException` "IDataType class expected for layout option
+  org.eclipse.elk.resolvedAlgorithm"; kept: upstream behaviour.

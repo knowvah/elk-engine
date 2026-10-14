@@ -473,7 +473,7 @@ Operators per the Xtend docs (`https://eclipse.dev/Xtext/xtend/documentation/203
 Other rules: a method returns its last expression; `if` is an expression; `val`/`var` are
 final/mutable; `x + ""` concatenates with Java formatting (section 7, `JsonExporter.xtend:491`);
 `implementationError` returns a plain `new Error(...)` (`graph.json/src/.../JsonAdapter.xtend:60`),
-`JsonImportException` extends `RuntimeException`. No generated `.java` exists: these are the source.
+`JsonImportException` extends `RuntimeException`. Port layout, Gson subset, evidence: [elk-json.md](architecture/elk-json.md).
 
 ## 9. Corrections to CLAUDE.md and vector gaps
 
