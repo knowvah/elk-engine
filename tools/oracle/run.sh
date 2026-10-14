@@ -4,13 +4,17 @@
 # source-built oracle (AD-3).
 # Usage: run.sh <outDir> <input.json|input.elkt>...
 #        run.sh --cases <cases.jsonl> <outDir>
-#        run.sh --list-algorithms
+#        run.sh --list-algorithms | --list-options
 # Case file: JSON Lines {"id","input","mode":"layout"|"parse"|"generate",
 # "algorithm"?,"variant"?} ("generate" reads a grandom .elkr and writes the
 # graph unlaid-out); output is <outDir>/<id with "/" replaced by
 # "__">.json, one JSON result line per case on stdout. Each case is bounded
 # by ELK_SWEEP_TIMEOUT_MS (default 30000); a JVM that hit a timeout exits
 # with code 75 and is restarted on the cases without a result line.
+# Env ORACLE_REGISTRY=default|core (default "default"): "core" passes
+# -Delk.oracle.registry=core, so the harness registers CoreOptions only (G3,
+# the TS registry of C8) and skips the explicit algorithm providers. Meant for
+# "parse" cases and --list-*; --list-options prints the registry's option ids.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -21,6 +25,7 @@ DEFAULT_TIMEOUT_MS=30000
 # Seeds JsonExporter id-collision suffixes (seam patch 0001; decisions D5b).
 EXPORT_SEED=1
 ELK_ORACLE_DIR="${ELK_ORACLE_DIR:-$ROOT/../elk-oracle}"
+ORACLE_REGISTRY="${ORACLE_REGISTRY:-default}"
 P2_BUNDLES="${P2_BUNDLES:-$HOME/.m2/repository/p2/osgi/bundle}"
 # Third-party bundles named by Require-Bundle in the in-scope manifests, plus
 # companions that are not Require-Bundle entries: Guava's failureaccess, and
@@ -91,8 +96,11 @@ cleanup() {
 oracle_java() { # oracle_java <timeoutMs> <args...>; runs the harness JVM
   local timeout="$1"
   shift
+  local registry_opts=()
+  [ "$ORACLE_REGISTRY" = core ] && registry_opts=(-Delk.oracle.registry=core)
   java -Delk.oracle.variants="$VARIANTS_FILE" -Delk.oracle.timeoutMs="$timeout" \
     -Dorg.eclipse.elk.graph.json.exportSeed="$EXPORT_SEED" \
+    ${registry_opts[@]+"${registry_opts[@]}"} \
     -cp "$CLASSES:$CP" ElkOracle "$@"
 }
 
@@ -122,7 +130,8 @@ run_cases() { # run_cases <cases.jsonl> <outDir>; restarts the JVM after a timeo
 
 main() {
   CLASSES="$ELK_ORACLE_DIR/harness-classes"
-  [ "$#" -ge 1 ] || die "usage: run.sh <outDir> <input>... | run.sh --cases <cases.jsonl> <outDir> | run.sh --list-algorithms"
+  [ "$#" -ge 1 ] || die "usage: run.sh <outDir> <input>... | run.sh --cases <cases.jsonl> <outDir> | run.sh --list-algorithms | run.sh --list-options"
+  case "$ORACLE_REGISTRY" in default | core) ;; *) die "ORACLE_REGISTRY must be default or core" ;; esac
   [ -f "$ELK_ORACLE_DIR/oracle-build.json" ] ||
     die "$ELK_ORACLE_DIR/oracle-build.json missing; run tools/oracle/build.sh"
   CP="$(build_classpath)"
@@ -131,6 +140,10 @@ main() {
     --list-algorithms)
       [ "$#" -eq 1 ] || die "--list-algorithms takes no arguments"
       oracle_java 0 --list-algorithms
+      ;;
+    --list-options)
+      [ "$#" -eq 1 ] || die "--list-options takes no arguments"
+      oracle_java 0 --list-options
       ;;
     --cases)
       [ "$#" -eq 3 ] || die "usage: run.sh --cases <cases.jsonl> <outDir>"

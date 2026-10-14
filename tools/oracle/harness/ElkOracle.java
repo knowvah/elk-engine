@@ -20,6 +20,7 @@ import org.eclipse.elk.alg.vertiflex.options.VertiFlexMetaDataProvider;
 import org.eclipse.elk.core.data.ILayoutMetaDataProvider;
 import org.eclipse.elk.core.data.LayoutAlgorithmData;
 import org.eclipse.elk.core.data.LayoutMetaDataService;
+import org.eclipse.elk.core.data.LayoutOptionData;
 import org.eclipse.elk.core.options.CoreOptions;
 
 import com.google.gson.JsonArray;
@@ -44,6 +45,9 @@ public final class ElkOracle {
 
     static final String VARIANTS_PROPERTY = "elk.oracle.variants";
     static final String TIMEOUT_PROPERTY = "elk.oracle.timeoutMs";
+    /** Registry mode: {@code core} limits the option registry to CoreOptions; absent registers all. */
+    static final String REGISTRY_PROPERTY = "elk.oracle.registry";
+    static final String REGISTRY_CORE = "core";
 
     private static final int EXIT_FAILURE = 1;
     private static final int MIN_POSITIONAL_ARGS = 2;
@@ -51,8 +55,10 @@ public final class ElkOracle {
     private static final long NANOS_PER_MILLI = 1_000_000L;
     private static final String CASES_FLAG = "--cases";
     private static final String LIST_FLAG = "--list-algorithms";
+    private static final String LIST_OPTIONS_FLAG = "--list-options";
     private static final String USAGE = "usage: ElkOracle <outDir> <input>... | "
-            + "ElkOracle --cases <cases.jsonl> <outDir> | ElkOracle --list-algorithms";
+            + "ElkOracle --cases <cases.jsonl> <outDir> | ElkOracle --list-algorithms | "
+            + "ElkOracle --list-options";
 
     private ElkOracle() {
     }
@@ -64,14 +70,20 @@ public final class ElkOracle {
      */
     public static void main(final String[] args) throws IOException {
         boolean listForm = args.length == 1 && LIST_FLAG.equals(args[0]);
+        boolean listOptionsForm = args.length == 1 && LIST_OPTIONS_FLAG.equals(args[0]);
         boolean casesForm = args.length > 0 && CASES_FLAG.equals(args[0]);
-        if (!listForm && (casesForm ? args.length != CASES_ARGS : args.length < MIN_POSITIONAL_ARGS)) {
+        boolean listing = listForm || listOptionsForm;
+        if (!listing && (casesForm ? args.length != CASES_ARGS : args.length < MIN_POSITIONAL_ARGS)) {
             System.err.println(USAGE);
             System.exit(EXIT_FAILURE);
         }
-        registerMetaDataProviders();
+        initRegistry();
         if (listForm) {
             listAlgorithms();
+            return;
+        }
+        if (listOptionsForm) {
+            listOptions();
             return;
         }
         runAndExit(args, casesForm);
@@ -168,6 +180,33 @@ public final class ElkOracle {
             System.err.println("ElkOracle: cannot remove output of " + id + ": " + e);
         }
         Runtime.getRuntime().halt(EXIT_TIMEOUT);
+    }
+
+    /**
+     * Establishes the option registry. In {@code core} mode the singleton is created over a
+     * parentless class loader (CoreOptions only, no ServiceLoader hits) before anything else
+     * calls {@code getInstance()}, and the explicit provider registration is skipped.
+     */
+    private static void initRegistry() {
+        String mode = System.getProperty(REGISTRY_PROPERTY);
+        if (mode == null) {
+            registerMetaDataProviders();
+        } else if (REGISTRY_CORE.equals(mode)) {
+            LayoutMetaDataService.getInstance(new ClassLoader(null) { });
+        } else {
+            System.err.println("ElkOracle: unknown " + REGISTRY_PROPERTY + " value '" + mode
+                    + "' (expected 'core' or unset)\n" + USAGE);
+            System.exit(EXIT_FAILURE);
+        }
+    }
+
+    private static void listOptions() {
+        JsonArray ids = new JsonArray();
+        LayoutMetaDataService.getInstance().getOptionData().stream()
+                .map(LayoutOptionData::getId)
+                .sorted()
+                .forEach(ids::add);
+        System.out.println(ids);
     }
 
     private static void registerMetaDataProviders() {

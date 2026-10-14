@@ -1,0 +1,41 @@
+{
+  "id": "n0",
+  "children": [
+    {
+      "id": "N1",
+      "ports": [
+        {
+          "id": "W1",
+          "layoutOptions": {
+            "port.side": "WEST"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        },
+        {
+          "id": "W2",
+          "layoutOptions": {
+            "port.side": "WEST"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "layoutOptions": {
+        "portConstraints": "FIXED_SIDE"
+      },
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    }
+  ],
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0
+}

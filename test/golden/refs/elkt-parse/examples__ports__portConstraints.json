@@ -1,0 +1,267 @@
+{
+  "id": "n0",
+  "children": [
+    {
+      "id": "freePorts",
+      "children": [
+        {
+          "id": "n1",
+          "ports": [
+            {
+              "id": "p1",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0
+            },
+            {
+              "id": "p2",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0
+            }
+          ],
+          "layoutOptions": {
+            "portConstraints": "FREE"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        },
+        {
+          "id": "n2",
+          "ports": [
+            {
+              "id": "p1_g548985",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0
+            },
+            {
+              "id": "p2_g764588",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0
+            }
+          ],
+          "layoutOptions": {
+            "portConstraints": "FREE"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0,
+      "edges": [
+        {
+          "id": "e0",
+          "sources": [
+            "p1"
+          ],
+          "targets": [
+            "p1_g548985"
+          ]
+        },
+        {
+          "id": "e1",
+          "sources": [
+            "p2"
+          ],
+          "targets": [
+            "p2_g764588"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fixedSide",
+      "children": [
+        {
+          "id": "n1_g641847",
+          "ports": [
+            {
+              "id": "p1_g970313",
+              "layoutOptions": {
+                "port.side": "WEST"
+              },
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0
+            },
+            {
+              "id": "p2_g064254",
+              "layoutOptions": {
+                "port.side": "EAST"
+              },
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0
+            }
+          ],
+          "layoutOptions": {
+            "portConstraints": "FIXED_SIDE"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        },
+        {
+          "id": "n2_g814904",
+          "ports": [
+            {
+              "id": "p1_g504434",
+              "layoutOptions": {
+                "port.side": "WEST"
+              },
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0
+            },
+            {
+              "id": "p2_g906606",
+              "layoutOptions": {
+                "port.side": "NORTH"
+              },
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0
+            }
+          ],
+          "layoutOptions": {
+            "portConstraints": "FIXED_SIDE"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0,
+      "edges": [
+        {
+          "id": "e2",
+          "sources": [
+            "p1_g970313"
+          ],
+          "targets": [
+            "p1_g504434"
+          ]
+        },
+        {
+          "id": "e3",
+          "sources": [
+            "p2_g064254"
+          ],
+          "targets": [
+            "p2_g906606"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fixedPosition",
+      "children": [
+        {
+          "id": "n1_g239978",
+          "ports": [
+            {
+              "id": "p1_g301748",
+              "x": -5.0,
+              "y": 5.0,
+              "width": 0.0,
+              "height": 0.0
+            },
+            {
+              "id": "p2_g136569",
+              "x": 35.0,
+              "y": 10.0,
+              "width": 0.0,
+              "height": 0.0
+            }
+          ],
+          "layoutOptions": {
+            "portConstraints": "FIXED_POS"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        },
+        {
+          "id": "n2_g998473",
+          "ports": [
+            {
+              "id": "p1_g540317",
+              "x": 10.0,
+              "y": -10.0,
+              "width": 0.0,
+              "height": 0.0
+            },
+            {
+              "id": "p2_g691263",
+              "x": 15.0,
+              "y": 40.0,
+              "width": 0.0,
+              "height": 0.0
+            }
+          ],
+          "layoutOptions": {
+            "portConstraints": "FIXED_SIDE"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0,
+      "edges": [
+        {
+          "id": "e4",
+          "sources": [
+            "p1_g301748"
+          ],
+          "targets": [
+            "p1_g540317"
+          ]
+        },
+        {
+          "id": "e5",
+          "sources": [
+            "p2_g136569"
+          ],
+          "targets": [
+            "p2_g691263"
+          ]
+        }
+      ]
+    }
+  ],
+  "layoutOptions": {
+    "aspectRatio": "0.1"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0
+}

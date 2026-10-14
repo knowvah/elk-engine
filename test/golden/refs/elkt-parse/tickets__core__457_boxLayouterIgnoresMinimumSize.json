@@ -1,0 +1,31 @@
+{
+  "id": "n0",
+  "children": [
+    {
+      "id": "n",
+      "children": [
+        {
+          "id": "ni",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 10.0,
+          "height": 10.0
+        }
+      ],
+      "layoutOptions": {
+        "nodeSize.constraints": "[MINIMUM_SIZE]",
+        "nodeSize.minimum": "(60.0,60.0)",
+        "elk.padding": "[top=25.0,left=25.0,bottom=0.0,right=0.0]",
+        "algorithm": "box"
+      },
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    }
+  ],
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0
+}

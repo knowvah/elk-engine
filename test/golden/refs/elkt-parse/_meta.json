@@ -1,0 +1,249 @@
+{
+  "elkCommit": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "patches": [
+    "0001-graph.json-seedable-JsonExporter-id-collision-random.patch"
+  ],
+  "modelsCommit": "ac5af2ba511c0037e4f347e8bd91f013950951c7",
+  "registry": "core",
+  "exportSeed": 1,
+  "jdk": "openjdk version \"21.0.1\" 2023-10-17 LTS",
+  "generatedBy": "tools/oracle/regen-elkt-refs.sh",
+  "inputSha256": {
+    "examples/general/spacing/labels": "6582ac9f188f28848f21fbeebe41b4f91b446dcfa73829fe36fe8d9c089615c3",
+    "examples/ports/portConstraints": "d9dee71cecf2f570eb1f14eda4aa06b3c27fa80548e8960c71c1d403a2a0ed79",
+    "examples/user-hints/interactive-constraints/interactiveLayeredLayout_circle_pseudo_positions": "d0614f1fa063f5dde22a64f49632a2313988715c15da2cada7d2c3aac7d205ff",
+    "examples/user-hints/interactive-constraints/interactiveLayeredLayout_separateComponents_pseudo_positions": "5d721201120ab2945b7eaa025e192e6e5ef8f606fbb23ef093ac38a8b8a9b762",
+    "examples/user-hints/interactive-constraints/interactiveLayout_mixedHierarchy": "e10fb3d5b1ad4780a76ba6961703c2168da5f57e6c0a5d699dc325d9f15687e8",
+    "examples/user-hints/interactive-constraints/interactiveRectpacking_oneBigNode": "e59cf1fcbd18cc9ce948c840e7c745603f499dcc925c8a23261f7a88b512a308",
+    "realworld/ptolemy/flattened/hlacerti_multidatatypes_producer": "1115ad10f9c49251c0ef2408520997264a50677c708c4ccb9c22759ec1da4959",
+    "realworld/ptolemy/flattened/pthales_dynamic_ThalesDynamicModalModelPN": "86ca9588e81c1b77cc52d5b23b26285004b692058e8f13fce3817fc13d1662d6",
+    "realworld/ptolemy/hierarchical/hoc_threadedcomposite_MulticoreExecution": "4e7f2d0509f9f48c680f2934351f2e79b576385ea3434000813bb1e6f9a3cd5a",
+    "realworld/ptolemy/hierarchical/pthales_illustrative_Illustrative": "ebb1339dbcda3a711d35b25b6a64062ad45e4288a03b4a49b9a7d4438db9b5cf",
+    "tests/layered/comment_boxes/multiple_comments": "64e70688cd41ed9999fd62406bd4753b06bb75516d4b054abcff7a2565bcca14",
+    "tests/layered/compaction_oned/labels/edgeLabelAndSplines": "40cd0886cd688d3f1843fe69010773ebabbadb3466c66d5060cc29519ee40127",
+    "tests/layered/compaction_oned/labels/edgeLabelSideSelection01": "8233fd2d987b2a50f3c0ebc7244dfde0523cbc25514b53d3e7bb88fa3c9c836c",
+    "tests/layered/compaction_oned/nsport/south_port": "b8a46251666118ab7b698d8cda13f00d6ce92130518da7524a9e078b4a48d008",
+    "tests/layered/compaction_oned/selfloop/selfloop_spline": "744b7429099c8bd2e520d372cf50960ec6ed89363a273e7fe764bc8c687a1ae8",
+    "tests/layered/interactive_layout/firstLayer": "9723db23bcd61743612ecf9a6fc9efee9189a6f6e90b1701075ba52d8576f0ec",
+    "tests/layered/layer_constraints/01": "5530ec8e29a2b0896b808710553be8995bf59b8a19f6ef828e541bb8b78e0e58",
+    "tests/layered/port_label_placement/fixed_positions_01": "0f392abb8a5a65c5db6f9dcc5375c078b5c74eefac5e031007fcbf034198ee29",
+    "tests/layered/port_label_placement/inside_compound_nodes_01": "9e2fc4996c51a290ea1bf387e6611005e557ca39dc1cdc7e57c92c2adc029ad0",
+    "tests/layered/preserve_order/timedAutomatonMoreEdges": "fcde69b053e5fa8b6fa07258d3643424e6138006bfe90bf41db1936fcf0ddcfc",
+    "tests/layered/splines/hyperedges/hyperedges_1": "aade476173d1f260bc0f10e2431e4e6e36965c93bd109933f8359745de161700",
+    "tests/layered/splines/sloppy_curvature": "c23b3734cbc37959dd513c9cb3a14eb4e63d890cd733fe3e11b80cbd36048b15",
+    "tickets/core/245_surroundingPortSpace": "f2d38e581311ddb50e9a6c01216458810dad65da17632cc8b3cb8255af800906",
+    "tickets/core/457_boxLayouterIgnoresMinimumSize": "86b826e4c23a0da3c5a9b683cf8692e1c8bdbc405996fe68ab10198ce0551f9d",
+    "tickets/layered/273_insideSelfLoopsWithLabels": "fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd",
+    "tickets/layered/411_north_south_port_anchor_a": "1cde9aa9f0de00cf00918d6bcadda0dbfa3768695067a6f864062a3b20ab217a",
+    "tickets/layered/476_multiLabelInHorizontalLayout": "0168a08422602fe54d653c4dba7a39efae1ec5e0dbf3114ece2a764f35db0245",
+    "tickets/layered/599_unimportantPortIndex": "49b3e8400512a32043b9f0ecbd212f7346681b7ad00d10820d65ad5552c0c326",
+    "tickets/layered/724_includeChildrenModelOrder": "8cc03ddf742f3fd654712eb63fbcc00435fdd5ae904891da3524c9f88c7ac778",
+    "tickets/layered/905_beginLabelAboveEdge": "12730664b530411ee1fa7e064bfd8e4f91e16590ae80047ee11f8794a1d77609",
+    "tickets/layered/905_beginLableBellowEdge": "cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834"
+  },
+  "outcomes": {
+    "examples/general/spacing/labels": {
+      "status": "ok"
+    },
+    "examples/ports/portConstraints": {
+      "status": "ok"
+    },
+    "examples/user-hints/interactive-constraints/interactiveLayeredLayout_circle_pseudo_positions": {
+      "status": "ok"
+    },
+    "examples/user-hints/interactive-constraints/interactiveLayeredLayout_separateComponents_pseudo_positions": {
+      "status": "ok"
+    },
+    "examples/user-hints/interactive-constraints/interactiveLayout_mixedHierarchy": {
+      "status": "ok"
+    },
+    "examples/user-hints/interactive-constraints/interactiveRectpacking_oneBigNode": {
+      "status": "ok"
+    },
+    "realworld/ptolemy/flattened/hlacerti_multidatatypes_producer": {
+      "status": "ok"
+    },
+    "realworld/ptolemy/flattened/pthales_dynamic_ThalesDynamicModalModelPN": {
+      "status": "ok"
+    },
+    "realworld/ptolemy/hierarchical/hoc_threadedcomposite_MulticoreExecution": {
+      "status": "ok"
+    },
+    "realworld/ptolemy/hierarchical/pthales_illustrative_Illustrative": {
+      "status": "ok"
+    },
+    "tests/layered/comment_boxes/multiple_comments": {
+      "status": "ok"
+    },
+    "tests/layered/compaction_oned/labels/edgeLabelAndSplines": {
+      "status": "ok"
+    },
+    "tests/layered/compaction_oned/labels/edgeLabelSideSelection01": {
+      "status": "ok"
+    },
+    "tests/layered/compaction_oned/nsport/south_port": {
+      "status": "ok"
+    },
+    "tests/layered/compaction_oned/selfloop/selfloop_spline": {
+      "status": "ok"
+    },
+    "tests/layered/interactive_layout/firstLayer": {
+      "status": "ok"
+    },
+    "tests/layered/layer_constraints/01": {
+      "status": "ok"
+    },
+    "tests/layered/port_label_placement/fixed_positions_01": {
+      "status": "ok"
+    },
+    "tests/layered/port_label_placement/inside_compound_nodes_01": {
+      "status": "ok"
+    },
+    "tests/layered/preserve_order/timedAutomatonMoreEdges": {
+      "status": "ok"
+    },
+    "tests/layered/splines/hyperedges/hyperedges_1": {
+      "status": "ok"
+    },
+    "tests/layered/splines/sloppy_curvature": {
+      "status": "ok"
+    },
+    "tickets/core/245_surroundingPortSpace": {
+      "status": "ok"
+    },
+    "tickets/core/457_boxLayouterIgnoresMinimumSize": {
+      "status": "ok"
+    },
+    "tickets/layered/273_insideSelfLoopsWithLabels": {
+      "status": "ok"
+    },
+    "tickets/layered/411_north_south_port_anchor_a": {
+      "status": "ok"
+    },
+    "tickets/layered/476_multiLabelInHorizontalLayout": {
+      "status": "ok"
+    },
+    "tickets/layered/599_unimportantPortIndex": {
+      "status": "ok"
+    },
+    "tickets/layered/724_includeChildrenModelOrder": {
+      "status": "ok"
+    },
+    "tickets/layered/905_beginLabelAboveEdge": {
+      "status": "ok"
+    },
+    "tickets/layered/905_beginLableBellowEdge": {
+      "status": "ok"
+    }
+  },
+  "uncoveredByCorpus": [
+    "null-value",
+    "exponent-float",
+    "single-quoted-string",
+    "multi-source-edge",
+    "multi-target-edge",
+    "edge-section-incoming-outgoing",
+    "section-outgoing-sections"
+  ],
+  "optionIds": [
+    "org.eclipse.elk.algorithm",
+    "org.eclipse.elk.alignment",
+    "org.eclipse.elk.animTimeFactor",
+    "org.eclipse.elk.animate",
+    "org.eclipse.elk.aspectRatio",
+    "org.eclipse.elk.bendPoints",
+    "org.eclipse.elk.box.packingMode",
+    "org.eclipse.elk.childAreaHeight",
+    "org.eclipse.elk.childAreaWidth",
+    "org.eclipse.elk.commentBox",
+    "org.eclipse.elk.contentAlignment",
+    "org.eclipse.elk.debugMode",
+    "org.eclipse.elk.direction",
+    "org.eclipse.elk.edge.thickness",
+    "org.eclipse.elk.edge.type",
+    "org.eclipse.elk.edgeLabels.inline",
+    "org.eclipse.elk.edgeLabels.placement",
+    "org.eclipse.elk.edgeRouting",
+    "org.eclipse.elk.expandNodes",
+    "org.eclipse.elk.font.name",
+    "org.eclipse.elk.font.size",
+    "org.eclipse.elk.hierarchyHandling",
+    "org.eclipse.elk.hypernode",
+    "org.eclipse.elk.insideSelfLoops.activate",
+    "org.eclipse.elk.insideSelfLoops.yo",
+    "org.eclipse.elk.interactive",
+    "org.eclipse.elk.interactiveLayout",
+    "org.eclipse.elk.json.edgeCoords",
+    "org.eclipse.elk.json.shapeCoords",
+    "org.eclipse.elk.junctionPoints",
+    "org.eclipse.elk.labelManager",
+    "org.eclipse.elk.layoutAncestors",
+    "org.eclipse.elk.margins",
+    "org.eclipse.elk.maxAnimTime",
+    "org.eclipse.elk.minAnimTime",
+    "org.eclipse.elk.noLayout",
+    "org.eclipse.elk.nodeLabels.padding",
+    "org.eclipse.elk.nodeLabels.placement",
+    "org.eclipse.elk.nodeSize.constraints",
+    "org.eclipse.elk.nodeSize.fixedGraphSize",
+    "org.eclipse.elk.nodeSize.minimum",
+    "org.eclipse.elk.nodeSize.options",
+    "org.eclipse.elk.omitNodeMicroLayout",
+    "org.eclipse.elk.padding",
+    "org.eclipse.elk.partitioning.activate",
+    "org.eclipse.elk.partitioning.partition",
+    "org.eclipse.elk.port.anchor",
+    "org.eclipse.elk.port.borderOffset",
+    "org.eclipse.elk.port.index",
+    "org.eclipse.elk.port.side",
+    "org.eclipse.elk.portAlignment.default",
+    "org.eclipse.elk.portAlignment.east",
+    "org.eclipse.elk.portAlignment.north",
+    "org.eclipse.elk.portAlignment.south",
+    "org.eclipse.elk.portAlignment.west",
+    "org.eclipse.elk.portConstraints",
+    "org.eclipse.elk.portLabels.nextToPortIfPossible",
+    "org.eclipse.elk.portLabels.placement",
+    "org.eclipse.elk.portLabels.treatAsGroup",
+    "org.eclipse.elk.position",
+    "org.eclipse.elk.priority",
+    "org.eclipse.elk.progressBar",
+    "org.eclipse.elk.randomSeed",
+    "org.eclipse.elk.resolvedAlgorithm",
+    "org.eclipse.elk.scaleFactor",
+    "org.eclipse.elk.separateConnectedComponents",
+    "org.eclipse.elk.softwrappingFuzziness",
+    "org.eclipse.elk.spacing.commentComment",
+    "org.eclipse.elk.spacing.commentNode",
+    "org.eclipse.elk.spacing.componentComponent",
+    "org.eclipse.elk.spacing.edgeEdge",
+    "org.eclipse.elk.spacing.edgeLabel",
+    "org.eclipse.elk.spacing.edgeNode",
+    "org.eclipse.elk.spacing.individual",
+    "org.eclipse.elk.spacing.labelLabel",
+    "org.eclipse.elk.spacing.labelNode",
+    "org.eclipse.elk.spacing.labelPortHorizontal",
+    "org.eclipse.elk.spacing.labelPortVertical",
+    "org.eclipse.elk.spacing.nodeNode",
+    "org.eclipse.elk.spacing.nodeSelfLoop",
+    "org.eclipse.elk.spacing.portPort",
+    "org.eclipse.elk.spacing.portsSurrounding",
+    "org.eclipse.elk.topdown.hierarchicalNodeAspectRatio",
+    "org.eclipse.elk.topdown.hierarchicalNodeWidth",
+    "org.eclipse.elk.topdown.nodeType",
+    "org.eclipse.elk.topdown.scaleCap",
+    "org.eclipse.elk.topdown.scaleFactor",
+    "org.eclipse.elk.topdown.sizeApproximator",
+    "org.eclipse.elk.topdown.sizeCategories",
+    "org.eclipse.elk.topdown.sizeCategoriesHierarchicalNodeWeight",
+    "org.eclipse.elk.topdownLayout",
+    "org.eclipse.elk.validateGraph",
+    "org.eclipse.elk.validateOptions",
+    "org.eclipse.elk.zoomToFit"
+  ],
+  "algorithmIds": [
+    "org.eclipse.elk.box",
+    "org.eclipse.elk.fixed",
+    "org.eclipse.elk.random"
+  ]
+}
