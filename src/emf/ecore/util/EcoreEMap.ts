@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { HashStrategy } from '../../../java/util/HashStrategy.js';
-import { JavaHashMap } from '../../../java/util/JavaHashMap.js';
 import type { InternalEObject } from '../InternalEObject.js';
 import { EObjectContainmentEList } from './EObjectContainmentEList.js';
 
@@ -68,38 +67,47 @@ class DelegateEObjectContainmentEList<E extends InternalEObject> extends EObject
 /**
  * EMF's `EcoreEMap`: a map whose entries are `EObject`s contained by `owner` under `featureID`
  * (no opposite), kept in a delegate list in insertion order, and indexed by key through the
- * owner's {@link HashStrategy} (Java `hashCode`/`equals`). `put` on a present key calls
- * `entry.setValue` in place; a new key appends a new entry through the list, which makes the owner
- * its container; `removeKey`/`clear` remove entries through the list, which releases them. Java's
- * `null` for "absent" is `undefined`. The index keeps the first list entry per key, as EMF's hash
- * bucket does; EMF's bucket gets out of step when the shadowed duplicate of a key is removed, the
- * index here does not. EMF is EPL-2.0 (decision D1).
+ * owner's {@link HashStrategy} (Java `hashCode`/`equals`) in `BasicEMap`'s hash buckets
+ * (`entryData`): created lazily, capacity `2 * size + 1`, grown to `2 * capacity + 4` with the
+ * buckets rehashed in order. `map()` iterates the buckets (bucket index
+ * `(hash & 0x7FFFFFFF) % capacity`, then bucket order), not the list. `put` on a present key
+ * calls `entry.setValue` in place; a new key appends a new entry through the list, which makes the
+ * owner its container; `removeKey`/`clear` remove entries through the list, which releases them.
+ * Java's `null` for "absent" is `undefined`. A lookup finds the first bucket entry per key, as in
+ * EMF; EMF removes the first bucket entry with the removed entry's key, which gets out of step
+ * when the shadowed duplicate of a key is removed, the bucket here removes the entry itself. The
+ * Java `modCount` (fail-fast iterators) is not ported. EMF is EPL-2.0 (decision D1).
  *
  * @see org.eclipse.emf.ecore.util.EcoreEMap
  * @see org.eclipse.emf.common.util.BasicEMap
  */
 export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, V>> implements Iterable<[K, V]> {
   readonly #strategy: HashStrategy<K>;
-  readonly #index: JavaHashMap<K, E>;
   readonly #newEntry: (key: K, value: V) => E;
   readonly #delegateEList: DelegateEObjectContainmentEList<E>;
+  /** `BasicEMap.entryData`: the hash buckets; `null` until first needed, and again after a clear. */
+  #entryData: Array<E[] | undefined> | null = null;
+  /** `BasicEMap.size`: kept in step with the delegate list. */
+  #size = 0;
 
   constructor(strategy: HashStrategy<K>, owner: InternalEObject, featureID: number, newEntry: (key: K, value: V) => E) {
     this.#strategy = strategy;
-    this.#index = new JavaHashMap<K, E>(strategy);
     this.#newEntry = newEntry;
     this.#delegateEList = new DelegateEObjectContainmentEList<E>(owner, featureID, {
       doPut: (entry) => this.#doPut(entry),
       doRemove: (entry) => this.#doRemove(entry),
-      doClear: () => this.#index.clear(),
+      doClear: () => this.#doClear(),
     });
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#put(Object, Object) */
   put(key: K, value: V): V | undefined {
-    const entry = this.#index.get(key);
-    if (entry !== undefined) {
-      return entry.setValue(value);
+    const data = this.#ensureEntryDataExists();
+    if (this.#size > 0) {
+      const entry = this.#entryForKey(data, key);
+      if (entry !== undefined) {
+        return entry.setValue(value);
+      }
     }
     this.#delegateEList.add(this.#newEntry(key, value));
     return undefined;
@@ -107,12 +115,15 @@ export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, 
 
   /** @see org.eclipse.emf.common.util.BasicEMap#get(Object) */
   get(key: K): V | undefined {
-    return this.#index.get(key)?.getValue();
+    if (this.#size > 0) {
+      return this.#entryForKey(this.#ensureEntryDataExists(), key)?.getValue();
+    }
+    return undefined;
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#removeKey(Object) */
   removeKey(key: K): V | undefined {
-    const entry = this.#index.get(key);
+    const entry = this.#entryForKey(this.#ensureEntryDataExists(), key);
     if (entry === undefined) {
       return undefined;
     }
@@ -122,7 +133,10 @@ export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, 
 
   /** @see org.eclipse.emf.common.util.BasicEMap#containsKey(Object) */
   containsKey(key: K): boolean {
-    return this.#index.containsKey(key);
+    if (this.#size > 0) {
+      return this.#entryForKey(this.#ensureEntryDataExists(), key) !== undefined;
+    }
+    return false;
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#clear() */
@@ -143,7 +157,7 @@ export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, 
     return this.#delegateEList;
   }
 
-  /** The entries in list order. */
+  /** The entries in list order (`BasicEMap.iterator()`). */
   *entries(): Generator<[K, V], void, undefined> {
     for (const entry of this.#delegateEList) {
       yield [entry.getKey(), entry.getValue()];
@@ -154,33 +168,115 @@ export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, 
     return this.entries();
   }
 
-  /** @see org.eclipse.emf.common.util.BasicEMap#map() */
+  /**
+   * The `java.util.Map` view. Its iteration order is the hash-bucket order of `entrySet()`, not the
+   * list order.
+   *
+   * @see org.eclipse.emf.common.util.BasicEMap#map()
+   */
   map(): EMapView<K, V> {
     return {
       get: (key) => this.get(key),
       containsKey: (key) => this.containsKey(key),
       isEmpty: () => this.isEmpty(),
       size: () => this.size(),
-      [Symbol.iterator]: () => this.entries(),
+      [Symbol.iterator]: () => this.#entrySetIterator(),
     };
+  }
+
+  /** @see org.eclipse.emf.common.util.BasicEMap#newEntryData(int) */
+  #newEntryData(capacity: number): Array<E[] | undefined> {
+    return Array.from<E[] | undefined>({ length: capacity });
+  }
+
+  /** @see org.eclipse.emf.common.util.BasicEMap#ensureEntryDataExists() */
+  #ensureEntryDataExists(): Array<E[] | undefined> {
+    if (this.#entryData === null) {
+      this.#entryData = this.#newEntryData(2 * this.#size + 1);
+      this.#size = 0;
+      for (const entry of this.#delegateEList) {
+        this.#doPut(entry);
+      }
+    }
+    return this.#entryData;
+  }
+
+  /** @see org.eclipse.emf.common.util.BasicEMap#hashOf(Object) */
+  #hashOf(key: K): number {
+    return this.#strategy.hash(key);
+  }
+
+  /** @see org.eclipse.emf.common.util.BasicEMap#indexOf(int) */
+  #indexOf(hash: number, capacity: number): number {
+    return (hash & 0x7fffffff) % capacity;
+  }
+
+  /** @see org.eclipse.emf.common.util.BasicEMap#entryForKey(int, int, Object) */
+  #entryForKey(data: ReadonlyArray<E[] | undefined>, key: K): E | undefined {
+    const hash = this.#hashOf(key);
+    return data[this.#indexOf(hash, data.length)]?.find(
+      (entry) => this.#hashOf(entry.getKey()) === hash && this.#strategy.equals(key, entry.getKey()),
+    );
+  }
+
+  /** @see org.eclipse.emf.common.util.BasicEMap#grow(int) */
+  #grow(data: Array<E[] | undefined>, minimumCapacity: number): Array<E[] | undefined> {
+    if (minimumCapacity <= data.length) {
+      return data;
+    }
+    const grown = this.#newEntryData(2 * data.length + 4);
+    for (const bucket of data) {
+      for (const entry of bucket ?? []) {
+        const index = this.#indexOf(this.#hashOf(entry.getKey()), grown.length);
+        (grown[index] ??= []).push(entry);
+      }
+    }
+    return grown;
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#doPut(org.eclipse.emf.common.util.BasicEMap.Entry) */
   #doPut(entry: E): void {
-    if (!this.#index.containsKey(entry.getKey())) {
-      this.#index.put(entry.getKey(), entry);
+    if (this.#entryData !== null) {
+      const data = this.#grow(this.#entryData, this.#size + 1);
+      this.#entryData = data;
+      (data[this.#indexOf(this.#hashOf(entry.getKey()), data.length)] ??= []).push(entry);
     }
+    ++this.#size;
   }
 
-  /** @see org.eclipse.emf.common.util.BasicEMap#doRemove(org.eclipse.emf.common.util.BasicEMap.Entry) */
+  /**
+   * @see org.eclipse.emf.common.util.BasicEMap#doRemove(org.eclipse.emf.common.util.BasicEMap.Entry)
+   * @see org.eclipse.emf.common.util.BasicEMap#removeEntry(int, int)
+   */
   #doRemove(entry: E): void {
-    const key = entry.getKey();
-    if (this.#index.get(key) === entry) {
-      this.#index.remove(key);
-      const next = this.#delegateEList.toArray().find((e) => this.#strategy.equals(e.getKey(), key));
-      if (next !== undefined) {
-        this.#index.put(key, next);
-      }
+    if (this.#entryData !== null) {
+      // The bucket exists and holds the entry: `ensureEntryDataExists` puts every list entry in it.
+      const bucket = this.#entryData[this.#indexOf(this.#hashOf(entry.getKey()), this.#entryData.length)] as E[];
+      bucket.splice(bucket.indexOf(entry), 1);
+    }
+    --this.#size;
+  }
+
+  /** @see org.eclipse.emf.common.util.BasicEMap#doClear() */
+  #doClear(): void {
+    this.#entryData = null;
+    this.#size = 0;
+  }
+
+  /** @see org.eclipse.emf.common.util.BasicEMap.BasicEMapIterator#scan() */
+  #entrySetIterator(): Iterator<[K, V]> {
+    const data = this.#size > 0 ? this.#ensureEntryDataExists() : [];
+    return scanBuckets(data);
+  }
+}
+
+/** Entries in bucket order: ascending bucket index, then position in the bucket. */
+function* scanBuckets<K, V>(
+  data: ReadonlyArray<ReadonlyArray<BasicEMapEntry<K, V>> | undefined>,
+): Generator<[K, V], void, undefined> {
+  for (const bucket of data) {
+    for (const entry of bucket ?? []) {
+      yield [entry.getKey(), entry.getValue()];
     }
   }
 }
