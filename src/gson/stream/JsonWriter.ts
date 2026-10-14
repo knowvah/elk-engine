@@ -3,7 +3,8 @@ import { quoteJsonString } from '../JsonPrimitive.js';
 
 const NULL_TEXT = 'null';
 const NEWLINE = '\n';
-const HTML_UNSAFE = /[<>&=']/g;
+// A RegExp constructor, not a literal: lizard reads the literal's quote as a string start.
+const HTML_UNSAFE = new RegExp("[<>&=']", 'g');
 const HEX_RADIX = 16;
 const UNICODE_ESCAPE_WIDTH = 4;
 
