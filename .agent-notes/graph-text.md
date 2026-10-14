@@ -119,3 +119,19 @@ M` (code `org.eclipse.emf.ecore.14`, holder's first line), twice per collision. 
   formatting conflict is swallowed (first formatting wins).
 - **Impact**: T21/T22 tests should use a `THROWING` handler to prove there are no accidental conflicts.
 - **Confidence**: High
+
+## Observation: Xtext's ID escape set includes punctuation keywords
+
+- **Context**: T13 replay of `ID.toString("->" | "{" | ".")`
+- **Finding**: `IDValueConverter.valuesToEscape` is `GrammarUtil.getAllKeywords`, punctuation included;
+  the escaped `^->` re-lexes to `^` as `ANY_OTHER`, giving "ID '->' contains invalid characters".
+- **Impact**: ID converter tests must use the full `ELK_GRAPH_KEYWORDS` set.
+- **Confidence**: High
+
+## Observation: timing assertions fail under coverage instrumentation
+
+- **Context**: T14 scope-lookup budget (149 ms plain, 577 ms under `npm run coverage`)
+- **Finding**: V8 coverage slows tight loops 3–4×. `test/helpers/coverage-run.ts` (`isCoverageRun`)
+  selects an instrumented budget; the plain-run budget stays as specified.
+- **Impact**: every new performance test uses the helper from the start.
+- **Confidence**: High
