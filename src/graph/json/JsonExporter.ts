@@ -244,9 +244,9 @@ export class JsonExporter {
     const jsonProps = this.adapter.newJsonObject();
     const parent = this.adapter.toJsonObject(parentA);
     this.adapter.addJsonObj(parent!, LAYOUT_OPTIONS_KEY, jsonProps);
-    // PropertyMap entries never have a null key (the `key !== null` filter of the Java)
     for (const [key, value] of holder.getAllProperties()) {
-      if (!isSpacingIndividual(key)) {
+      // `.filter[ key !== null ]`: a property map may hold a null key (EMapPropertyHolderImpl.setProperty)
+      if (key !== null && !isSpacingIndividual(key)) {
         this.transformOption(jsonProps, key, value);
       }
     }
@@ -266,7 +266,10 @@ export class JsonExporter {
     const parent = this.adapter.toJsonObject(parentA);
     this.adapter.addJsonObj(parent!, INDIVIDUAL_SPACINGS_KEY, jsonProps);
     for (const [key, value] of individualSpacings.getAllProperties()) {
-      this.transformOption(jsonProps, key, value);
+      // `.filter[it.key !== null]`
+      if (key !== null) {
+        this.transformOption(jsonProps, key, value);
+      }
     }
   }
 

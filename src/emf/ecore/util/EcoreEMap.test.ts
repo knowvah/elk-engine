@@ -343,3 +343,39 @@ describe('EcoreEMap map() iterates the hash buckets (BasicEMap.entrySet)', () =>
     expect([...map.map()].map(([, v]) => v)).toEqual(['v1']);
   });
 });
+
+describe('EcoreEMap null keys (BasicEMap.hashOf: null hashes to 0, keys compare by identity)', () => {
+  it('puts, gets, tests and removes a null key, apart from the key hashing to 0', () => {
+    const map = numbered(0).properties;
+    expect(map.get(null)).toBeUndefined();
+    expect(map.containsKey(null)).toBe(false);
+    expect(map.put(null, 'vn')).toBeUndefined();
+    expect(map.put(null, 'vn2')).toBe('vn');
+    expect(map.get(null)).toBe('vn2');
+    expect(map.get(key('k0'))).toBe('v0');
+    expect(map.containsKey(null)).toBe(true);
+    expect(map.size()).toBe(2);
+    expect(map.removeKey(null)).toBe('vn2');
+    expect(map.containsKey(null)).toBe(false);
+    expect(map.get(key('k0'))).toBe('v0');
+  });
+
+  it('finds a non-null key past a null-keyed entry in the same bucket', () => {
+    const map = new NumberedHolder().properties;
+    map.put(null, 'vn');
+    map.put(key('k0'), 'v0');
+    expect(map.get(key('k0'))).toBe('v0');
+    expect(map.removeKey(key('k0'))).toBe('v0');
+    expect(map.get(null)).toBe('vn');
+  });
+
+  it('places the null key in bucket 0 when iterating map()', () => {
+    // put k3: capacity 1. put null: grow(2) -> capacity 6, k3 -> bucket 3, null -> hash 0, bucket 0.
+    // put k1: bucket 1. Scan: null, k1, k3.
+    const map = new NumberedHolder().properties;
+    map.put(key('k3'), 'v3');
+    map.put(null, 'vn');
+    map.put(key('k1'), 'v1');
+    expect([...map.map()].map(([k]) => (k as Key | null)?.id ?? null)).toEqual([null, 'k1', 'k3']);
+  });
+});

@@ -17,8 +17,8 @@ export interface BasicEMapEntry<K, V> extends InternalEObject {
 
 /** The read-only `java.util.Map` view of an {@link EcoreEMap} (`EMap.map()`). */
 export interface EMapView<K, V> extends Iterable<[K, V]> {
-  get(key: K): V | undefined;
-  containsKey(key: K): boolean;
+  get(key: K | null): V | undefined;
+  containsKey(key: K | null): boolean;
   isEmpty(): boolean;
   size(): number;
 }
@@ -101,7 +101,7 @@ export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, 
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#put(Object, Object) */
-  put(key: K, value: V): V | undefined {
+  put(key: K | null, value: V): V | undefined {
     const data = this.#ensureEntryDataExists();
     if (this.#size > 0) {
       const entry = this.#entryForKey(data, key);
@@ -109,12 +109,12 @@ export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, 
         return entry.setValue(value);
       }
     }
-    this.#delegateEList.add(this.#newEntry(key, value));
+    this.#delegateEList.add(this.#newEntry(key as K, value));
     return undefined;
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#get(Object) */
-  get(key: K): V | undefined {
+  get(key: K | null): V | undefined {
     if (this.#size > 0) {
       return this.#entryForKey(this.#ensureEntryDataExists(), key)?.getValue();
     }
@@ -122,7 +122,7 @@ export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, 
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#removeKey(Object) */
-  removeKey(key: K): V | undefined {
+  removeKey(key: K | null): V | undefined {
     const entry = this.#entryForKey(this.#ensureEntryDataExists(), key);
     if (entry === undefined) {
       return undefined;
@@ -132,7 +132,7 @@ export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, 
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#containsKey(Object) */
-  containsKey(key: K): boolean {
+  containsKey(key: K | null): boolean {
     if (this.#size > 0) {
       return this.#entryForKey(this.#ensureEntryDataExists(), key) !== undefined;
     }
@@ -202,8 +202,8 @@ export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, 
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#hashOf(Object) */
-  #hashOf(key: K): number {
-    return this.#strategy.hash(key);
+  #hashOf(key: K | null): number {
+    return key === null ? 0 : this.#strategy.hash(key);
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#indexOf(int) */
@@ -212,11 +212,18 @@ export class EcoreEMap<K, V, E extends BasicEMapEntry<K, V> = BasicEMapEntry<K, 
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#entryForKey(int, int, Object) */
-  #entryForKey(data: ReadonlyArray<E[] | undefined>, key: K): E | undefined {
+  #entryForKey(data: ReadonlyArray<E[] | undefined>, key: K | null): E | undefined {
     const hash = this.#hashOf(key);
-    return data[this.#indexOf(hash, data.length)]?.find(
-      (entry) => this.#hashOf(entry.getKey()) === hash && this.#strategy.equals(key, entry.getKey()),
-    );
+    return data[this.#indexOf(hash, data.length)]?.find((entry) => this.#keyMatches(entry, hash, key));
+  }
+
+  /** The key test of `entryForKey`: hash and `equals` for a key, identity for a `null` key. */
+  #keyMatches(entry: E, hash: number, key: K | null): boolean {
+    const entryKey = entry.getKey();
+    if (key === null) {
+      return entryKey === null;
+    }
+    return this.#hashOf(entryKey) === hash && entryKey !== null && this.#strategy.equals(key, entryKey);
   }
 
   /** @see org.eclipse.emf.common.util.BasicEMap#grow(int) */

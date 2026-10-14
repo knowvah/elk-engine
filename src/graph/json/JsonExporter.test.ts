@@ -527,6 +527,27 @@ describe('JsonExporter behaviour', () => {
     expect(() => exportText(root, COMPACT)).toThrow(TypeError);
   });
 
+  it('skips a null-keyed property in layoutOptions and individualSpacings (the Xtend key !== null filters)', () => {
+    const root = node(null, 'r');
+    root.setProperty(CoreOptions.DIRECTION, Direction.DOWN);
+    root.setProperty(null as unknown as Property<number>, 3);
+    const inner = new IndividualSpacings();
+    inner.setProperty(CoreOptions.SPACING_NODE_NODE, 5);
+    // IndividualSpacings is hash-map backed here, whose property strategy cannot hold a null key
+    // (a Java HashMap can): feed the null key through its read-only view.
+    const view = inner.getAllProperties();
+    inner.getAllProperties = () => ({
+      ...view,
+      isEmpty: () => false,
+      [Symbol.iterator]: () =>
+        [...view, [null as unknown as Property<number>, 3] as [Property<number>, number]].values(),
+    });
+    root.setProperty(CoreOptions.SPACING_INDIVIDUAL, inner);
+    expect(exportText(root, COMPACT)).toBe(
+      '{"id":"r","layoutOptions":{"direction":"DOWN"},"individualSpacings":{"spacing.nodeNode":"5.0"}}',
+    );
+  });
+
   it('emptyIfNull returns an empty iterator for null and the iterator itself otherwise', () => {
     const exporter = new JsonExporter();
     expect(exporter.emptyIfNull<number>(null).next().done).toBe(true);
