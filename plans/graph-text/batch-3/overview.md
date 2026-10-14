@@ -9,7 +9,7 @@ on T8. Depends on batches 2a and 2b.
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T13 | ELK value converters (`Number`, `PropertyKey`, `PropertyValue`, service) and `ElkGraphQualifiedNameConverter` | typescript-pro | src/graph/text/conversion/{ElkGraphValueConverterService,NumberValueConverter,PropertyKeyValueConverter,PropertyValueValueConverter}.ts, src/graph/text/naming/ElkGraphQualifiedNameConverter.ts (+ .test.ts) | T2, T3, T7, T8, T9, T10 | [ ] |
-| T14 | Xtext scoping: scopes, descriptions, `Scopes`, `ImportedNamespaceAwareLocalScopeProvider` | typescript-pro | src/xtext/scoping/**, src/xtext/resource/** (+ .test.ts) | T8 | [ ] |
+| T13 | ELK value converters (`Number`, `PropertyKey`, `PropertyValue`, service) and `ElkGraphQualifiedNameConverter` | typescript-pro | src/graph/text/conversion/{ElkGraphValueConverterService,NumberValueConverter,PropertyKeyValueConverter,PropertyValueValueConverter}.ts, src/graph/text/naming/ElkGraphQualifiedNameConverter.ts (+ .test.ts) | T2, T3, T7, T8, T9, T10 | [x] |
+| T14 | Xtext scoping: scopes, descriptions, `Scopes`, `ImportedNamespaceAwareLocalScopeProvider` | typescript-pro | src/xtext/scoping/**, src/xtext/resource/** (+ .test.ts) | T8 | [x] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green.
