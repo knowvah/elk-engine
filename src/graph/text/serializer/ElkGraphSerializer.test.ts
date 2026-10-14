@@ -7,23 +7,15 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { CoreOptions } from '../../../core/options/CoreOptions.js';
-import { LayoutOptionProxy } from '../../../core/util/internal/LayoutOptionProxy.js';
+import { buildWriteInput, JAVA_SCENARIOS } from '../../../../test/helpers/elkt-write-cases.js';
 import { ElkGraphFactory } from '../../ElkGraphFactory.js';
 import '../../impl/ElkGraphFactoryImpl.js';
-import { ElkGraphJson } from '../../json/ElkGraphJson.js';
-import type { ElkEdge } from '../../ElkEdge.js';
 import type { ElkNode } from '../../ElkNode.js';
-import type { IProperty } from '../../properties/IProperty.js';
-import { Property } from '../../properties/Property.js';
-import { ElkGraphUtil } from '../../util/ElkGraphUtil.js';
-import { ElkGraphText } from '../ElkGraphText.js';
 import { tokenize } from '../parser/ElkGraphLexer.js';
 import { ElkGraphSerializationError } from './ElkGraphSerializationError.js';
 import { ElkGraphSerializer } from './ElkGraphSerializer.js';
 
 const REF = fileURLToPath(new URL('../../../../test/golden/refs/java/graph-text-write.json', import.meta.url));
-const SCENARIOS = new URL('../../../../tools/vectors/elkt-write-scenarios/', import.meta.url);
 const JAVA_PREFIX = 'java-';
 
 interface RecordedCase {
@@ -34,82 +26,8 @@ interface RecordedCase {
 
 const cases = (JSON.parse(readFileSync(REF, 'utf8')) as { cases: RecordedCase[] }).cases;
 
-function scenario(file: string): string {
-  return readFileSync(new URL(file, SCENARIOS), 'utf8');
-}
-
-/** The T5 JAVA SCENARIOS, rebuilt through the public API (ElktWriteVectors.java header). */
-const JAVA_SCENARIOS: Readonly<Record<string, () => ElkNode>> = {
-  'java-node-without-identifier': () => {
-    const r = graph();
-    ElkGraphUtil.createNode(r);
-    return r;
-  },
-  'java-port-without-identifier': () => {
-    const n = node(graph(), 'n');
-    ElkGraphUtil.createPort(n);
-    return n.getParent() as ElkNode;
-  },
-  'java-label-without-text': () => {
-    const n = node(graph(), 'n');
-    ElkGraphUtil.createLabel(n).setIdentifier('l');
-    return n.getParent() as ElkNode;
-  },
-  'java-section-without-identifier': () => {
-    const r = graph();
-    const edge = connect(r, node(r, 'a'), node(r, 'b'));
-    ElkGraphUtil.createEdgeSection(edge).setIdentifier('s1');
-    ElkGraphUtil.createEdgeSection(edge).setStartLocation(1, 2);
-    return r;
-  },
-  'java-edge-endpoint-outside-graph': () => {
-    const r = graph();
-    const z = ElkGraphUtil.createGraph();
-    z.setIdentifier('z');
-    connect(r, node(r, 'a'), z);
-    return r;
-  },
-  'java-edge-without-endpoints': () => {
-    const r = graph();
-    ElkGraphUtil.createEdge(r).setIdentifier('e');
-    return r;
-  },
-  'java-property-null-key': () => withProperty(null, 'v'),
-  'java-property-null-value': () => withProperty(new Property<unknown>('my.custom'), null),
-  'java-property-proxy-resolvable': () => withProperty(CoreOptions.PRIORITY, new LayoutOptionProxy('5')),
-  'java-property-key-keyword': () => withProperty(new Property<unknown>('my.node.k'), 'v'),
-};
-
-function graph(): ElkNode {
-  const root = ElkGraphUtil.createGraph();
-  root.setIdentifier('g');
-  return root;
-}
-
-function node(parent: ElkNode, id: string): ElkNode {
-  const created = ElkGraphUtil.createNode(parent);
-  created.setIdentifier(id);
-  return created;
-}
-
-function connect(container: ElkNode, source: ElkNode, target: ElkNode): ElkEdge {
-  const edge = ElkGraphUtil.createEdge(container);
-  edge.setIdentifier('e');
-  edge.getSources().add(source);
-  edge.getTargets().add(target);
-  return edge;
-}
-
-function withProperty(key: IProperty<unknown> | null, value: unknown): ElkNode {
-  const root = graph();
-  node(root, 'n').getProperties().put(key, value);
-  return root;
-}
-
 function build(c: RecordedCase): ElkNode {
-  if (c.source === 'java') return (JAVA_SCENARIOS[c.id] as () => ElkNode)();
-  if (c.source === 'json') return ElkGraphJson.forGraph(scenario(`${c.id}.json`)).toElk();
-  return ElkGraphText.load(scenario(`${c.id}.elkt`)).root as ElkNode;
+  return buildWriteInput(c.source, c.id);
 }
 
 /** The recorded text without whitespace and comments, token texts joined. */
