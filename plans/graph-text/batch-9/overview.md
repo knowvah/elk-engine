@@ -8,7 +8,7 @@ Two independent tasks with disjoint write-sets: T23 measures the Phase 4 indicat
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T23 | `.elkt` oracle sweep, local sweep test, conformance section | tooling-engineer | tools/oracle/elkt-sweep.sh (+ tools/oracle/ElktSweep.java), test/corpus/elkt-sweep.test.ts, docs/conformance.md | T22 | [ ] |
-| T24 | elk-text architecture doc, port-map, translation rules, roadmap follow-up | typescript-pro | docs/architecture/{elk-text,port-map,overview}.md, docs/translation-rules.md, plans/roadmap.md | T22 | [ ] |
+| T23 | `.elkt` oracle sweep, local sweep test, conformance section | tooling-engineer | tools/oracle/elkt-sweep.sh (+ tools/oracle/ElktSweep.java), test/corpus/elkt-sweep.test.ts, docs/conformance.md | T22 | [x] |
+| T24 | elk-text architecture doc, port-map, translation rules, roadmap follow-up | typescript-pro | docs/architecture/{elk-text,port-map,overview}.md, docs/translation-rules.md, plans/roadmap.md | T22 | [x] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green.

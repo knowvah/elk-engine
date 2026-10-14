@@ -209,3 +209,20 @@ new ElkGraphReferences(), parseResult.nodeModel)`, then `linkModel(root, consume
   same properties reloaded in another order come out permuted. `test/helpers/elkt-canon.ts` sorts by id.
 - **Impact**: any structural equality over `canonNode` uses `canonGraph`.
 - **Confidence**: High
+
+## Observation: single cold timing runs flake under load
+
+- **Context**: batch-9 gate; T14 scope budget failed (785–800 ms vs 300 ms) while another suite ran
+- **Finding**: a single cold timed run includes JIT warm-up and first-time index builds; best-of-three warm runs (as
+  `JsonParser.test.ts`) passes under the same load. Two concurrent vitest runs also collide on
+  `test/melk/.held-back/` (ENOENT) — an artefact, not a defect.
+- **Impact**: every timing budget uses best-of or median of warm runs plus `isCoverageRun`.
+- **Confidence**: High
+
+## Observation: VitePress slugs numbered headings with a leading underscore
+
+- **Context**: T24 links to `conformance.md#elk-text-elkt`
+- **Finding**: `## 7. ELK Text (…)` would slug to `_7-elk-text-elkt`; `docs:build` does not check anchors. An explicit
+  `{#elk-text-elkt}` fixes it (verified in the built HTML).
+- **Impact**: give linked numbered headings explicit anchors.
+- **Confidence**: High

@@ -131,7 +131,7 @@ the orchestrator commits per task. `npm run docs:build` green before T24 is mark
 | 6 | `ElkGraphText.load`; semantic sequencer | T18–T19 | 5 | [x] |
 | 7 | Validator; formatter | T20–T21 | 6 | [x] |
 | 8 | `validate`/`serialize`, round trip, D3 | T22 | 7 | [x] |
-| 9 | Local sweep; docs | T23–T24 | 8 | [ ] |
+| 9 | Local sweep; docs | T23–T24 | 8 | [x] |
 
 ## Document index
 
@@ -152,3 +152,39 @@ user decisions, flags, follow-ups for missions 4c/4d/5/7), then stop 14. Next ro
 
 1. Re-read this file. 2. Re-read `decision-journal.md`. 3. First batch with `[ ]` →
 its `overview.md` → first incomplete task.
+
+## Mission summary (2026-10-14)
+
+**Tasks:** 24/24 planned tasks done (T1–T24), one commit each, plus fix commits `fix(T3)` (CRLF scenario bytes)
+and `fix(T14)` (scope-lookup budget flake), and one `docs(plans)` commit per batch. All commits unsigned (G8).
+
+**Evidence (local sweep, core registry, `docs/conformance.md` §7):** parse-equal 898/898; validate-equal 894/898
+(4 G3 mission-5 deferrals); writer byte-exact 1,448/1,448; reparse-equal 1,448/1,448 (1 lossy identically in the
+oracle); D3 0/550 equal — all 550 are upstream port-position differences the oracle shares (listed). CI evidence:
+lexer 314 + converter 648 rows, 301 parse/link cases, 75 validator cases (11 deferred), 113 writer rows, all replayed;
+31 curated parse refs (local inputs). Final gates: format, typecheck, complexity, coverage (99.49 % lines,
+97.95 % branches), frozen refs byte-identical, docs build green; `npm test` 51 s (13 s without the local sweep).
+
+**Decisions:** 70+ journal rows. Flagged for the user:
+1. **D3** does not hold literally: every realworld `.elkt` carries port positions its `.json` lacks (oracle agrees);
+   decide whether D3 should be amended to "equal except port positions" or the corpus pairing revisited.
+2. **T4** acceptance gap: the validator's line-101 proxy resolution is unreachable from `.elkt` under the core
+   registry (`mutations` empty in all rows); revisit when missions 5/7 regenerate.
+3. **Mission-4 JsonExporter** writes `"null"` for null option values where Java NPEs
+   (`src/graph/json/JsonExporter.ts:53` vs `JsonExporter.xtend:321,342`); `KNOWN_EXPORTER_GAPS` marks it `it.fails`.
+4. **Curated refs in CI** skip: their inputs come from local elk-models; vendor the 31 inputs (~49 KB) or fetch the corpus.
+5. Skipped vector rows with reasons: T13 `float:2.0` (TS cannot represent Java `Float`), `ClassCastException` rows;
+   T7 two `StringIndexOutOfBoundsException` rows match on message only (no shim in `src/java/lang`).
+6. T9: 13 lexer recovery boundaries pinned from a scratch JVM run (no committed T2 row).
+7. T16: a null `getUnresolvedProxyMessage` skips the diagnostic (Java would NPE; unreachable in ELK).
+8. T23: the 4 G3-deferred models are filtered wholesale; only one was checked to differ solely by the missing algorithm.
+9. Orchestrator interventions within the standing rules: test-only fixtures moved from `src/` to `test/helpers/`
+   (T12, T14); shared helpers `test/helpers/{coverage-run,elkt-write-cases}.ts`; `ElkGraphTextServices.ts`
+   shared by `load` and the serializer; `.gitattributes` `-text` for elkt scenarios; coverage-run timing allowance.
+
+**Follow-ups:** mission 5 — drop `MISSION5_ALGORITHMS`, the stand-in validator describe and the 4-model sweep
+deferral, regenerate core-only refs; mission 7 — regenerate refs as layered registers (`reverseEdge.elkt` should round
+trip); 4c (`graph.json.text`) next; any time — exporter null fix, `StringIndexOutOfBoundsException` shim, curated
+inputs for CI, T9 boundary rows in a T2 regeneration. Details: `plans/roadmap.md` (2026-10-14 revision).
+
+**Landing (stop 14):** the user signs, pushes and opens the PR with the commands under "Branch and landing (G8)".
