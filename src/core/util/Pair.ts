@@ -1,65 +1,10 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { Comparable } from '../../java/lang/Comparable.js';
-import * as DoubleToString from '../../java/lang/DoubleToString.js';
-import { identityHashCode } from '../../java/lang/IdentityHashCode.js';
-import * as JavaDouble from '../../java/lang/JavaDouble.js';
-import * as JavaInteger from '../../java/lang/JavaInteger.js';
-import * as JavaString from '../../java/lang/JavaString.js';
+import * as JavaObjects from '../../java/util/JavaObjects.js';
 
-/** The Java `Object.hashCode()` of a boolean is 1231 / 1237 (`Boolean.hashCode`). */
-const BOOLEAN_TRUE_HASH = 1231;
-const BOOLEAN_FALSE_HASH = 1237;
 const HALF_WORD = 16;
 const MASK1 = (1 << HALF_WORD) - 1;
 const MASK2 = ~MASK1;
-
-function hasMethod(o: object, name: 'equals' | 'hashCode'): boolean {
-  return name in o && typeof (o as Record<string, unknown>)[name] === 'function';
-}
-
-/** Java `first.equals(other)` for a non-null element: value `equals` when defined, else identity. */
-function elementEquals(a: unknown, b: unknown): boolean {
-  if (typeof a === 'object' && a !== null && hasMethod(a, 'equals')) {
-    return (a as { equals(o: unknown): boolean }).equals(b);
-  }
-  return Object.is(a, b);
-}
-
-/**
- * Java `hashCode()` of a non-null element. A number is an `Integer` when it is an int32 and a
- * `Double` otherwise: the two classes cannot be told apart at run time.
- */
-function elementHash(a: unknown): number {
-  switch (typeof a) {
-    case 'string':
-      return JavaString.hashCode(a);
-    case 'number':
-      return isInt32(a) ? JavaInteger.hashCode(a) : JavaDouble.hashCode(a);
-    case 'boolean':
-      return a ? BOOLEAN_TRUE_HASH : BOOLEAN_FALSE_HASH;
-    default:
-      return objectHash(a as object);
-  }
-}
-
-/** Java `toString()` of a non-null element; numbers as in {@link elementHash} (`Integer` or `Double`). */
-function elementToString(a: unknown): string {
-  if (typeof a === 'number' && !isInt32(a)) {
-    return DoubleToString.toString(a);
-  }
-  return String(a);
-}
-
-function isInt32(a: number): boolean {
-  return Number.isInteger(a) && (a | 0) === a;
-}
-
-function objectHash(o: object): number {
-  if (hasMethod(o, 'hashCode')) {
-    return (o as { hashCode(): number }).hashCode();
-  }
-  return identityHashCode(o);
-}
 
 /**
  * Comparator that uses the first element as base.
@@ -164,27 +109,23 @@ export class Pair<F, S> implements Iterable<unknown> {
   equals(obj: unknown): boolean {
     if (obj instanceof Pair) {
       const other = obj as Pair<unknown, unknown>;
-      const firstEqual = this.first === null ? other.first === null : elementEquals(this.first, other.first);
-      const secondEqual = this.second === null ? other.second === null : elementEquals(this.second, other.second);
-      return firstEqual && secondEqual;
+      return JavaObjects.equals(this.first, other.first) && JavaObjects.equals(this.second, other.second);
     }
     return false;
   }
 
   hashCode(): number {
-    const firstCode = this.first === null ? 0 : elementHash(this.first);
+    const firstCode = JavaObjects.hashCode(this.first);
     const first1 = firstCode & MASK1;
     const first2 = firstCode & MASK2;
-    const secondCode = this.second === null ? 0 : elementHash(this.second);
+    const secondCode = JavaObjects.hashCode(this.second);
     const second1 = secondCode & MASK1;
     const second2 = secondCode & MASK2;
     return (first1 ^ ((second2 >> HALF_WORD) & MASK1)) | (first2 ^ (second1 << HALF_WORD));
   }
 
   toString(): string {
-    const first = this.first === null ? 'null' : elementToString(this.first);
-    const second = this.second === null ? 'null' : elementToString(this.second);
-    return `pair(${first},${second})`;
+    return `pair(${JavaObjects.toString(this.first)},${JavaObjects.toString(this.second)})`;
   }
 
   /** @param thefirst the first element to set */

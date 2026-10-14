@@ -154,3 +154,13 @@ entry (C6 unchanged). T8's write-set grows by those four files and their tests.
   still stop (stop condition 10). First case: `Registry.applyDependencies` (CCN 16).
 - **Colocated tests.** A colocated `<Name>.test.ts` for any file in a task's write-set is
   implicitly in that write-set.
+
+## Standing rule amendments (2026-10-14, user, elk-json-adapter review)
+
+- **Shared helpers.** Where the Java repeats identical logic across methods, the port uses one
+  shared helper (one instance), named after what it does, called from each Java site in Java order.
+  This replaces "helpers shared across methods still stop" in the complexity-split rule.
+- **Write-set extensions.** Extending a task's write-set to a shared test helper or to a
+  semantics-neutral gate fix is allowed; journal it.
+- **Complexity gate.** Every function must be measured: lizard's TypeScript blind spots are closed by
+  `npm run complexity` (AST inventory + per-function fallback), not by trusting lizard's exit code.

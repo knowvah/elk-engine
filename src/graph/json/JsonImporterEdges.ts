@@ -3,13 +3,13 @@ import type { JsonElement } from '../../gson/JsonElement.js';
 import type { JsonObject } from '../../gson/JsonObject.js';
 import { HashMultimap } from '../../guava/HashMultimap.js';
 import type { Multimap } from '../../guava/Multimap.js';
-import { identityHashCode } from '../../java/lang/IdentityHashCode.js';
-import { type HashStrategy, INTEGER, STRING } from '../../java/util/HashStrategy.js';
+import { type HashStrategy, INTEGER, STRING, identity } from '../../java/util/HashStrategy.js';
 import type { ElkEdge } from '../ElkEdge.js';
 import type { ElkEdgeSection } from '../ElkEdgeSection.js';
 import type { ElkNode } from '../ElkNode.js';
 import type { ElkPort } from '../ElkPort.js';
 import { ElkGraphUtil } from '../util/ElkGraphUtil.js';
+import { unbox } from './JsonAdapter.js';
 import type { JsonId, JsonImporterState } from './JsonImporter.js';
 
 const EDGES_KEY = 'edges';
@@ -33,23 +33,17 @@ const OUTGOING_SECTIONS_KEY = 'outgoingSections';
 const X_KEY = 'x';
 const Y_KEY = 'y';
 
-/** `String.hashCode` / `Integer.hashCode` for the `Object` section ids; `equals` is false across the two types. */
-const ID_STRATEGY: HashStrategy<JsonId> = {
+/**
+ * `String.hashCode` / `Integer.hashCode` for the `Object` json ids (the one instance, also used by `JsonImporter`:
+ * its value import of this module cannot be reversed without a cycle); `equals` is false across the two types.
+ */
+export const ID_STRATEGY: HashStrategy<JsonId> = {
   hash: (k) => (k === null ? 0 : typeof k === 'string' ? STRING.hash(k) : INTEGER.hash(k)),
   equals: (a, b) => a === b,
 };
 
 /** The ElkGraph classes do not override `hashCode`/`equals`: identity (AD-10). */
-const SECTION_STRATEGY: HashStrategy<ElkEdgeSection> = {
-  hash: (k) => identityHashCode(k),
-  equals: Object.is,
-};
-
-/** Java auto-unboxing of a `Double` that is null: a `NullPointerException` (D10). */
-function unbox(d: number | null): number {
-  if (d === null) throw new TypeError();
-  return d;
-}
+const SECTION_STRATEGY: HashStrategy<ElkEdgeSection> = identity<ElkEdgeSection>();
 
 /** The Xtend extension call `element.asId`: a null receiver reaches `asId`, which formats `'null'` (JsonAdapter.xtend:47). */
 function asId(state: JsonImporterState, element: JsonElement | null): JsonId {

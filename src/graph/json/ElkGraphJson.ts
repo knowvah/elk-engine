@@ -5,7 +5,7 @@ import { Gson } from '../../gson/Gson.js';
 import { JsonElement } from '../../gson/JsonElement.js';
 import { JsonIOException } from '../../gson/JsonIOException.js';
 import { JsonObject } from '../../gson/JsonObject.js';
-import { IOException } from '../../gson/stream/MalformedJsonException.js';
+import { IOException } from '../../java/io/IOException.js';
 import { JsonReader } from '../../gson/stream/JsonReader.js';
 import type { TypeAdapter } from '../../gson/TypeAdapter.js';
 import type { ElkNode } from '../ElkNode.js';

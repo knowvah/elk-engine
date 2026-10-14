@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
-import { DOUBLE, INTEGER, STRING, hashable } from './HashStrategy.js';
+import { DOUBLE, INTEGER, STRING, hashable, identity } from './HashStrategy.js';
 
 /** `1.0` is `0x3ff0000000000000`; `Double.hashCode` is `(int) (bits ^ (bits >>> 32))`. */
 const ONE_HASH = 0x3ff00000;
@@ -43,6 +43,17 @@ describe('DOUBLE', () => {
       DOUBLE.compare?.(Number.NaN, Number.POSITIVE_INFINITY),
       DOUBLE.compare?.(2, 2),
     ]).toEqual([-1, 1, 0]);
+  });
+});
+
+describe('identity', () => {
+  it('hashes by identity and ignores structural equality', () => {
+    const strategy = identity<object>();
+    const a = {};
+    expect(strategy.hash(a)).toBe(strategy.hash(a));
+    expect(strategy.equals(a, a)).toBe(true);
+    expect(strategy.equals(a, {})).toBe(false);
+    expect(strategy.hash(a)).not.toBe(strategy.hash({}));
   });
 });
 

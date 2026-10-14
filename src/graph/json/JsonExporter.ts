@@ -8,9 +8,7 @@ import * as Splitter from '../../guava/Splitter.js';
 import { isNullOrEmpty } from '../../guava/Strings.js';
 import * as DoubleToString from '../../java/lang/DoubleToString.js';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
-import { identityHashCode } from '../../java/lang/IdentityHashCode.js';
-import { STRING } from '../../java/util/HashStrategy.js';
-import type { HashStrategy } from '../../java/util/HashStrategy.js';
+import { STRING, identity } from '../../java/util/HashStrategy.js';
 import { Random } from '../../java/util/Random.js';
 import type { ElkConnectableShape } from '../ElkConnectableShape.js';
 import type { ElkEdge } from '../ElkEdge.js';
@@ -39,11 +37,6 @@ const RANDOM_BOUND = 1000000;
 const RANDOM_PADDED_LENGTH = 6;
 const OPTION_ID_SEPARATOR = '.';
 const DOUBLE_TYPE_NAME = 'DOUBLE';
-
-/** The Java `HashMap`/`HashBiMap` key protocol of an EMF object: `Object.hashCode()`/`equals`, i.e. identity. */
-function identity<K extends object>(): HashStrategy<K> {
-  return { hash: (k) => identityHashCode(k), equals: (a, b) => a === b };
-}
 
 /**
  * The text Java's `toString` gives a stored option value. A TypeScript number does not say whether it was an

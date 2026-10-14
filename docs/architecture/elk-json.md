@@ -147,6 +147,10 @@ Judgement calls the vectors force:
   rerun-checked (section 7).
 - **NullPointerException rows.** JDK helpful NPE messages embed compiled local names, so those rows
   compare by class only (`TypeError`, D10).
+- **Unknown export endpoint.** Upstream calls `formatError(...)` without `throw`
+  (`JsonExporter.xtend:183,196`) and then `toJson(null)`; the oracle's Gson 2.11 answers with a
+  message-less NPE, the port with a message-less `IllegalArgumentException` (Gson 2.8 behaviour). A
+  known divergence by user decision (2026-10-14), listed in `docs/conformance.md`.
 - **Parse inputs (J7 amendments).** ELK cannot re-import its own layout export
   (`resolvedAlgorithm` raises `IDataType class expected for layout option
 org.eclipse.elk.resolvedAlgorithm`), so parse inputs strip it; until mission 7h they also strip

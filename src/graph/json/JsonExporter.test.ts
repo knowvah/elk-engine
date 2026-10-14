@@ -31,6 +31,7 @@ import { SizeConstraint } from '../../core/options/SizeConstraint.js';
 import { IndividualSpacings } from '../../core/util/IndividualSpacings.js';
 import { Streams } from '../../gson/internal/Streams.js';
 import { JsonWriter } from '../../gson/stream/JsonWriter.js';
+import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
 import { EnumSet } from '../../java/util/EnumSet.js';
 import { Random } from '../../java/util/Random.js';
 import type { ElkConnectableShape } from '../ElkConnectableShape.js';
@@ -50,6 +51,8 @@ const SEED = 1;
 const UNKNOWN_OPTION = new Property<string>('my.unknown.option');
 const UNKNOWN_VALUE = 'v';
 const NULL_POINTER = 'java.lang.NullPointerException';
+const UNKNOWN_ENDPOINT_PREFIXES = ['ok-basic+foreignTarget', 'ok-basic+foreignSource'];
+const UNKNOWN_ENDPOINT_ROW_COUNT = 32;
 
 interface Flags {
   prettyPrint: boolean;
@@ -79,6 +82,17 @@ beforeEach(() => {
 
 // ---- running an export the way ElkGraphJson.toJson does (Gson text: J8) ----
 
+/**
+ * Known divergence (user decision 2026-10-14, docs/conformance.md): an edge endpoint unknown to the exporter is a
+ * message-less IllegalArgumentException (Gson 2.8), not the oracle's NullPointerException (Gson 2.11). These are this
+ * file's rows that record that NullPointerException (the third fixture's 16 are in ElkGraphJson.test.ts).
+ */
+const UNKNOWN_ENDPOINT_IAE: ReadonlySet<string> = new Set(
+  VECTORS.export
+    .filter((row) => UNKNOWN_ENDPOINT_PREFIXES.some((p) => row.id.startsWith(`${p}/`)))
+    .map((row) => row.id),
+);
+
 function exportText(root: ElkNode, flags: Flags, random: Random = new Random(SEED)): string {
   const exporter = new JsonExporter(random);
   exporter.setOptions(
@@ -104,9 +118,15 @@ function replay(prefix: string, count: number, build: () => ElkNode): void {
     });
     it.each(rows)('$id', (row) => {
       if (row.throws !== undefined) {
-        // J5/D10: the JVM's NullPointerException is a TypeError
         expect(row.throws.class).toBe(NULL_POINTER);
-        expect(() => exportText(build(), row.flags)).toThrow(TypeError);
+        if (UNKNOWN_ENDPOINT_IAE.has(row.id)) {
+          // Known divergence: IllegalArgumentException with no message
+          expect(() => exportText(build(), row.flags)).toThrow(new IllegalArgumentException());
+          expect(() => exportText(build(), row.flags)).toThrow(IllegalArgumentException);
+        } else {
+          // J5/D10: the JVM's NullPointerException is a TypeError
+          expect(() => exportText(build(), row.flags)).toThrow(TypeError);
+        }
       } else {
         expect(exportText(build(), row.flags)).toBe(row.text);
       }
@@ -444,6 +464,13 @@ const PAIRWISE = 16;
 const ALL = 64;
 
 describe('JsonExporter replay of the export vectors', () => {
+  it('treats exactly the 32 foreignTarget/foreignSource rows as unknown endpoints', () => {
+    expect(UNKNOWN_ENDPOINT_IAE.size).toBe(UNKNOWN_ENDPOINT_ROW_COUNT);
+    for (const row of VECTORS.export.filter((r) => UNKNOWN_ENDPOINT_IAE.has(r.id))) {
+      expect(row.throws?.class).toBe(NULL_POINTER);
+    }
+  });
+
   replay('ok-basic', PAIRWISE, () => okBasic());
   replay('ok-basic+unknown', PAIRWISE, () => addUnknown(okBasic()));
   replay('ok-basic+seed+clear=nodes+clear=ports+clear=edges', PAIRWISE, clearIds);
@@ -519,12 +546,12 @@ describe('JsonExporter behaviour', () => {
     expect(text).toBe(`{"id":"r","children":[{"id":"x"},{"id":"x_g${expected}"}]}`);
   });
 
-  it('fails an unknown edge endpoint with a TypeError (J5: formatError is not thrown)', () => {
+  it('fails an unknown edge endpoint with an IllegalArgumentException (J5; known divergence from the oracle NPE)', () => {
     const root = node(null, 'r');
     const a = node(root, 'a');
     edge('e', [a], [a]);
     root.getContainedEdges().get(0).getSources().set(0, ElkGraphUtil.createNode(null));
-    expect(() => exportText(root, COMPACT)).toThrow(TypeError);
+    expect(() => exportText(root, COMPACT)).toThrow(IllegalArgumentException);
   });
 
   it('skips a null-keyed property in layoutOptions and individualSpacings (the Xtend key !== null filters)', () => {

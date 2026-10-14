@@ -9,7 +9,11 @@
 export function compare(a: number, b: number): -1 | 0 | 1 {
   if (a < b) return -1;
   if (a > b) return 1;
-  // Equal, unordered (NaN), or a zero pair: resolve via the total order.
+  return compareTies(a, b);
+}
+
+/** Equal, unordered (NaN), or a zero pair: resolved via the total order. */
+function compareTies(a: number, b: number): -1 | 0 | 1 {
   const aNaN = Number.isNaN(a);
   const bNaN = Number.isNaN(b);
   if (aNaN || bNaN) return aNaN === bNaN ? 0 : aNaN ? 1 : -1;

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: EPL-2.0
 import { IllegalStateException } from '../../java/lang/IllegalStateException.js';
 import { JsonToken } from './JsonToken.js';
-import { EOFException, MalformedJsonException } from './MalformedJsonException.js';
+import { EOFException } from '../../java/io/EOFException.js';
+import { MalformedJsonException } from './MalformedJsonException.js';
 import * as State from '../internal/JsonReaderState.js';
 
 // Local bindings: a hot-path read of an imported binding costs a property lookup under the test transform.

@@ -377,6 +377,14 @@ the registry check subtracts them (`test/melk/held-back.ts`).
   varies between runs; the port uses insertion order and the vectors record the id lists sorted.
 - JDK helpful-NPE messages embed compiled local names, so NPE vector rows compare by class only
   (`TypeError`, D10).
+- Unknown export endpoint (user decision 2026-10-14): the exporter calls `formatError(...)` without
+  `throw` (`JsonExporter.xtend:183,196`), so an edge endpoint outside the exported graph reaches
+  `toJson(null)`. The oracle (Gson 2.11) throws a message-less `NullPointerException` from
+  `JsonPrimitive(null)`; the port throws a message-less `IllegalArgumentException`, what Gson 2.8.x's
+  `JsonPrimitive(null)` threw. 48 export rows (3 fixture/mod sets x 16 flag sets, `foreignTarget`
+  and `foreignSource`) record the NPE and are expected to throw the IAE (`UNKNOWN_ENDPOINT_IAE` in
+  `ElkGraphJson.test.ts`, `JsonExporter.test.ts`); the `gson.json` rows of `JsonPrimitive` keep the
+  2.11 NPE.
 - Gson subset gaps: writer rows with `Long`/`Float`/`Short`/`Byte`/`BigDecimal`/`BigInteger`
   numbers are not modelled (graph.json never builds them); `JsonWriter` writes parsed-number text
   without the validation `JsonPrimitive.toString` applies; `JsonReader` misuse-error texts are
@@ -385,9 +393,6 @@ the registry check subtracts them (`test/melk/held-back.ts`).
 **Upstream quirks of `graph.json` (J5).** Each is vector-proven on the JVM and reproduced; all are
 "kept: upstream behaviour". Detail: [elk-json.md](architecture/elk-json.md).
 
-- Exporter `formatError(...)` is called without `throw` (`JsonExporter.xtend:183,196`): an edge
-  endpoint outside the exported graph fails in Gson `JsonPrimitive(null)` with a message-less
-  `NullPointerException`; kept: upstream behaviour.
 - A missing section or bend-point coordinate is a null-unboxing NPE; a missing shape coordinate is
   0; kept: upstream behaviour.
 - Duplicate ids overwrite earlier map entries; kept: upstream behaviour.

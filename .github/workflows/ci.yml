@@ -32,9 +32,16 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm run format:check
       - run: npm run typecheck
-      # `coverage` = `vitest run --coverage`: same suite as `npm test`, plus
-      # the vitest.config.ts coverage thresholds and a Cobertura report.
+      # `coverage` = tools/coverage-gate/run.sh around `vitest run --coverage`: same
+      # suite as `npm test`, plus the vitest.config.ts coverage thresholds and a
+      # Cobertura report; the full output is kept in coverage-logs/.
       - run: npm run coverage
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: coverage-log
+          path: coverage-logs/
+          retention-days: 7
       # PR gate for the docs site: locale completeness, dead links, and the
       # generated showcase and parity pages all fail the build.
       - run: npm run docs:build

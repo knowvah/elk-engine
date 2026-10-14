@@ -1,16 +1,10 @@
 // SPDX-License-Identifier: EPL-2.0
-import { quoteJsonString } from '../JsonPrimitive.js';
+import { quoteJsonString, unicodeEscape } from '../JsonPrimitive.js';
 
 const NULL_TEXT = 'null';
 const NEWLINE = '\n';
 // A RegExp constructor, not a literal: lizard reads the literal's quote as a string start.
 const HTML_UNSAFE = new RegExp("[<>&=']", 'g');
-const HEX_RADIX = 16;
-const UNICODE_ESCAPE_WIDTH = 4;
-
-function htmlEscape(c: string): string {
-  return `\\u${c.charCodeAt(0).toString(HEX_RADIX).padStart(UNICODE_ESCAPE_WIDTH, '0')}`;
-}
 
 interface Scope {
   readonly isObject: boolean;
@@ -102,7 +96,7 @@ export class JsonWriter {
 
   private quote(text: string): string {
     const quoted = quoteJsonString(text);
-    return this.htmlSafeFlag ? quoted.replace(HTML_UNSAFE, htmlEscape) : quoted;
+    return this.htmlSafeFlag ? quoted.replace(HTML_UNSAFE, unicodeEscape) : quoted;
   }
 
   private open(bracket: string, isObject: boolean): this {
