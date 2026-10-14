@@ -112,9 +112,7 @@
           "layoutOptions": {
             "nodeSize.constraints": "[]",
             "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-            "crossingMinimization.positionId": "-1",
-            "portConstraints": "FIXED_ORDER",
-            "layering.layerId": "-1"
+            "portConstraints": "FIXED_ORDER"
           },
           "x": 20.0,
           "y": 32.0,
@@ -193,9 +191,7 @@
           "layoutOptions": {
             "nodeSize.constraints": "[]",
             "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-            "crossingMinimization.positionId": "-1",
-            "portConstraints": "FIXED_ORDER",
-            "layering.layerId": "-1"
+            "portConstraints": "FIXED_ORDER"
           },
           "x": 20.0,
           "y": 121.0,
@@ -204,11 +200,9 @@
         }
       ],
       "layoutOptions": {
-        "portLabels.placement": "[OUTSIDE]",
-        "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
         "nodeSize.constraints": "[]",
-        "layering.layerId": "-1",
-        "crossingMinimization.positionId": "-1",
+        "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+        "portLabels.placement": "[OUTSIDE]",
         "portConstraints": "FIXED_POS",
         "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
         "hierarchyHandling": "SEPARATE_CHILDREN"
@@ -352,9 +346,7 @@
           "layoutOptions": {
             "nodeSize.constraints": "[]",
             "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-            "crossingMinimization.positionId": "-1",
-            "portConstraints": "FIXED_ORDER",
-            "layering.layerId": "-1"
+            "portConstraints": "FIXED_ORDER"
           },
           "x": 20.0,
           "y": 32.0,
@@ -363,11 +355,9 @@
         }
       ],
       "layoutOptions": {
-        "portLabels.placement": "[OUTSIDE]",
-        "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
         "nodeSize.constraints": "[]",
-        "layering.layerId": "-1",
-        "crossingMinimization.positionId": "-1",
+        "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+        "portLabels.placement": "[OUTSIDE]",
         "portConstraints": "FIXED_POS",
         "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
         "hierarchyHandling": "SEPARATE_CHILDREN"
@@ -461,9 +451,7 @@
       "layoutOptions": {
         "nodeSize.constraints": "[]",
         "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-        "crossingMinimization.positionId": "-1",
-        "portConstraints": "FIXED_ORDER",
-        "layering.layerId": "-1"
+        "portConstraints": "FIXED_ORDER"
       },
       "x": 407.0,
       "y": 147.5,
@@ -498,9 +486,7 @@
       "layoutOptions": {
         "nodeSize.constraints": "[]",
         "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-        "crossingMinimization.positionId": "-1",
-        "portConstraints": "FIXED_ORDER",
-        "layering.layerId": "-1"
+        "portConstraints": "FIXED_ORDER"
       },
       "x": 265.0,
       "y": 32.0,
@@ -546,9 +532,7 @@
       "layoutOptions": {
         "nodeSize.constraints": "[]",
         "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-        "crossingMinimization.positionId": "-1",
-        "portConstraints": "FIXED_ORDER",
-        "layering.layerId": "-1"
+        "portConstraints": "FIXED_ORDER"
       },
       "x": 169.0,
       "y": 148.0,
@@ -583,9 +567,7 @@
       "layoutOptions": {
         "nodeSize.constraints": "[]",
         "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-        "crossingMinimization.positionId": "-1",
-        "portConstraints": "FIXED_ORDER",
-        "layering.layerId": "-1"
+        "portConstraints": "FIXED_ORDER"
       },
       "x": 513.0,
       "y": 282.5,
@@ -670,9 +652,7 @@
           "layoutOptions": {
             "nodeSize.constraints": "[]",
             "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-            "crossingMinimization.positionId": "-1",
-            "portConstraints": "FIXED_ORDER",
-            "layering.layerId": "-1"
+            "portConstraints": "FIXED_ORDER"
           },
           "x": 20.0,
           "y": 32.0,
@@ -681,11 +661,9 @@
         }
       ],
       "layoutOptions": {
-        "portLabels.placement": "[OUTSIDE]",
-        "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
         "nodeSize.constraints": "[]",
-        "layering.layerId": "-1",
-        "crossingMinimization.positionId": "-1",
+        "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+        "portLabels.placement": "[OUTSIDE]",
         "portConstraints": "FIXED_POS",
         "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
         "hierarchyHandling": "SEPARATE_CHILDREN"
@@ -790,9 +768,7 @@
       "layoutOptions": {
         "nodeSize.constraints": "[]",
         "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-        "crossingMinimization.positionId": "-1",
-        "portConstraints": "FIXED_ORDER",
-        "layering.layerId": "-1"
+        "portConstraints": "FIXED_ORDER"
       },
       "x": 414.0,
       "y": 277.5,
@@ -827,9 +803,7 @@
       "layoutOptions": {
         "nodeSize.constraints": "[]",
         "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-        "crossingMinimization.positionId": "-1",
-        "portConstraints": "FIXED_ORDER",
-        "layering.layerId": "-1"
+        "portConstraints": "FIXED_ORDER"
       },
       "x": 513.0,
       "y": 71.5,
@@ -875,9 +849,7 @@
       "layoutOptions": {
         "nodeSize.constraints": "[]",
         "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
-        "crossingMinimization.positionId": "-1",
-        "portConstraints": "FIXED_ORDER",
-        "layering.layerId": "-1"
+        "portConstraints": "FIXED_ORDER"
       },
       "x": 407.0,
       "y": 66.5,

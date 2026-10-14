@@ -5,12 +5,15 @@
 # Output is byte-stable: no timestamps.
 #
 # ELK cannot re-import its own layout export (it writes `resolvedAlgorithm`,
-# which LayoutOptionData rejects), so the oracle parses STRIPPED copies of the
-# goldens. Transform (the T18 test must reproduce it byte for byte):
+# which LayoutOptionData rejects), and the port registers CoreOptions only, so
+# it drops the layered-only `layering.layerId` / `crossingMinimization.positionId`
+# (J7 amendments 1 and 2). The oracle parses STRIPPED copies of the goldens.
+# Transform (the T18 test must reproduce it byte for byte):
+#   STRIP_KEYS = resolvedAlgorithm, layering.layerId, crossingMinimization.positionId
 #   obj = JSON.parse(raw golden text)
 #   walk obj recursively (objects and arrays); in every object that has a
 #   `layoutOptions` member which is an object, delete each key of that member
-#   equal to `resolvedAlgorithm` or ending in `.resolvedAlgorithm`
+#   equal to a STRIP_KEYS entry or ending in `.<entry>`
 #   text = JSON.stringify(obj, null, 2) + "\n"
 # Stripped copies live in a scratch dir only; _meta.json records both the raw
 # (inputSha256) and the stripped (strippedSha256) digests.
@@ -25,7 +28,8 @@ ELK_ORACLE_DIR="${ELK_ORACLE_DIR:-$ROOT/../elk-oracle}"
 P2_BUNDLES="${P2_BUNDLES:-$HOME/.m2/repository/p2/osgi/bundle}"
 GSON_BSN="com.google.gson"
 EXPORT_SEED=1 # keep in sync with run.sh
-TRANSFORM="delete layoutOptions keys resolvedAlgorithm|*.resolvedAlgorithm recursively; JSON.stringify(obj, null, 2) + newline"
+STRIP_KEYS="resolvedAlgorithm layering.layerId crossingMinimization.positionId"
+TRANSFORM="delete layoutOptions keys {$STRIP_KEYS} and *.<key> recursively; JSON.stringify(obj, null, 2) + newline"
 GENERATED_BY="tools/oracle/regen-parse-refs.sh"
 META_FILE="_meta.json"
 
@@ -45,8 +49,9 @@ strip_inputs() { # strip_inputs <destDir>; applies the transform in the header
   node -e '
     const fs = require("fs");
     const path = require("path");
-    const [inputDir, destDir, ...ids] = process.argv.slice(1);
-    const isKey = (k) => k === "resolvedAlgorithm" || k.endsWith(".resolvedAlgorithm");
+    const [inputDir, destDir, stripKeys, ...ids] = process.argv.slice(1);
+    const keys = stripKeys.split(" ");
+    const isKey = (k) => keys.some((s) => k === s || k.endsWith("." + s));
     const walk = (v) => {
       if (Array.isArray(v)) {
         v.forEach(walk);
@@ -63,7 +68,7 @@ strip_inputs() { # strip_inputs <destDir>; applies the transform in the header
       walk(obj);
       fs.writeFileSync(path.join(destDir, id + ".json"), JSON.stringify(obj, null, 2) + "\n");
     }
-  ' "$INPUT_DIR" "$1" "${INPUT_IDS[@]}"
+  ' "$INPUT_DIR" "$1" "$STRIP_KEYS" "${INPUT_IDS[@]}"
 }
 
 write_cases() { # write_cases <stripped dir> <dest file>
