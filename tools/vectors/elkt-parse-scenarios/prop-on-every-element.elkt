@@ -1,0 +1,18 @@
+graph g
+x.root: 1
+node a {
+  x.nodeKey: 2
+  label l : "t" { x.labelKey: 3 label "n" { x.nestedKey: 4 } }
+  port p { x.portKey: 5 label "pl" { x.portlabelKey: 6 } }
+}
+node b
+edge e : a.p -> b {
+  x.edgeKey: 7
+  label "el" { x.edgelabelKey: 8 }
+}
+edge f : a -> b {
+  layout [ x.singleKey: 9 ]
+}
+edge h : a -> b {
+  layout [ section s [ x.sectionKey: 10 ] ]
+}

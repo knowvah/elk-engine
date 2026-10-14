@@ -1,0 +1,5 @@
+node a
+node b
+edge e : a -> b
+edge e -> a
+edge b -> e

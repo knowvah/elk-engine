@@ -1,0 +1,8 @@
+org.eclipse.elk.direction: DOWN
+x.a: 1
+org.eclipse.elk.priority: 2
+x.b: "two"
+org.eclipse.elk.interactive: true
+x.c: null
+spacing.nodeNode: 3
+x.d: 1.5

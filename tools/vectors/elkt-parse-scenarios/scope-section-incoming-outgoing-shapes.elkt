@@ -1,0 +1,9 @@
+node a { port p }
+node b { port q }
+node c
+edge e : a.p -> b.q {
+  layout [ incoming: a.p outgoing: q ]
+}
+edge f : a -> c {
+  layout [ section s [ incoming: p outgoing: c ] ]
+}

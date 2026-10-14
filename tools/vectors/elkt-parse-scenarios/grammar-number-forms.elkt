@@ -1,0 +1,21 @@
+graph g
+node n0 { layout [ position: 0, 0 ] }
+node n1 { layout [ position: 7, 7 ] }
+node n2 { layout [ position: +7, +7 ] }
+node n3 { layout [ position: -7, -7 ] }
+node n4 { layout [ position: 1.5, 1.5 ] }
+node n5 { layout [ position: +1.5, +1.5 ] }
+node n6 { layout [ position: -1.5, -1.5 ] }
+node n7 { layout [ position: 1e3, 1e3 ] }
+node n8 { layout [ position: 1E3, 1E3 ] }
+node n9 { layout [ position: 1e+3, 1e+3 ] }
+node n10 { layout [ position: 1e-3, 1e-3 ] }
+node n11 { layout [ position: 1.5e3, 1.5e3 ] }
+node n12 { layout [ position: -1.5E-3, -1.5E-3 ] }
+node n13 { layout [ position: +2.5e+2, +2.5e+2 ] }
+node n14 { layout [ position: 007, 007 ] }
+node n15 { layout [ position: 123456789, 123456789 ] }
+node n16 { layout [ position: 99999999999, 99999999999 ] }
+node n17 { layout [ position: 0.0, 0.0 ] }
+node n18 { layout [ position: -0, -0 ] }
+node n19 { layout [ position: 1.0e0, 1.0e0 ] }

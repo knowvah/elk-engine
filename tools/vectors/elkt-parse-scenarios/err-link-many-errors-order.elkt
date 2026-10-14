@@ -1,0 +1,5 @@
+edge a -> b
+node c {
+  edge d -> e { layout [ incoming: f outgoing: g ] }
+}
+edge h -> c { layout [ section s -> i [ incoming: j ] ] }

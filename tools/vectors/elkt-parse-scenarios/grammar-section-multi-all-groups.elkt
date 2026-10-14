@@ -1,0 +1,12 @@
+node a { port p }
+node b { port q }
+edge a.p -> b.q {
+  layout [
+    section s1 [
+      incoming: a.p outgoing: b.q
+      start: 1, 2 end: 3, 4
+      bends: 5, 6 | 7, 8
+      org.eclipse.elk.priority: 1
+    ]
+  ]
+}

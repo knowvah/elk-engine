@@ -1,0 +1,5 @@
+node a
+node b
+edge a -> b {
+  layout [ start: 1, 2 end: 3, 4 ]
+}

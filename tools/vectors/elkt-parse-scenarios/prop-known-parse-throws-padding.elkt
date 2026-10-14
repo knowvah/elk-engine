@@ -1,0 +1,3 @@
+org.eclipse.elk.padding: "[top=a,left=b]"
+org.eclipse.elk.padding: "[top=1"
+org.eclipse.elk.padding: "[=]"

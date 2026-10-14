@@ -1,0 +1,3 @@
+org.eclipse.elk.direction: down
+org.eclipse.elk.interactive: TRUE
+org.eclipse.elk.edgeRouting: Orthogonal

@@ -1,0 +1,8 @@
+nod a
+node {
+edge ->
+label
+layout position
+x.y
+}
+]

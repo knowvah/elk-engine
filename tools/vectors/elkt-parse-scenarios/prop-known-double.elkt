@@ -1,0 +1,4 @@
+org.eclipse.elk.spacing.nodeNode: 12.5
+org.eclipse.elk.aspectRatio: 2
+org.eclipse.elk.spacing.edgeEdge: "3.25"
+org.eclipse.elk.scaleFactor: 1e1

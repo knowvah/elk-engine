@@ -1,0 +1,6 @@
+direction: DOWN
+spacing.nodeNode: 12.5
+nodeNode: 7
+priority: 3
+elk.direction: UP
+eclipse.elk.direction: LEFT

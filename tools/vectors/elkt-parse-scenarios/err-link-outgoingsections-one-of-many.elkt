@@ -1,0 +1,9 @@
+node a
+node b
+edge a -> b {
+  layout [
+    section s1 -> s2, zz, s3 [ ]
+    section s2 [ ]
+    section s3 [ ]
+  ]
+}

@@ -1,0 +1,8 @@
+node a {
+  label "nl"
+  port p { label pl : "pl" }
+}
+node b
+edge e : a.p -> b {
+  label "el"
+}

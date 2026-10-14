@@ -1,0 +1,4 @@
+graph g
+node a
+edge g -> a
+edge a -> g

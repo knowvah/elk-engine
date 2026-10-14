@@ -1,0 +1,6 @@
+node a {
+  node b
+  node c
+
+  edge b -> missing
+}

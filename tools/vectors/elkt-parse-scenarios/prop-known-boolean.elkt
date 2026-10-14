@@ -1,0 +1,3 @@
+org.eclipse.elk.interactive: true
+org.eclipse.elk.debugMode: false
+org.eclipse.elk.hypernode: "true"

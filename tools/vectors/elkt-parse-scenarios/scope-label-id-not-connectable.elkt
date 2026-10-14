@@ -1,0 +1,4 @@
+node a { label l : "x" }
+node b
+edge l -> b
+edge a.l -> b

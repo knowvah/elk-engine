@@ -1,0 +1,5 @@
+x.a: ^node
+x.b: ^graph
+x.c: ^true
+x.d: ^null
+x.e: a.^edge.b

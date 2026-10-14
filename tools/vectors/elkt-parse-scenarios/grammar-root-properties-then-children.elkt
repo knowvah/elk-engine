@@ -1,0 +1,7 @@
+graph g
+layout [ size: 5, 6 ]
+org.eclipse.elk.direction: DOWN
+node a
+label "r"
+port p
+node b

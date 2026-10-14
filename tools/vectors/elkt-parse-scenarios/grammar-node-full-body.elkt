@@ -1,0 +1,8 @@
+node a {
+  layout [ position: 1, 2 size: 3, 4 ]
+  org.eclipse.elk.padding: "[top=1,left=2,bottom=3,right=4]"
+  label "t"
+  port p
+  node b
+  edge b -> p
+}

@@ -1,0 +1,3 @@
+node a
+node b
+edge a -> b { layout [ bends: 1, 2 start: 3, 4 ] }

@@ -1,0 +1,5 @@
+node a
+node b
+edge a -> b {
+  layout [ bends: 1, 2 | 3, 4 org.eclipse.elk.priority: 7 ]
+}

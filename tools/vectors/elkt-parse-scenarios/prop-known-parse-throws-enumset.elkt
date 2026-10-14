@@ -1,0 +1,3 @@
+org.eclipse.elk.nodeSize.constraints: "[,]"
+org.eclipse.elk.nodeSize.constraints: "[PORTS"
+org.eclipse.elk.nodeSize.constraints: "PORTS, NODE_LABELS"

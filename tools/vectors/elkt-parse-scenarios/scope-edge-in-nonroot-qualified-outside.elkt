@@ -1,0 +1,7 @@
+graph g
+node z
+node a {
+  node b
+  edge b -> g.z
+  edge g.z -> g.a.b
+}

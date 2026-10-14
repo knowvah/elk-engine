@@ -1,0 +1,6 @@
+label "outer" {
+  label a : "inner1" {
+    label "inner2"
+  }
+  label "inner3"
+}

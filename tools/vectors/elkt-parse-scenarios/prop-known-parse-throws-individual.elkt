@@ -1,0 +1,3 @@
+org.eclipse.elk.spacing.individual: "nodeNode:a"
+org.eclipse.elk.spacing.individual: ":"
+org.eclipse.elk.spacing.individual: "[top=1,left=1"

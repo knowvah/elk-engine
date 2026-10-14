@@ -1,0 +1,6 @@
+node a
+node b
+edge e : a -> zz {
+  layout [ incoming: yy start: 1, 2 ]
+  org.eclipse.elk.priority: 1
+}
