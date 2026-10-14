@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import * as DoubleCompare from '../lang/DoubleCompare.js';
+import { identityHashCode } from '../lang/IdentityHashCode.js';
 import * as JavaDouble from '../lang/JavaDouble.js';
 import * as JavaInteger from '../lang/JavaInteger.js';
 import * as JavaString from '../lang/JavaString.js';
@@ -64,6 +65,16 @@ export function hashable<K extends { hashCode(): number; equals(o: unknown): boo
     hash: (k) => k.hashCode(),
     equals: (a, b) => a.equals(b),
   };
+}
+
+/**
+ * Keys without their own `hashCode`/`equals` (the ElkGraph classes, AD-10): `Object.hashCode()` and
+ * `Object.equals`, i.e. identity.
+ *
+ * @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode()
+ */
+export function identity<K extends object>(): HashStrategy<K> {
+  return { hash: (k) => identityHashCode(k), equals: (a, b) => a === b };
 }
 
 function compareCodeUnits(a: string, b: string): number {

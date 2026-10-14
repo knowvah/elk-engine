@@ -11,8 +11,18 @@ const ID_KEY = 'id';
 const NO_ID_MESSAGE = 'Every element must have an id.';
 const IMPLEMENTATION_ERROR_MESSAGE = 'Severe implementation error in the Json to ElkGraph importer.';
 
-function nullDereference(): never {
-  throw new TypeError();
+/**
+ * A non-null receiver; Java dereferences a null one: a `NullPointerException` (D10: `TypeError`). The one instance for
+ * every importer/exporter site; {@link unbox} is the same check for a `Double` that Java auto-unboxes.
+ */
+export function deref<T>(o: T | undefined | null): T {
+  if (o === undefined || o === null) throw new TypeError();
+  return o;
+}
+
+/** Java auto-unboxing of a `Double` that is null: a `NullPointerException` (D10). */
+export function unbox(d: number | undefined | null): number {
+  return deref(d);
 }
 
 /**
@@ -87,7 +97,7 @@ export class JsonAdapter {
   optString(o: unknown, element: string): string | null;
   optString(o: unknown, key: string | number): string | null {
     if (typeof key === 'number') {
-      return (this.toJsonArray(o) ?? nullDereference()).get(key).getAsString();
+      return deref(this.toJsonArray(o)).get(key).getAsString();
     }
     if (o === null || o === undefined) return null;
     return this.toJsonObject(o)?.get(key)?.getAsString() ?? null;

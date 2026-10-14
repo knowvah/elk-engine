@@ -14,6 +14,7 @@ import { type ElkNode, isElkNode } from '../ElkNode.js';
 import { isElkPort } from '../ElkPort.js';
 import type { ElkShape } from '../ElkShape.js';
 import { ElkGraphUtil } from '../util/ElkGraphUtil.js';
+import { deref, unbox } from './JsonAdapter.js';
 import type { JsonId, JsonImporterState } from './JsonImporter.js';
 
 const X_KEY = 'x';
@@ -32,18 +33,6 @@ const OUTGOING_SECTIONS_KEY = 'outgoingSections';
 const JUNCTION_POINTS_KEY = 'junctionPoints';
 const CONTAINER_KEY = 'container';
 const SECTION_ID_INFIX = '_s';
-
-/** Java auto-unboxing of a `Double` that is null: a `NullPointerException` (D10). */
-function unbox(d: number | undefined | null): number {
-  if (d === undefined || d === null) throw new TypeError();
-  return d;
-}
-
-/** A non-null receiver; Java dereferences a null one: a `NullPointerException` (D10). */
-function deref<T>(o: T | undefined | null): T {
-  if (o === undefined || o === null) throw new TypeError();
-  return o;
-}
 
 /**
  * Transfer the layout back to the formerly imported graph, using `transform`: the Xtend members `transferLayout` to
@@ -162,16 +151,18 @@ function transferSectionPoints(
 ): void {
   const adapter = state.adapter;
   // Start Point
-  const startPoint = adapter.newJsonObject();
-  adapter.addJsonObjDouble(startPoint, X_KEY, adjustX(state, edge, elkSection.getStartX()));
-  adapter.addJsonObjDouble(startPoint, Y_KEY, adjustY(state, edge, elkSection.getStartY()));
-  adapter.addJsonObj(jsonSection, START_POINT_KEY, startPoint);
+  adapter.addJsonObj(
+    jsonSection,
+    START_POINT_KEY,
+    pointJson(state, edge, { x: elkSection.getStartX(), y: elkSection.getStartY() }),
+  );
 
   // End Point
-  const endPoint = adapter.newJsonObject();
-  adapter.addJsonObjDouble(endPoint, X_KEY, adjustX(state, edge, elkSection.getEndX()));
-  adapter.addJsonObjDouble(endPoint, Y_KEY, adjustY(state, edge, elkSection.getEndY()));
-  adapter.addJsonObj(jsonSection, END_POINT_KEY, endPoint);
+  adapter.addJsonObj(
+    jsonSection,
+    END_POINT_KEY,
+    pointJson(state, edge, { x: elkSection.getEndX(), y: elkSection.getEndY() }),
+  );
 
   // Bend Points
   if (!elkSection.getBendPoints().isEmpty()) {
@@ -183,7 +174,7 @@ function transferSectionPoints(
   }
 }
 
-/** The `{x, y}` json object of a bend point or junction point, in the edge's coordinate mode. */
+/** The `{x, y}` json object of a start, end, bend or junction point, in the edge's coordinate mode. */
 function pointJson(state: JsonImporterState, edge: ElkEdge, pnt: ElkBendPoint | { x: number; y: number }): JsonObject {
   const adapter = state.adapter;
   const [x, y] = 'getX' in pnt ? [pnt.getX(), pnt.getY()] : [pnt.x, pnt.y];

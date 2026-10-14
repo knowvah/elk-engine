@@ -9,8 +9,7 @@ import type { JsonObject } from '../../gson/JsonObject.js';
 import { type BiMap, HashBiMap } from '../../guava/HashBiMap.js';
 import { newHashMap } from '../../guava/Maps.js';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
-import { identityHashCode } from '../../java/lang/IdentityHashCode.js';
-import { type HashStrategy, hashable } from '../../java/util/HashStrategy.js';
+import { hashable, identity } from '../../java/util/HashStrategy.js';
 import type { JavaHashMap } from '../../java/util/JavaHashMap.js';
 import type { ElkEdge } from '../ElkEdge.js';
 import type { ElkEdgeSection } from '../ElkEdgeSection.js';
@@ -41,11 +40,6 @@ const HEIGHT_KEY = 'height';
 
 /** A json id as the Xtend `Object` key: a string, an `Integer` (from `asId`), or null (a `HashMap` lookup of a missing optional id). */
 export type JsonId = string | number | null;
-
-/** The ElkGraph classes do not override `hashCode`/`equals`: identity (AD-10). */
-function identity<K extends object>(): HashStrategy<K> {
-  return { hash: (k) => identityHashCode(k), equals: (a, b) => a === b };
-}
 
 /**
  * The members of {@link JsonImporter} that the Xtend sections split off into `JsonImporterEdges.ts` and

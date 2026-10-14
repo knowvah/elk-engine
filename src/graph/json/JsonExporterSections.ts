@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { CoreOptions } from '../../core/options/CoreOptions.js';
+import type { EList } from '../../emf/common/util/EList.js';
 import type { JsonObject } from '../../gson/JsonObject.js';
 import type { BiMap } from '../../guava/HashBiMap.js';
 import type { ElkConnectableShape } from '../ElkConnectableShape.js';
@@ -76,15 +77,29 @@ function transformEdge(state: ExporterState, edge: ElkEdge, arrayA: unknown): vo
   state.transformProperties(edge, jsonObj);
 }
 
+/** The `{x, y}` json object of a point (start, end, bend or junction point). */
+function pointJson(adapter: JsonAdapter, x: number, y: number): JsonObject {
+  const jsonPnt = adapter.newJsonObject();
+  adapter.addJsonObjDouble(jsonPnt, X_KEY, x);
+  adapter.addJsonObjDouble(jsonPnt, Y_KEY, y);
+  return jsonPnt;
+}
+
+/** The id the exporter assigned to an edge endpoint: a port first, then a node; null when it is unknown. */
+function endpointId(state: ExporterState, endpoint: ElkConnectableShape): string | null {
+  let id = state.portIdMap.get(endpoint) ?? null;
+  if (id === null) {
+    id = state.nodeIdMap.get(endpoint) ?? null;
+  }
+  return id;
+}
+
 /** The `sources` block of `transformEdge`. */
 function transformEdgeSources(state: ExporterState, edge: ElkEdge, jsonObj: JsonObject): void {
   const { adapter } = state;
   const sources = adapter.newJsonArray();
   for (const s of edge.getSources()) {
-    let source = state.portIdMap.get(s) ?? null;
-    if (source === null) {
-      source = state.nodeIdMap.get(s) ?? null;
-    }
+    const source = endpointId(state, s);
     if (source === null) {
       // J5: the Java does not throw; the unknown endpoint fails in `toJson(null)` below
       adapter.formatError(`Unknown edge source: ${s.toString()}`);
@@ -99,10 +114,7 @@ function transformEdgeTargets(state: ExporterState, edge: ElkEdge, jsonObj: Json
   const { adapter } = state;
   const targets = adapter.newJsonArray();
   for (const t of edge.getTargets()) {
-    let target = state.portIdMap.get(t) ?? null;
-    if (target === null) {
-      target = state.nodeIdMap.get(t) ?? null;
-    }
+    const target = endpointId(state, t);
     if (target === null) {
       // J5: as above; the Java message prints `target`, which is null here
       adapter.formatError(`Unknown edge target: ${String(target)}`);
@@ -123,10 +135,7 @@ function transformJunctionPoints(state: ExporterState, edge: ElkEdge, jsonObj: J
     if (!state.isOmitLayout() && !jps.isEmpty()) {
       const jsonJPs = adapter.newJsonArray();
       for (const jp of jps) {
-        const jsonPnt = adapter.newJsonObject();
-        adapter.addJsonObjDouble(jsonPnt, X_KEY, jp.x);
-        adapter.addJsonObjDouble(jsonPnt, Y_KEY, jp.y);
-        adapter.addJsonArr(jsonJPs, jsonPnt);
+        adapter.addJsonArr(jsonJPs, pointJson(adapter, jp.x, jp.y));
       }
       adapter.addJsonObj(jsonObj, 'junctionPoints', jsonJPs);
     }
@@ -141,25 +150,16 @@ function transformSection(state: ExporterState, section: ElkEdgeSection, section
   adapter.addJsonArr(sections!, jsonObj);
 
   // Start Point
-  const startPoint = adapter.newJsonObject();
-  startPoint.addPropertyDouble(X_KEY, section.getStartX());
-  startPoint.addPropertyDouble(Y_KEY, section.getStartY());
-  adapter.addJsonObj(jsonObj, 'startPoint', startPoint);
+  adapter.addJsonObj(jsonObj, 'startPoint', pointJson(adapter, section.getStartX(), section.getStartY()));
 
   // End Point
-  const endPoint = adapter.newJsonObject();
-  endPoint.addPropertyDouble(X_KEY, section.getEndX());
-  endPoint.addPropertyDouble(Y_KEY, section.getEndY());
-  adapter.addJsonObj(jsonObj, 'endPoint', endPoint);
+  adapter.addJsonObj(jsonObj, 'endPoint', pointJson(adapter, section.getEndX(), section.getEndY()));
 
   // Bend Points
   if (!state.isOmitLayout() && !section.getBendPoints().isEmpty()) {
     const bendPoints = adapter.newJsonArray();
     for (const pnt of section.getBendPoints()) {
-      const jsonPnt = adapter.newJsonObject();
-      jsonPnt.addPropertyDouble(X_KEY, pnt.getX());
-      jsonPnt.addPropertyDouble(Y_KEY, pnt.getY());
-      adapter.addJsonArr(bendPoints, jsonPnt);
+      adapter.addJsonArr(bendPoints, pointJson(adapter, pnt.getX(), pnt.getY()));
     }
     adapter.addJsonObj(jsonObj, 'bendPoints', bendPoints);
   }
@@ -187,23 +187,23 @@ function transformSectionShapes(state: ExporterState, section: ElkEdgeSection, j
 
 /** The incoming and outgoing sections blocks of `transformSection`. */
 function transformSectionNeighbors(state: ExporterState, section: ElkEdgeSection, jsonObj: JsonObject): void {
+  transformSectionIds(state, section.getIncomingSections(), 'incomingSections', jsonObj);
+  transformSectionIds(state, section.getOutgoingSections(), 'outgoingSections', jsonObj);
+}
+
+/** The ids of neighbouring sections under `key`, if there are any (the incoming and outgoing blocks are identical). */
+function transformSectionIds(
+  state: ExporterState,
+  sections: EList<ElkEdgeSection>,
+  key: string,
+  jsonObj: JsonObject,
+): void {
   const { adapter } = state;
-
-  // Incoming sections
-  if (!section.getIncomingSections().isEmpty()) {
-    const incomingSections = adapter.newJsonArray();
-    for (const sec of section.getIncomingSections()) {
-      adapter.addJsonArr(incomingSections, adapter.toJson(state.idByElement(sec) as string));
+  if (!sections.isEmpty()) {
+    const ids = adapter.newJsonArray();
+    for (const sec of sections) {
+      adapter.addJsonArr(ids, adapter.toJson(state.idByElement(sec) as string));
     }
-    adapter.addJsonObj(jsonObj, 'incomingSections', incomingSections);
-  }
-
-  // Outgoing sections
-  if (!section.getOutgoingSections().isEmpty()) {
-    const outgoingSections = adapter.newJsonArray();
-    for (const sec of section.getOutgoingSections()) {
-      adapter.addJsonArr(outgoingSections, adapter.toJson(state.idByElement(sec) as string));
-    }
-    adapter.addJsonObj(jsonObj, 'outgoingSections', outgoingSections);
+    adapter.addJsonObj(jsonObj, key, ids);
   }
 }

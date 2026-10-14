@@ -32,8 +32,13 @@ const ESCAPES: Readonly<Record<string, string>> = {
 // Zl/Zp are exactly U+2028/U+2029. RegExp constructors, not literals: lizard misreads quotes in literals.
 const NEEDS_ESCAPE = new RegExp(String.raw`["\\\u0000-\u001f\p{Zl}\p{Zp}]`, 'gu');
 
+/** The `\\uXXXX` escape of a UTF-16 code unit (the one instance, also used by `JsonWriter`'s html-safe escaping). */
+export function unicodeEscape(c: string): string {
+  return `\\u${c.charCodeAt(0).toString(HEX_RADIX).padStart(UNICODE_ESCAPE_WIDTH, '0')}`;
+}
+
 function escapeChar(c: string): string {
-  return ESCAPES[c] ?? `\\u${c.charCodeAt(0).toString(HEX_RADIX).padStart(UNICODE_ESCAPE_WIDTH, '0')}`;
+  return ESCAPES[c] ?? unicodeEscape(c);
 }
 
 /**
