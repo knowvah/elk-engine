@@ -3,8 +3,8 @@
 // LayoutMetaDataService) that this task can decide: the canonical tree <G> (GraphJsonVectors.java header) is built in
 // TS from `new JsonImporter().transform(json)`, the json read as ElkGraphJson.ImportBuilder.toElk does (lenient or
 // strict reader, `readElement`, top-level object check; ElkGraphJson itself is T15).
-// Skipped by named filter: rows whose fixture has edges (EDGE_PHASE, T14: transformEdges is not wired yet) and rows
-// the Gson reader rejects (PARSE_PHASE, a JsonIOException before the importer runs: T7/T10/T15).
+// Skipped by named filter: rows the Gson reader rejects (PARSE_PHASE, a JsonIOException before the importer runs:
+// T7/T10/T15). Rows with edges run here too (T14: JsonImporterEdges.ts).
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LayoutMetaDataService } from '../../core/data/LayoutMetaDataService.js';
@@ -20,11 +20,13 @@ import { IllegalStateException } from '../../java/lang/IllegalStateException.js'
 import * as DoubleToString from '../../java/lang/DoubleToString.js';
 import { NumberFormatException } from '../../java/lang/NumberFormatException.js';
 import { UnsupportedOperationException } from '../../java/lang/UnsupportedOperationException.js';
+import type { ElkConnectableShape } from '../ElkConnectableShape.js';
 import type { ElkEdge } from '../ElkEdge.js';
 import type { ElkEdgeSection } from '../ElkEdgeSection.js';
 import type { ElkGraphElement } from '../ElkGraphElement.js';
 import type { ElkLabel } from '../ElkLabel.js';
 import type { ElkNode } from '../ElkNode.js';
+import { isElkPort } from '../ElkPort.js';
 import type { ElkShape } from '../ElkShape.js';
 import type { IPropertyHolder } from '../properties/IPropertyHolder.js';
 import { ElkGraphUtil } from '../util/ElkGraphUtil.js';
@@ -35,7 +37,6 @@ const VECTORS_URL = new URL('../../../test/golden/refs/java/graph-json.json', im
 const SCENARIOS_URL = new URL('../../../tools/vectors/graph-json-scenarios/', import.meta.url);
 const PARSE_ERROR_CLASS = 'JsonIOException';
 const TOP_LEVEL_MESSAGE = 'Top-level element of the graph must be a json object.';
-const EDGES_KEY = /["']?\bedges\b["']?\s*:/;
 const DOUBLE_OPTION_TYPE = 'DOUBLE';
 
 /** Java exception simple name -> the port's class (a Java NPE is a TypeError, D10). */
@@ -73,8 +74,11 @@ function fixtureText(row: ImportRow): string {
 
 const isParsePhase = (row: ImportRow): boolean =>
   row.throws !== undefined && simpleName(row.throws.class) === PARSE_ERROR_CLASS;
-const isEdgePhase = (row: ImportRow): boolean => EDGES_KEY.test(fixtureText(row));
-const decidable = rows.filter((r) => !isParsePhase(r) && !isEdgePhase(r));
+// A row whose expected value depends on the JVM's System.identityHashCode (AD-10: not reproducible; journaled for the
+// user, AD-13 STOP): HashMultimap<ElkEdgeSection, Object> iterates its section keys by identity hash, so the order in
+// which the incoming-section back-links fill ElkEdgeSection.outgoingSections differs. Asserted below up to that order.
+const IDENTITY_HASH_ORDER = 'ok-sections-linked';
+const decidable = rows.filter((r) => !isParsePhase(r) && r.id !== IDENTITY_HASH_ORDER);
 
 /** ElkGraphJson.ImportBuilder.toElk without the builder: reader, top-level check, importer. */
 function toElk(text: string, lenient: boolean): ElkNode {
@@ -110,8 +114,7 @@ function shape(s: ElkShape): Record<string, string> {
 
 function labels(list: Iterable<ElkLabel>): unknown[] {
   return [...list].map((l) => ({
-    identifier: l.getIdentifier(),
-    text: l.getText(),
+    text: l.getText(), // the canonical label has no identifier key (GraphJsonVectors.java Canon.labels removes it)
     ...shape(l),
     properties: props(l),
     labels: labels(l.getLabels()),
@@ -131,9 +134,41 @@ function canonNode(n: ElkNode): unknown {
       labels: labels(p.getLabels()),
     })),
     children: [...n.getChildren()].map(canonNode),
-    edges: [...n.getContainedEdges()].map(() => {
-      throw new Error('edge rows are T14');
-    }),
+    edges: [...n.getContainedEdges()].map(canonEdge),
+  };
+}
+
+function ref(s: ElkConnectableShape): unknown {
+  return { kind: isElkPort(s) ? 'port' : 'node', id: (s as ElkGraphElement).getIdentifier() };
+}
+
+function canonSection(s: ElkEdgeSection): unknown {
+  return {
+    identifier: s.getIdentifier(),
+    startX: DoubleToString.toString(s.getStartX()),
+    startY: DoubleToString.toString(s.getStartY()),
+    endX: DoubleToString.toString(s.getEndX()),
+    endY: DoubleToString.toString(s.getEndY()),
+    bendPoints: [...s.getBendPoints()].map((b) => ({
+      x: DoubleToString.toString(b.getX()),
+      y: DoubleToString.toString(b.getY()),
+    })),
+    incomingShape: s.getIncomingShape() === null ? null : ref(s.getIncomingShape() as ElkConnectableShape),
+    outgoingShape: s.getOutgoingShape() === null ? null : ref(s.getOutgoingShape() as ElkConnectableShape),
+    incomingSections: [...s.getIncomingSections()].map((o) => o.getIdentifier()),
+    outgoingSections: [...s.getOutgoingSections()].map((o) => o.getIdentifier()),
+    properties: props(s),
+  };
+}
+
+function canonEdge(e: ElkEdge): unknown {
+  return {
+    identifier: e.getIdentifier(),
+    sources: [...e.getSources()].map(ref),
+    targets: [...e.getTargets()].map(ref),
+    properties: props(e),
+    labels: labels(e.getLabels()),
+    sections: [...e.getSections()].map(canonSection),
   };
 }
 
@@ -164,14 +199,13 @@ function expectRow(row: ImportRow): void {
   }
 }
 
-describe('import rows without edges', () => {
-  const edgePhase = rows.filter((r) => !isParsePhase(r) && isEdgePhase(r));
+describe('import rows', () => {
   const parsePhase = rows.filter(isParsePhase);
 
-  it('partitions the recorded rows into decided, EDGE_PHASE and PARSE_PHASE', () => {
+  it('partitions the recorded rows into decided and PARSE_PHASE', () => {
     expect(rows.length).toBe(105);
-    expect(decidable.length + edgePhase.length + parsePhase.length).toBe(rows.length);
-    expect(decidable.length).toBeGreaterThan(40);
+    expect(decidable.length + parsePhase.length + 1).toBe(rows.length);
+    expect(decidable.length).toBe(rows.length - parsePhase.length - 1);
     expect(new Set(parsePhase.map((r) => simpleName((r.throws as Thrown).class)))).toEqual(
       new Set([PARSE_ERROR_CLASS]),
     );
@@ -179,6 +213,23 @@ describe('import rows without edges', () => {
 
   it.each(decidable.map((r) => [r.id, r] as const))('%s', (_id, row) => {
     expectRow(row);
+  });
+
+  it('matches the identity-hash-ordered row except for the order of the outgoing sections of one section', () => {
+    const row = rows.find((r) => r.id === IDENTITY_HASH_ORDER) as ImportRow;
+    const sortOutgoing = (g: unknown): unknown => {
+      const copy = structuredClone(g) as { edges: { sections: { outgoingSections: string[] }[] }[] };
+      for (const edge of copy.edges) for (const s of edge.sections) s.outgoingSections.sort();
+      return copy;
+    };
+    const got = outcome(row).graph as { children: unknown[] };
+    const expected = row.graph as { children: unknown[] };
+    expect(sortOutgoing(got)).toEqual(sortOutgoing(expected));
+    const section44 = (g: { edges?: unknown }): string[] =>
+      (g as { edges: { sections: { identifier: string; outgoingSections: string[] }[] }[] }).edges[0].sections[0]
+        .outgoingSections;
+    expect(section44(expected as never)).toEqual(['45', 's1']);
+    expect(section44(got as never)).toEqual(['s1', '45']);
   });
 
   it('includes the duplicate-id rows (J5)', () => {

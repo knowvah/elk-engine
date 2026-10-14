@@ -23,6 +23,7 @@ import { isElkEdgeSection } from '../ElkEdgeSection.js';
 import type { IPropertyHolder } from '../properties/IPropertyHolder.js';
 import { ElkGraphUtil } from '../util/ElkGraphUtil.js';
 import { JsonAdapter } from './JsonAdapter.js';
+import { transformEdges } from './JsonImporterEdges.js';
 
 const CHILDREN_KEY = 'children';
 const PORTS_KEY = 'ports';
@@ -99,8 +100,8 @@ export interface JsonImporterState {
  * layout information to the original json.
  *
  * The edge section (Xtend 148-425; T14) and layout transfer (Xtend 549-741 and 797-864; T16) parts live in
- * sibling files over {@link JsonImporterState} (J3); `transform` does not yet call `transformEdges`, that wiring
- * lands with the edge section.
+ * sibling files over {@link JsonImporterState} (J3); `transform` calls `transformEdges` from
+ * `JsonImporterEdges.ts`.
  *
  * @see org.eclipse.elk.graph.json/src/org/eclipse/elk/graph/json/JsonImporter.xtend
  */
@@ -143,7 +144,8 @@ export class JsonImporter implements JsonImporterState {
     // transform the root node along with its children
     const root = this.transformNode(graph, null);
 
-    // transform all edges: lands with T14 (JsonImporterEdges.ts)
+    // transform all edges
+    transformEdges(this, graph);
 
     // return the transformed ELK graph
     return root;
