@@ -13,7 +13,7 @@ const LONG_WORD_SHIFT = 32n;
 const LONG_BITS = 64;
 const INT_BITS = 32;
 const LAZY_NUMBER_CLASS = 'com.google.gson.internal.LazilyParsedNumber';
-const JSON_NUMBER = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?$/;
+const JSON_NUMBER = new RegExp(String.raw`^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?$`);
 const BOOLEAN_TRUE = 'true';
 const NOT_NUMBER_OR_STRING = 'Primitive is neither a number nor a string';
 const HEX_RADIX = 16;
@@ -29,7 +29,8 @@ const ESCAPES: Readonly<Record<string, string>> = {
   '\t': '\\t',
 };
 // eslint-disable-next-line no-control-regex -- the JSON string grammar escapes control characters
-const NEEDS_ESCAPE = /["\\\u0000-\u001f\p{Zl}\p{Zp}]/gu; // Zl/Zp are exactly U+2028/U+2029
+// Zl/Zp are exactly U+2028/U+2029. RegExp constructors, not literals: lizard misreads quotes in literals.
+const NEEDS_ESCAPE = new RegExp(String.raw`["\\\u0000-\u001f\p{Zl}\p{Zp}]`, 'gu');
 
 function escapeChar(c: string): string {
   return ESCAPES[c] ?? `\\u${c.charCodeAt(0).toString(HEX_RADIX).padStart(UNICODE_ESCAPE_WIDTH, '0')}`;

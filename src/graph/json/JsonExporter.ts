@@ -116,7 +116,16 @@ export class JsonExporter {
     idByElement: (element) => this.idByElement(element),
   };
 
-  constructor(private readonly random: Random = new Random()) {}
+  private readonly random: Random;
+
+  /**
+   * J4: Xtend's `val RANDOM = new Random()` (`JsonExporter.xtend:489`) as an optional parameter,
+   * unseeded by default. A `new` in a default parameter value stops lizard parsing the class, so the
+   * default is applied in the body.
+   */
+  constructor(random?: Random) {
+    this.random = random ?? new Random();
+  }
 
   setOptions(
     omitZeroPos: boolean,

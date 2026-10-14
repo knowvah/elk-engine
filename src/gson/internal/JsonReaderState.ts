@@ -58,14 +58,15 @@ export const KEYWORDS: Readonly<Record<string, readonly [string, number]>> = {
 };
 
 /** A JSON number (RFC 8259 grammar) at the scan position. */
-export const NUMBER_PATTERN = /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
-export const HEX_ESCAPE_PATTERN = /^[0-9a-fA-F]{4}$/;
+// RegExp constructors, not literals: lizard misreads regex literals and skips the functions after them.
+export const NUMBER_PATTERN = new RegExp(String.raw`-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?`, 'y');
+export const HEX_ESCAPE_PATTERN = new RegExp('^[0-9a-fA-F]{4}$');
 
 /** The JSONPath (`$.a[2]`) of a reader whose scope stack, object member names and array indices are given. */
 export function buildPath(
   stack: readonly number[],
   stackSize: number,
-  pathNames: readonly (string | null)[],
+  pathNames: ReadonlyArray<string | null>, // not `readonly (…)[]`: lizard cannot parse that type
   pathIndices: readonly number[],
 ): string {
   const parts: string[] = ['$'];
