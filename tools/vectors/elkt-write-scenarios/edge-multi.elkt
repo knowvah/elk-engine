@@ -1,0 +1,7 @@
+graph g
+node a
+node b
+node c
+node d
+edge a, b -> c, d
+edge m: a, b, c -> d

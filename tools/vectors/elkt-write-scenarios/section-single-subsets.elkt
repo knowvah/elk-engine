@@ -1,0 +1,19 @@
+graph g
+node a { port p }
+node b { port q }
+edge e0: a -> b { layout [  ] }
+edge e1: a -> b { layout [ incoming: a.p ] }
+edge e2: a -> b { layout [ outgoing: b.q ] }
+edge e3: a -> b { layout [ incoming: a.p outgoing: b.q ] }
+edge e4: a -> b { layout [ start: 1, 2 ] }
+edge e5: a -> b { layout [ incoming: a.p start: 1, 2 ] }
+edge e6: a -> b { layout [ outgoing: b.q start: 1, 2 ] }
+edge e7: a -> b { layout [ incoming: a.p outgoing: b.q start: 1, 2 ] }
+edge e8: a -> b { layout [ end: 3, 4 ] }
+edge e9: a -> b { layout [ incoming: a.p end: 3, 4 ] }
+edge e10: a -> b { layout [ outgoing: b.q end: 3, 4 ] }
+edge e11: a -> b { layout [ incoming: a.p outgoing: b.q end: 3, 4 ] }
+edge e12: a -> b { layout [ start: 1, 2 end: 3, 4 ] }
+edge e13: a -> b { layout [ incoming: a.p start: 1, 2 end: 3, 4 ] }
+edge e14: a -> b { layout [ outgoing: b.q start: 1, 2 end: 3, 4 ] }
+edge e15: a -> b { layout [ incoming: a.p outgoing: b.q start: 1, 2 end: 3, 4 ] }

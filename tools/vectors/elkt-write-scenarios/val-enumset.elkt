@@ -1,0 +1,5 @@
+graph g
+org.eclipse.elk.nodeSize.constraints: "PORTS, NODE_LABELS"
+org.eclipse.elk.nodeLabels.placement: "INSIDE, H_CENTER, V_TOP"
+org.eclipse.elk.portLabels.placement: "OUTSIDE"
+org.eclipse.elk.nodeSize.options: ""

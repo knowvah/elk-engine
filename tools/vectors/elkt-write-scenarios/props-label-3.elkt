@@ -1,0 +1,8 @@
+graph g
+node a {
+  label "t" {
+    priority: 4
+    debugMode: false
+    aspectRatio: 2.5
+  }
+}

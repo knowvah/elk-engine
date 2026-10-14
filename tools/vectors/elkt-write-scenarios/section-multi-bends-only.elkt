@@ -1,0 +1,9 @@
+graph g
+node a { port p }
+node b { port q }
+edge e: a -> b {
+  layout [
+    section s1 [ bends: 1, 2 ]
+    section s2 [ bends: 0, 0 | 3, 4 ]
+  ]
+}

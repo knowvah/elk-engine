@@ -1,0 +1,8 @@
+graph g
+node a {
+  label "l" {
+    priority: 1
+    label "n1"
+    label "n2"
+  }
+}

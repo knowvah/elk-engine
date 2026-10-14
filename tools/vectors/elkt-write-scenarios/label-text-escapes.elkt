@@ -1,0 +1,10 @@
+graph g
+node a {
+  label "tab\there"
+  label "quote\"inside"
+  label "back\\slash"
+  label "nl\nlf"
+  label 'single'
+  label "uni é 日"
+  label ""
+}

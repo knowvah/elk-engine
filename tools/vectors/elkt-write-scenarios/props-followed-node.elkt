@@ -1,0 +1,9 @@
+graph g
+node a {
+  priority: 1
+  direction: UP
+  label "l"
+  port p
+  node c
+  edge c -> c
+}

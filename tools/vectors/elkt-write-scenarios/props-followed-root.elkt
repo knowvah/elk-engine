@@ -1,0 +1,6 @@
+graph g
+priority: 1
+label "l"
+port p
+node a
+edge a -> a

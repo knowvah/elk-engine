@@ -1,0 +1,5 @@
+graph g
+node a {
+  priority: 2
+  aspectRatio: 1.5
+}

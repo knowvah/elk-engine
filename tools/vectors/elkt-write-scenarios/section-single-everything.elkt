@@ -1,0 +1,4 @@
+graph g
+node a { port p }
+node b { port q }
+edge a -> b { layout [ start: 1, 2 end: 5, 6 bends: 3, 4 priority: 2 ] priority: 7 label "l" }

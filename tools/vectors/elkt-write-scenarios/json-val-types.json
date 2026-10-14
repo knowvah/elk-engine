@@ -1,0 +1,12 @@
+{
+  "id": "g",
+  "layoutOptions": {
+    "s.num": 5,
+    "s.float": 1.5,
+    "s.bool": true,
+    "priority": 3,
+    "org.eclipse.elk.direction": "DOWN",
+    "org.eclipse.elk.nodeSize.constraints": "[PORTS, NODE_LABELS]"
+  },
+  "children": [{ "id": "a" }]
+}

@@ -1,0 +1,7 @@
+graph g
+algorithm: layered
+node a { algorithm: "org.eclipse.elk.layered" }
+node b { algorithm: "a b" }
+node c { algorithm: true }
+node d { algorithm: "1.5" }
+node e { algorithm: "node" }

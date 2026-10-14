@@ -1,0 +1,17 @@
+graph g
+node n0 { layout [ position: 0, 0 size: 0, 0 ] }
+node n1 { layout [ position: 0, 0 size: 5, 0 ] }
+node n2 { layout [ position: 0, 0 size: 0, 5 ] }
+node n3 { layout [ position: 0, 0 size: 5, 5 ] }
+node n4 { layout [ position: 5, 0 size: 0, 0 ] }
+node n5 { layout [ position: 5, 0 size: 5, 0 ] }
+node n6 { layout [ position: 5, 0 size: 0, 5 ] }
+node n7 { layout [ position: 5, 0 size: 5, 5 ] }
+node n8 { layout [ position: 0, 5 size: 0, 0 ] }
+node n9 { layout [ position: 0, 5 size: 5, 0 ] }
+node n10 { layout [ position: 0, 5 size: 0, 5 ] }
+node n11 { layout [ position: 0, 5 size: 5, 5 ] }
+node n12 { layout [ position: 5, 5 size: 0, 0 ] }
+node n13 { layout [ position: 5, 5 size: 5, 0 ] }
+node n14 { layout [ position: 5, 5 size: 0, 5 ] }
+node n15 { layout [ position: 5, 5 size: 5, 5 ] }

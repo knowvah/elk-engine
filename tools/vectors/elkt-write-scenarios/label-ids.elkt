@@ -1,0 +1,6 @@
+graph g
+node a {
+  label l1: "with id"
+  label "without id"
+  label l2: "with id 2" { priority: 1 }
+}

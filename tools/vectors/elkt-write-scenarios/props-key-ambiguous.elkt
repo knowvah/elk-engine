@@ -1,0 +1,9 @@
+graph g
+org.eclipse.elk.spacing.nodeNode: 4
+node a { spacing.nodeNode: 5 }
+node b { nodeNode: 7 }
+node c { elk.spacing.edgeEdge: 6 }
+node d { edgeEdge: 8 }
+node e { placement: INSIDE }
+node f { nodeLabels.placement: INSIDE }
+node g { org.eclipse.elk.nodeLabels.placement: INSIDE }

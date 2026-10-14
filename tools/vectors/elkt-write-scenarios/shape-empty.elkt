@@ -1,0 +1,6 @@
+graph g
+node a {
+  port p
+  label "t"
+}
+node b { layout [ ] }

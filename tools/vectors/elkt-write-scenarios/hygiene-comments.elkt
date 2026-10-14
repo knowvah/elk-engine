@@ -1,0 +1,9 @@
+// leading comment
+graph g // after id
+/* block
+   comment */
+node a { // after brace
+  /* inside */ port p // tail
+  label "l" /* trailing */
+}
+// final

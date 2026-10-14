@@ -1,0 +1,15 @@
+{
+  "id": "g",
+  "children": [
+    {
+      "id": "a",
+      "x": 1,
+      "y": 2,
+      "width": 3,
+      "height": 4,
+      "ports": [{ "id": "p", "x": 1.5, "y": 0, "width": 2, "height": 2, "layoutOptions": { "priority": "1" } }],
+      "children": [{ "id": "b", "ports": [{ "id": "q" }] }],
+      "edges": [{ "id": "e", "sources": ["b"], "targets": ["a"] }]
+    }
+  ]
+}

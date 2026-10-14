@@ -1,0 +1,10 @@
+graph g
+org.eclipse.elk.spacing.nodeNode: 5
+elk.direction: DOWN
+org.eclipse.elk.portConstraints: FIXED_SIDE
+org.eclipse.elk.nodeLabels.placement: "INSIDE, H_LEFT"
+org.eclipse.elk.portLabels.placement: INSIDE
+org.eclipse.elk.edgeLabels.placement: HEAD
+org.eclipse.elk.algorithm: "layered"
+org.eclipse.elk.padding: "[top=1,left=2,bottom=3,right=4]"
+org.eclipse.elk.^position: "(3,4)"
