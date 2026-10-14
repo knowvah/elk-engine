@@ -111,3 +111,13 @@ ELK cannot re-import its own layout goldens: the layout export writes `resolvedA
 identically by `regen-parse-refs.sh` (oracle) and the T18 round-trip test (TS). No stripped inputs
 are committed. `refs/elk-parse/_meta.json` records the raw and the stripped sha256 per file. A
 `graph-json.json` import row (T3) pins the raw-import exception; TS must reproduce it.
+
+## J7 amendment 2 (2026-10-14, user, T18 stop)
+
+The 4 goldens also carry layered-only options `layering.layerId` and
+`crossingMinimization.positionId`. The full-registry oracle round-trips them; the port registers
+CoreOptions only (J10) and drops them, which shifts the EMF hash-bucket order of the remaining keys
+(proven on scrambler: with both stripped, oracle == port byte for byte). The strip list becomes
+`resolvedAlgorithm`, `layering.layerId`, `crossingMinimization.positionId` (exact key or `*.<key>`
+suffix, same transform). The `elk-parse` refs are regenerated with it. When layered's metadata is
+registered (mission 7h) the two layered keys leave the list and the refs are regenerated again.

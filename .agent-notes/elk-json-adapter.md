@@ -104,3 +104,24 @@
 - **Impact**: any test or port that reads ElkGraph properties in "insertion order" is wrong for ≥ 2
   properties; read `getProperties().entryList()` for list order.
 - **Confidence**: High
+
+## Observation: the CoreOptions-only registry changes export keys and option sets
+
+- **Context**: T17 `exportLayoutOptions`, T18 golden round trips
+- **Finding**: with layered registered (JVM tests, oracle), `priority.direction` makes the suffix
+  `direction` ambiguous so the exporter writes `elk.direction`; layered-only options in inputs
+  (`layering.layerId`, `crossingMinimization.positionId`) survive the oracle but are dropped by the
+  CoreOptions-only port, and the smaller property map changes EMF bucket order of the rest.
+- **Impact**: mission 7h must re-enable `exportLayoutOptions`, remove the two layered keys from
+  `STRIP_KEYS` (regen-parse-refs.sh and json-roundtrip.test.ts) and regenerate the elk-parse refs;
+  mission 5 must drop `MISSION5_PROVIDERS`.
+- **Confidence**: High
+
+## Observation: HotSpot identity hashes are not stable across runs
+
+- **Context**: Batch 6 gate; `graph-json-vectors.sh` regenerated a different `outgoingSections` order
+- **Finding**: ~1 in 7 runs flipped the iteration order of a `HashMultimap` keyed by identity-hashed
+  `ElkEdgeSection`s; identity hashes depend on thread scheduling, not only on the program bytes.
+- **Impact**: recorders must sort (or otherwise canonicalise) anything iterated from identity-keyed
+  hash containers, and each generator should be rerun several times before its ref is trusted.
+- **Confidence**: High
