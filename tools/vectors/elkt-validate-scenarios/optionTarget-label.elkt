@@ -1,0 +1,5 @@
+// @covers 73-74, 131-135 (ElkLabel incl. nested label; applicable and not applicable)
+node a {
+  label "l1" { edgeLabels.inline: true nodeLabels.placement: "[H_LEFT, V_TOP]" }
+  label "l2" { direction: UP label "inner" { ^port.side: NORTH } }
+}

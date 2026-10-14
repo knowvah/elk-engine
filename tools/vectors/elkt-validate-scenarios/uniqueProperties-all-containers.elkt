@@ -1,0 +1,18 @@
+// @covers 161-181 (nodes, ports, labels, edges, sections)
+node a {
+  commentBox: true
+  commentBox: false
+  port p { ^port.side: NORTH ^port.side: SOUTH }
+  label "l" { edgeLabels.inline: true edgeLabels.inline: false }
+}
+node b
+edge e: a -> b {
+  layout [
+    section s1 [ start: 0,0 end: 1,1 direction: UP direction: DOWN ]
+  ]
+  priority: 1
+  priority: 2
+}
+edge f: a -> b {
+  layout [ start: 0,0 end: 1,1 spacing.nodeNode: 1 spacing.nodeNode: 2 ]
+}

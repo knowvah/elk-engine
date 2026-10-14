@@ -1,0 +1,7 @@
+// @covers 217-220 (edge declared below the common ancestor which is the root)
+node a
+node b
+node p {
+  edge a -> b
+  node q { edge a -> b }
+}

@@ -1,0 +1,4 @@
+// @covers 138 (the algorithm option itself is never checked against an algorithm)
+// @deferred mission5
+algorithm: random
+node a { algorithm: fixed }

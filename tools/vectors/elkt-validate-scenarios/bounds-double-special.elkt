@@ -1,0 +1,8 @@
+// @covers 104-112 (Double.valueOf accepts NaN, Infinity, hex and suffixes)
+aspectRatio: NaN
+spacing.nodeNode: Infinity
+spacing.edgeEdge: "-Infinity"
+spacing.nodeSelfLoop: "0x1p3"
+spacing.labelLabel: "1d"
+spacing.edgeNode: " 5 "
+spacing.commentComment: "-1e0"

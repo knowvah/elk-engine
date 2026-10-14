@@ -1,0 +1,7 @@
+// @covers 145, 150 (the loop reassigns algorithm: message names the last ancestor visited, not the node)
+// @deferred mission5
+algorithm: box
+node c {
+  algorithm: fixed
+  direction: UP
+}

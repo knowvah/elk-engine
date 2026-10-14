@@ -1,0 +1,6 @@
+// @covers 108-113 (ERROR issues land on the value feature: line of the value token)
+node a {
+  spacing.nodeNode
+    :
+    -1
+}

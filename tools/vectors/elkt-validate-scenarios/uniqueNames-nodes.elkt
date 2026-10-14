@@ -1,0 +1,4 @@
+// @covers 183-212 (duplicate node ids in one container)
+node a
+node a
+node b

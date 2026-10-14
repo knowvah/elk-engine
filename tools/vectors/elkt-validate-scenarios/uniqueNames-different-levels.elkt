@@ -1,0 +1,3 @@
+// @covers 186-203 (same id at different nesting levels: no issue)
+node a { node a { port a } port a }
+node b { node a }

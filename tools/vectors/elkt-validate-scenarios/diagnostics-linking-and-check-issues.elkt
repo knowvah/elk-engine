@@ -1,0 +1,5 @@
+// @covers ResourceValidatorImpl: linker and check issues together (sorted by line)
+unknown: 1
+node a { direction: bogus }
+node a
+edge e: a -> nowhere

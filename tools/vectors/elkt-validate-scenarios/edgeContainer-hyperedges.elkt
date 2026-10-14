@@ -1,0 +1,7 @@
+// @covers 217-222 (several sources and targets: general case, lowest common ancestor)
+node a { node a1 node a2 }
+node b { node b1 }
+node c
+edge a.a1, a.a2 -> b.b1
+edge a.a1, c -> a.a2, b.b1 { }
+edge a.a1, a.a2 -> a.a1

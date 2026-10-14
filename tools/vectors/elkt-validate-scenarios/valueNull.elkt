@@ -1,0 +1,5 @@
+// @covers 81, 104 (null literal: value stays null, no value checks)
+direction: null
+animate: null
+spacing.nodeNode: null
+node a { aspectRatio: null }

@@ -1,0 +1,8 @@
+// @covers 160-176 (interleaved keys, several duplicate groups)
+direction: RIGHT
+animate: true
+direction: LEFT
+randomSeed: 1
+animate: false
+direction: UP
+edgeRouting: ORTHOGONAL

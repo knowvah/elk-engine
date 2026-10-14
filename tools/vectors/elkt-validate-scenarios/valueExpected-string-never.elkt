@@ -1,0 +1,3 @@
+// @covers 86-87 (STRING options parse every text: no proxy survives; resolved values only)
+node a { port p { } label "x" { font.name: 5 } }
+node b { label "y" { font.name: some.name } }

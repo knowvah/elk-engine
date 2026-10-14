@@ -1,0 +1,4 @@
+// @covers 81-98 (ENUM option: default branch with optionClass: Expected value of type <simple class name>.)
+direction: bogus
+edgeRouting: right
+node a { port p { ^port.side: Up } }

@@ -1,0 +1,7 @@
+// @covers 231-247 (incoming and outgoing both wrong: two errors on the section lines)
+node a
+node b
+node c
+edge e: a -> b {
+  layout [ incoming: b outgoing: a start: 0,0 end: 1,1 ]
+}

@@ -1,0 +1,8 @@
+// @covers 52-58 (unknown key, all container kinds)
+foo.bar: 1
+node a {
+  unknown.key: "x"
+  port p { p.unknown: true }
+  label "l" { l.unknown: null }
+}
+edge e: a -> a { e.unknown: 2 }

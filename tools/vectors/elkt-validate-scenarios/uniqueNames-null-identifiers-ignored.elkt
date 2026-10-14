@@ -1,0 +1,12 @@
+// @covers 191 (unnamed edges and labels are skipped)
+node a {
+  label "u1"
+  label "u2"
+  port p
+}
+node b
+edge a -> b
+edge a -> b
+edge b -> a {
+  layout [ start: 0,0 end: 1,1 ]
+}

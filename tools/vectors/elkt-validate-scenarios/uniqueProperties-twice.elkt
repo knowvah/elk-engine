@@ -1,0 +1,3 @@
+// @covers 160-181 (the same key twice: both entries flagged)
+direction: RIGHT
+direction: LEFT

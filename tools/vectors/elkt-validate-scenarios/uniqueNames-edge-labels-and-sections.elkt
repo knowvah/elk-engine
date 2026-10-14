@@ -1,0 +1,14 @@
+// @covers 183-212 (labels and sections inside an edge, labels inside labels and ports)
+node a {
+  port p { label x: "1" label x: "2" }
+  label outer: "o" { label in: "1" label in: "2" }
+}
+node b
+edge e: a -> b {
+  layout [
+    section s [ start: 0,0 end: 1,1 ]
+    section s [ start: 1,1 end: 2,2 ]
+  ]
+  label k: "1"
+  label k: "2"
+}

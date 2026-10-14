@@ -1,0 +1,13 @@
+// @covers 217-222 (source is the target parent and vice versa, self loops, ports)
+node p {
+  port pp
+  node c { port cp }
+  edge p -> c
+  edge c -> p
+  edge pp -> c.cp
+  edge c.cp -> p
+}
+node q
+edge p -> p.c
+edge q -> q
+edge p.pp -> p.pp

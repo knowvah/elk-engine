@@ -1,0 +1,7 @@
+// @covers 81-93 (INT option: Expected value of type Integer.)
+randomSeed: abc
+animTimeFactor: 5.0
+maxAnimTime: 1e3
+minAnimTime: 7
+topdown.sizeCategories: "12"
+partitioning.partition: +4

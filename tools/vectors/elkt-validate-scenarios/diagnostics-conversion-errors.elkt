@@ -1,0 +1,4 @@
+// @covers ResourceValidatorImpl: value-converter diagnostics folded in (invalid string escapes)
+node a { label "bad \q escape" }
+node b { label "short \u12 unicode" }
+node c { layout [ size: 1e999, 5 ] }

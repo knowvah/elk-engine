@@ -1,0 +1,4 @@
+// @covers 52-58 (suffix matching two options stays an unknown Property; id is the text as written)
+padding: "[top=1]"
+nodeLabels.padding: "[top=1]"
+node n { port p { side: NORTH } }

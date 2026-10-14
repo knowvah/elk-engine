@@ -1,0 +1,11 @@
+// @covers 81-114 (resolved values of every option type: no issue)
+animate: true
+randomSeed: 42
+aspectRatio: 1.5
+contentAlignment: "[V_TOP, H_CENTER]"
+direction: RIGHT
+edgeRouting: 1
+org.eclipse.elk.padding: "[top=1,left=2]"
+nodeSize.minimum: "(10,20)"
+node a { font.name: "Arial" }
+node n { direction: 2 }

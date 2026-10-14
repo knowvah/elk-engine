@@ -1,0 +1,3 @@
+// @covers 52-58 (known key by suffix: no issue; message would use entry.key.id)
+direction: RIGHT
+elk.spacing.nodeNode: 4

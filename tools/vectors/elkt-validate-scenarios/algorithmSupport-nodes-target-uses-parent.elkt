@@ -1,0 +1,6 @@
+// @covers 76-77 (NODES-target option on a child uses the parent algorithm)
+// @deferred mission5
+algorithm: box
+node c1 { priority: 1 }
+node c2 { commentBox: true }
+node c3 { algorithm: random hypernode: true }

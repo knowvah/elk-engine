@@ -1,0 +1,4 @@
+// @covers 81-98 (OBJECT option: default branch with optionClass)
+padding: x
+org.eclipse.elk.padding: "[top=a]"
+node a { nodeSize.minimum: "(abc)" org.eclipse.elk.margins: "[x]" }
