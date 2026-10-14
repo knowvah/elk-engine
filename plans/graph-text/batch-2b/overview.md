@@ -10,9 +10,9 @@ Depends on batch 1; may run concurrently with batch 2a.
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T10 | `core.util.internal.LayoutOptionProxy` | typescript-pro | src/core/util/internal/LayoutOptionProxy.ts (+ .test.ts) | T3 | [ ] |
-| T11 | Xtext declarative-validation subset and resource validator | typescript-pro | src/xtext/validation/**, src/xtext/diagnostics/Severity.ts (+ .test.ts) | T4 | [ ] |
-| T12 | Xtext `formatting2` subset: region access, hidden-region formatting, rendering | typescript-pro | src/xtext/formatting2/** (+ .test.ts) | T5 | [ ] |
+| T10 | `core.util.internal.LayoutOptionProxy` | typescript-pro | src/core/util/internal/LayoutOptionProxy.ts (+ .test.ts) | T3 | [x] |
+| T11 | Xtext declarative-validation subset and resource validator | typescript-pro | src/xtext/validation/**, src/xtext/diagnostics/Severity.ts (+ .test.ts) | T4 | [x] |
+| T12 | Xtext `formatting2` subset: region access, hidden-region formatting, rendering | typescript-pro | src/xtext/formatting2/** (+ .test.ts) | T5 | [x] |
 
 T11 and T12 import nothing from `src/graph/text` (boundary rule, T6) and test against test-local
 grammars/objects; their ELK-specific replay happens in T20/T21/T22.
