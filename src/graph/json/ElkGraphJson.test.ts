@@ -13,6 +13,7 @@ import { Maybe } from '../../core/util/Maybe.js';
 import { GsonBuilder } from '../../gson/GsonBuilder.js';
 import { JsonIOException } from '../../gson/JsonIOException.js';
 import { JsonObject } from '../../gson/JsonObject.js';
+import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
 import { Random } from '../../java/util/Random.js';
 import type { ElkEdge } from '../ElkEdge.js';
 import type { ElkEdgeSection } from '../ElkEdgeSection.js';
@@ -42,6 +43,8 @@ const UNKNOWN_OPTION = new Property<string>('my.unknown.option');
 const UNKNOWN_VALUE = 'v';
 const NULL_POINTER = 'NullPointerException';
 const EXPORT_ROW_COUNT = 880;
+const FOREIGN_MODS = new Set(['foreignTarget', 'foreignSource']);
+const UNKNOWN_ENDPOINT_IAE_COUNT = 48;
 
 interface Flags {
   prettyPrint: boolean;
@@ -159,6 +162,15 @@ function exportOutcome(row: ExportRow): { text?: string; error?: Error } {
   }
 }
 
+/**
+ * Known divergence (user decision 2026-10-14, docs/conformance.md): an edge endpoint unknown to the exporter is a
+ * message-less IllegalArgumentException (Gson 2.8), not the oracle's NullPointerException (Gson 2.11). These are the
+ * rows that record that NullPointerException: 3 fixtures x 16 flag sets.
+ */
+const UNKNOWN_ENDPOINT_IAE: ReadonlySet<string> = new Set(
+  VECTORS.export.filter((r) => r.mods.some((m) => FOREIGN_MODS.has(m))).map((r) => r.id),
+);
+
 function expectThrown(error: Error | undefined, thrown: Thrown): void {
   const name = simpleName(thrown.class);
   expect(error?.constructor).toBe(EXCEPTION_CLASSES[name]);
@@ -166,6 +178,15 @@ function expectThrown(error: Error | undefined, thrown: Thrown): void {
     expect(error?.message).toBe(thrown.message);
   }
 }
+
+describe('unknown export endpoints (known divergence: IllegalArgumentException)', () => {
+  it('covers exactly the 48 rows that record a NullPointerException', () => {
+    const rows = VECTORS.export.filter((r) => UNKNOWN_ENDPOINT_IAE.has(r.id));
+    expect(rows.length).toBe(UNKNOWN_ENDPOINT_IAE_COUNT);
+    expect(new Set(rows.map((r) => `${r.input}+${r.mods.join('+')}`)).size).toBe(3);
+    expect(rows.map((r) => simpleName((r.throws as Thrown).class))).toEqual(rows.map(() => NULL_POINTER));
+  });
+});
 
 describe('export rows (import -> mods -> export)', () => {
   it('covers all 880 recorded rows, 64 of which throw a NullPointerException', () => {
@@ -181,7 +202,12 @@ describe('export rows (import -> mods -> export)', () => {
       expect(got.error).toBeUndefined();
       expect(got.text).toBe(row.text);
     } else {
-      expectThrown(got.error, row.throws);
+      if (UNKNOWN_ENDPOINT_IAE.has(row.id)) {
+        expect(got.error?.constructor).toBe(IllegalArgumentException);
+        expect(got.error?.message).toBe('');
+      } else {
+        expectThrown(got.error, row.throws);
+      }
     }
   });
 });

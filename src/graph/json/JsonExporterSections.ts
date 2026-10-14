@@ -3,6 +3,7 @@ import { CoreOptions } from '../../core/options/CoreOptions.js';
 import type { EList } from '../../emf/common/util/EList.js';
 import type { JsonObject } from '../../gson/JsonObject.js';
 import type { BiMap } from '../../guava/HashBiMap.js';
+import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
 import type { ElkConnectableShape } from '../ElkConnectableShape.js';
 import type { ElkEdge } from '../ElkEdge.js';
 import type { ElkEdgeSection } from '../ElkEdgeSection.js';
@@ -94,6 +95,15 @@ function endpointId(state: ExporterState, endpoint: ElkConnectableShape): string
   return id;
 }
 
+/**
+ * What the Java's `source.toJson` on a null id becomes. Known divergence (user decision 2026-10-14): the oracle's Gson
+ * 2.11 throws a message-less `NullPointerException` from `new JsonPrimitive(null)`; Gson 2.8.x threw a message-less
+ * `IllegalArgumentException`, which is what the port throws. `JsonPrimitive` itself keeps the 2.11 behaviour.
+ */
+function unknownEndpoint(): IllegalArgumentException {
+  return new IllegalArgumentException();
+}
+
 /** The `sources` block of `transformEdge`. */
 function transformEdgeSources(state: ExporterState, edge: ElkEdge, jsonObj: JsonObject): void {
   const { adapter } = state;
@@ -101,10 +111,11 @@ function transformEdgeSources(state: ExporterState, edge: ElkEdge, jsonObj: Json
   for (const s of edge.getSources()) {
     const source = endpointId(state, s);
     if (source === null) {
-      // J5: the Java does not throw; the unknown endpoint fails in `toJson(null)` below
+      // J5: the Java does not throw (`formatError` is called without `throw`) and fails in `toJson(null)` below.
       adapter.formatError(`Unknown edge source: ${s.toString()}`);
+      throw unknownEndpoint();
     }
-    adapter.addJsonArr(sources, adapter.toJson(source as string));
+    adapter.addJsonArr(sources, adapter.toJson(source));
   }
   adapter.addJsonObj(jsonObj, 'sources', sources);
 }
@@ -118,8 +129,9 @@ function transformEdgeTargets(state: ExporterState, edge: ElkEdge, jsonObj: Json
     if (target === null) {
       // J5: as above; the Java message prints `target`, which is null here
       adapter.formatError(`Unknown edge target: ${String(target)}`);
+      throw unknownEndpoint();
     }
-    adapter.addJsonArr(targets, adapter.toJson(target as string));
+    adapter.addJsonArr(targets, adapter.toJson(target));
   }
   adapter.addJsonObj(jsonObj, 'targets', targets);
 }
