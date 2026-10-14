@@ -118,7 +118,7 @@ Parallel agents never run `npm run coverage` (shared `coverage/`); the orchestra
 | 5 | Importer edges | T14 | 4 | [x] |
 | 6 | `ElkGraphJson`, `transferLayout` | T15–T16 | 5 | [x] |
 | 7 | Ported tests, round-trip, sweep | T17–T19 | 6 | [x] |
-| 8 | Docs + close-out | T20 | 7 | [ ] |
+| 8 | Docs + close-out | T20 | 7 | [x] |
 
 ## Document index
 
@@ -138,3 +138,51 @@ deferred (J6), sweep result, anything journaled for the user, next roadmap missi
 
 1. Re-read this file. 2. Re-read `decision-journal.md`. 3. First batch with `[ ]` →
 its `overview.md` → first incomplete task.
+
+## Mission summary (2026-10-14)
+
+**Tasks:** 20/20 complete, all batches `[x]`. Delivered `src/gson` (Gson 2.11.0 subset: element
+model, reader/parser, writer incl. html-safe, `Gson`/`GsonBuilder`/`TypeAdapter`),
+`src/graph/json` (`JsonAdapter`, `JsonImportException`, `JsonImporter` + `JsonImporterEdges` +
+`JsonImporterLayoutTransfer`, `JsonExporter` + `JsonExporterSections`, `JsonMetaDataConverter`,
+`ElkGraphJson`), `core.util.Maybe`; vectors `gson.json`, `graph-json.json`,
+`graph-json-transfer.json`, `refs/elk-parse/`; docs `docs/architecture/elk-json.md`.
+
+**Evidence:** every Gson/import/export/converter/transfer vector replays (filters below); the 4
+golden round trips are byte-identical to the oracle (J7 amendments); local sweep 550/550 within
+1e-6; 31 of 36 `graph.json.test` methods ported with assertions unchanged.
+
+**User decisions (15):** J7 amendment (strip `resolvedAlgorithm`) and amendment 2 (strip layered
+`layerId`/`positionId` until 7h); `.prettierignore` for fixtures; `gson.json` fixed in place
+(decoded escapes) and extended (html-safe rows); EcoreEMap ported to EMF bucket order + null keys
+(mission-2 file) and the mission-2 test helper retargeted to `entryList()`; `EnumSet.toString`;
+deferrals `MISSION5_PROVIDERS` (converter) and `LayoutOptionsTest.exportLayoutOptions` (7h);
+identity-hash `outgoingSections` order as known divergence, then recorder sorts section-link lists
+(JVM nondeterminism); canonical tree moved to `test/helpers/graph-json-canon.ts`; keep
+`test/helpers/graph-json-oracle.ts`.
+
+**Flagged for review:**
+1. J5 named the wrong exception class: unknown export endpoint is a message-less NPE (Gson 2.11), not IAE.
+2. Standing rule "no helpers shared across methods" was not followed in three places:
+   `checkSourcesAndTargets`, `createBendPoints` (T14) and `pointJson` (T16).
+   Each body is an identical Java loop; none was reverted.
+3. Lizard silently skips `#private` methods, `new X()` default parameters, quote-bearing regex
+   literals and `readonly (A|B)[]` parameter types. Earlier batch gates passed vacuously on
+   `JsonPrimitive.ts`/`JsonReaderState.ts`/`JsonWriter.ts`/`JsonExporter.ts`.
+   Semantics-neutral rewrites were committed, two of them outside their batch's write-set.
+4. Mission-2 files changed: `EcoreEMap.ts`, `EMapPropertyHolderImpl.ts` (null-key hash), `EMapPropertyHolderImpl.test.ts` helper.
+5. Cleanup candidates:
+   - `Pair`/`Maybe` element helpers are duplicated.
+   - `ID_STRATEGY` is duplicated in `JsonImporterEdges.ts`.
+   - `IOException`/`EOFException` live in `src/gson/stream/MalformedJsonException.ts` (no `src/java/io` package).
+6. One unexplained `npm run coverage` exit 1 with all tests passing (T14 agent run). It did not
+   reproduce in the 6+ later runs.
+
+**Follow-ups:**
+- Mission 5 (random/fixed/box providers): drop `MISSION5_PROVIDERS`; port
+  `SectionsTest.preserveSectionIdsTest` and `TransferLayoutTest.transferLayoutEdgeSectionExistsTest`.
+- Mission 7h (layered): port `EdgeCoordsTest`, `IndividualSpacingsTest.importIndividualSpacingsTest`
+  and `LayoutOptionsTest.exportLayoutOptions`; remove the layered keys from `STRIP_KEYS` and
+  regenerate `refs/elk-parse/`.
+
+**Next roadmap mission:** 4b, `graph.text`.
