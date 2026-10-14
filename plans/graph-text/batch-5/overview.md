@@ -7,6 +7,6 @@ T8, `scoping` T14, `linking` T16) and the converter/parser outputs of batch 3 an
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T17 | `ElkGraphQualifiedNameProvider`, `ElkGraphScopeProvider`, `ElkGraphLinker` | typescript-pro | src/graph/text/naming/ElkGraphQualifiedNameProvider.ts, src/graph/text/scoping/ElkGraphScopeProvider.ts (+ generated-chain base if needed), src/graph/text/linking/{ElkGraphLinker,ElkGraphReferences}.ts | T13, T14, T15, T16 | [ ] |
+| T17 | `ElkGraphQualifiedNameProvider`, `ElkGraphScopeProvider`, `ElkGraphLinker` | typescript-pro | src/graph/text/naming/ElkGraphQualifiedNameProvider.ts, src/graph/text/scoping/ElkGraphScopeProvider.ts (+ generated-chain base if needed), src/graph/text/linking/{ElkGraphLinker,ElkGraphReferences}.ts | T13, T14, T15, T16 | [x] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green.
