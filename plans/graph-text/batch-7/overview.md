@@ -8,7 +8,7 @@ Depends on batch 6 (T18 `load` for loading scenarios; T19 serializer for formatt
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T20 | `ElkGraphValidator`, `IssueCodes`, `ElkGraphTextUtil` | typescript-pro | src/graph/text/validation/{ElkGraphValidator,IssueCodes}.ts, src/graph/text/ElkGraphTextUtil.ts, src/core/validation/LayoutOptionValidator.ts, src/graph/util/ElkGraphUtil.ts (export only) | T11, T18 | [ ] |
-| T21 | `ElkGraphFormatter` | typescript-pro | src/graph/text/formatting2/ElkGraphFormatter.ts | T12, T19 | [ ] |
+| T20 | `ElkGraphValidator`, `IssueCodes`, `ElkGraphTextUtil` | typescript-pro | src/graph/text/validation/{ElkGraphValidator,IssueCodes}.ts, src/graph/text/ElkGraphTextUtil.ts, src/core/validation/LayoutOptionValidator.ts, src/graph/util/ElkGraphUtil.ts (export only) | T11, T18 | [x] |
+| T21 | `ElkGraphFormatter` | typescript-pro | src/graph/text/formatting2/ElkGraphFormatter.ts | T12, T19 | [x] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green.

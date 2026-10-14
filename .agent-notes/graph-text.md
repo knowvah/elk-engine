@@ -184,3 +184,12 @@ new ElkGraphReferences(), parseResult.nodeModel)`, then `linkModel(root, consume
   cannot reach it (importer rejects null); `.elkt` `null` values can.
 - **Impact**: follow-up fix outside graph-text; `ElkGraphText.test.ts` `KNOWN_EXPORTER_GAPS` goes red then.
 - **Confidence**: High
+
+## Observation: algorithm-dependent checks can be verified before mission 5 with stand-ins
+
+- **Context**: T20 `checkAlgorithmSupport`, `getAlgorithm`
+- **Finding**: the TS registry holds no algorithms; registering synthetic `LayoutAlgorithmData` with the
+  `Core.melk` `supports` lists reproduced all 11 `mission5` validator rows exactly. An unresolvable proxy reads
+  back through `getProperty` as the option default; read `getProperties().get(...)` to see the stored proxy.
+- **Impact**: mission 5 removes the stand-in describe and the `MISSION5_ALGORITHMS` filter together.
+- **Confidence**: High
