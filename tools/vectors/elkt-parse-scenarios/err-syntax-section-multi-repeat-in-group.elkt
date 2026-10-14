@@ -1,0 +1,3 @@
+node a
+node b
+edge a -> b { layout [ section s [ end: 1, 2 end: 3, 4 ] ] }

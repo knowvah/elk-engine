@@ -1,0 +1,26 @@
+node a
+node b
+edge o0 : a -> b { layout [ incoming: a outgoing: b start: 1, 2 end: 3, 4 bends: 7, 8 ] }
+edge o1 : a -> b { layout [ incoming: a outgoing: b end: 3, 4 start: 1, 2 bends: 7, 8 ] }
+edge o2 : a -> b { layout [ incoming: a start: 1, 2 outgoing: b end: 3, 4 bends: 7, 8 ] }
+edge o3 : a -> b { layout [ incoming: a start: 1, 2 end: 3, 4 outgoing: b bends: 7, 8 ] }
+edge o4 : a -> b { layout [ incoming: a end: 3, 4 outgoing: b start: 1, 2 bends: 7, 8 ] }
+edge o5 : a -> b { layout [ incoming: a end: 3, 4 start: 1, 2 outgoing: b bends: 7, 8 ] }
+edge o6 : a -> b { layout [ outgoing: b incoming: a start: 1, 2 end: 3, 4 bends: 7, 8 ] }
+edge o7 : a -> b { layout [ outgoing: b incoming: a end: 3, 4 start: 1, 2 bends: 7, 8 ] }
+edge o8 : a -> b { layout [ outgoing: b start: 1, 2 incoming: a end: 3, 4 bends: 7, 8 ] }
+edge o9 : a -> b { layout [ outgoing: b start: 1, 2 end: 3, 4 incoming: a bends: 7, 8 ] }
+edge o10 : a -> b { layout [ outgoing: b end: 3, 4 incoming: a start: 1, 2 bends: 7, 8 ] }
+edge o11 : a -> b { layout [ outgoing: b end: 3, 4 start: 1, 2 incoming: a bends: 7, 8 ] }
+edge o12 : a -> b { layout [ start: 1, 2 incoming: a outgoing: b end: 3, 4 bends: 7, 8 ] }
+edge o13 : a -> b { layout [ start: 1, 2 incoming: a end: 3, 4 outgoing: b bends: 7, 8 ] }
+edge o14 : a -> b { layout [ start: 1, 2 outgoing: b incoming: a end: 3, 4 bends: 7, 8 ] }
+edge o15 : a -> b { layout [ start: 1, 2 outgoing: b end: 3, 4 incoming: a bends: 7, 8 ] }
+edge o16 : a -> b { layout [ start: 1, 2 end: 3, 4 incoming: a outgoing: b bends: 7, 8 ] }
+edge o17 : a -> b { layout [ start: 1, 2 end: 3, 4 outgoing: b incoming: a bends: 7, 8 ] }
+edge o18 : a -> b { layout [ end: 3, 4 incoming: a outgoing: b start: 1, 2 bends: 7, 8 ] }
+edge o19 : a -> b { layout [ end: 3, 4 incoming: a start: 1, 2 outgoing: b bends: 7, 8 ] }
+edge o20 : a -> b { layout [ end: 3, 4 outgoing: b incoming: a start: 1, 2 bends: 7, 8 ] }
+edge o21 : a -> b { layout [ end: 3, 4 outgoing: b start: 1, 2 incoming: a bends: 7, 8 ] }
+edge o22 : a -> b { layout [ end: 3, 4 start: 1, 2 incoming: a outgoing: b bends: 7, 8 ] }
+edge o23 : a -> b { layout [ end: 3, 4 start: 1, 2 outgoing: b incoming: a bends: 7, 8 ] }

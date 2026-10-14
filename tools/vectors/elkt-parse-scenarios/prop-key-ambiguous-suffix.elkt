@@ -1,0 +1,6 @@
+padding: "[top=1,left=1,bottom=1,right=1]"
+placement: "[INSIDE]"
+scaleFactor: 2
+activate: true
+individual: "x"
+default: CENTER

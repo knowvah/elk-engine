@@ -1,0 +1,4 @@
+org.eclipse.elk.layered.spacing.nodeNodeBetweenLayers: 20
+layered.crossingMinimization.strategy: LAYER_SWEEP
+mrtree.weighting: DESCENDANTS
+org.eclipse.elk.force.iterations: 100

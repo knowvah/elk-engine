@@ -1,0 +1,1 @@
+node a { node b layout [ size: 1, 2 ] }

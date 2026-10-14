@@ -1,0 +1,2 @@
+org.eclipse.elk.spacing.individual: "nodeNode:3"
+org.eclipse.elk.spacing.portsSurrounding: "[top=1,left=1,bottom=1,right=1]"

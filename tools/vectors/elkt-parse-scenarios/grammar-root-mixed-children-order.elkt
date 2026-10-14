@@ -1,0 +1,9 @@
+graph g
+node a
+label "l1"
+port p1
+edge a -> b
+node b
+label "l2"
+port p2
+edge a -> p2

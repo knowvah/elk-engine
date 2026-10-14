@@ -1,0 +1,5 @@
+node a
+node b
+edge a -> b {
+  layout [ section s [ org.eclipse.elk.priority: 4 k.v: 1.5 ] ]
+}

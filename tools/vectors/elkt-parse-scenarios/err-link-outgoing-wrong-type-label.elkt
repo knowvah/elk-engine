@@ -1,0 +1,3 @@
+node a { label l : "x" }
+node b
+edge a -> b { layout [ outgoing: l ] }

@@ -1,0 +1,10 @@
+node x
+node a {
+  node x
+  node b {
+    node x
+    node y
+    edge y -> x
+  }
+  edge b -> x
+}

@@ -1,0 +1,8 @@
+node a {
+  port p {
+    layout [ position: 1, 2 size: 3, 4 ]
+    org.eclipse.elk.portConstraints: FIXED_SIDE
+    label "pl"
+    label q : "ql"
+  }
+}

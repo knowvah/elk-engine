@@ -1,0 +1,3 @@
+node a { label l : "t" }
+node b
+edge l -> b

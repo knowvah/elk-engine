@@ -1,0 +1,4 @@
+nodeLabels.padding: "[top=1,left=1,bottom=1,right=1]"
+edgeLabels.placement: HEAD
+portLabels.placement: INSIDE
+topdown.scaleFactor: 2

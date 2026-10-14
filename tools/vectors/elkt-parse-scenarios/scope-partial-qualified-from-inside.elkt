@@ -1,0 +1,6 @@
+node a {
+  node b { node c }
+  node d
+  edge d -> b.c
+  edge d -> a.b.c
+}

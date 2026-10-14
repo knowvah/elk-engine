@@ -1,0 +1,5 @@
+graph g
+layout [ size: 1, 2 ]
+x.a: 1
+y.b: 2
+node n { layout [ position: 1, 2 ] x.c: 3 }

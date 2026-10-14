@@ -1,0 +1,8 @@
+node a
+node b
+edge e : a -> b {
+  org.eclipse.elk.priority: 2
+  label "x"
+  label y : "y"
+}
+edge a -> b {}

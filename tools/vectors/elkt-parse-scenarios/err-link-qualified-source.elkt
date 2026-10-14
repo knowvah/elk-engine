@@ -1,0 +1,4 @@
+node a { node b }
+node z
+edge a.nope -> z
+edge nope.b -> z

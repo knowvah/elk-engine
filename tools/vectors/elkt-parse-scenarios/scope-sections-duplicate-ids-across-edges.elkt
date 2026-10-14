@@ -1,0 +1,4 @@
+node a
+node b
+edge e1 : a -> b { layout [ section s -> t [ start: 1, 1 ] section t [ ] ] }
+edge e2 : a -> b { layout [ section s -> t [ start: 2, 2 ] section t [ ] ] }

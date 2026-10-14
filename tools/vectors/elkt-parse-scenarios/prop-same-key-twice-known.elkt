@@ -1,0 +1,3 @@
+org.eclipse.elk.direction: DOWN
+org.eclipse.elk.direction: UP
+direction: LEFT

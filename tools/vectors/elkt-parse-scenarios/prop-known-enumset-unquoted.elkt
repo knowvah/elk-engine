@@ -1,0 +1,2 @@
+org.eclipse.elk.nodeSize.constraints: PORTS
+org.eclipse.elk.portLabels.placement: INSIDE

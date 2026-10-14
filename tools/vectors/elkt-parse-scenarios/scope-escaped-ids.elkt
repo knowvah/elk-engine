@@ -1,0 +1,4 @@
+node ^node { node ^edge { port ^port } }
+node d
+edge ^node.^edge.^port -> d
+edge d -> ^node.^edge

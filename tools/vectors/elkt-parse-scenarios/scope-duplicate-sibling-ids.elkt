@@ -1,0 +1,6 @@
+node a { port p1 }
+node a { port p2 }
+node b
+edge a -> b
+edge a.p1 -> b
+edge a.p2 -> b

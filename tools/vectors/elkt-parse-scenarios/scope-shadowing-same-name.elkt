@@ -1,0 +1,8 @@
+node x
+node a {
+  node x
+  node y
+  edge y -> x
+}
+edge a -> x
+edge a.x -> x

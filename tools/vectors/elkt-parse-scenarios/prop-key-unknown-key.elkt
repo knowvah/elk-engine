@@ -1,0 +1,5 @@
+my.custom.key: 1
+unknown: "x"
+a.b.c.d.e.f: true
+org.eclipse.elk.nonexistent: 5
+org.eclipse.elk.layered.nonexistent: 5

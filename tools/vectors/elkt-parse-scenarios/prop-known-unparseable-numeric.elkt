@@ -1,0 +1,5 @@
+org.eclipse.elk.direction: 3
+org.eclipse.elk.edgeRouting: 1.5
+org.eclipse.elk.interactive: 1
+org.eclipse.elk.algorithm: 5
+org.eclipse.elk.font.name: true

@@ -1,0 +1,4 @@
+org.eclipse.elk.^position: "(a,b)"
+org.eclipse.elk.^position: "(1,"
+org.eclipse.elk.^position: "(1;2)"
+org.eclipse.elk.bendPoints: "(1;2)"

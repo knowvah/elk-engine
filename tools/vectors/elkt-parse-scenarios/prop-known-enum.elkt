@@ -1,0 +1,5 @@
+org.eclipse.elk.direction: DOWN
+org.eclipse.elk.edgeRouting: ORTHOGONAL
+org.eclipse.elk.portConstraints: FIXED_ORDER
+org.eclipse.elk.hierarchyHandling: "INCLUDE_CHILDREN"
+org.eclipse.elk.alignment: left

@@ -1,0 +1,7 @@
+org.eclipse.elk.direction: BOGUS
+org.eclipse.elk.spacing.nodeNode: "abc"
+org.eclipse.elk.priority: 1.5
+org.eclipse.elk.interactive: yes
+org.eclipse.elk.padding: "[oops]"
+org.eclipse.elk.nodeSize.constraints: "[NOPE]"
+org.eclipse.elk.^position: "x"

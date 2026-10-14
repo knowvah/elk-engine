@@ -1,0 +1,8 @@
+node a
+node b
+edge a -> b {
+  layout [
+    section s1 [ end: 3, 4 outgoing: b start: 1, 2 incoming: a ]
+    section s2 [ outgoing: b incoming: a end: 3, 4 start: 1, 2 bends: 1, 1 ]
+  ]
+}

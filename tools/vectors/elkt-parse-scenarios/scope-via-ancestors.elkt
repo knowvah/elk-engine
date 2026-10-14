@@ -1,0 +1,10 @@
+node top
+node a {
+  node b {
+    node c {
+      edge c -> top
+      edge c -> a
+      edge c -> b
+    }
+  }
+}

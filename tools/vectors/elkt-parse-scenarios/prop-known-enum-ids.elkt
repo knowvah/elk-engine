@@ -1,0 +1,4 @@
+org.eclipse.elk.^port.side: NORTH
+org.eclipse.elk.^edge.type: "DIRECTED"
+org.eclipse.elk.json.edgeCoords: ROOT
+org.eclipse.elk.json.shapeCoords: PARENT

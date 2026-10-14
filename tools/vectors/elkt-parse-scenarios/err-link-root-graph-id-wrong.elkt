@@ -1,0 +1,3 @@
+graph g
+node a
+edge h.a -> a

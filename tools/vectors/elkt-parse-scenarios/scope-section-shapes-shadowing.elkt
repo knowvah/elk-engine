@@ -1,0 +1,8 @@
+node x
+node a {
+  node x
+  node b
+  edge b -> x {
+    layout [ incoming: x outgoing: b ]
+  }
+}

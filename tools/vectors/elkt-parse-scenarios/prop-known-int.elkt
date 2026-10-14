@@ -1,0 +1,4 @@
+org.eclipse.elk.priority: 3
+org.eclipse.elk.randomSeed: -4
+org.eclipse.elk.font.^size: "12"
+org.eclipse.elk.^port.index: +2

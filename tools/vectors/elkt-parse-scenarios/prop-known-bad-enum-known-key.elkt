@@ -1,0 +1,2 @@
+org.eclipse.elk.direction: DOWNWARD
+org.eclipse.elk.portConstraints: "fixed order"

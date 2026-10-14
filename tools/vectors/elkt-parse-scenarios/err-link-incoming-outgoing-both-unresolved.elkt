@@ -1,0 +1,9 @@
+node a
+node b
+edge a -> b {
+  layout [
+    incoming: q
+    start: 1, 2
+    outgoing: r
+  ]
+}
