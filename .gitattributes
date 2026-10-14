@@ -1,2 +1,4 @@
 * text=auto eol=lf
 *.jar binary
+# Byte-meaningful vector inputs (CRLF/CR line tests): never normalise.
+tools/vectors/elkt-*-scenarios/*.elkt -text
