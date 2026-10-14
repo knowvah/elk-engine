@@ -166,3 +166,21 @@ new ElkGraphReferences(), parseResult.nodeModel)`, then `linkModel(root, consume
   `ElkGraphFactory.eINSTANCE`).
 - **Impact**: T18 assembles `ElkGraphText.load` from this chain.
 - **Confidence**: High
+
+## Observation: Xtext's serializer always formats
+
+- **Context**: T19 reading `Serializer.java:121-157`
+- **Finding**: `serialize(obj, options)` is `serializeToRegions` + `IFormatter2.format` + render; the
+  "unformatted" options only set `formatUndefinedHiddenRegionsOnly`, which changes nothing for string-built
+  regions. Unordered groups follow `FollowerSorter`: unset doubles are `PREFERABLY` transient, so members sort
+  by (entry optional, declaration order) and output stops when no set value remains.
+- **Impact**: byte-exact writer evidence needs the formatter (T21); a sequencer alone is checked by tokens.
+- **Confidence**: High
+
+## Observation: the mission-4 JsonExporter does not NPE on null option values
+
+- **Context**: T18 replay of `prop-known-null`
+- **Finding**: Java `p.value.toString` throws; `src/graph/json/JsonExporter.ts:53` writes `"null"`. JSON input
+  cannot reach it (importer rejects null); `.elkt` `null` values can.
+- **Impact**: follow-up fix outside graph-text; `ElkGraphText.test.ts` `KNOWN_EXPORTER_GAPS` goes red then.
+- **Confidence**: High
