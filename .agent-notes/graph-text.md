@@ -135,3 +135,21 @@ M` (code `org.eclipse.emf.ecore.14`, holder's first line), twice per collision. 
   selects an instrumented budget; the plain-run budget stays as specified.
 - **Impact**: every new performance test uses the helper from the start.
 - **Confidence**: High
+
+## Observation: Xtext reference text keeps one blank per hidden gap
+
+- **Context**: T15 against `scope-qualifiedid-whitespace`
+- **Finding**: `NodeModelUtils.getTokenText` joins non-hidden leaves with one `' '` where hidden tokens
+  separated them, so the link text of `a . b` is `'a . b'` (no resolution); datatype-rule converters
+  receive the plain concatenation `a.b`.
+- **Impact**: linking and diagnostics use `ICrossReferenceNode.getText()` verbatim.
+- **Confidence**: High
+
+## Observation: Xtext linking clears opposite ends before linking each object (ELK #170)
+
+- **Context**: T16 `Linker.ensureModelLinked`
+- **Finding**: per object in pre-order, `clearReferences` runs before `ensureLinked`; the base
+  `clearReference` unsets opposite ends too, erasing links set from earlier-visited objects. Diagnostics
+  are emitted in object pre-order, then node source order — not line order.
+- **Impact**: T17's override must skip the three opposite references; T18 keeps consumer order.
+- **Confidence**: High
