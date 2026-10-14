@@ -63,18 +63,6 @@ export function fixtureText(row: { readonly input: string }): string {
 
 export const isParsePhase = (row: ImportRow): boolean =>
   row.throws !== undefined && simpleName(row.throws.class) === PARSE_ERROR_CLASS;
-// A row whose expected value depends on the JVM's System.identityHashCode (AD-10: not reproducible; journaled for the
-// user, AD-13 STOP): HashMultimap<ElkEdgeSection, Object> iterates its section keys by identity hash, so the order in
-// which the incoming-section back-links fill ElkEdgeSection.outgoingSections differs. Asserted up to that order.
-export const IDENTITY_HASH_ORDER = 'ok-sections-linked';
-
-/** IDENTITY_HASH_ORDER treatment: the canonical tree with every section's outgoingSections sorted. */
-export function sortOutgoing(g: unknown): unknown {
-  const copy = structuredClone(g) as { edges: { sections: { outgoingSections: string[] }[] }[] };
-  for (const edge of copy.edges) for (const s of edge.sections) s.outgoingSections.sort();
-  return copy;
-}
-
 // ---- the canonical tree <G>
 
 function valueText(key: { getId(): string }, value: unknown): string {
@@ -128,6 +116,10 @@ function ref(s: ElkConnectableShape): unknown {
   return { kind: isElkPort(s) ? 'port' : 'node', id: (s as ElkGraphElement).getIdentifier() };
 }
 
+function sortedIds(sections: Iterable<ElkEdgeSection>): (string | null)[] {
+  return [...sections].map((o) => o.getIdentifier()).sort();
+}
+
 function canonSection(s: ElkEdgeSection): unknown {
   return {
     identifier: s.getIdentifier(),
@@ -141,8 +133,10 @@ function canonSection(s: ElkEdgeSection): unknown {
     })),
     incomingShape: s.getIncomingShape() === null ? null : ref(s.getIncomingShape() as ElkConnectableShape),
     outgoingShape: s.getOutgoingShape() === null ? null : ref(s.getOutgoingShape() as ElkConnectableShape),
-    incomingSections: [...s.getIncomingSections()].map((o) => o.getIdentifier()),
-    outgoingSections: [...s.getOutgoingSections()].map((o) => o.getIdentifier()),
+    // Sorted, as GraphJsonVectors records them: the importer fills these lists from a HashMultimap keyed by
+    // identity-hashed sections (JsonImporter.xtend:313-314), so the JVM order varies between runs.
+    incomingSections: sortedIds(s.getIncomingSections()),
+    outgoingSections: sortedIds(s.getOutgoingSections()),
     properties: props(s),
   };
 }

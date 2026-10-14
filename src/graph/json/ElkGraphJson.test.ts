@@ -6,7 +6,6 @@
 //    J4); all other rows go through the builder. Text is byte-identical; a Java NullPointerException is a TypeError.
 //  - the `import` rows: the canonical tree <G> (test/helpers/graph-json-canon.ts) of every graph-producing row, and
 //    exception class and message of every throwing row (the PARSE_PHASE rows, a JsonIOException, included).
-// `ok-sections-linked` is compared with the IDENTITY_HASH_ORDER normalisation (outgoingSections order only).
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LayoutMetaDataService } from '../../core/data/LayoutMetaDataService.js';
@@ -23,13 +22,11 @@ import { Property } from '../properties/Property.js';
 import { ElkGraphUtil } from '../util/ElkGraphUtil.js';
 import {
   EXCEPTION_CLASSES,
-  IDENTITY_HASH_ORDER,
   TOP_LEVEL_MESSAGE,
   canonNode,
   fixtureText,
   importRows,
   simpleName,
-  sortOutgoing,
 } from '../../../test/helpers/graph-json-canon.js';
 import type { ImportRow, Thrown } from '../../../test/helpers/graph-json-canon.js';
 import { ElkGraphJson, ExportBuilder, ImportBuilder } from './ElkGraphJson.js';
@@ -198,11 +195,7 @@ describe('import rows with a graph', () => {
 
   it.each(graphRows.map((r) => [r.id, r] as const))('%s', (_id, row: ImportRow) => {
     const got = canonNode(ElkGraphJson.forGraph(fixtureText(row)).lenient(row.lenient).toElk());
-    if (row.id === IDENTITY_HASH_ORDER) {
-      expect(sortOutgoing(got)).toEqual(sortOutgoing(row.graph));
-    } else {
-      expect(got).toEqual(row.graph);
-    }
+    expect(got).toEqual(row.graph);
   });
 });
 

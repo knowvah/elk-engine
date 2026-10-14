@@ -26,19 +26,17 @@ import { JsonImporter } from './JsonImporter.js';
 
 import {
   EXCEPTION_CLASSES,
-  IDENTITY_HASH_ORDER,
   TOP_LEVEL_MESSAGE,
   canonNode,
   fixtureText,
   importRows as rows,
   isParsePhase,
   simpleName,
-  sortOutgoing,
 } from '../../../test/helpers/graph-json-canon.js';
 import type { ImportRow, Thrown } from '../../../test/helpers/graph-json-canon.js';
 import { PARSE_ERROR_CLASS } from '../../../test/helpers/graph-json-canon.js';
 
-const decidable = rows.filter((r) => !isParsePhase(r) && r.id !== IDENTITY_HASH_ORDER);
+const decidable = rows.filter((r) => !isParsePhase(r));
 
 /** ElkGraphJson.ImportBuilder.toElk without the builder: reader, top-level check, importer. */
 function toElk(text: string, lenient: boolean): ElkNode {
@@ -81,8 +79,8 @@ describe('import rows', () => {
 
   it('partitions the recorded rows into decided and PARSE_PHASE', () => {
     expect(rows.length).toBe(105);
-    expect(decidable.length + parsePhase.length + 1).toBe(rows.length);
-    expect(decidable.length).toBe(rows.length - parsePhase.length - 1);
+    expect(decidable.length + parsePhase.length).toBe(rows.length);
+    expect(decidable.length).toBe(rows.length - parsePhase.length);
     expect(new Set(parsePhase.map((r) => simpleName((r.throws as Thrown).class)))).toEqual(
       new Set([PARSE_ERROR_CLASS]),
     );
@@ -92,16 +90,15 @@ describe('import rows', () => {
     expectRow(row);
   });
 
-  it('matches the identity-hash-ordered row except for the order of the outgoing sections of one section', () => {
-    const row = rows.find((r) => r.id === IDENTITY_HASH_ORDER) as ImportRow;
-    const got = outcome(row).graph as { children: unknown[] };
-    const expected = row.graph as { children: unknown[] };
-    expect(sortOutgoing(got)).toEqual(sortOutgoing(expected));
-    const section44 = (g: { edges?: unknown }): string[] =>
-      (g as { edges: { sections: { identifier: string; outgoingSections: string[] }[] }[] }).edges[0].sections[0]
-        .outgoingSections;
-    expect(section44(expected as never)).toEqual(['45', 's1']);
-    expect(section44(got as never)).toEqual(['s1', '45']);
+  // AD-10 (user decision, known divergence): the JVM fills outgoingSections from an identity-hashed HashMultimap
+  // (JsonImporter.xtend:313-314), so its order varies between JVM runs; the vectors record it sorted. The port uses
+  // insertion order: section 44's incoming-section back-links arrive s1 first.
+  it('fills outgoingSections in insertion order where the JVM uses identity-hash order', () => {
+    const row = rows.find((r) => r.id === 'ok-sections-linked') as ImportRow;
+    const root = toElk(fixtureText(row), row.lenient);
+    const section44 = root.getContainedEdges().get(0).getSections().get(0);
+    expect(section44.getIdentifier()).toBe('44');
+    expect([...section44.getOutgoingSections()].map((o) => o.getIdentifier())).toEqual(['s1', '45']);
   });
 
   it('includes the duplicate-id rows (J5)', () => {

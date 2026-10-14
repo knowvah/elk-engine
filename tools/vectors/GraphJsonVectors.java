@@ -36,6 +36,7 @@
 //   edge  = { identifier, sources: [ref], targets: [ref], properties, labels, sections: [section] }
 //   section = { identifier, startX, startY, endX, endY, bendPoints: [{x, y}], incomingShape: ref|null,
 //             outgoingShape: ref|null, incomingSections: [identifier], outgoingSections: [identifier], properties }
+//   incoming/outgoingSections are SORTED (String order): importer fills them from an identity-hashed HashMultimap.
 //   ref = { kind: "node"|"port", id: identifier }
 //   properties = [ { id, text } ] in getAllProperties() order, text = String.valueOf(value).
 import java.io.IOException;
@@ -269,6 +270,7 @@ public class GraphJsonVectors {
         static List<Object> sectionIds(List<ElkEdgeSection> sections) {
             List<Object> ids = new ArrayList<>();
             sections.forEach(s -> ids.add(s.getIdentifier()));
+            ids.sort(Comparator.nullsFirst(Comparator.comparing(Object::toString)));
             return ids;
         }
 
