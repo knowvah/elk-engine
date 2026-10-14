@@ -1,0 +1,1025 @@
+# SPDX-License-Identifier: EPL-2.0
+# Cases for ElktLexerVectors.java (format: see that file's header). Escapes: \n \r \t \\ \uXXXX; "<null>" = null.
+# A literal space inside a lex/conv input is fine except at the very start or end of a conv input (use  ).
+#
+# Lexer families (lex rows):
+#   keywords   all 26 keyword literals and the punctuation, near misses, ^-escaped ids
+#   numbers    SIGNED_INT / FLOAT / INT boundaries, signs, exponents, adjacency with ids and punctuation
+#   strings    single and double quoted, escapes, unterminated, raw newline inside
+#   comments   single-line, multi-line, unterminated, directly after tokens
+#   whitespace WS members, vertical tab / form feed / NBSP / BOM / control characters, non-ASCII, surrogates
+#   lines      LF, CRLF, lone CR, multi-line inputs (line numbers after each)
+#   boundaries empty, whitespace only, EOF mid-keyword, a sample model, dotted names
+# Converter families (conv rows): ID INT STRING SIGNED_INT FLOAT QualifiedId Number PropertyKey StringValue
+#   QualifiedIdValue NumberValue BooleanValue ML_COMMENT SL_COMMENT, an unknown rule, Strings (static methods),
+#   QualifiedName (ElkGraphQualifiedNameConverter), Document (PropertyValue toValue with a real node).
+
+# ---- keywords (one row per keyword, then all in one row) ----
+lex graph
+lex node
+lex label
+lex port
+lex layout
+lex position
+lex size
+lex edge
+lex incoming
+lex outgoing
+lex start
+lex end
+lex bends
+lex section
+lex true
+lex false
+lex null
+lex {
+lex }
+lex [
+lex ]
+lex :
+lex ,
+lex ->
+lex |
+lex .
+lex graph node label port layout position size edge incoming outgoing start end bends section true false null
+lex { } [ ] : , -> | .
+lex {}[]:,->|.
+# near misses
+lex nodes
+lex node1
+lex Node
+lex _node
+lex node_
+lex graph2
+lex nul
+lex truee
+lex Graph
+lex NULL
+lex nodenode
+lex node.node
+# ^-escaped
+lex ^node
+lex ^graph
+lex ^
+lex ^1
+lex ^^a
+lex a^b
+lex ^_
+lex ^a1_B
+lex ^ node
+lex ^node^node
+lex 1^a
+
+# ---- numbers ----
+lex 0
+lex 007
+lex +1
+lex -1
+lex +
+lex -
+lex +-
+lex -x
+lex 1.5
+lex 1.
+lex .5
+lex 1.e3
+lex 1e5
+lex 1E5
+lex 1e+5
+lex 1E-5
+lex 1.5e3
+lex 1e
+lex 1e+
+lex 1.5e
+lex 1.5.3
+lex 1..2
+lex -1.5e-3
+lex +.5
+lex 1-2
+lex 1+2
+lex 1,2
+lex 1|2
+lex a1.5
+lex e5
+lex 1e5x
+lex 1.a
+lex a.1
+lex 00.50
+lex 123456789012345678901234567890
+lex ->-1
+lex -1->2
+lex - >
+lex -->
+lex 1.5E+10
+lex 1.e
+lex 1 .5
+lex 1. 5
+lex -.5
+lex +1.5
+lex 1e5.5
+lex 1e5e5
+lex 1.5e3.2
+lex -1e
+lex 1E
+lex 0x10
+lex 1f
+lex 12ab
+lex 1_000
+lex NaN
+lex Infinity
+lex 1e-
+lex ++1
+lex --1
+lex 1-
+lex 1+
+lex 1.5-
+lex 1.e-3e
+
+# ---- strings ----
+lex "a"
+lex ""
+lex 'a'
+lex ''
+lex "a'b"
+lex 'a"b'
+lex "a\\"b"
+lex "a\\\\"
+lex "\\n"
+lex "\\u0041"
+lex "\\x"
+lex "\\
+lex "abc
+lex 'abc
+lex "a\nb"
+lex 'a\nb'
+lex "a\r\nb"
+lex "a" "b"
+lex "a""b"
+lex 'a''b'
+lex "a"'b'
+lex "\\""
+lex '\\''
+lex "\\'"
+lex '\\"'
+lex "\\\\\\""
+lex "a\\
+lex "\\\n"
+lex "tab\there"
+lex "é日"
+lex "😀"
+lex "/* not a comment */"
+lex "// not a comment"
+lex "{ node }"
+lex node"a"
+lex "a"node
+lex "a"1
+lex 1"a"
+lex "
+lex '
+lex """
+lex "'"'"
+lex "\\u00"
+lex ""abc
+
+# ---- comments ----
+lex // x\n
+lex // x
+lex // x\r\n
+lex //
+lex ///
+lex /* x */
+lex /**/
+lex /*/
+lex /* x
+lex /* /* */ */
+lex / x
+lex /
+lex a//b
+lex /*a*/b
+lex a/*b*/c
+lex // x\r
+lex // x\ry
+lex // x\n\ny
+lex /* multi\nline */x
+lex /* multi\r\nline */x
+lex /***/
+lex /*****/
+lex /* * / */
+lex /*/ */
+lex /* "str" */
+lex // "str
+lex /* // */ x
+lex // /* x\ny */
+lex //\n//\n
+lex /* x */
+lex a / b
+lex -//
+lex 1//2
+lex ->//x
+lex /-
+lex *
+
+# ---- whitespace and other characters ----
+lex a b
+lex a\tb
+lex a\rb
+lex a\nb
+lex  a  
+lex a \t\r\n b
+lex \u000b
+lex a\u000bb
+lex \u000c
+lex a\u000cb
+lex  
+lex a b
+lex ﻿
+lex ﻿node
+lex \u0000
+lex a\u0000b
+lex \u0001
+lex \u007f
+lex \u0085
+lex  
+lex  
+lex 　
+lex é
+lex café
+lex 日本
+lex aéb
+lex Ànode
+lex nodeé
+lex \ud83d
+lex \ude00
+lex 😀
+lex a😀b
+lex \ud83dx
+lex ￿
+lex ￾
+lex @
+lex #
+lex $
+lex %
+lex &
+lex *
+lex +
+lex =
+lex ?
+lex (
+lex )
+lex <
+lex >
+lex ;
+lex !
+lex ~
+lex `
+lex \\
+lex a@b
+lex a-b
+lex a+b
+lex a:b
+lex a,b
+lex a|b
+lex a{b
+lex a[b
+
+# ---- lines ----
+lex \n
+lex \r\n
+lex \r
+lex \n\n
+lex \r\r
+lex \r\n\r\n
+lex \n\r
+lex a\nb\nc
+lex a\r\nb\r\nc
+lex a\rb\rc
+lex a\n\rb
+lex a\n  b\n    c
+lex // c1\nnode\n// c2\r\nedge\r/* m\nl */\nx
+lex "s1\ns2" y\nz
+
+# ---- boundaries ----
+lex
+lex  
+lex  \t\r\n
+lex gra
+lex graph
+lex grap
+lex n
+lex no
+lex nod
+lex nodee
+lex tru
+lex fals
+lex nu
+lex bend
+lex section_
+lex a.b.c
+lex a . b
+lex a. b
+lex .a
+lex a..b
+lex a.
+lex .
+lex ..
+lex ...
+lex a.b.
+lex x.y.z: 1.5
+lex a.-1
+lex a.1b
+lex a.b1.c2
+lex node a.b { }
+lex node a { x: 1 }
+lex edge e1: a -> b
+lex edge e1: a.p1 -> b.p2
+lex layout [ size: 10, 20 position: 1.5, 2.5 ]
+lex label "text" { layout [ size: 1, 2 ] }
+lex section s1 [ start: 0, 0 end: 100, 100 bends: 1, 2 | 3, 4 ]
+lex section s1 incoming: a outgoing: b
+lex edge a -> b { }
+lex a:b
+lex key:value
+lex org.eclipse.elk.algorithm: layered
+lex key: "value" other: 'v' third: true fourth: null fifth: -1.5e3
+lex graph g\nnode n1 {\n  layout [ size: 30, 20 ]\n  port p1\n  label "n1"\n}\nnode n2\nedge n1.p1 -> n2 {\n  layout [ ]\n}\n// done\n
+lex graph g\n// a sample model\nnode n1 {\n  layout [ size: 30, 20 position: 10, 10 ]\n  elk.direction: RIGHT\n  port p1 { layout [ position: 30, 5 ] }\n  label "n1" { layout [ size: 10, 8 ] }\n}\nnode n2 { layout [ size: 30, 20 ] }\nedge e1: n1.p1 -> n2 {\n  label "e1"\n  section s1 [ start: 30, 5 end: 100, 10 bends: 50, 5 | 50, 10 ]\n}\nedge n2 -> n1\n/* end\n   of file */\n
+
+# ================= converters =================
+# ---- ID ----
+conv ID toValue
+conv ID toValue a
+conv ID toValue ^a
+conv ID toValue ^
+conv ID toValue ^^a
+conv ID toValue ^node
+conv ID toValue node
+conv ID toValue a^b
+conv ID toValue <null>
+conv ID toValue é
+conv ID toString str:a
+conv ID toString str:node
+conv ID toString str:graph
+conv ID toString str:true
+conv ID toString str:null
+conv ID toString str:->
+conv ID toString str:{
+conv ID toString str:.
+conv ID toString str:
+conv ID toString str:^
+conv ID toString str:^a
+conv ID toString str:^^a
+conv ID toString str:a1
+conv ID toString str:1a
+conv ID toString str:a b
+conv ID toString str:a.b
+conv ID toString str:a-b
+conv ID toString str:_
+conv ID toString str:Node
+conv ID toString str:é
+conv ID toString str:nodes
+conv ID toString str:a\n
+conv ID toString <null>
+conv ID toString int:1
+
+# ---- STRING ----
+conv STRING toValue "abc"
+conv STRING toValue 'abc'
+conv STRING toValue ""
+conv STRING toValue ''
+conv STRING toValue "
+conv STRING toValue '
+conv STRING toValue
+conv STRING toValue "abc
+conv STRING toValue 'abc
+conv STRING toValue abc"
+conv STRING toValue "a'b"
+conv STRING toValue 'a"b'
+conv STRING toValue "a'b
+conv STRING toValue "a\\"b"
+conv STRING toValue "a\\'b"
+conv STRING toValue 'a\\'b'
+conv STRING toValue "\\b\\t\\n\\f\\r"
+conv STRING toValue "\\\\"
+conv STRING toValue "\\\\\\\\"
+conv STRING toValue "\\u0041"
+conv STRING toValue "\\u004"
+conv STRING toValue "\\u00"
+conv STRING toValue "\\uzzzz"
+conv STRING toValue "\\u00zz"
+conv STRING toValue "\\u12345"
+conv STRING toValue "\\uD83D\\uDE00"
+conv STRING toValue "\\x"
+conv STRING toValue "a\\xb"
+conv STRING toValue "\\
+conv STRING toValue "a\\
+conv STRING toValue "\\"
+conv STRING toValue "\\\\"
+conv STRING toValue "\\q\\r"
+conv STRING toValue "\\q\\w"
+conv STRING toValue "\\q"
+conv STRING toValue "\\0"
+conv STRING toValue "\\a"
+conv STRING toValue "\\/"
+conv STRING toValue "a\nb"
+conv STRING toValue "é日"
+conv STRING toValue "\\u00e9"
+conv STRING toValue "abc'
+conv STRING toValue 'abc"
+conv STRING toValue "\\\\\\"
+conv STRING toValue ab
+conv STRING toValue a
+conv STRING toValue <null>
+conv STRING toString str:abc
+conv STRING toString str:
+conv STRING toString str:a"b
+conv STRING toString str:a'b
+conv STRING toString str:a\\b
+conv STRING toString str:a\nb
+conv STRING toString str:a\rb
+conv STRING toString str:a\tb
+conv STRING toString str:a\u0008b
+conv STRING toString str:a\u000cb
+conv STRING toString str:a\u0000b
+conv STRING toString str:a\u001fb
+conv STRING toString str:a\u007fb
+conv STRING toString str:é
+conv STRING toString str:日本
+conv STRING toString str:😀
+conv STRING toString str:\ud83d
+conv STRING toString str:~
+conv STRING toString str:/* x */
+conv STRING toString str:// x
+conv STRING toString <null>
+conv STRING toString int:1
+
+# ---- INT ----
+conv INT toValue 0
+conv INT toValue 007
+conv INT toValue 123
+conv INT toValue 2147483647
+conv INT toValue 2147483648
+conv INT toValue 99999999999999999999
+conv INT toValue
+conv INT toValue +1
+conv INT toValue -1
+conv INT toValue 1.5
+conv INT toValue abc
+conv INT toValue  
+conv INT toValue 1 
+conv INT toValue <null>
+conv INT toString int:0
+conv INT toString int:7
+conv INT toString int:2147483647
+conv INT toString int:-1
+conv INT toString <null>
+conv INT toString str:1
+conv INT toString long:5
+
+# ---- SIGNED_INT, FLOAT (default terminal converters), ML_COMMENT, SL_COMMENT ----
+conv SIGNED_INT toValue 1
+conv SIGNED_INT toValue +1
+conv SIGNED_INT toValue -1
+conv SIGNED_INT toValue 2147483648
+conv SIGNED_INT toValue abc
+conv SIGNED_INT toValue
+conv SIGNED_INT toString int:-5
+conv SIGNED_INT toString int:5
+conv SIGNED_INT toString <null>
+conv FLOAT toValue 1.5
+conv FLOAT toValue -1.5e3
+conv FLOAT toValue +1e5
+conv FLOAT toValue 1.e3
+conv FLOAT toValue abc
+conv FLOAT toValue
+conv FLOAT toString double:1.5
+conv FLOAT toString double:1.0
+conv FLOAT toString double:-0.0
+conv FLOAT toString double:1.0E-5
+conv FLOAT toString double:NaN
+conv FLOAT toString <null>
+conv ML_COMMENT toValue /* x */
+conv ML_COMMENT toValue
+conv ML_COMMENT toString str:/* x */
+conv ML_COMMENT toString <null>
+conv SL_COMMENT toValue // x\n
+conv SL_COMMENT toValue
+conv SL_COMMENT toString str:// x
+conv SL_COMMENT toString <null>
+
+# ---- QualifiedId (datatype rule, EFactory converter) and unknown rules (NO_OP fallback) ----
+conv QualifiedId toValue a.b
+conv QualifiedId toValue ^a.b
+conv QualifiedId toValue
+conv QualifiedId toValue <null>
+conv QualifiedId toString str:a.b
+conv QualifiedId toString str:^a.b
+conv QualifiedId toString <null>
+conv QualifiedId toString int:1
+conv Bogus toValue abc
+conv Bogus toValue
+conv Bogus toValue <null>
+conv Bogus toString str:abc
+conv Bogus toString <null>
+conv Bogus toString int:1
+conv WS toValue  
+conv WS toString str: 
+conv ANY_OTHER toValue @
+conv ANY_OTHER toString str:@
+
+# ---- Strings static methods ----
+conv Strings convertFromJavaString/unicode
+conv Strings convertFromJavaString/unicode abc
+conv Strings convertFromJavaString/unicode \\n
+conv Strings convertFromJavaString/unicode \\b\\t\\n\\f\\r\\"\\'\\\\
+conv Strings convertFromJavaString/unicode a\\tb\\nc
+conv Strings convertFromJavaString/unicode \\u0041
+conv Strings convertFromJavaString/unicode \\u00e9\\u65E5
+conv Strings convertFromJavaString/unicode \\uD83D\\uDE00
+conv Strings convertFromJavaString/unicode \\u004
+conv Strings convertFromJavaString/unicode \\u
+conv Strings convertFromJavaString/unicode \\uzzzz
+conv Strings convertFromJavaString/unicode \\u00zz
+conv Strings convertFromJavaString/unicode \\u12345
+conv Strings convertFromJavaString/unicode \\x
+conv Strings convertFromJavaString/unicode \\
+conv Strings convertFromJavaString/unicode a\\
+conv Strings convertFromJavaString/unicode \\\\
+conv Strings convertFromJavaString/unicode \\0
+conv Strings convertFromJavaString/unicode \\/
+conv Strings convertFromJavaString/plain
+conv Strings convertFromJavaString/plain abc
+conv Strings convertFromJavaString/plain \\n\\t\\"
+conv Strings convertFromJavaString/plain \\u0041
+conv Strings convertFromJavaString/plain \\x
+conv Strings convertFromJavaString/plain \\
+conv Strings convertFromJavaString/plain a\\\\b
+conv Strings convertToJavaString/unicode
+conv Strings convertToJavaString/unicode abc
+conv Strings convertToJavaString/unicode a\nb\rc\td
+conv Strings convertToJavaString/unicode \u0008\u000c
+conv Strings convertToJavaString/unicode "'\\
+conv Strings convertToJavaString/unicode \u0000\u001f\u007f~
+conv Strings convertToJavaString/unicode é日😀
+conv Strings convertToJavaString/unicode \ud83d
+conv Strings convertToJavaString/plain
+conv Strings convertToJavaString/plain abc
+conv Strings convertToJavaString/plain a\nb\rc\td
+conv Strings convertToJavaString/plain \u0008\u000c
+conv Strings convertToJavaString/plain "'\\
+conv Strings convertToJavaString/plain \u0000\u001f\u007f
+conv Strings convertToJavaString/plain é日😀
+conv Strings split/string
+conv Strings split/string a
+conv Strings split/string a.b
+conv Strings split/string a.b.c
+conv Strings split/string .
+conv Strings split/string ..
+conv Strings split/string .a
+conv Strings split/string ..a
+conv Strings split/string a.
+conv Strings split/string a..
+conv Strings split/string a..b
+conv Strings split/string a...b
+conv Strings split/string a.b.
+conv Strings split/string .a.b
+conv Strings split/string ^a.b
+conv Strings split/string a. .b
+conv Strings split/char
+conv Strings split/char a
+conv Strings split/char a.b
+conv Strings split/char a.b.c
+conv Strings split/char .
+conv Strings split/char ..
+conv Strings split/char .a
+conv Strings split/char ..a
+conv Strings split/char a.
+conv Strings split/char a..
+conv Strings split/char a..b
+conv Strings split/char a...b
+conv Strings split/char a.b.
+conv Strings split/char .a.b
+conv Strings split/char ^a.b
+conv Strings split/char a. .b
+
+# ---- Number (NumberValueConverter) ----
+conv Number toValue 1
+conv Number toValue -1
+conv Number toValue +1
+conv Number toValue 1.5
+conv Number toValue 1e3
+conv Number toValue 1E+3
+conv Number toValue .5
+conv Number toValue 1.
+conv Number toValue NaN
+conv Number toValue Infinity
+conv Number toValue -Infinity
+conv Number toValue 0x10
+conv Number toValue 0x1p3
+conv Number toValue 1f
+conv Number toValue 1d
+conv Number toValue 1F
+conv Number toValue 1D
+conv Number toValue  1
+conv Number toValue 1 
+conv Number toValue  
+conv Number toValue
+conv Number toValue abc
+conv Number toValue 1_0
+conv Number toValue 1,5
+conv Number toValue --1
+conv Number toValue 1e
+conv Number toValue 1e400
+conv Number toValue 1e-400
+conv Number toValue 4.9e-324
+conv Number toValue 00.50
+conv Number toValue 007
+conv Number toValue 123456789012345678901234567890
+conv Number toValue <null>
+conv Number toString double:1.0
+conv Number toString double:0.0
+conv Number toString double:-0.0
+conv Number toString double:-1.0
+conv Number toString double:42.0
+conv Number toString double:1.5
+conv Number toString double:-1.5
+conv Number toString double:0.1
+conv Number toString double:1.0E-5
+conv Number toString double:1.0E21
+conv Number toString double:1.0E10
+conv Number toString double:3000000000.0
+conv Number toString double:-3000000000.0
+conv Number toString double:2147483647.0
+conv Number toString double:2147483648.0
+conv Number toString double:123456789.5
+conv Number toString double:1.0E7
+conv Number toString double:1.0E-3
+conv Number toString double:NaN
+conv Number toString double:Infinity
+conv Number toString double:-Infinity
+conv Number toString double:4.9E-324
+conv Number toString double:1.7976931348623157E308
+conv Number toString <null>
+conv Number toString int:1
+conv Number toString str:1
+
+# ---- PropertyKey (PropertyKeyValueConverter), core registry ----
+conv PropertyKey toValue direction
+conv PropertyKey toValue org.eclipse.elk.direction
+conv PropertyKey toValue elk.direction
+conv PropertyKey toValue eclipse.elk.direction
+conv PropertyKey toValue org.eclipse.elk.Direction
+conv PropertyKey toValue Direction
+conv PropertyKey toValue nodeNode
+conv PropertyKey toValue spacing.nodeNode
+conv PropertyKey toValue elk.spacing.nodeNode
+conv PropertyKey toValue spacing
+conv PropertyKey toValue padding
+conv PropertyKey toValue elk.padding
+conv PropertyKey toValue edgeLabels.inline
+conv PropertyKey toValue nodeLabels.placement
+conv PropertyKey toValue placement
+conv PropertyKey toValue portConstraints
+conv PropertyKey toValue layered.spacing.nodeNodeBetweenLayers
+conv PropertyKey toValue algorithm
+conv PropertyKey toValue org.eclipse.elk.algorithm
+conv PropertyKey toValue priority
+conv PropertyKey toValue position
+conv PropertyKey toValue size
+conv PropertyKey toValue unknownKey
+conv PropertyKey toValue my.custom.key
+conv PropertyKey toValue a.b.c
+conv PropertyKey toValue org.eclipse.elk.noSuchOption
+conv PropertyKey toValue org.eclipse.elk
+conv PropertyKey toValue elk
+conv PropertyKey toValue .
+conv PropertyKey toValue direction.
+conv PropertyKey toValue .direction
+conv PropertyKey toValue ..direction
+conv PropertyKey toValue elk..direction
+conv PropertyKey toValue ^direction
+conv PropertyKey toValue ^node
+conv PropertyKey toValue org.eclipse.elk.^direction
+conv PropertyKey toValue ^org.eclipse.elk.direction
+conv PropertyKey toValue ^node.^edge
+conv PropertyKey toValue node
+conv PropertyKey toValue ^
+conv PropertyKey toValue ^^a
+conv PropertyKey toValue a^b
+conv PropertyKey toValue 1a
+conv PropertyKey toValue
+conv PropertyKey toValue <null>
+conv PropertyKey toValue  
+conv PropertyKey toValue direction 
+conv PropertyKey toString opt:org.eclipse.elk.direction
+conv PropertyKey toString opt:org.eclipse.elk.padding
+conv PropertyKey toString opt:org.eclipse.elk.spacing.nodeNode
+conv PropertyKey toString opt:org.eclipse.elk.nodeLabels.placement
+conv PropertyKey toString opt:org.eclipse.elk.edgeLabels.inline
+conv PropertyKey toString opt:org.eclipse.elk.portConstraints
+conv PropertyKey toString opt:org.eclipse.elk.algorithm
+conv PropertyKey toString opt:org.eclipse.elk.position
+conv PropertyKey toString opt:org.eclipse.elk.priority
+conv PropertyKey toString opt:org.eclipse.elk.spacing.edgeEdge
+conv PropertyKey toString opt:org.eclipse.elk.spacing.portPort
+conv PropertyKey toString opt:org.eclipse.elk.json.edgeCoords
+conv PropertyKey toString prop:org.eclipse.elk.direction
+conv PropertyKey toString prop:org.eclipse.elk.spacing.nodeNode
+conv PropertyKey toString prop:org.eclipse.elk.noSuchOption
+conv PropertyKey toString prop:my.custom.key
+conv PropertyKey toString prop:a
+conv PropertyKey toString prop:a.b.c
+conv PropertyKey toString prop:node
+conv PropertyKey toString prop:node.edge
+conv PropertyKey toString prop:org.eclipse.elk.node
+conv PropertyKey toString prop:x.node.y
+conv PropertyKey toString prop:1a
+conv PropertyKey toString prop:a-b
+conv PropertyKey toString prop:a..b
+conv PropertyKey toString prop:.a
+conv PropertyKey toString prop:a.
+conv PropertyKey toString prop:.
+conv PropertyKey toString prop:^a
+conv PropertyKey toString prop:
+conv PropertyKey toString <null>
+conv PropertyKey toString str:direction
+
+# ---- PropertyValue family, null node (StringValue QualifiedIdValue NumberValue BooleanValue) ----
+conv StringValue toValue "abc"
+conv StringValue toValue 'abc'
+conv StringValue toValue ""
+conv StringValue toValue ''
+conv StringValue toValue "a b"
+conv StringValue toValue "\\n"
+conv StringValue toValue "
+conv StringValue toValue
+conv StringValue toValue null
+conv StringValue toValue <null>
+conv StringValue toValue abc
+conv StringValue toValue a.b
+conv StringValue toValue ^a
+conv StringValue toValue ^node.edge
+conv StringValue toValue 1abc
+conv StringValue toValue 1.5
+conv StringValue toValue .
+conv StringValue toValue a..b
+conv StringValue toValue ^
+conv StringValue toValue $x
+conv StringValue toValue _x
+conv StringValue toValue éx
+conv StringValue toValue 日
+conv StringValue toValue a b
+conv StringValue toValue "a
+conv StringValue toValue a"
+conv StringValue toValue '"
+conv StringValue toValue "'
+conv StringValue toValue ""x
+conv QualifiedIdValue toValue abc
+conv QualifiedIdValue toValue a.b.c
+conv QualifiedIdValue toValue ^a
+conv QualifiedIdValue toValue UP
+conv QualifiedIdValue toValue node
+conv QualifiedIdValue toValue a..b
+conv QualifiedIdValue toValue
+conv QualifiedIdValue toValue <null>
+conv NumberValue toValue 1
+conv NumberValue toValue -1.5
+conv NumberValue toValue +1e3
+conv NumberValue toValue 007
+conv NumberValue toValue 1.
+conv NumberValue toValue
+conv NumberValue toValue null
+conv BooleanValue toValue true
+conv BooleanValue toValue false
+conv BooleanValue toValue True
+conv BooleanValue toValue
+conv BooleanValue toValue <null>
+conv StringValue toString <null>
+conv StringValue toString double:1.0
+conv StringValue toString double:-3.0
+conv StringValue toString double:0.0
+conv StringValue toString double:-0.0
+conv StringValue toString double:1.5
+conv StringValue toString double:1.0E-5
+conv StringValue toString double:1.0E21
+conv StringValue toString double:3000000000.0
+conv StringValue toString double:NaN
+conv StringValue toString double:Infinity
+conv StringValue toString double:-Infinity
+conv StringValue toString int:5
+conv StringValue toString int:-5
+conv StringValue toString long:5
+conv StringValue toString float:1.5
+conv StringValue toString float:2.0
+conv StringValue toString bool:true
+conv StringValue toString bool:false
+conv StringValue toString enum:org.eclipse.elk.core.options.Direction.UP
+conv StringValue toString enum:org.eclipse.elk.core.options.PortConstraints.FIXED_ORDER
+conv StringValue toString enum:java.util.concurrent.TimeUnit.SECONDS
+conv StringValue toString str:true
+conv StringValue toString str:false
+conv StringValue toString str:null
+conv StringValue toString str:True
+conv StringValue toString str:1.5
+conv StringValue toString str:1e3
+conv StringValue toString str:1
+conv StringValue toString str:-1
+conv StringValue toString str:+1
+conv StringValue toString str:.5
+conv StringValue toString str:1.
+conv StringValue toString str:NaN
+conv StringValue toString str:Infinity
+conv StringValue toString str:-Infinity
+conv StringValue toString str:0x10
+conv StringValue toString str:1f
+conv StringValue toString str:1d
+conv StringValue toString str: 1
+conv StringValue toString str:1 
+conv StringValue toString str:abc
+conv StringValue toString str:a.b
+conv StringValue toString str:a.b.c
+conv StringValue toString str:a b
+conv StringValue toString str:1abc
+conv StringValue toString str:
+conv StringValue toString str:""
+conv StringValue toString str:'x'
+conv StringValue toString str:"x"
+conv StringValue toString str:^x
+conv StringValue toString str:^
+conv StringValue toString str:node
+conv StringValue toString str:graph
+conv StringValue toString str:a.node
+conv StringValue toString str:node.a
+conv StringValue toString str:a..b
+conv StringValue toString str:.a
+conv StringValue toString str:a.
+conv StringValue toString str:.
+conv StringValue toString str:a-b
+conv StringValue toString str:a,b
+conv StringValue toString str:é
+conv StringValue toString str:a\nb
+conv StringValue toString str:a"b
+conv StringValue toString str:with space.and.dots
+conv StringValue toString str:_a
+conv StringValue toString str:a_1
+conv StringValue toString str:A.B
+conv StringValue toString kvector:1,2
+conv StringValue toString kvector:1.5,-2.5
+conv StringValue toString obj:abc
+conv StringValue toString obj:a b
+conv StringValue toString obj:1.5
+conv StringValue toString obj:
+conv StringValue toString obj:true
+conv StringValue toString proxy:abc
+conv StringValue toString proxy:1.5
+conv StringValue toString proxy:true
+conv StringValue toString proxy:null
+conv StringValue toString proxy:a b
+conv StringValue toString proxy:a.b
+conv StringValue toString proxy:
+conv StringValue toString proxy:"x"
+conv QualifiedIdValue toString str:a.b
+conv NumberValue toString double:2.0
+conv BooleanValue toString bool:true
+conv BooleanValue toString str:false
+
+# ---- ElkGraphQualifiedNameConverter ----
+conv QualifiedName toQualifiedName a
+conv QualifiedName toQualifiedName a.b
+conv QualifiedName toQualifiedName a.b.c
+conv QualifiedName toQualifiedName ^a.b
+conv QualifiedName toQualifiedName ^node
+conv QualifiedName toQualifiedName node
+conv QualifiedName toQualifiedName a.^node
+conv QualifiedName toQualifiedName a..b
+conv QualifiedName toQualifiedName a.
+conv QualifiedName toQualifiedName .a
+conv QualifiedName toQualifiedName .
+conv QualifiedName toQualifiedName ..
+conv QualifiedName toQualifiedName
+conv QualifiedName toQualifiedName <null>
+conv QualifiedName toQualifiedName 1a
+conv QualifiedName toQualifiedName a.1
+conv QualifiedName toQualifiedName a b
+conv QualifiedName toQualifiedName ^
+conv QualifiedName toQualifiedName a.^
+conv QualifiedName toQualifiedName ^^a
+conv QualifiedName toQualifiedName é
+conv QualifiedName toString qn:a
+conv QualifiedName toString qn:a|b
+conv QualifiedName toString qn:a|b|c
+conv QualifiedName toString qn:node
+conv QualifiedName toString qn:a|node
+conv QualifiedName toString qn:graph|true|null
+conv QualifiedName toString qn:^a
+conv QualifiedName toString qn:^node
+conv QualifiedName toString qn:1a
+conv QualifiedName toString qn:a b
+conv QualifiedName toString qn:a.b
+conv QualifiedName toString qn:a-b
+conv QualifiedName toString qn:é
+conv QualifiedName toString qn:
+conv QualifiedName toString qn:|
+conv QualifiedName toString qn:a|
+conv QualifiedName toString qn:|a
+conv QualifiedName toString <null>
+
+# ---- PropertyValue toValue with a real node (Document parse; known and unknown keys) ----
+conv Document parse direction: UP
+conv Document parse direction: DOWN
+conv Document parse direction: up
+conv Document parse direction: NOSUCH
+conv Document parse direction: "UP"
+conv Document parse direction: 'UP'
+conv Document parse direction: ^UP
+conv Document parse direction: 1
+conv Document parse direction: true
+conv Document parse direction: null
+conv Document parse direction: ""
+conv Document parse elk.direction: UP
+conv Document parse org.eclipse.elk.direction: RIGHT
+conv Document parse spacing.nodeNode: 10
+conv Document parse spacing.nodeNode: 10.5
+conv Document parse spacing.nodeNode: -3
+conv Document parse spacing.nodeNode: 1e2
+conv Document parse spacing.nodeNode: "10"
+conv Document parse spacing.nodeNode: '2.5'
+conv Document parse spacing.nodeNode: abc
+conv Document parse spacing.nodeNode: "abc"
+conv Document parse spacing.nodeNode: true
+conv Document parse spacing.nodeNode: null
+conv Document parse spacing.nodeNode: ""
+conv Document parse priority: 3
+conv Document parse priority: 3.5
+conv Document parse priority: -1
+conv Document parse priority: "7"
+conv Document parse priority: abc
+conv Document parse priority: 99999999999
+conv Document parse omitNodeMicroLayout: true
+conv Document parse omitNodeMicroLayout: false
+conv Document parse omitNodeMicroLayout: "true"
+conv Document parse omitNodeMicroLayout: True
+conv Document parse omitNodeMicroLayout: 1
+conv Document parse omitNodeMicroLayout: abc
+conv Document parse algorithm: layered
+conv Document parse algorithm: org.eclipse.elk.layered
+conv Document parse algorithm: "org.eclipse.elk.layered"
+conv Document parse algorithm: 'x y'
+conv Document parse algorithm: ^node
+conv Document parse algorithm: a.b.c
+conv Document parse algorithm: 12
+conv Document parse algorithm: true
+conv Document parse algorithm: ""
+conv Document parse position: "1,2"
+conv Document parse ^position: "1,2"
+conv Document parse ^position: "(1,2)"
+conv Document parse ^position: "[1.5, 2.5]"
+conv Document parse ^position: 1
+conv Document parse ^position: abc
+conv Document parse elk.padding: "[top=1,left=2,bottom=3,right=4]"
+conv Document parse elk.padding: 5
+conv Document parse elk.padding: "[top=a]"
+conv Document parse ^size: 12
+conv Document parse ^size: abc
+conv Document parse ^edge: 1
+conv Document parse ^graph: UP
+conv Document parse nodeLabels.placement: "H_LEFT V_TOP"
+conv Document parse nodeLabels.placement: "H_LEFT, V_TOP INSIDE"
+conv Document parse nodeLabels.placement: INSIDE
+conv Document parse nodeLabels.placement: "INSIDE"
+conv Document parse nodeLabels.placement: "[INSIDE, H_LEFT]"
+conv Document parse nodeLabels.placement: "NOSUCH"
+conv Document parse nodeLabels.placement: ""
+conv Document parse portConstraints: FIXED_ORDER
+conv Document parse portConstraints: "FIXED_POS"
+conv Document parse padding: "[top=1,left=2,bottom=3,right=4]"
+conv Document parse padding: 5
+conv Document parse padding: "5"
+conv Document parse custom.unknown.key: 12
+conv Document parse custom.unknown.key: abc
+conv Document parse custom.unknown.key: "abc"
+conv Document parse custom.unknown.key: true
+conv Document parse custom.unknown.key: a.b
+conv Document parse custom.unknown.key: ^node
+conv Document parse custom.unknown.key: 'q'
+conv Document parse custom.unknown.key: ""
+conv Document parse custom.unknown.key: null
+conv Document parse custom.unknown.key: -1.5e3
+conv Document parse custom.unknown.key: 1abc
+conv Document parse ^node: 1
+conv Document parse node: 1
+conv Document parse a.^node.b: 1
+conv Document parse a . b: 1
+conv Document parse a: b: c
+conv Document parse direction: 
+conv Document parse direction
+conv Document parse : UP
+conv Document parse direction: UP direction: DOWN
+conv Document parse direction: UP priority: 3
+conv Document parse direction: "UP
+conv Document parse direction: "a\\qb"
+conv Document parse direction: "\\u00"
+conv Document parse spacing.nodeNode: 10 20
+conv Document parse spacing.nodeNode: 1..2
+conv Document parse spacing.nodeNode: +1
+conv Document parse spacing.nodeNode: 1.
+conv Document parse spacing.nodeNode: .5
