@@ -10,11 +10,11 @@ registry (G3).
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T1 | `ORACLE_REGISTRY=core` oracle mode + ~30 curated `.elkt` parse refs | tooling-engineer | tools/oracle/run.sh, tools/oracle/harness/ElkOracle.java, tools/oracle/regen-elkt-refs.sh, test/corpus/elkt-curated.json, test/golden/refs/elkt-parse/*.json, test/golden/refs/elkt-parse/_meta.json | — | [ ] |
-| T2 | Lexer + value-converter JVM vectors and the generic `elkt-vectors.sh` runner | java-architect | tools/vectors/{ElktLexerVectors.java,elkt-lexer-cases.txt,elkt-vectors.sh}, test/golden/refs/java/graph-text-lexer.json | — | [ ] |
-| T3 | Parse + link JVM vectors (`graph-text-parse.json`) | java-architect | tools/vectors/ElktParseVectors.java, tools/vectors/elkt-parse-scenarios/*, test/golden/refs/java/graph-text-parse.json | — | [ ] |
-| T4 | Validator JVM vectors (`graph-text-validate.json`) | java-architect | tools/vectors/ElktValidateVectors.java, tools/vectors/elkt-validate-scenarios/*, test/golden/refs/java/graph-text-validate.json | — | [ ] |
-| T5 | Writer JVM vectors (`graph-text-write.json`) | java-architect | tools/vectors/ElktWriteVectors.java, tools/vectors/elkt-write-scenarios/*, test/golden/refs/java/graph-text-write.json | — | [ ] |
+| T1 | `ORACLE_REGISTRY=core` oracle mode + ~30 curated `.elkt` parse refs | tooling-engineer | tools/oracle/run.sh, tools/oracle/harness/ElkOracle.java, tools/oracle/regen-elkt-refs.sh, test/corpus/elkt-curated.json, test/golden/refs/elkt-parse/*.json, test/golden/refs/elkt-parse/_meta.json | — | [x] |
+| T2 | Lexer + value-converter JVM vectors and the generic `elkt-vectors.sh` runner | java-architect | tools/vectors/{ElktLexerVectors.java,elkt-lexer-cases.txt,elkt-vectors.sh}, test/golden/refs/java/graph-text-lexer.json | — | [x] |
+| T3 | Parse + link JVM vectors (`graph-text-parse.json`) | java-architect | tools/vectors/ElktParseVectors.java, tools/vectors/elkt-parse-scenarios/*, test/golden/refs/java/graph-text-parse.json | — | [x] |
+| T4 | Validator JVM vectors (`graph-text-validate.json`) | java-architect | tools/vectors/ElktValidateVectors.java, tools/vectors/elkt-validate-scenarios/*, test/golden/refs/java/graph-text-validate.json | — | [x] |
+| T5 | Writer JVM vectors (`graph-text-write.json`) | java-architect | tools/vectors/ElktWriteVectors.java, tools/vectors/elkt-write-scenarios/*, test/golden/refs/java/graph-text-write.json | — | [x] |
 
 Run order inside the batch: T3–T5 are written against T2's `elkt-vectors.sh` contract (below), so they
 can be developed in parallel; the orchestrator runs `elkt-vectors.sh` once after all five land and

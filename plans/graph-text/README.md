@@ -122,7 +122,7 @@ the orchestrator commits per task. `npm run docs:build` green before T24 is mark
 
 | Batch | Name | Tasks | Depends on | Status |
 |-------|------|-------|------------|--------|
-| 1 | Evidence: oracle refs and JVM vectors | T1–T5 | — | [ ] |
+| 1 | Evidence: oracle refs and JVM vectors | T1–T5 | — | [x] |
 | 2a | Fitness, Xtext converters and naming, lexer | T6–T9 | 1 | [ ] |
 | 2b | `LayoutOptionProxy`, Xtext validation base, `formatting2` | T10–T12 | 1 | [ ] |
 | 3 | ElkGraph converters; Xtext scoping | T13–T14 | 2a, 2b | [ ] |
