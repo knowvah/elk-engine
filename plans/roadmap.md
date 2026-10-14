@@ -229,3 +229,34 @@ conformance-corpus mission, not mission 9. Mission 9 keeps: running the TS engin
 cases, comparing against the oracle outputs, and the per-algorithm parity dashboard. Its exit
 changes to: sweep reports per-algorithm status for every `(algorithm, model, variant)` case
 (D1). It no longer converts the 898 `.elkt` models; that conversion is replaced by 4b.
+
+## Revision 2026-10-14 (graph-text)
+
+Appended; no earlier line is edited. Source: G1-G8 in `plans/graph-text/decisions.md`; the journal is
+`plans/graph-text/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+
+**Mission 4b (`graph.text`) status.** The code, vectors and curated refs landed on `feature/graph-text`
+(entry point `src/graph/text/ElkGraphText.ts`, Xtext subset `src/xtext`; design and runbook in
+`docs/architecture/elk-text.md`). The exit criteria are measured by the local sweep, whose counts are in
+`docs/conformance.md`, section "ELK Text (`.elkt`)". Two results differ from the exit text above and are
+flagged for the user in the journal: the realworld `.json` and `.elkt` of one model do not parse to the same
+ElkGraph (all 550 `.elkt` carry port `position`, which the `.json` lacks, so D3 is held as "oracle differs
+identically", `D3_ORACLE_DIFFERENCES`), and syntax errors match by presence only (D8 #1).
+
+**Follow-ups by mission:**
+
+- **Mission 5** and every later algorithm mission: when the TS registry grows, regenerate the core-only graph.text
+  refs and vectors by script (`tools/vectors/elkt-vectors.sh`, `tools/oracle/regen-elkt-refs.sh`), journal the
+  regeneration, and drop the `MISSION5_ALGORITHMS` filter and its stand-in describe in
+  `src/graph/text/validation/ElkGraphValidator.test.ts` (the filter's test fails once `fixed`, `box` and `random`
+  resolve).
+- **Mission 7** (layered): repeat the regeneration for the layered registry; about 177 to 182 models use layered keys
+  and differ between the core and the default oracle registry.
+- **Mission 4c** (`graph.json.text`): reuse `src/xtext` (converters, scoping, linking, validation base, the
+  `formatting2` subset) and add the bundle to `XTEXT_CLIENT_BUNDLES` in
+  `test/architecture/module-boundaries.fitness.test.ts`.
+- **Any time (outside the mission 4b write-sets):** fix the mission-4 `JsonExporter` null option value gap
+  (`src/graph/json/JsonExporter.ts:53`) and then remove `KNOWN_EXPORTER_GAPS` in `ElkGraphText.test.ts`; vendor the
+  31 curated `.elkt` inputs or fetch the pinned corpus in CI so the curated refs run there; add a
+  `StringIndexOutOfBoundsException` shim to `src/java/lang`; decide whether the 13 lexer recovery boundaries pinned
+  in T9 become canonical lexer vector rows in a later regeneration.
