@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { JsonIOException } from './JsonIOException.js';
 import { JsonParseException, throwableToString } from './JsonParseException.js';
 import { JsonSyntaxException } from './JsonSyntaxException.js';
-import { IOException } from './stream/MalformedJsonException.js';
+import { IOException } from '../java/io/IOException.js';
 
 describe('Gson exceptions', () => {
   it('keeps an explicit message and cause', () => {

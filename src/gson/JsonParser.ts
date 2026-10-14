@@ -4,7 +4,8 @@ import type { JsonElement } from './JsonElement.js';
 import { JsonNull } from './JsonNull.js';
 import { JsonSyntaxException } from './JsonSyntaxException.js';
 import { JsonReader } from './stream/JsonReader.js';
-import { EOFException, IOException } from './stream/MalformedJsonException.js';
+import { EOFException } from '../java/io/EOFException.js';
+import { IOException } from '../java/io/IOException.js';
 
 /**
  * Parses JSON text into a {@link JsonElement} tree; the text is read leniently (the reader's own strictness is

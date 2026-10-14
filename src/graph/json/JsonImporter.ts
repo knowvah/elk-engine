@@ -10,7 +10,7 @@ import { type BiMap, HashBiMap } from '../../guava/HashBiMap.js';
 import { newHashMap } from '../../guava/Maps.js';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
 import { identityHashCode } from '../../java/lang/IdentityHashCode.js';
-import { type HashStrategy, INTEGER, STRING, hashable } from '../../java/util/HashStrategy.js';
+import { type HashStrategy, hashable } from '../../java/util/HashStrategy.js';
 import type { JavaHashMap } from '../../java/util/JavaHashMap.js';
 import type { ElkEdge } from '../ElkEdge.js';
 import type { ElkEdgeSection } from '../ElkEdgeSection.js';
@@ -23,7 +23,7 @@ import { isElkEdgeSection } from '../ElkEdgeSection.js';
 import type { IPropertyHolder } from '../properties/IPropertyHolder.js';
 import { ElkGraphUtil } from '../util/ElkGraphUtil.js';
 import { JsonAdapter } from './JsonAdapter.js';
-import { transformEdges } from './JsonImporterEdges.js';
+import { ID_STRATEGY, transformEdges } from './JsonImporterEdges.js';
 import { transferLayout } from './JsonImporterLayoutTransfer.js';
 
 const CHILDREN_KEY = 'children';
@@ -41,12 +41,6 @@ const HEIGHT_KEY = 'height';
 
 /** A json id as the Xtend `Object` key: a string, an `Integer` (from `asId`), or null (a `HashMap` lookup of a missing optional id). */
 export type JsonId = string | number | null;
-
-/** `String.hashCode` / `Integer.hashCode`; `equals` is false across the two types, as in Java. */
-const ID_STRATEGY: HashStrategy<JsonId> = {
-  hash: (k) => (k === null ? 0 : typeof k === 'string' ? STRING.hash(k) : INTEGER.hash(k)),
-  equals: (a, b) => a === b,
-};
 
 /** The ElkGraph classes do not override `hashCode`/`equals`: identity (AD-10). */
 function identity<K extends object>(): HashStrategy<K> {

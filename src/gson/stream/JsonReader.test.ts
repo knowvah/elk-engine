@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { IllegalStateException } from '../../java/lang/IllegalStateException.js';
 import { JsonReader } from './JsonReader.js';
 import { JsonToken } from './JsonToken.js';
-import { EOFException, MalformedJsonException } from './MalformedJsonException.js';
+import { EOFException } from '../../java/io/EOFException.js';
+import { MalformedJsonException } from './MalformedJsonException.js';
 
 function lenient(text: string): JsonReader {
   const reader = new JsonReader(text);

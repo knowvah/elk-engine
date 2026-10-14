@@ -33,8 +33,11 @@ const OUTGOING_SECTIONS_KEY = 'outgoingSections';
 const X_KEY = 'x';
 const Y_KEY = 'y';
 
-/** `String.hashCode` / `Integer.hashCode` for the `Object` section ids; `equals` is false across the two types. */
-const ID_STRATEGY: HashStrategy<JsonId> = {
+/**
+ * `String.hashCode` / `Integer.hashCode` for the `Object` json ids (the one instance, also used by `JsonImporter`:
+ * its value import of this module cannot be reversed without a cycle); `equals` is false across the two types.
+ */
+export const ID_STRATEGY: HashStrategy<JsonId> = {
   hash: (k) => (k === null ? 0 : typeof k === 'string' ? STRING.hash(k) : INTEGER.hash(k)),
   equals: (a, b) => a === b,
 };
