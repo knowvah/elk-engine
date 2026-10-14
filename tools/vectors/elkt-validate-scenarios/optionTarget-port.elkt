@@ -1,0 +1,5 @@
+// @covers 71-72, 131-135 (ElkPort; applicable and not applicable)
+node a {
+  port p1 { ^port.side: NORTH ^port.borderOffset: 1.5 }
+  port p2 { direction: UP ^edge.type: NONE }
+}

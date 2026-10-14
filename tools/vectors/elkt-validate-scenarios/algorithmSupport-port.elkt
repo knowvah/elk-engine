@@ -1,0 +1,5 @@
+// @covers 78-79, ElkGraphTextUtil.xtend:30-31 (port: parent.parent ?: parent)
+// @deferred mission5
+algorithm: random
+port rootPort { ^port.side: NORTH }
+node a { port p { ^port.side: SOUTH ^port.index: 1 } }

@@ -1,0 +1,11 @@
+// @covers 214-218 (edge in its best container: no issue)
+node a
+node b
+node p {
+  node c
+  node d
+  edge c -> d
+}
+edge a -> b
+edge a -> p
+edge a, b -> p

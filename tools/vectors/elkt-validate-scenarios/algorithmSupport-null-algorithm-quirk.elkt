@@ -1,0 +1,8 @@
+// @covers 145, 149-150 (last ancestor has no algorithm: algorithm.id is null; NPE swallowed by Xtext, rest of the check is skipped)
+// @deferred mission5
+node c {
+  algorithm: fixed
+  direction: UP
+  spacing.nodeNode: -1
+  nodeSize.fixedGraphSize: abc
+}

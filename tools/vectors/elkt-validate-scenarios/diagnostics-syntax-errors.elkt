@@ -1,0 +1,6 @@
+// @covers ResourceValidatorImpl: parser diagnostics (G5: presence and line only)
+node a {
+  port
+}
+node b ]
+edge e: a ->

@@ -1,0 +1,7 @@
+// @covers 186-190 (node, port, label and edge sharing one identifier in one container)
+node a {
+  port x
+  node x
+  label x: "t"
+  edge x: a -> a
+}

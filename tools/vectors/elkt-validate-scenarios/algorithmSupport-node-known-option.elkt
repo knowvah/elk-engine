@@ -1,0 +1,5 @@
+// @covers 76-79, 137-140 (algorithm knows the option: no issue)
+// @deferred mission5
+algorithm: box
+spacing.nodeNode: 5
+aspectRatio: 1.5

@@ -1,0 +1,6 @@
+// @covers 78-79, ElkGraphTextUtil.xtend:32-33 (edge: containingNode)
+// @deferred mission5
+algorithm: random
+node a
+node b
+edge e: a -> b { ^edge.thickness: 2 priority: 1 }

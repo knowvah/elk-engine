@@ -1,0 +1,8 @@
+// @covers 115-119 (unknown algorithm: error on the value)
+algorithm: nosuch
+node a { algorithm: "also not found" }
+node b { algorithm: org.eclipse.elk.nosuch }
+node c {
+  algorithm:
+    other.nosuch
+}

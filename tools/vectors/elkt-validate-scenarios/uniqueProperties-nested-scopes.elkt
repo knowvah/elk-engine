@@ -1,0 +1,3 @@
+// @covers 161-176 (same key in different holders is fine)
+direction: RIGHT
+node a { direction: LEFT node b { direction: UP } }

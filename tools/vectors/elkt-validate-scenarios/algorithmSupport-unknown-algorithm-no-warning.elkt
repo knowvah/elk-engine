@@ -1,0 +1,4 @@
+// @covers 139-140 (unknown algorithm id: getAlgorithm is null, no support warning)
+algorithm: nosuch
+direction: RIGHT
+node a { algorithm: other.nosuch commentBox: true }

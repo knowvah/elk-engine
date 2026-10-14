@@ -1,0 +1,6 @@
+// @covers 115-119 (suffix and full-id forms of a known algorithm: no issue)
+// @deferred mission5
+algorithm: fixed
+node a { algorithm: org.eclipse.elk.fixed }
+node b { algorithm: "box" }
+node c { algorithm: elk.random }

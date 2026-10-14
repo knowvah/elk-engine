@@ -1,0 +1,15 @@
+// @covers 244-246 (outgoing shape together with outgoing sections)
+node a
+node b { port q }
+edge e: a -> b {
+  layout [
+    section s1 -> s2 [ outgoing: b start: 0,0 end: 1,1 ]
+    section s2 [ start: 1,1 end: 2,2 ]
+  ]
+}
+edge f: a -> b.q {
+  layout [
+    section t1 -> t2 [ outgoing: b.q start: 0,0 end: 1,1 ]
+    section t2 [ start: 1,1 end: 2,2 ]
+  ]
+}

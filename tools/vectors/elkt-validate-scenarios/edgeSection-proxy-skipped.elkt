@@ -1,0 +1,6 @@
+// @covers 231, 240 (unresolved shape references are proxies: skipped, only the linking error shows)
+node a
+node b
+edge e: a -> b {
+  layout [ incoming: nosuch outgoing: other.nosuch start: 0,0 end: 1,1 ]
+}

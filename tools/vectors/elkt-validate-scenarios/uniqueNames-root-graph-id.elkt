@@ -1,0 +1,4 @@
+// @covers 183-212 (graph identifier is not among the contents of its own scope)
+graph g
+node g
+node g

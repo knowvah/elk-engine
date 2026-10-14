@@ -1,0 +1,7 @@
+// @covers 66-68, 131-135 (ElkNode, option for ports/edges/labels, root and nested)
+^port.side: NORTH
+node a {
+  ^edge.thickness: 1.5
+  edgeLabels.inline: true
+}
+node b { node c { ^port.side: SOUTH } }

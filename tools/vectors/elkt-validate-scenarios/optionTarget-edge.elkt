@@ -1,0 +1,12 @@
+// @covers 69-70, 131-135 (ElkEdge; applicable and not applicable)
+node a
+node b
+edge e1: a -> b {
+  priority: 2
+  ^edge.thickness: 2.5
+  ^edge.type: DIRECTED
+}
+edge e2: a -> b {
+  direction: UP
+  commentBox: true
+}

@@ -1,0 +1,6 @@
+// @covers 81-93 (DOUBLE option: Expected value of type Double.)
+aspectRatio: abc
+childAreaWidth: "[1]"
+childAreaHeight: 3
+topdown.scaleCap: "x1"
+spacing.nodeNode: "1,5"

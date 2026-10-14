@@ -1,0 +1,10 @@
+// @covers ResourceValidatorImpl: linker diagnostics (exact message and line)
+node a { port p }
+node b
+edge e: a.nosuch -> b
+edge f: a.p -> missing
+edge g: a -> b {
+  layout [
+    section s1 -> nosuch [ incoming: zzz outgoing: b.nope start: 0,0 end: 1,1 ]
+  ]
+}

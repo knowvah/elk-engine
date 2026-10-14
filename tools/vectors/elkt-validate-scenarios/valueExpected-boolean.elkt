@@ -1,0 +1,7 @@
+// @covers 81-93 (BOOLEAN option, unparseable text stays a proxy: Expected value of type Boolean.)
+animate: abc
+debugMode:
+  maybe
+zoomToFit: 1
+progressBar: TRUE
+validateGraph: FaLsE

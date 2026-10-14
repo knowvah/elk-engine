@@ -1,0 +1,8 @@
+// @covers 217-222 (declared in a node deeper than the best container, identifier in the message)
+node p {
+  node c1
+  node c2
+  node q {
+    edge c1 -> c2
+  }
+}

@@ -1,0 +1,6 @@
+// @covers 164-166 (the same option via suffix and full id is one key)
+direction: RIGHT
+org.eclipse.elk.direction: LEFT
+elk.direction: UP
+spacing.nodeNode: 1
+org.eclipse.elk.spacing.nodeNode: 2

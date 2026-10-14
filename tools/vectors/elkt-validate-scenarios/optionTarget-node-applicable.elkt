@@ -1,0 +1,8 @@
+// @covers 66-68, 131-135 (ElkNode; PARENTS and NODES targets on leaf and parent, no issue)
+direction: RIGHT
+node leaf { commentBox: true direction: UP }
+node parent {
+  hypernode: true
+  direction: DOWN
+  node child { priority: 1 }
+}

@@ -1,0 +1,4 @@
+// @covers 165-171 (third occurrence: usedProperties.put(property, null) path flags only the new one)
+direction: RIGHT
+direction: LEFT
+direction: UP

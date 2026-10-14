@@ -1,0 +1,5 @@
+// @covers ResourceValidatorImpl: no issue at all
+graph g
+node a
+node b
+edge a -> b

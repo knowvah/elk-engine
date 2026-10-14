@@ -1,0 +1,6 @@
+// @covers 65, 81 (single-section layout; properties of the section)
+node a
+node b
+edge e: a -> b {
+  layout [ start: 0,0 end: 5,5 direction: UP aspectRatio: 0 ]
+}

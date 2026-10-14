@@ -1,0 +1,7 @@
+// @covers 143-148 (foundMatch: an ancestor algorithm knows the option)
+// @deferred mission5
+algorithm: box
+node c {
+  algorithm: fixed
+  aspectRatio: 1.5
+}

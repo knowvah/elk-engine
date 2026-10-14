@@ -1,0 +1,5 @@
+// @covers 217 (edge with unresolved endpoints: findBestEdgeContainment sees proxies)
+node a
+edge e: a -> missing
+edge missing2 -> a
+edge x1, x2 -> y1, y2

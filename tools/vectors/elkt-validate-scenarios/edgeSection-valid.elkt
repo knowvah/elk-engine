@@ -1,0 +1,12 @@
+// @covers 229-247 (shapes that are sources/targets, no section links: no issue)
+node a { port p }
+node b { port q }
+edge e: a.p -> b.q {
+  layout [ incoming: a.p outgoing: b.q start: 0,0 end: 1,1 ]
+}
+edge f: a -> b {
+  layout [
+    section s1 -> s2 [ incoming: a start: 0,0 end: 1,1 ]
+    section s2 [ outgoing: b start: 1,1 end: 2,2 ]
+  ]
+}

@@ -1,0 +1,4 @@
+// @covers 81-93 (ENUMSET option: Expected value of type EnumSet.)
+contentAlignment: bogus
+nodeSize.constraints: "[BOGUS]"
+node a { nodeSize.options: "[DEFAULT_MINIMUM_SIZE, nope]" nodeLabels.placement: "[H_LEFT]" portLabels.placement: "" }

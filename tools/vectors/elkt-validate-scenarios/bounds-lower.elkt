@@ -1,0 +1,9 @@
+// @covers 104-112 (below the lower bound: error on the value; within bounds: no issue)
+spacing.nodeNode: -1
+spacing.commentNode: 0
+spacing.edgeEdge: 2.5
+animTimeFactor: -1
+topdown.sizeCategories: 0
+topdown.sizeCategoriesHierarchicalNodeWeight: 1
+node a { spacing.nodeNode:
+    -0.5 }

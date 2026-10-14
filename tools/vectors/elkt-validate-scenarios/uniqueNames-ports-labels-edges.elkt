@@ -1,0 +1,10 @@
+// @covers 183-212 (ports, labels and edges)
+node n {
+  port p
+  port p
+  label l: "x"
+  label l: "y"
+}
+node m
+edge e: n -> m
+edge e: m -> n

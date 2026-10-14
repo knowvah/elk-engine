@@ -1,0 +1,3 @@
+// @covers 82-83, 100-101 (a proxy that resolves at validation: not reachable in the core registry, mutations stay empty)
+de.cau.cs.kieler.direction: RIGHT
+de.cau.cs.kieler.randomSeed: abc

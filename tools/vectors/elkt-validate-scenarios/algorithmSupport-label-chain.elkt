@@ -1,0 +1,11 @@
+// @covers 78-79, ElkGraphTextUtil.xtend:34-44 (label on node, root, port, edge and nested labels)
+// @deferred mission5
+algorithm: random
+label "rootLabel" { edgeLabels.inline: true }
+node a {
+  label "nl" { edgeLabels.inline: true }
+  label "outer" { label "inner" { edgeLabels.inline: true } }
+  port p { label "pl" { edgeLabels.inline: true } }
+}
+node b
+edge e: a -> b { label "el" { label "el2" { edgeLabels.inline: true } } }

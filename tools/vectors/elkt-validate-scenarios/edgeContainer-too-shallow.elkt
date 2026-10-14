@@ -1,0 +1,13 @@
+// @covers 217-222 (declared at the root, best container is a node)
+node p {
+  node c1
+  node c2
+}
+edge p.c1 -> p.c2
+node r {
+  node s {
+    node t1
+    node t2
+  }
+}
+edge r.s.t1 -> r.s.t2

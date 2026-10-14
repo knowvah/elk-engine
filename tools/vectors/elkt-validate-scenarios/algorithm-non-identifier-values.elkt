@@ -1,0 +1,5 @@
+// @covers 115-119 (number and boolean text parse as String and are looked up)
+algorithm: 5
+node a { algorithm: true }
+node b { algorithm: null }
+node c { algorithm: 2.5 }

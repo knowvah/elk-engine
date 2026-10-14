@@ -1,0 +1,5 @@
+// @covers 104-112 (exclusive lower bound 0.0)
+aspectRatio: 0
+elk.scaleFactor: 0.0
+topdown.scaleFactor: -2
+node a { elk.scaleFactor: 0.0001 }
