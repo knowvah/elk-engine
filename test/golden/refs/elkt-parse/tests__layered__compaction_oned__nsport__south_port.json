@@ -1,0 +1,81 @@
+{
+  "id": "n0",
+  "children": [
+    {
+      "id": "n1",
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "n3",
+      "ports": [
+        {
+          "id": "p1",
+          "layoutOptions": {
+            "port.side": "SOUTH"
+          },
+          "x": 9.3333,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "layoutOptions": {
+        "portConstraints": "FIXED_POS"
+      },
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "n4",
+      "ports": [
+        {
+          "id": "p1_g548985",
+          "layoutOptions": {
+            "port.side": "NORTH"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "layoutOptions": {
+        "portConstraints": "FIXED_POS"
+      },
+      "x": 0.0,
+      "y": 0.0,
+      "width": 400.0,
+      "height": 40.0
+    }
+  ],
+  "layoutOptions": {},
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0,
+  "edges": [
+    {
+      "id": "e0",
+      "sources": [
+        "p1"
+      ],
+      "targets": [
+        "p1_g548985"
+      ]
+    },
+    {
+      "id": "e1",
+      "sources": [
+        "n1"
+      ],
+      "targets": [
+        "n3"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "id": "n0",
+  "children": [
+    {
+      "id": "n1",
+      "labels": [
+        {
+          "text": "n1",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "layoutOptions": {
+        "position": "(300.0,100.0)"
+      },
+      "x": 300.0,
+      "y": 100.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "n2",
+      "labels": [
+        {
+          "text": "n2",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "layoutOptions": {
+        "position": "(200.0,100.0)"
+      },
+      "x": 200.0,
+      "y": 100.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "n3",
+      "labels": [
+        {
+          "text": "n3",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "layoutOptions": {
+        "position": "(100.0,0.0)"
+      },
+      "x": 100.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "n4",
+      "labels": [
+        {
+          "text": "n4",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "layoutOptions": {
+        "position": "(200.0,0.0)"
+      },
+      "x": 200.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    }
+  ],
+  "layoutOptions": {
+    "direction": "RIGHT",
+    "separateConnectedComponents": "false"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0,
+  "edges": [
+    {
+      "id": "e0",
+      "sources": [
+        "n1"
+      ],
+      "targets": [
+        "n2"
+      ]
+    }
+  ]
+}

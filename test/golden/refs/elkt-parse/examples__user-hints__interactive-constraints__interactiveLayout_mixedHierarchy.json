@@ -1,0 +1,67 @@
+{
+  "id": "n0",
+  "children": [
+    {
+      "id": "n11",
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "n12",
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "n13",
+      "labels": [
+        {
+          "text": "Test",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "children": [
+        {
+          "id": "n1",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        },
+        {
+          "id": "n2",
+          "layoutOptions": {},
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "layoutOptions": {
+        "interactiveLayout": "true",
+        "separateConnectedComponents": "false",
+        "direction": "RIGHT"
+      },
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    }
+  ],
+  "layoutOptions": {
+    "aspectRatio": "1.908321167883212",
+    "algorithm": "rectpacking",
+    "expandNodes": "false",
+    "interactiveLayout": "true"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0
+}

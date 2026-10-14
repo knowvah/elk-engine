@@ -1,0 +1,582 @@
+{
+  "models": [
+    {
+      "id": "examples/general/spacing/labels",
+      "path": "examples/general/spacing/labels.elkt",
+      "covers": [
+        "block-comment",
+        "caret-id",
+        "edge-bare",
+        "edge-no-id",
+        "line-comment",
+        "node-braced",
+        "port-braced",
+        "prop-int",
+        "prop-qid",
+        "qualified-endpoint",
+        "root-no-graph-id"
+      ]
+    },
+    {
+      "id": "examples/ports/portConstraints",
+      "path": "examples/ports/portConstraints.elkt",
+      "covers": [
+        "block-comment",
+        "caret-id",
+        "edge-bare",
+        "edge-no-id",
+        "line-comment",
+        "node-braced",
+        "port-bare",
+        "port-braced",
+        "prop-float",
+        "prop-qid",
+        "qualified-endpoint",
+        "root-no-graph-id",
+        "shape-pos-only"
+      ]
+    },
+    {
+      "id": "examples/user-hints/interactive-constraints/interactiveLayeredLayout_circle_pseudo_positions",
+      "path": "examples/user-hints/interactive-constraints/interactiveLayeredLayout_circle_pseudo_positions.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-bare",
+        "edge-no-id",
+        "label-bare-text",
+        "line-comment",
+        "node-braced",
+        "prop-qid",
+        "registry-diff",
+        "root-no-graph-id",
+        "shape-pos-only"
+      ]
+    },
+    {
+      "id": "examples/user-hints/interactive-constraints/interactiveLayeredLayout_separateComponents_pseudo_positions",
+      "path": "examples/user-hints/interactive-constraints/interactiveLayeredLayout_separateComponents_pseudo_positions.elkt",
+      "covers": [
+        "block-comment",
+        "caret-id",
+        "dq-string",
+        "edge-bare",
+        "edge-no-id",
+        "label-bare-text",
+        "line-comment",
+        "node-braced",
+        "prop-bool",
+        "prop-qid",
+        "prop-string",
+        "registry-diff",
+        "root-no-graph-id",
+        "shape-pos-only",
+        "unknown-key"
+      ]
+    },
+    {
+      "id": "examples/user-hints/interactive-constraints/interactiveLayout_mixedHierarchy",
+      "path": "examples/user-hints/interactive-constraints/interactiveLayout_mixedHierarchy.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "label-bare-text",
+        "line-comment",
+        "node-bare",
+        "node-braced",
+        "prop-bool",
+        "prop-float",
+        "prop-int",
+        "prop-qid",
+        "registry-diff",
+        "root-no-graph-id"
+      ]
+    },
+    {
+      "id": "examples/user-hints/interactive-constraints/interactiveRectpacking_oneBigNode",
+      "path": "examples/user-hints/interactive-constraints/interactiveRectpacking_oneBigNode.elkt",
+      "covers": [
+        "block-comment",
+        "line-comment",
+        "node-braced",
+        "prop-bool",
+        "prop-float",
+        "prop-int",
+        "prop-qid",
+        "registry-diff",
+        "root-no-graph-id",
+        "shape-size-only"
+      ]
+    },
+    {
+      "id": "realworld/ptolemy/flattened/hlacerti_multidatatypes_producer",
+      "path": "realworld/ptolemy/flattened/hlacerti_multidatatypes_producer.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-bare",
+        "edge-id",
+        "graph-id",
+        "label-braced",
+        "label-id",
+        "node-braced",
+        "port-braced",
+        "prop-int",
+        "prop-qid",
+        "prop-signed-number",
+        "prop-string",
+        "qualified-endpoint",
+        "shape-pos-size",
+        "shape-size-only"
+      ]
+    },
+    {
+      "id": "realworld/ptolemy/flattened/pthales_dynamic_ThalesDynamicModalModelPN",
+      "path": "realworld/ptolemy/flattened/pthales_dynamic_ThalesDynamicModalModelPN.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-bare",
+        "edge-id",
+        "graph-id",
+        "label-braced",
+        "label-id",
+        "node-braced",
+        "port-braced",
+        "prop-int",
+        "prop-qid",
+        "prop-string",
+        "qualified-endpoint",
+        "shape-pos-size",
+        "shape-size-only"
+      ]
+    },
+    {
+      "id": "realworld/ptolemy/hierarchical/hoc_threadedcomposite_MulticoreExecution",
+      "path": "realworld/ptolemy/hierarchical/hoc_threadedcomposite_MulticoreExecution.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-bare",
+        "edge-id",
+        "graph-id",
+        "label-braced",
+        "label-id",
+        "node-braced",
+        "port-braced",
+        "prop-int",
+        "prop-qid",
+        "prop-signed-number",
+        "prop-string",
+        "qualified-endpoint",
+        "shape-pos-size",
+        "shape-size-only"
+      ]
+    },
+    {
+      "id": "realworld/ptolemy/hierarchical/pthales_illustrative_Illustrative",
+      "path": "realworld/ptolemy/hierarchical/pthales_illustrative_Illustrative.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-bare",
+        "edge-id",
+        "graph-id",
+        "label-braced",
+        "label-id",
+        "node-braced",
+        "port-braced",
+        "prop-int",
+        "prop-qid",
+        "prop-signed-number",
+        "prop-string",
+        "qualified-endpoint",
+        "shape-pos-size",
+        "shape-size-only"
+      ]
+    },
+    {
+      "id": "tests/layered/comment_boxes/multiple_comments",
+      "path": "tests/layered/comment_boxes/multiple_comments.elkt",
+      "covers": [
+        "block-comment",
+        "edge-bare",
+        "edge-no-id",
+        "node-bare",
+        "node-braced",
+        "prop-bool",
+        "root-no-graph-id"
+      ]
+    },
+    {
+      "id": "tests/layered/compaction_oned/labels/edgeLabelAndSplines",
+      "path": "tests/layered/compaction_oned/labels/edgeLabelAndSplines.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-bare",
+        "edge-braced",
+        "edge-no-id",
+        "label-bare-text",
+        "label-braced",
+        "node-bare",
+        "node-braced",
+        "prop-qid",
+        "registry-diff",
+        "root-no-graph-id"
+      ]
+    },
+    {
+      "id": "tests/layered/compaction_oned/labels/edgeLabelSideSelection01",
+      "path": "tests/layered/compaction_oned/labels/edgeLabelSideSelection01.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-braced",
+        "edge-id",
+        "escape",
+        "label-id",
+        "node-bare",
+        "prop-qid",
+        "registry-diff",
+        "root-no-graph-id",
+        "unknown-key"
+      ]
+    },
+    {
+      "id": "tests/layered/compaction_oned/nsport/south_port",
+      "path": "tests/layered/compaction_oned/nsport/south_port.elkt",
+      "covers": [
+        "block-comment",
+        "caret-id",
+        "edge-bare",
+        "edge-no-id",
+        "node-bare",
+        "node-braced",
+        "port-braced",
+        "prop-qid",
+        "qualified-endpoint",
+        "registry-diff",
+        "root-no-graph-id",
+        "shape-pos-only",
+        "shape-size-only"
+      ]
+    },
+    {
+      "id": "tests/layered/compaction_oned/selfloop/selfloop_spline",
+      "path": "tests/layered/compaction_oned/selfloop/selfloop_spline.elkt",
+      "covers": [
+        "block-comment",
+        "edge-bare",
+        "edge-no-id",
+        "node-bare",
+        "prop-qid",
+        "registry-diff",
+        "root-no-graph-id"
+      ]
+    },
+    {
+      "id": "tests/layered/interactive_layout/firstLayer",
+      "path": "tests/layered/interactive_layout/firstLayer.elkt",
+      "covers": [
+        "block-comment",
+        "edge-bare",
+        "edge-no-id",
+        "line-comment",
+        "node-bare",
+        "node-braced",
+        "prop-bool",
+        "prop-int",
+        "registry-diff",
+        "root-no-graph-id"
+      ]
+    },
+    {
+      "id": "tests/layered/layer_constraints/01",
+      "path": "tests/layered/layer_constraints/01.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-bare",
+        "edge-id",
+        "graph-id",
+        "label-id",
+        "node-braced",
+        "port-bare",
+        "prop-qid",
+        "registry-diff",
+        "shape-size-only"
+      ]
+    },
+    {
+      "id": "tests/layered/port_label_placement/fixed_positions_01",
+      "path": "tests/layered/port_label_placement/fixed_positions_01.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "label-braced",
+        "label-id",
+        "node-braced",
+        "port-braced",
+        "prop-qid",
+        "root-no-graph-id",
+        "shape-pos-only"
+      ]
+    },
+    {
+      "id": "tests/layered/port_label_placement/inside_compound_nodes_01",
+      "path": "tests/layered/port_label_placement/inside_compound_nodes_01.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-bare",
+        "edge-braced",
+        "edge-id",
+        "edge-layout",
+        "label-id",
+        "node-braced",
+        "port-braced",
+        "prop-qid",
+        "prop-string",
+        "qualified-endpoint",
+        "root-no-graph-id",
+        "section-form",
+        "shape-size-only"
+      ]
+    },
+    {
+      "id": "tests/layered/preserve_order/timedAutomatonMoreEdges",
+      "path": "tests/layered/preserve_order/timedAutomatonMoreEdges.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-braced",
+        "edge-no-id",
+        "label-bare-text",
+        "node-bare",
+        "node-braced",
+        "prop-qid",
+        "registry-diff",
+        "root-no-graph-id",
+        "unknown-key"
+      ]
+    },
+    {
+      "id": "tests/layered/splines/hyperedges/hyperedges_1",
+      "path": "tests/layered/splines/hyperedges/hyperedges_1.elkt",
+      "covers": [
+        "block-comment",
+        "edge-bare",
+        "edge-no-id",
+        "node-bare",
+        "node-braced",
+        "port-bare",
+        "prop-qid",
+        "qualified-endpoint",
+        "registry-diff",
+        "root-no-graph-id"
+      ]
+    },
+    {
+      "id": "tests/layered/splines/sloppy_curvature",
+      "path": "tests/layered/splines/sloppy_curvature.elkt",
+      "covers": [
+        "block-comment",
+        "edge-bare",
+        "edge-no-id",
+        "node-bare",
+        "prop-qid",
+        "root-no-graph-id"
+      ]
+    },
+    {
+      "id": "tickets/core/245_surroundingPortSpace",
+      "path": "tickets/core/245_surroundingPortSpace.elkt",
+      "covers": [
+        "block-comment",
+        "caret-id",
+        "line-comment",
+        "node-braced",
+        "port-braced",
+        "prop-qid",
+        "root-no-graph-id",
+        "unknown-key"
+      ]
+    },
+    {
+      "id": "tickets/core/457_boxLayouterIgnoresMinimumSize",
+      "path": "tickets/core/457_boxLayouterIgnoresMinimumSize.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "line-comment",
+        "node-braced",
+        "prop-qid",
+        "prop-string",
+        "root-no-graph-id",
+        "shape-size-only",
+        "unknown-key"
+      ]
+    },
+    {
+      "id": "tickets/layered/273_insideSelfLoopsWithLabels",
+      "path": "tickets/layered/273_insideSelfLoopsWithLabels.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-braced",
+        "edge-id",
+        "graph-id",
+        "label-braced",
+        "label-id",
+        "node-braced",
+        "port-braced",
+        "prop-bool",
+        "prop-qid",
+        "prop-signed-number",
+        "prop-string",
+        "qualified-endpoint",
+        "registry-diff",
+        "shape-pos-size",
+        "shape-size-only"
+      ]
+    },
+    {
+      "id": "tickets/layered/411_north_south_port_anchor_a",
+      "path": "tickets/layered/411_north_south_port_anchor_a.elkt",
+      "covers": [
+        "block-comment",
+        "caret-id",
+        "edge-bare",
+        "edge-no-id",
+        "line-comment",
+        "node-bare",
+        "node-braced",
+        "port-braced",
+        "prop-bool",
+        "prop-qid",
+        "qualified-endpoint",
+        "registry-diff",
+        "root-no-graph-id",
+        "unknown-key"
+      ]
+    },
+    {
+      "id": "tickets/layered/476_multiLabelInHorizontalLayout",
+      "path": "tickets/layered/476_multiLabelInHorizontalLayout.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-braced",
+        "edge-id",
+        "edge-layout",
+        "graph-id",
+        "label-braced",
+        "label-id",
+        "line-comment",
+        "node-braced",
+        "prop-bool",
+        "prop-qid",
+        "prop-string",
+        "registry-diff",
+        "section-form",
+        "shape-pos-size",
+        "shape-size-only"
+      ]
+    },
+    {
+      "id": "tickets/layered/599_unimportantPortIndex",
+      "path": "tickets/layered/599_unimportantPortIndex.elkt",
+      "covers": [
+        "block-comment",
+        "dq-string",
+        "edge-braced",
+        "edge-no-id",
+        "label-bare-text",
+        "label-braced",
+        "line-comment",
+        "node-braced",
+        "port-bare",
+        "port-braced",
+        "prop-int",
+        "prop-qid",
+        "qualified-endpoint",
+        "root-no-graph-id"
+      ]
+    },
+    {
+      "id": "tickets/layered/724_includeChildrenModelOrder",
+      "path": "tickets/layered/724_includeChildrenModelOrder.elkt",
+      "covers": [
+        "bends",
+        "block-comment",
+        "dq-string",
+        "edge-braced",
+        "edge-id",
+        "edge-layout",
+        "graph-id",
+        "label-braced",
+        "label-id",
+        "line-comment",
+        "node-braced",
+        "prop-bool",
+        "prop-qid",
+        "prop-string",
+        "section-form",
+        "shape-pos-size",
+        "shape-size-only",
+        "unknown-key"
+      ]
+    },
+    {
+      "id": "tickets/layered/905_beginLabelAboveEdge",
+      "path": "tickets/layered/905_beginLabelAboveEdge.elkt",
+      "covers": [
+        "block-comment",
+        "caret-id",
+        "dq-string",
+        "edge-braced",
+        "edge-id",
+        "edge-layout",
+        "label-braced",
+        "label-id",
+        "line-comment",
+        "node-braced",
+        "port-braced",
+        "prop-float",
+        "prop-qid",
+        "prop-signed-number",
+        "prop-string",
+        "qualified-endpoint",
+        "root-no-graph-id",
+        "section-form",
+        "shape-pos-size"
+      ]
+    },
+    {
+      "id": "tickets/layered/905_beginLableBellowEdge",
+      "path": "tickets/layered/905_beginLableBellowEdge.elkt",
+      "covers": [
+        "block-comment",
+        "caret-id",
+        "dq-string",
+        "edge-braced",
+        "edge-id",
+        "edge-layout",
+        "label-braced",
+        "label-id",
+        "line-comment",
+        "node-braced",
+        "port-braced",
+        "prop-float",
+        "prop-qid",
+        "prop-signed-number",
+        "prop-string",
+        "qualified-endpoint",
+        "root-no-graph-id",
+        "section-form",
+        "shape-pos-size"
+      ]
+    }
+  ]
+}
