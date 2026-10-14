@@ -129,6 +129,16 @@ export class EnumSet<E extends Ordinal> implements Iterable<E> {
     return this.size() === other.size() && [...this].every((element) => other.contains(element));
   }
 
+  /**
+   * The elements in iteration (ordinal) order, each as `String.valueOf`, separated by `", "` and
+   * enclosed in square brackets.
+   *
+   * @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/AbstractCollection.html#toString()
+   */
+  toString(): string {
+    return '[' + [...this].map((element) => String(element)).join(', ') + ']';
+  }
+
   *[Symbol.iterator](): Iterator<E> {
     for (const [index, element] of this.#universe.entries()) {
       if (this.#present[index]) {

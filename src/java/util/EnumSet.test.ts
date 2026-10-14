@@ -37,7 +37,43 @@ class Shape {
   }
 }
 
+/** An enum whose constants print their name, as ported enums do (`Enum.toString`). */
+class Side {
+  static readonly NORTH: Side = new Side(0, 'NORTH');
+  static readonly EAST: Side = new Side(1, 'EAST');
+  static readonly SOUTH: Side = new Side(2, 'SOUTH');
+  static readonly ALL: readonly Side[] = [Side.NORTH, Side.EAST, Side.SOUTH];
+
+  private constructor(
+    private readonly index: number,
+    private readonly label: string,
+  ) {}
+
+  static values(): readonly Side[] {
+    return Side.ALL;
+  }
+
+  ordinal(): number {
+    return this.index;
+  }
+
+  toString(): string {
+    return this.label;
+  }
+}
+
 describe('EnumSet', () => {
+  // AbstractCollection.toString: "[" + elements in iteration order, ", "-separated, + "]".
+  it('toString lists the elements in ordinal order', () => {
+    expect(EnumSet.of(Side.SOUTH, Side.NORTH).toString()).toBe('[NORTH, SOUTH]');
+    expect(EnumSet.allOf(Side).toString()).toBe('[NORTH, EAST, SOUTH]');
+    expect(String(EnumSet.of(Side.EAST))).toBe('[EAST]');
+  });
+
+  it('toString of an empty set is []', () => {
+    expect(EnumSet.noneOf(Side).toString()).toBe('[]');
+  });
+
   it('noneOf is empty', () => {
     const set = EnumSet.noneOf(Color);
     expect(set.size()).toBe(0);
