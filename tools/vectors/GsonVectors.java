@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: EPL-2.0
-// Generates frozen JVM reference vectors (AD-13, J1) for the Gson subset graph.json relies on: Gson 2.11.0 as run by
-// the oracle (ElkGraphJson.java:115-140 reads via TypeAdapter<JsonElement> on a JsonReader; :222-241 writes via
-// GsonBuilder.disableHtmlEscaping()[.setPrettyPrinting()].create().toJson(JsonElement); JsonAdapter.xtend supplies the
-// JsonObject / JsonArray / JsonPrimitive calls). This program only CALLS Gson and records results; it embeds no Gson
-// code and has its own JSON writer, so the recording does not depend on the recorded library.
-// Run: tools/vectors/gson-vectors.sh <outDir>  (java -cp <gson jar> GsonVectors.java <outDir> <gsonVersion> <cases>)
-// Cases: tools/vectors/gson-cases.txt (sections documented there; escapes decoded; token "lazy:<text>" = LazilyParsedNumber).
+// Frozen JVM vectors (AD-13, J1) for the Gson 2.11.0 subset graph.json relies on (ElkGraphJson.java:115-140 reads via
+// TypeAdapter<JsonElement> on a JsonReader; :222-241 writes via GsonBuilder.disableHtmlEscaping()[.setPrettyPrinting()]
+// .create().toJson; JsonAdapter.xtend supplies the JsonObject/JsonArray/JsonPrimitive calls). Only CALLS Gson (own JSON writer).
+// Run: tools/vectors/gson-vectors.sh <outDir>  (java -cp <gson jar> GsonVectors.java <outDir> <gsonVersion> <cases>);
+// cases: tools/vectors/gson-cases.txt (escapes decoded; token "lazy:<text>" = LazilyParsedNumber).
 // Output: {gsonVersion, jdk, parse, primitive, write, objectOps, arrayOps, equality}; keys sorted, 2-space indent.
-// <T> (a JsonElement) = null (JsonNull) | {"num":raw} | {"str":s} | {"bool":b} | {"arr":[T]} | {"obj":[[k,T]]}. A
-// number's raw text is getAsNumber().toString(). Every row has "id"; an exception is "throws": {class (simple name),
-// message, cause?}. Rows: parse {input, via reader|parseString, lenient, tree|throws, after?} (reader = the adapter
-// read with setLenient(true) when lenient, no strictness call when strict; "after" = reader.peek() once the value was
-// read; parseString is lenient by its Javadoc; "deep-" rows record {depth} instead of the tree); primitive {value,
-// valueType?, op, result (String.valueOf)|throws}; write {tree, numTypes, pretty, text|throws}; objectOps/arrayOps {ops:
-// [[name, key-or-index, T?]], results: [T|{javaNull}|{void}|{num}|{bool}|{str}|{keys}|{throws}], tree, keys?, equalsTo?,
-// equals?, hashCodesEqual?}; equality {a, b, aTypes, bTypes, equals, hashCodesEqual}.
+// <T> (a JsonElement) = null (JsonNull) | {"num":raw} | {"str":s} | {"bool":b} | {"arr":[T]} | {"obj":[[k,T]]}. A number's
+// raw text is getAsNumber().toString(). Every row has "id"; an exception is "throws": {class (simple name), message, cause?}.
+// Rows: parse {input, via reader|parseString, lenient, tree|throws, after?} (reader = adapter read, setLenient(true) when
+// lenient, no strictness call when strict; "after" = reader.peek() once read; parseString is lenient; "deep-" rows record
+// {depth}); primitive {value, valueType?, op, result|throws}; write {tree, numTypes, pretty, text|throws, htmlSafe?} (a
+// missing htmlSafe = disableHtmlEscaping(); htmlSafe:true = default HTML escaping, ids end /html-compact|/html-pretty);
+// objectOps/arrayOps {ops: [[name, key-or-index, T?]], results: [T|{javaNull}|{void}|{num}|{bool}|{str}|{keys}|{throws}],
+// tree, keys?, equalsTo?, equals?, hashCodesEqual?}; equality {a, b, aTypes, bTypes, equals, hashCodesEqual}.
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import java.io.IOException;
@@ -127,25 +125,22 @@ public class GsonVectors {
     static JsonElement el(Object x) {
         if (x instanceof JsonElement) return (JsonElement) x;
         if (x instanceof Number) return new JsonPrimitive((Number) x);
-        if (x instanceof Boolean) return new JsonPrimitive((Boolean) x);
-        return new JsonPrimitive((String) x);
+        return x instanceof Boolean ? new JsonPrimitive((Boolean) x) : new JsonPrimitive((String) x);
     }
 
+    // "kind:text" builds a JsonPrimitive of that Java type; anything else is JSON text parsed by JsonParser.
     static final Map<String, Function<String, Object>> KINDS = Map.of("int", Integer::valueOf, "long", Long::valueOf,
         "double", Double::valueOf, "float", Float::valueOf, "short", Short::valueOf, "byte", Byte::valueOf,
         "bigdecimal", java.math.BigDecimal::new, "biginteger", java.math.BigInteger::new,
         "bool", Boolean::valueOf, "str", GsonVectors::unescape);
 
-    /** "kind:text" builds a JsonPrimitive of that Java type; anything else is JSON text parsed by JsonParser. */
     static JsonElement lazy(String text) { return new JsonPrimitive(new com.google.gson.internal.LazilyParsedNumber(text)); }
 
     static JsonElement typed(String token) {
         if (token.startsWith("lazy:")) return lazy(unescape(token.substring(5)));
         int colon = token.indexOf(':');
-        if (colon > 0 && KINDS.containsKey(token.substring(0, colon))) {
-            return el(KINDS.get(token.substring(0, colon)).apply(token.substring(colon + 1)));
-        }
-        return parse(token);
+        Function<String, Object> kind = colon > 0 ? KINDS.get(token.substring(0, colon)) : null;
+        return kind == null ? parse(token) : el(kind.apply(token.substring(colon + 1)));
     }
 
     static List<Object[]> typedRows(String section) {
@@ -161,10 +156,8 @@ public class GsonVectors {
         List<String> current = null;
         for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
             if (line.isEmpty() || line.startsWith("#")) continue;
-            if (line.startsWith("[")) {
-                current = new ArrayList<>();
-                cases.put(line.substring(1, line.length() - 1), current);
-            } else current.add(line);
+            if (line.startsWith("[")) cases.put(line.substring(1, line.length() - 1), current = new ArrayList<>());
+            else current.add(line);
         }
         return cases;
     }
@@ -191,10 +184,7 @@ public class GsonVectors {
 
     static List<Object[]> parseInputs() {
         List<Object[]> rows = new ArrayList<>();
-        for (String line : CASES.get("parse")) {
-            int tab = line.indexOf('\t');
-            rows.add(new Object[] {line.substring(0, tab), unescape(line.substring(tab + 1))});
-        }
+        for (String[] f : fields("parse")) rows.add(new Object[] {f[0], unescape(f[1])});
         for (String n : CASES.get("parseNumbers")) rows.add(new Object[] {"number-" + unescape(n), "[" + unescape(n) + "]"});
         for (int depth : new int[] {100, 255, 256, 300, 1000}) {
             rows.add(new Object[] {"deep-arrays-" + depth, "[".repeat(depth) + "]".repeat(depth)});
@@ -291,20 +281,30 @@ public class GsonVectors {
         rows.add(new Object[] {"string-members", obj("a", "<>&='", "b", "\u2028\u2029")});
         rows.add(new Object[] {"number-member", obj("width", 40.0, "height", 12)});
         rows.add(new Object[] {"numbers-in-array", arr(40.0, 1.0E-5, 3, -0.0)});
+        rows.add(new Object[] {"html-keys", obj("< > & = '", 1, "a<b", arr("<", obj("&=", "'", "=", "\u003d")))});
         return rows;
+    }
+
+    static final Set<String> HTML_IDS = Set.of("key-specials", "string-members", "html-keys", "nested", "null-member",
+        "null-only-member", "null-element", "double-nan", "double-infinity", "double--infinity", "number-member");
+
+    static Map<String, Object> writeRow(Object[] c, boolean html, boolean pretty) {
+        JsonElement e = (JsonElement) c[1];
+        String id = c[0] + (html ? "/html-" : "/") + (pretty ? "pretty" : "compact");
+        Map<String, Object> row = m("id", id, "tree", tree(e), "numTypes", numTypes(e), "pretty", pretty);
+        GsonBuilder builder = html ? new GsonBuilder() : new GsonBuilder().disableHtmlEscaping();
+        if (html) row.put("htmlSafe", true);
+        if (pretty) builder.setPrettyPrinting();
+        record(row, "text", () -> builder.create().toJson(e));
+        return row;
     }
 
     static List<Object> writeRows() {
         List<Object> rows = new ArrayList<>();
-        for (Object[] c : writeCases()) {
-            JsonElement e = (JsonElement) c[1];
-            for (boolean pretty : new boolean[] {false, true}) {
-                Map<String, Object> row = m("id", c[0] + (pretty ? "/pretty" : "/compact"), "tree", tree(e),
-                    "numTypes", numTypes(e), "pretty", pretty);
-                GsonBuilder builder = new GsonBuilder().disableHtmlEscaping();
-                if (pretty) builder.setPrettyPrinting();
-                record(row, "text", () -> builder.create().toJson(e));
-                rows.add(row);
+        for (boolean html : new boolean[] {false, true}) {
+            for (Object[] c : writeCases()) {
+                if (html && !((String) c[0]).startsWith("string-") && !HTML_IDS.contains(c[0])) continue;
+                rows.add(writeRow(c, html, false)); rows.add(writeRow(c, html, true));
             }
         }
         return rows;

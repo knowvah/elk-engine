@@ -24150,6 +24150,1150 @@
           }
         ]
       }
+    },
+    {
+      "id": "html-keys/compact",
+      "numTypes": [
+        "Integer"
+      ],
+      "pretty": false,
+      "text": "{\"< > & = '\":1,\"a<b\":[\"<\",{\"&=\":\"'\",\"=\":\"=\"}]}",
+      "tree": {
+        "obj": [
+          [
+            "< > & = '",
+            {
+              "num": "1"
+            }
+          ],
+          [
+            "a<b",
+            {
+              "arr": [
+                {
+                  "str": "<"
+                },
+                {
+                  "obj": [
+                    [
+                      "&=",
+                      {
+                        "str": "'"
+                      }
+                    ],
+                    [
+                      "=",
+                      {
+                        "str": "="
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "id": "html-keys/pretty",
+      "numTypes": [
+        "Integer"
+      ],
+      "pretty": true,
+      "text": "{\u000a  \"< > & = '\": 1,\u000a  \"a<b\": [\u000a    \"<\",\u000a    {\u000a      \"&=\": \"'\",\u000a      \"=\": \"=\"\u000a    }\u000a  ]\u000a}",
+      "tree": {
+        "obj": [
+          [
+            "< > & = '",
+            {
+              "num": "1"
+            }
+          ],
+          [
+            "a<b",
+            {
+              "arr": [
+                {
+                  "str": "<"
+                },
+                {
+                  "obj": [
+                    [
+                      "&=",
+                      {
+                        "str": "'"
+                      }
+                    ],
+                    [
+                      "=",
+                      {
+                        "str": "="
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "double-nan/html-compact",
+      "numTypes": [
+        "Double"
+      ],
+      "pretty": false,
+      "text": "NaN",
+      "tree": {
+        "num": "NaN"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "double-nan/html-pretty",
+      "numTypes": [
+        "Double"
+      ],
+      "pretty": true,
+      "text": "NaN",
+      "tree": {
+        "num": "NaN"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "double-infinity/html-compact",
+      "numTypes": [
+        "Double"
+      ],
+      "pretty": false,
+      "text": "Infinity",
+      "tree": {
+        "num": "Infinity"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "double-infinity/html-pretty",
+      "numTypes": [
+        "Double"
+      ],
+      "pretty": true,
+      "text": "Infinity",
+      "tree": {
+        "num": "Infinity"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "double--infinity/html-compact",
+      "numTypes": [
+        "Double"
+      ],
+      "pretty": false,
+      "text": "-Infinity",
+      "tree": {
+        "num": "-Infinity"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "double--infinity/html-pretty",
+      "numTypes": [
+        "Double"
+      ],
+      "pretty": true,
+      "text": "-Infinity",
+      "tree": {
+        "num": "-Infinity"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "null-member/html-compact",
+      "numTypes": [
+        "LazilyParsedNumber"
+      ],
+      "pretty": false,
+      "text": "{\"b\":1}",
+      "tree": {
+        "obj": [
+          [
+            "a",
+            null
+          ],
+          [
+            "b",
+            {
+              "num": "1"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "null-member/html-pretty",
+      "numTypes": [
+        "LazilyParsedNumber"
+      ],
+      "pretty": true,
+      "text": "{\u000a  \"b\": 1\u000a}",
+      "tree": {
+        "obj": [
+          [
+            "a",
+            null
+          ],
+          [
+            "b",
+            {
+              "num": "1"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "null-only-member/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "{}",
+      "tree": {
+        "obj": [
+          [
+            "a",
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "null-only-member/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "{}",
+      "tree": {
+        "obj": [
+          [
+            "a",
+            null
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "null-element/html-compact",
+      "numTypes": [
+        "LazilyParsedNumber"
+      ],
+      "pretty": false,
+      "text": "[1,null,2]",
+      "tree": {
+        "arr": [
+          {
+            "num": "1"
+          },
+          null,
+          {
+            "num": "2"
+          }
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "null-element/html-pretty",
+      "numTypes": [
+        "LazilyParsedNumber"
+      ],
+      "pretty": true,
+      "text": "[\u000a  1,\u000a  null,\u000a  2\u000a]",
+      "tree": {
+        "arr": [
+          {
+            "num": "1"
+          },
+          null,
+          {
+            "num": "2"
+          }
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "nested/html-compact",
+      "numTypes": [
+        "LazilyParsedNumber"
+      ],
+      "pretty": false,
+      "text": "{\"id\":\"root\",\"children\":[{\"id\":\"c\",\"x\":1.5},{\"id\":\"d\"}],\"layoutOptions\":{\"k\":\"v\",\"n\":3},\"edges\":[]}",
+      "tree": {
+        "obj": [
+          [
+            "id",
+            {
+              "str": "root"
+            }
+          ],
+          [
+            "children",
+            {
+              "arr": [
+                {
+                  "obj": [
+                    [
+                      "id",
+                      {
+                        "str": "c"
+                      }
+                    ],
+                    [
+                      "x",
+                      {
+                        "num": "1.5"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "obj": [
+                    [
+                      "id",
+                      {
+                        "str": "d"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ],
+          [
+            "layoutOptions",
+            {
+              "obj": [
+                [
+                  "k",
+                  {
+                    "str": "v"
+                  }
+                ],
+                [
+                  "n",
+                  {
+                    "num": "3"
+                  }
+                ]
+              ]
+            }
+          ],
+          [
+            "edges",
+            {
+              "arr": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "nested/html-pretty",
+      "numTypes": [
+        "LazilyParsedNumber"
+      ],
+      "pretty": true,
+      "text": "{\u000a  \"id\": \"root\",\u000a  \"children\": [\u000a    {\u000a      \"id\": \"c\",\u000a      \"x\": 1.5\u000a    },\u000a    {\u000a      \"id\": \"d\"\u000a    }\u000a  ],\u000a  \"layoutOptions\": {\u000a    \"k\": \"v\",\u000a    \"n\": 3\u000a  },\u000a  \"edges\": []\u000a}",
+      "tree": {
+        "obj": [
+          [
+            "id",
+            {
+              "str": "root"
+            }
+          ],
+          [
+            "children",
+            {
+              "arr": [
+                {
+                  "obj": [
+                    [
+                      "id",
+                      {
+                        "str": "c"
+                      }
+                    ],
+                    [
+                      "x",
+                      {
+                        "num": "1.5"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "obj": [
+                    [
+                      "id",
+                      {
+                        "str": "d"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ],
+          [
+            "layoutOptions",
+            {
+              "obj": [
+                [
+                  "k",
+                  {
+                    "str": "v"
+                  }
+                ],
+                [
+                  "n",
+                  {
+                    "num": "3"
+                  }
+                ]
+              ]
+            }
+          ],
+          [
+            "edges",
+            {
+              "arr": []
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-plain/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"plain\"",
+      "tree": {
+        "str": "plain"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-plain/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"plain\"",
+      "tree": {
+        "str": "plain"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-< > & = '/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\\u003c \\u003e \\u0026 \\u003d \\u0027\"",
+      "tree": {
+        "str": "< > & = '"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-< > & = '/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\\u003c \\u003e \\u0026 \\u003d \\u0027\"",
+      "tree": {
+        "str": "< > & = '"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-a\"b/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"a\\\"b\"",
+      "tree": {
+        "str": "a\"b"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-a\"b/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"a\\\"b\"",
+      "tree": {
+        "str": "a\"b"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-a\\b/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"a\\\\b\"",
+      "tree": {
+        "str": "a\\b"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-a\\b/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"a\\\\b\"",
+      "tree": {
+        "str": "a\\b"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-a/b/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"a/b\"",
+      "tree": {
+        "str": "a/b"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-a/b/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"a/b\"",
+      "tree": {
+        "str": "a/b"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-tab\u0009here/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"tab\\there\"",
+      "tree": {
+        "str": "tab\u0009here"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-tab\u0009here/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"tab\\there\"",
+      "tree": {
+        "str": "tab\u0009here"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-nl\u000ax/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"nl\\nx\"",
+      "tree": {
+        "str": "nl\u000ax"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-nl\u000ax/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"nl\\nx\"",
+      "tree": {
+        "str": "nl\u000ax"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-cr\u000dx/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"cr\\rx\"",
+      "tree": {
+        "str": "cr\u000dx"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-cr\u000dx/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"cr\\rx\"",
+      "tree": {
+        "str": "cr\u000dx"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\u0008\u000c/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\\b\\f\"",
+      "tree": {
+        "str": "\u0008\u000c"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\u0008\u000c/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\\b\\f\"",
+      "tree": {
+        "str": "\u0008\u000c"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\u0000/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\\u0000\"",
+      "tree": {
+        "str": "\u0000"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\u0000/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\\u0000\"",
+      "tree": {
+        "str": "\u0000"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\u0001\u001f/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\\u0001\\u001f\"",
+      "tree": {
+        "str": "\u0001\u001f"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\u0001\u001f/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\\u0001\\u001f\"",
+      "tree": {
+        "str": "\u0001\u001f"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\"",
+      "tree": {
+        "str": ""
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\"",
+      "tree": {
+        "str": ""
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\"",
+      "tree": {
+        "str": ""
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\"",
+      "tree": {
+        "str": ""
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\u2028/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\\u2028\"",
+      "tree": {
+        "str": "\u2028"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\u2028/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\\u2028\"",
+      "tree": {
+        "str": "\u2028"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\u2029/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\\u2029\"",
+      "tree": {
+        "str": "\u2029"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\u2029/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\\u2029\"",
+      "tree": {
+        "str": "\u2029"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-é€/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"é€\"",
+      "tree": {
+        "str": "é€"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-é€/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"é€\"",
+      "tree": {
+        "str": "é€"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-😀/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"😀\"",
+      "tree": {
+        "str": "😀"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-😀/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"😀\"",
+      "tree": {
+        "str": "😀"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\ud800/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\ud800\"",
+      "tree": {
+        "str": "\ud800"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\ud800/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\ud800\"",
+      "tree": {
+        "str": "\ud800"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\udc00x/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\udc00x\"",
+      "tree": {
+        "str": "\udc00x"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\udc00x/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\udc00x\"",
+      "tree": {
+        "str": "\udc00x"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\"",
+      "tree": {
+        "str": ""
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\"",
+      "tree": {
+        "str": ""
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-</script>/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\\u003c/script\\u003e\"",
+      "tree": {
+        "str": "</script>"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-</script>/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\\u003c/script\\u003e\"",
+      "tree": {
+        "str": "</script>"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\\u0041/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "\"\\\\u0041\"",
+      "tree": {
+        "str": "\\u0041"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-\\u0041/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "\"\\\\u0041\"",
+      "tree": {
+        "str": "\\u0041"
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "key-specials/html-compact",
+      "numTypes": [
+        "Integer"
+      ],
+      "pretty": false,
+      "text": "{\"\\u003ck\\u003e\\u0026\\u003d\":1,\"a\\\"b\":2,\"\\u2028\":3,\"\\n\":4,\"\":5}",
+      "tree": {
+        "obj": [
+          [
+            "<k>&=",
+            {
+              "num": "1"
+            }
+          ],
+          [
+            "a\"b",
+            {
+              "num": "2"
+            }
+          ],
+          [
+            "\u2028",
+            {
+              "num": "3"
+            }
+          ],
+          [
+            "\u000a",
+            {
+              "num": "4"
+            }
+          ],
+          [
+            "",
+            {
+              "num": "5"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "key-specials/html-pretty",
+      "numTypes": [
+        "Integer"
+      ],
+      "pretty": true,
+      "text": "{\u000a  \"\\u003ck\\u003e\\u0026\\u003d\": 1,\u000a  \"a\\\"b\": 2,\u000a  \"\\u2028\": 3,\u000a  \"\\n\": 4,\u000a  \"\": 5\u000a}",
+      "tree": {
+        "obj": [
+          [
+            "<k>&=",
+            {
+              "num": "1"
+            }
+          ],
+          [
+            "a\"b",
+            {
+              "num": "2"
+            }
+          ],
+          [
+            "\u2028",
+            {
+              "num": "3"
+            }
+          ],
+          [
+            "\u000a",
+            {
+              "num": "4"
+            }
+          ],
+          [
+            "",
+            {
+              "num": "5"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-members/html-compact",
+      "numTypes": [],
+      "pretty": false,
+      "text": "{\"a\":\"\\u003c\\u003e\\u0026\\u003d\\u0027\",\"b\":\"\\u2028\\u2029\"}",
+      "tree": {
+        "obj": [
+          [
+            "a",
+            {
+              "str": "<>&='"
+            }
+          ],
+          [
+            "b",
+            {
+              "str": "\u2028\u2029"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "string-members/html-pretty",
+      "numTypes": [],
+      "pretty": true,
+      "text": "{\u000a  \"a\": \"\\u003c\\u003e\\u0026\\u003d\\u0027\",\u000a  \"b\": \"\\u2028\\u2029\"\u000a}",
+      "tree": {
+        "obj": [
+          [
+            "a",
+            {
+              "str": "<>&='"
+            }
+          ],
+          [
+            "b",
+            {
+              "str": "\u2028\u2029"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "number-member/html-compact",
+      "numTypes": [
+        "Double",
+        "Integer"
+      ],
+      "pretty": false,
+      "text": "{\"width\":40.0,\"height\":12}",
+      "tree": {
+        "obj": [
+          [
+            "width",
+            {
+              "num": "40.0"
+            }
+          ],
+          [
+            "height",
+            {
+              "num": "12"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "number-member/html-pretty",
+      "numTypes": [
+        "Double",
+        "Integer"
+      ],
+      "pretty": true,
+      "text": "{\u000a  \"width\": 40.0,\u000a  \"height\": 12\u000a}",
+      "tree": {
+        "obj": [
+          [
+            "width",
+            {
+              "num": "40.0"
+            }
+          ],
+          [
+            "height",
+            {
+              "num": "12"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "html-keys/html-compact",
+      "numTypes": [
+        "Integer"
+      ],
+      "pretty": false,
+      "text": "{\"\\u003c \\u003e \\u0026 \\u003d \\u0027\":1,\"a\\u003cb\":[\"\\u003c\",{\"\\u0026\\u003d\":\"\\u0027\",\"\\u003d\":\"\\u003d\"}]}",
+      "tree": {
+        "obj": [
+          [
+            "< > & = '",
+            {
+              "num": "1"
+            }
+          ],
+          [
+            "a<b",
+            {
+              "arr": [
+                {
+                  "str": "<"
+                },
+                {
+                  "obj": [
+                    [
+                      "&=",
+                      {
+                        "str": "'"
+                      }
+                    ],
+                    [
+                      "=",
+                      {
+                        "str": "="
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "htmlSafe": true,
+      "id": "html-keys/html-pretty",
+      "numTypes": [
+        "Integer"
+      ],
+      "pretty": true,
+      "text": "{\u000a  \"\\u003c \\u003e \\u0026 \\u003d \\u0027\": 1,\u000a  \"a\\u003cb\": [\u000a    \"\\u003c\",\u000a    {\u000a      \"\\u0026\\u003d\": \"\\u0027\",\u000a      \"\\u003d\": \"\\u003d\"\u000a    }\u000a  ]\u000a}",
+      "tree": {
+        "obj": [
+          [
+            "< > & = '",
+            {
+              "num": "1"
+            }
+          ],
+          [
+            "a<b",
+            {
+              "arr": [
+                {
+                  "str": "<"
+                },
+                {
+                  "obj": [
+                    [
+                      "&=",
+                      {
+                        "str": "'"
+                      }
+                    ],
+                    [
+                      "=",
+                      {
+                        "str": "="
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        ]
+      }
     }
   ]
 }
