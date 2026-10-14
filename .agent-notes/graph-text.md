@@ -193,3 +193,19 @@ new ElkGraphReferences(), parseResult.nodeModel)`, then `linkModel(root, consume
   back through `getProperty` as the option default; read `getProperties().get(...)` to see the stored proxy.
 - **Impact**: mission 5 removes the stand-in describe and the `MISSION5_ALGORITHMS` filter together.
 - **Confidence**: High
+
+## Observation: realworld `.elkt` and `.json` differ in port positions in all 550 models
+
+- **Context**: T22 D3 check; oracle core-mode parses of all 1,100 files
+- **Finding**: every realworld `.elkt` sets port `position`; the `.json` ports have no x/y. The oracle's two
+  parses differ in exactly `ports[].x/y` for 550/550 models; TS matches the oracle on every file.
+- **Impact**: D3 equality cannot hold literally; T23 must expect the listed difference, not equality.
+- **Confidence**: High
+
+## Observation: `canonNode` property order needs sorting for graph equality
+
+- **Context**: T22 round trip of `json-val-types` and D3
+- **Finding**: `getAllProperties()` iterates EMF hash buckets, whose order depends on insertion history, so the
+  same properties reloaded in another order come out permuted. `test/helpers/elkt-canon.ts` sorts by id.
+- **Impact**: any structural equality over `canonNode` uses `canonGraph`.
+- **Confidence**: High

@@ -130,7 +130,7 @@ the orchestrator commits per task. `npm run docs:build` green before T24 is mark
 | 5 | ElkGraph naming, scoping, linker | T17 | 4 | [x] |
 | 6 | `ElkGraphText.load`; semantic sequencer | T18–T19 | 5 | [x] |
 | 7 | Validator; formatter | T20–T21 | 6 | [x] |
-| 8 | `validate`/`serialize`, round trip, D3 | T22 | 7 | [ ] |
+| 8 | `validate`/`serialize`, round trip, D3 | T22 | 7 | [x] |
 | 9 | Local sweep; docs | T23–T24 | 8 | [ ] |
 
 ## Document index
