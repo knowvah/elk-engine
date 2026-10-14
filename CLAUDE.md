@@ -54,7 +54,8 @@ values before hypothesizing — the default stance is "my port differs — find 
   `test/golden/compare-json.ts`. Regenerate refs by script, never by hand, and
   journal the regeneration with the patch id.
 - Gates before any commit: `npm run typecheck` clean, `npm run coverage`
-  green (90% lines/branches/functions/statements), golden suite green.
+  green (90% lines/branches/functions/statements), golden suite green,
+  `npm run complexity` clean (plain lizard skips functions; never trust its exit code).
 - Journal every fix in the active mission's `decision-journal.md`.
 
 ## Tests Are Immutable (AD-13)

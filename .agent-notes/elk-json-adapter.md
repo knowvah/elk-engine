@@ -83,16 +83,17 @@
 - **Impact**: location text in messages cannot be derived from "where the bad char is"; use rows.
 - **Confidence**: High
 
-## Observation: lizard silently skips several TypeScript constructs
+## Observation: lizard silently skips or truncates TypeScript functions
 
-- **Context**: Batch 4 gate; a file reporting 340 NLOC over 9 functions
-- **Finding**: lizard 1.x (a) never sees `#private` methods; (b) stops parsing a class after a
-  `new X()` default parameter value; (c) loses the rest of a file after a regex literal containing
-  `'` or `"`; (d) drops a function whose parameter type is `readonly (A | B)[]`. Exit code stays 0.
-  Fixes: `?? new X()` in the body, `new RegExp(String.raw\`…\`)`, `ReadonlyArray<A | B>`; measure
-`#`methods on a copy with`#`renamed to`_`.
-- **Impact**: every lizard gate must compare function counts with declarations; a low count means
-  the gate checked nothing. The complexity hook has the same blind spots.
+- **Context**: Batch 4 gate (340 NLOC over 9 functions); review follow-up built `npm run complexity`
+- **Finding**: lizard 1.22 hides every later member after a function-typed constructor parameter
+  (`f: (a: A) => B`; this, not `#private`, hid most of `EcoreEMap.ts` — plain `#private` methods are
+  seen) or a `new X()` default parameter (which also hides the constructor); hides what follows a
+  quote-bearing regex literal inside a function; drops functions with a `readonly (A | B)[]`
+  parameter; truncates a function at `(call(a) + 1) * 2 {…` or `f?.(x)`; skips files whose content
+  equals an earlier file. Exit code stays 0. Old gates missed ~314 of 1876 `src` functions.
+- **Impact**: use `npm run complexity` (oxc inventory, lizard direct or per-function snippet,
+  AST fallback), never plain lizard's exit code, as the complexity gate.
 - **Confidence**: High
 
 ## Observation: EMF `BasicEMap.map()` iterates hash buckets, not the entry list
