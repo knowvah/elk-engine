@@ -8,6 +8,12 @@ test/corpus/
 # Vector inputs: malformed/lenient JSON whose exact bytes are the test input
 tools/vectors/graph-json-scenarios/
 tools/vectors/transfer-scenarios/
+# ELK text-format vector inputs: .elkt/.txt have no Prettier parser; ignoring keeps the recorded
+# inputs byte-stable under future formatter upgrades (AD-13)
+tools/vectors/elkt-parse-scenarios/
+tools/vectors/elkt-validate-scenarios/
+tools/vectors/elkt-write-scenarios/
+tools/vectors/elkt-lexer-cases.txt
 # Written by tools/bundle-deps.ts; the fitness test compares it byte-for-byte
 test/architecture/bundle-deps.json
 

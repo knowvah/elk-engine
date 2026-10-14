@@ -20,10 +20,24 @@ const JAVA_DIR = `${TS_ROOT}/java`;
 const GUAVA_DIR = `${TS_ROOT}/guava`;
 const EMF_DIR = `${TS_ROOT}/emf`;
 const GSON_DIR = `${TS_ROOT}/gson`;
+const XTEXT_DIR = `${TS_ROOT}/xtext`;
 const INDEX_FILE = `${TS_ROOT}/index.ts`;
 const TEST_SUFFIX = '.test.ts';
 const TS_SUFFIX = '.ts';
 const JS_SUFFIX = '.js';
+
+/**
+ * Require-Bundle of org.eclipse.elk.graph.text (MANIFEST.MF:9-16) mapped to directories:
+ * - org.eclipse.elk.core -> src/core (incl. src/core/util/internal, resolved by longest prefix)
+ * - org.eclipse.elk.graph -> src/graph
+ * - org.eclipse.xtext, org.eclipse.xtext.util -> src/xtext
+ * - org.eclipse.xtext.xbase.lib, org.eclipse.xtend.lib -> no directory (Xtend library calls become
+ *   plain TypeScript at the call site, docs/translation-rules.md section 8)
+ * - org.antlr.runtime, org.eclipse.equinox.common -> no directory (G6: lexer/parser are hand-written;
+ *   nothing from equinox is reached)
+ * Only the graph.text bundle requires Xtext; src/index.ts stays exempt.
+ */
+const XTEXT_CLIENT_BUNDLES: readonly string[] = ['src/graph/text'];
 
 const committed: BundleDeps = JSON.parse(readFileSync(join(REPO_ROOT, COMMITTED_JSON_RELATIVE), 'utf8')) as BundleDeps;
 
@@ -76,6 +90,14 @@ function violationFor(file: string, target: string, deps: BundleDeps): string | 
       ? undefined
       : `${edge}: src/emf may import only src/emf, src/java and src/guava`;
   }
+  if (isUnder(file, XTEXT_DIR)) {
+    return isUnder(target, XTEXT_DIR) ||
+      isUnder(target, JAVA_DIR) ||
+      isUnder(target, EMF_DIR) ||
+      isUnder(target, GUAVA_DIR)
+      ? undefined
+      : `${edge}: src/xtext may import only src/xtext, src/java, src/emf and src/guava`;
+  }
   if (
     isUnder(target, JAVA_DIR) ||
     isUnder(target, GUAVA_DIR) ||
@@ -85,6 +107,11 @@ function violationFor(file: string, target: string, deps: BundleDeps): string | 
     return undefined;
   }
   const from = bundleOf(file, deps);
+  if (isUnder(target, XTEXT_DIR)) {
+    return from !== undefined && XTEXT_CLIENT_BUNDLES.includes(from)
+      ? undefined
+      : `${edge}: ${from ?? file} may not import src/xtext`;
+  }
   const to = bundleOf(target, deps);
   if (from === undefined) {
     return `${edge}: unmapped directory for ${file}`;
@@ -123,6 +150,7 @@ function unmappedFile(file: string, deps: BundleDeps): string | undefined {
     isUnder(file, GUAVA_DIR) ||
     isUnder(file, EMF_DIR) ||
     isUnder(file, GSON_DIR) ||
+    isUnder(file, XTEXT_DIR) ||
     bundleOf(file, deps) !== undefined;
   return exempt ? undefined : `${file}: unmapped directory`;
 }
@@ -461,5 +489,75 @@ describe('src/gson boundary (elk-json-adapter J1)', () => {
 
   it('does not treat src/gson as an unmapped directory', () => {
     expect(unmappedFile('src/gson/JsonObject.ts', committed)).toBeUndefined();
+  });
+});
+
+describe('src/xtext boundary (graph-text T6)', () => {
+  it('lets src/xtext import src/xtext, src/java, src/emf and src/guava', () => {
+    const source = [
+      "import { Strings } from './util/Strings.js';",
+      "import { JavaString } from '../../java/lang/JavaString.js';",
+      "import { EObject } from '../emf/ecore/EObject.js';",
+      "import { Lists } from '../guava/Lists.js';",
+    ].join('\n');
+    expect(checkFile('src/xtext/util/Strings.ts', source, committed)).toEqual([]);
+  });
+
+  it('forbids src/xtext importing src/graph or src/core', () => {
+    const suffix = 'src/xtext may import only src/xtext, src/java, src/emf and src/guava';
+    expect(checkFile('src/xtext/X.ts', "import { N } from '../graph/ElkNode.js';", committed)).toEqual([
+      `src/xtext/X.ts -> src/graph/ElkNode.ts: ${suffix}`,
+    ]);
+    expect(checkFile('src/xtext/X.ts', "import { C } from '../core/CoreOptions.js';", committed)).toEqual([
+      `src/xtext/X.ts -> src/core/CoreOptions.ts: ${suffix}`,
+    ]);
+  });
+
+  it('lets graph.text import src/xtext', () => {
+    const imp = "import { IScope } from '../../xtext/scoping/IScope.js';";
+    expect(checkFile('src/graph/text/ElkGraphText.ts', imp, committed)).toEqual([]);
+  });
+
+  it('forbids other bundles importing src/xtext', () => {
+    const cases: readonly [string, string, string][] = [
+      ['src/graph/json/JsonAdapter.ts', "import { X } from '../../xtext/X.js';", 'src/graph/json'],
+      ['src/alg/layered/X.ts', "import { X } from '../../xtext/X.js';", 'src/alg/layered'],
+      ['src/core/X.ts', "import { X } from '../xtext/X.js';", 'src/core'],
+    ];
+    for (const [file, source, bundle] of cases) {
+      const violations = checkFile(file, source, committed);
+      expect(violations).toHaveLength(1);
+      expect(violations[0]).toMatch(new RegExp(`: ${bundle} may not import src/xtext$`));
+    }
+  });
+
+  it('forbids src/java, src/emf, src/guava and src/gson importing src/xtext', () => {
+    expect(checkFile('src/java/util/A.ts', "import { X } from '../../xtext/X.js';", committed)).toEqual([
+      'src/java/util/A.ts -> src/xtext/X.ts: src/java may import only src/java',
+    ]);
+    expect(checkFile('src/emf/ecore/E.ts', "import { X } from '../../xtext/X.js';", committed)).toEqual([
+      'src/emf/ecore/E.ts -> src/xtext/X.ts: src/emf may import only src/emf, src/java and src/guava',
+    ]);
+    expect(checkFile('src/guava/Lists.ts', "import { X } from '../xtext/X.js';", committed)).toEqual([
+      'src/guava/Lists.ts -> src/xtext/X.ts: src/guava may import only src/guava and src/java',
+    ]);
+    expect(checkFile('src/gson/J.ts', "import { X } from '../xtext/X.js';", committed)).toEqual([
+      'src/gson/J.ts -> src/xtext/X.ts: src/gson may import only src/gson and src/java',
+    ]);
+  });
+
+  it('lets src/index.ts export src/xtext and does not treat it as unmapped', () => {
+    expect(checkFile('src/index.ts', "export * from './xtext/X.js';", committed)).toEqual([]);
+    expect(unmappedFile('src/xtext/util/Strings.ts', committed)).toBeUndefined();
+  });
+});
+
+describe('graph.text Require-Bundle mapping', () => {
+  it('requires exactly src/core and src/graph (Xtext is not a manifest-derived bundle)', () => {
+    expect(committed.bundles['src/graph/text']?.requires).toEqual(['src/core', 'src/graph']);
+  });
+
+  it('maps src/core/util/internal to src/core', () => {
+    expect(bundleOf('src/core/util/internal/LayoutOptionProxy.ts', committed)).toBe('src/core');
   });
 });
