@@ -90,7 +90,7 @@
   `new X()` default parameter value; (c) loses the rest of a file after a regex literal containing
   `'` or `"`; (d) drops a function whose parameter type is `readonly (A | B)[]`. Exit code stays 0.
   Fixes: `?? new X()` in the body, `new RegExp(String.raw\`…\`)`, `ReadonlyArray<A | B>`; measure
-  `#` methods on a copy with `#` renamed to `_`.
+`#`methods on a copy with`#`renamed to`_`.
 - **Impact**: every lizard gate must compare function counts with declarations; a low count means
   the gate checked nothing. The complexity hook has the same blind spots.
 - **Confidence**: High
