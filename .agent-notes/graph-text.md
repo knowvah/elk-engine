@@ -80,3 +80,42 @@ M` (code `org.eclipse.emf.ecore.14`, holder's first line), twice per collision. 
   checkout would regenerate a different ref. Fixed with `tools/vectors/elkt-*-scenarios/*.elkt -text`.
 - **Impact**: any new byte-meaningful fixture directory needs a `-text` rule before its first commit.
 - **Confidence**: High
+
+## Observation: Xtext lexer recovery boundaries
+
+- **Context**: T9 differential fuzz (~300k inputs) of the TS lexer against `InternalElkGraphLexer`
+- **Finding**: `match`/`matchRange`/set mismatches call `recover`, which consumes one char, so the
+  `<invalid>` token includes it (`// x\ry` is one token). `EarlyExitException` does not consume
+  (`1ex` → `<invalid>` `1e` + `ID` `x`). The FLOAT `dfa5` no-viable-alt on digits + `.` + non-digit
+  consumes only the first digit (`10.` → `<invalid>` `1`, `<invalid>` `0`, `'.'`). The raw lexer leaves
+  WS/comments on the default channel; the hidden set belongs to the token stream.
+- **Impact**: T15 error spans and T13's converter re-lex checks see these exact boundaries.
+- **Confidence**: High
+
+## Observation: Java `^` binds looser than `<`
+
+- **Context**: T7 `AbstractDeclarativeValueConverterService` lines 132-165
+- **Finding**: `onlyExplicitConverters ^ ruleName.indexOf('.') < 0` is `only ^ (idx < 0)`: qualified
+  rule names register before simple ones.
+- **Impact**: read precedence, not prose, when a brief paraphrases a boolean expression.
+- **Confidence**: High
+
+## Observation: the ELK validator composite runs EMF constraints twice
+
+- **Context**: T11 probe of `EValidator.Registry.INSTANCE` after `ElkGraphStandaloneSetup.doSetup()`
+- **Finding**: delegates are `CompositeEValidator$1`, `EObjectValidator`, `ElkGraphValidator`;
+  `EValidatorEqualitySupport` compares classes, so both EObjectValidators stay. Only
+  `validate_EveryMapEntryUnique` can fire for ElkGraph. `CancelableDiagnostician` validates
+  non-recursively (pre-order over `eAllContents`, each object once).
+- **Impact**: T20/T22 build the composite through `EValidatorRegistrar`.
+- **Confidence**: High
+
+## Observation: both serializer outputs run the full formatter
+
+- **Context**: T12 reading `Serializer.java:149-157` against T5 rows
+- **Finding**: the unformatted request sets `formatUndefinedHiddenRegionsOnly`, but every hidden region
+  of a string-built region access is undefined, so `ElkGraphFormatter` formats all of them;
+  `unformatted == formatted` in the recorded non-error rows. With the default `LOGGING` handler a
+  formatting conflict is swallowed (first formatting wins).
+- **Impact**: T21/T22 tests should use a `THROWING` handler to prove there are no accidental conflicts.
+- **Confidence**: High
