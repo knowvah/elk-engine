@@ -323,6 +323,83 @@ Changes to `tools/oracle/` or `tools/corpus/` also need:
 | Sweep               | `tools/oracle/sweep.sh` (or `--filter`/`--limit` for a sample)                       | exit 0: no `oracle-error`                                    |
 | Parity report       | `npx tsx tools/corpus/parity-report.ts`                                              | exit 0 (committed report current); regenerate with `--write` |
 
+## 7. ELK Text (`.elkt`) {#elk-text-elkt}
+
+Port: `src/graph/text` over `src/xtext` (internal entry point `ElkGraphText`: `load`, `validate`,
+`serialize`; design and runbook in [elk-text.md](architecture/elk-text.md)). Evidence is two-tier (G7):
+the committed JVM vectors and about 30 curated refs run in CI, and the sweep below measures the whole
+corpus locally, because elk-models is not vendored.
+
+**What is compared.** Every `.elkt` model under `$ELK_MODELS_DIR` (898) and every realworld `.json`
+model (550), each with the oracle's output at the pinned ELK commit, every case in two separate JVM runs
+compared byte for byte (a differing case would be `nondeterministic` and excluded; none occurred):
+
+- `parse`: `exportLikeOracle(load(elkt).root)` against the oracle's parse, `compareLayout` at 1e-6. Where
+  the oracle throws, the port must report at least one error (presence only, D8 #1).
+- `validate`: `ElkGraphText.validate` issues against Xtext's `IResourceValidator` (`severity`, `message`,
+  `line`, `code`), exactly and in emission order.
+- `write`: `ElkGraphText.serialize` against `EcoreUtil.copy` plus `ISerializer.serialize(format())`, byte for
+  byte, for the 898 `.elkt` (parsed, then written) and the 550 `.json` (via `ElkGraphJson`). Failures match by
+  presence.
+- `reparse`: `load(serialize(g))` equals `g` (`canonGraph`, properties sorted by id); where it cannot, it must
+  equal the oracle's own reparse of the same text and the oracle's round trip must be lossy too.
+- `D3`: a realworld `.json` and its `.elkt` give the same graph, or the oracle's two parses differ the same
+  way.
+
+**Registry mode.** The sweep always runs the oracle with `ORACLE_REGISTRY=core` (G3): the CoreOptions-only
+registry, which is the TS registry (94 option ids on both sides). The default oracle registry changes the
+export of 182 of the 898 models (layered and other algorithm keys), so default-mode output is not the
+comparison. Missions 5 and 7 register more algorithms and regenerate these refs and this sweep; the
+`MISSION5_ALGORITHMS` filter and the `mission5` vector rows go away then.
+
+**Result** (oracle ELK `8aaa3c1`, elk-models `ac5af2b`, 2026-10-14; counts equal the graph-text decision
+journal):
+
+| Indicator                 | Bar              | Measured    | Deferred | Diffs |
+| ------------------------- | ---------------- | ----------- | -------- | ----- |
+| parse-equal               | 898/898          | 898/898     | 0        | 0     |
+| validate-equal            | 898/898 minus G3 | 894/898     | 4        | 0     |
+| writer byte-exact         | 1,448/1,448      | 1,448/1,448 | 0        | 0     |
+| reparse-equal after write | 1,448/1,448      | 1,448/1,448 | 0        | 0     |
+| D3 `.json` equals `.elkt` | 550/550          | 0/550       | 550      | 0     |
+
+No case was nondeterministic and the oracle threw on none (all 898 `.elkt` parse, validate and write; all 550
+`.json` import and write). Reparse: 1,447 reload equal to the written graph; 1 (`examples/user-hints/layered/reverseEdge.elkt`)
+reloads as the oracle reloads it: `priority.direction` is a layered option, unknown under the core registry, and
+the writer emits the short key `direction`, which is an ambiguous suffix on re-reading (the oracle's round trip is
+lossy identically). The largest model (`realworld/ptolemy/hierarchical/de_trilateration_Trilateration.elkt`,
+253 KB) loads in about 110 ms (budget 1 s) and the TS side of the sweep runs in well under the 2 minute budget.
+
+**Deferrals.**
+
+- G3, mission 5 (4 validate models): the core oracle registers the algorithms `fixed`, `box` and `random`,
+  the TS registry defers them, so the port adds "No layout algorithm with identifier ... can be found." The
+  models name them as `algorithm`: `tickets/core/457_boxLayouterIgnoresMinimumSize` (`box`),
+  `tickets/core/475_fixedLayoutWithLongLabels` (`fixed`), `tickets/core/489_paddingAndMinSize_Large` and
+  `_Small` (`org.eclipse.elk.box`). Closed by mission 5 (the same filter as the validator vectors).
+- D3 upstream difference (all 550 realworld pairs): the `.elkt` of a realworld model carries port positions
+  of a laid-out Ptolemy graph and its `.json` has none. The oracle's two parses differ in exactly `ports[].x` and
+  `ports[].y` for the same 550 models and the port matches the oracle on both files; the 550 ids are listed in
+  `test/helpers/d3-oracle-differences.json`. D3's "parse to the same ElkGraph" therefore does not hold for the
+  corpus as is (flagged to the user). Rule: `canonGraph` trees, no tolerance, nothing excluded; a pair counts as
+  upstream only when it is listed, the difference vanishes once port x/y are blanked, and every oracle difference
+  is a port x/y.
+- D8 #1, syntax-error text: matched by presence only. No corpus model has a syntax error, so no sweep row uses
+  it; the vectors cover it.
+
+**Writer quirk kept (G1).** `ElkGraphSemanticSequencer.isQuotingNecessary` always returns `false` (the
+`map` result is unused, so the compiler drops the call), so property string values are never quoted or escaped:
+a value such as `say "hi"` is written bare and does not re-parse. The port reproduces this (ELK behaviour kept);
+the T5 vectors and the sweep agree byte for byte.
+
+**Regenerate.** `tools/oracle/elkt-sweep.sh [--force]` writes `$ELK_ORACLE_DIR/sweep/elkt-<elkCommit>-<modelsCommit>/`
+(`parse/`, `parse-json/`, `validate/`, `write/`, `results.jsonl`, `summary.json`; never in the repo, AD-5) and
+skips when the stamp (oracle build, harness and tool sources, models commit, input hashes) is fresh. Then
+`npx vitest run test/corpus/elkt-sweep.test.ts` (skipped with a message without elk-models or the sweep) logs
+`elkt sweep: <indicator>=<n>/<total> deferred=<d> diffs=<k>` for each indicator and fails with the per-model
+report. A mismatch outside the deferrals above is a defect to diagnose against the oracle, never a number to
+adjust.
+
 ## Temporary gaps
 
 Known differences from the Java after mission 3 (core metadata), each with the mission that closes
@@ -359,6 +436,14 @@ the registry check subtracts them (`test/melk/held-back.ts`).
   (`MISSION5_PROVIDERS`; `CoreOptions.ts` withholds them): closed by mission 5.
 - Parse inputs strip `layering.layerId` and `crossingMinimization.positionId` (J7 amendment,
   `STRIP_KEYS`): closed by mission 7h. `resolvedAlgorithm` is stripped permanently (see the quirks).
+
+**Deferred graph.text cases (G3).** The sweep and the validator vectors skip what needs the algorithms
+above.
+
+- `ElkGraphValidator` rows tagged `mission5` (11 vector rows) and 4 sweep models naming `fixed`/`box`:
+  `MISSION5_ALGORITHMS` filter; closed by mission 5, which also regenerates the core-registry refs.
+- Layered options (for example `priority.direction`) are unknown properties in the CoreOptions-only
+  registry; `.elkt` refs regenerate in missions 5 and 7.
 
 **Behavioural divergences.**
 
