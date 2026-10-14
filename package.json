@@ -45,7 +45,7 @@
     "complexity": "tsx tools/complexity/check.ts",
     "melk:generate": "tsx tools/melk/generate.ts",
     "test": "vitest run",
-    "coverage": "vitest run --coverage",
+    "coverage": "bash tools/coverage-gate/run.sh",
     "build": "npm run build:js && npm run build:types",
     "build:js": "esbuild src/index.ts --bundle --format=esm --sourcemap --outfile=dist/index.js",
     "build:types": "tsc -p tsconfig.build.json",
