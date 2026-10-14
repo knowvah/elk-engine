@@ -9,6 +9,7 @@
 | [component-map.md](component-map.md)               | In-scope bundle dependencies; core runtime pieces                       |
 | [../translation-rules.md](../translation-rules.md) | Java to TypeScript rules                                                |
 | [../conformance.md](../conformance.md)             | Oracle comparison bar and procedure (arrives later in this mission)     |
+| [elk-text.md](elk-text.md)                         | ELK Text (`.elkt`) port, the Xtext subset, runbook and deferrals        |
 | [complexity.md](complexity.md)                     | The complexity gate that measures every function (`npm run complexity`) |
 
 ## What elk-engine is
@@ -67,6 +68,10 @@ JSON adapter (`graph.json`, `ElkGraphJson`): ELK JSON in becomes an ElkGraph via
 before layout; after layout, the computed coordinates and edge sections are transferred back into
 JSON out. The oracle harness uses the Java adapter in the same two steps, so both sides share the
 JSON contract.
+
+Text adapter (`graph.text`, `ElkGraphText`): `.elkt` text loads into an ElkGraph through a hand-written
+parser, linker and validator built on a small Xtext subset (`src/xtext`), and an ElkGraph serializes back
+to `.elkt`. The entry point is internal; see [elk-text.md](elk-text.md).
 
 ## Tech stack
 

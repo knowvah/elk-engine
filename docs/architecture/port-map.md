@@ -195,13 +195,41 @@ tests:
 
 ### Third-party subsets (not ELK bundles)
 
-Not counted in the Summary. Each is a minimal subset written from Javadoc and JVM vectors only, and
-a fitness rule limits its imports to itself and `src/java`.
+Not counted in the Summary. `src/guava` and `src/gson` are minimal subsets written from Javadoc and JVM
+vectors only, and a fitness rule limits their imports to themselves and `src/java`. `src/xtext` is
+EPL-2.0 and is written from the Xtext source; its rule is in [elk-text.md](elk-text.md#file-map).
 
-| TS directory | Library                         | Scope                                                                    |
-| ------------ | ------------------------------- | ------------------------------------------------------------------------ |
-| `src/guava`  | Guava (`com.google.common`)     | helpers and collections the ported bundles call; AD-10                   |
-| `src/gson`   | Gson 2.11.0 (`com.google.gson`) | what `graph.json` calls (J1); see [elk-json.md](elk-json.md#gson-subset) |
+| TS directory | Library                                     | Scope                                                                    |
+| ------------ | ------------------------------------------- | ------------------------------------------------------------------------ |
+| `src/guava`  | Guava (`com.google.common`)                 | helpers and collections the ported bundles call; AD-10                   |
+| `src/gson`   | Gson 2.11.0 (`com.google.gson`)             | what `graph.json` calls (J1); see [elk-json.md](elk-json.md#gson-subset) |
+| `src/xtext`  | Xtext 2.36.0 (`org.eclipse.xtext`, EPL-2.0) | what `graph.text` calls; see [elk-text.md](elk-text.md#file-map)         |
+
+## `graph.text` → `src/graph/text/`
+
+8 package directories, 17 Xtend files + 1 `.xtext` grammar, 1,232 + 120 LOC
+(`plugins/org.eclipse.elk.graph.text/src`). Not in the Summary totals: added by D0 (see [Grammar
+bundles](#grammar-bundles-added-by-d0-not-in-the-summary-totals-above)).
+
+| Java package (`org.eclipse.elk.` omitted) | TS directory                 | Files | Strategy                                                                                                           |
+| ----------------------------------------- | ---------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------ |
+| `graph.text`                              | `src/graph/text`             |     3 | Xtend → hand port (`ElkGraphTextUtil`); runtime module and standalone setup → plain construction in `ElkGraphText` |
+| `graph.text` (`ElkGraph.xtext`)           | `src/graph/text/parser`      |     1 | `.xtext` → hand-written lexer and recursive-descent parser (D8); `src-gen` not ported                              |
+| `graph.text.conversion`                   | `src/graph/text/conversion`  |     4 | Xtend → hand port                                                                                                  |
+| `graph.text.formatting2`                  | `src/graph/text/formatting2` |     1 | Xtend → hand port over the `src/xtext/formatting2` subset                                                          |
+| `graph.text.linking`                      | `src/graph/text/linking`     |     1 | Xtend → hand port                                                                                                  |
+| `graph.text.naming`                       | `src/graph/text/naming`      |     2 | Xtend → hand port                                                                                                  |
+| `graph.text.scoping`                      | `src/graph/text/scoping`     |     1 | Xtend → hand port                                                                                                  |
+| `graph.text.serializer`                   | `src/graph/text/serializer`  |     3 | Xtend → hand port; generated sequencer replaced by a grammar-specific one (G1)                                     |
+| `graph.text.validation`                   | `src/graph/text/validation`  |     2 | Xtend → hand port                                                                                                  |
+
+Status: ported (mission 4b); design, runbook and deferrals in [elk-text.md](elk-text.md). There is no
+JUnit plugin for `graph.text`; the evidence is JVM vectors, curated refs and a local sweep
+([elk-text.md](elk-text.md#evidence)).
+
+Third-party subset (not an ELK bundle, see the table above): `src/xtext` holds the Xtext 2.36.0 (EPL-2.0)
+classes graph.text calls, written from the Xtext source; only `src/graph/text` may import it
+([elk-text.md](elk-text.md#file-map)).
 
 ## `alg.common` → `src/alg/common/`
 
@@ -516,9 +544,12 @@ Java + Xtend. Approach: one hand-written parse method per Xtext rule (D8); no Xt
 | `graph.json.text`           | `src/graph/json/text/`    | 15 (1 Java + 13 Xtend + 1 xtext) |            801 |          171 |       972 |
 | `core.debug.grandom`        | `src/core/debug/grandom/` |   9 (3 Java + 5 Xtend + 1 xtext) |          2,543 |          153 |     2,696 |
 
+Status: `graph.text` is ported (mission 4b, [section above](#graphtext--srcgraphtext)); the other two are
+not started.
+
 Mission mapping: `graph.text` is roadmap 4b, `graph.json.text` 4c, `core.debug.grandom` 4d
-(`plans/roadmap.md`, Revision 2026-10-11). TS roots are proposed; `bundle-deps.json` gains the
-three bundles when their missions start.
+(`plans/roadmap.md`, Revision 2026-10-11). TS roots are proposed except `graph.text`; `bundle-deps.json` gained `graph.text` in
+mission 4b and gains the other two when their missions start.
 
 ## Out of scope or deferred (not rows above)
 
