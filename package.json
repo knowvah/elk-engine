@@ -42,6 +42,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "complexity": "tsx tools/complexity/check.ts",
     "melk:generate": "tsx tools/melk/generate.ts",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
@@ -68,6 +69,7 @@
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^5.0.3",
     "esbuild": "^0.28.2",
+    "oxc-parser": "^0.154.0",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "7.0.2",

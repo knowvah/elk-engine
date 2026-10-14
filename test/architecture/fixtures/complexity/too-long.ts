@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: EPL-2.0
+
+/** Violation by NLOC alone (31 lines of code, CCN 1). */
+export function tooLong(): number {
+  const v1 = 1;
+  const v2 = 2;
+  const v3 = 3;
+  const v4 = 4;
+  const v5 = 5;
+  const v6 = 6;
+  const v7 = 7;
+  const v8 = 8;
+  const v9 = 9;
+  const v10 = 10;
+  const v11 = 11;
+  const v12 = 12;
+  const v13 = 13;
+  const v14 = 14;
+  const v15 = 15;
+  const v16 = 16;
+  const v17 = 17;
+  const v18 = 18;
+  const v19 = 19;
+  const v20 = 20;
+  const v21 = 21;
+  const v22 = 22;
+  const v23 = 23;
+  const v24 = 24;
+  const v25 = 25;
+  const v26 = 26;
+  const v27 = 27;
+  const v28 = 28;
+  const v29 = 29;
+  const v30 = 30;
+  return v1 + v30;
+}

@@ -2,13 +2,14 @@
 
 # elk-engine architecture overview
 
-| Document                                           | Content                                                             |
-| -------------------------------------------------- | ------------------------------------------------------------------- |
-| [inventory.md](inventory.md)                       | Every ELK bundle: purpose, LOC, generated sources, scope            |
-| [port-map.md](port-map.md)                         | Java packages to `src/` modules mapping                             |
-| [component-map.md](component-map.md)               | In-scope bundle dependencies; core runtime pieces                   |
-| [../translation-rules.md](../translation-rules.md) | Java to TypeScript rules                                            |
-| [../conformance.md](../conformance.md)             | Oracle comparison bar and procedure (arrives later in this mission) |
+| Document                                           | Content                                                                 |
+| -------------------------------------------------- | ----------------------------------------------------------------------- |
+| [inventory.md](inventory.md)                       | Every ELK bundle: purpose, LOC, generated sources, scope                |
+| [port-map.md](port-map.md)                         | Java packages to `src/` modules mapping                                 |
+| [component-map.md](component-map.md)               | In-scope bundle dependencies; core runtime pieces                       |
+| [../translation-rules.md](../translation-rules.md) | Java to TypeScript rules                                                |
+| [../conformance.md](../conformance.md)             | Oracle comparison bar and procedure (arrives later in this mission)     |
+| [complexity.md](complexity.md)                     | The complexity gate that measures every function (`npm run complexity`) |
 
 ## What elk-engine is
 
