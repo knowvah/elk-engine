@@ -1,16 +1,9 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { StringBasedRegionAccess } from '../../../xtext/formatting2/regionaccess/internal/StringBasedRegionAccess.js';
-import { CaseInsensitivityHelper } from '../../../xtext/scoping/impl/CaseInsensitivityHelper.js';
-import { ImportedNamespaceAwareLocalScopeProvider } from '../../../xtext/scoping/impl/ImportedNamespaceAwareLocalScopeProvider.js';
-import { SingleResourceGlobalScopeProvider } from '../../../xtext/scoping/impl/SingleResourceGlobalScopeProvider.js';
-import { ResourceScopeCache } from '../../../xtext/util/ResourceScopeCache.js';
 import type { ElkNode } from '../../ElkNode.js';
+import { createElkGraphScoping } from '../ElkGraphTextServices.js';
 import { ElkGraphValueConverterService } from '../conversion/ElkGraphValueConverterService.js';
-import { ElkGraphQualifiedNameConverter } from '../naming/ElkGraphQualifiedNameConverter.js';
-import { ElkGraphQualifiedNameProvider } from '../naming/ElkGraphQualifiedNameProvider.js';
 import { tokenize } from '../parser/ElkGraphLexer.js';
-import { ELK_GRAPH_KEYWORDS } from '../parser/ElkGraphTokenType.js';
-import { ElkGraphScopeProvider } from '../scoping/ElkGraphScopeProvider.js';
 import { CrossReferenceSerializer } from './CrossReferenceSerializer.js';
 import { ElkGraphSemanticSequencer } from './ElkGraphSemanticSequencer.js';
 import { ElkGraphSyntacticSequencer, type SequenceStream } from './ElkGraphSyntacticSequencer.js';
@@ -27,17 +20,9 @@ import { ElkGraphTransientValueService } from './ElkGraphTransientValueService.j
  * @see org.eclipse.elk.graph.text/src/org/eclipse/elk/graph/text/ElkGraphRuntimeModule.xtend
  */
 function createSemanticSequencer(out: ElkGraphSyntacticSequencer): ElkGraphSemanticSequencer {
-  const converter = new ElkGraphQualifiedNameConverter(tokenize, ELK_GRAPH_KEYWORDS);
-  const cache = new ResourceScopeCache();
-  const local = new ImportedNamespaceAwareLocalScopeProvider(
-    new SingleResourceGlobalScopeProvider(),
-    new ElkGraphQualifiedNameProvider(converter, cache),
-    converter,
-    new CaseInsensitivityHelper(),
-    cache,
-  );
+  const { nameConverter: converter, scopeProvider } = createElkGraphScoping();
   const valueConverters = new ElkGraphValueConverterService(tokenize);
-  const crossReferences = new CrossReferenceSerializer(new ElkGraphScopeProvider(local), converter, valueConverters);
+  const crossReferences = new CrossReferenceSerializer(scopeProvider, converter, valueConverters);
   return new ElkGraphSemanticSequencer(
     new ElkGraphTransientValueService(),
     new ElkGraphTokenWriter(out, valueConverters, crossReferences),
