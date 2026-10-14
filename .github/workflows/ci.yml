@@ -32,6 +32,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm run format:check
       - run: npm run typecheck
+      # lizard for `npm run complexity` and test/architecture/complexity-check.test.ts
+      # (which skips without it). Pinned: the tool's fallbacks and fixtures are
+      # calibrated to 1.22.2's blind spots. pipx avoids Ubuntu's PEP 668 block on
+      # system-wide pip installs.
+      - run: pipx install lizard==1.22.2
+      # Measures every TypeScript function in src/ (plain lizard silently skips some).
+      - run: npm run complexity
       # `coverage` = tools/coverage-gate/run.sh around `vitest run --coverage`: same
       # suite as `npm test`, plus the vitest.config.ts coverage thresholds and a
       # Cobertura report; the full output is kept in coverage-logs/.
