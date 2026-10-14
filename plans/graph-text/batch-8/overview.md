@@ -7,6 +7,6 @@ end to end, including the D3 `.json` ≡ `.elkt` check on realworld models. Depe
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T22 | `validate`/`serialize` on `ElkGraphText`; `elkt-roundtrip.test.ts` (round trip, D3) | typescript-pro | src/graph/text/ElkGraphText.ts, test/golden/elkt-roundtrip.test.ts | T18, T20, T21 | [ ] |
+| T22 | `validate`/`serialize` on `ElkGraphText`; `elkt-roundtrip.test.ts` (round trip, D3) | typescript-pro | src/graph/text/ElkGraphText.ts, test/golden/elkt-roundtrip.test.ts | T18, T20, T21 | [x] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green.
