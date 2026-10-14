@@ -153,3 +153,16 @@ M` (code `org.eclipse.emf.ecore.14`, holder's first line), twice per collision. 
   are emitted in object pre-order, then node source order — not line order.
 - **Impact**: T17's override must skip the three opposite references; T18 keeps consumer order.
 - **Confidence**: High
+
+## Observation: the `.elkt` link pipeline wiring
+
+- **Context**: T17 `ElkGraphLinker.test.ts` `link()`
+- **Finding**: `ResourceScopeCache` → `ElkGraphQualifiedNameProvider(converter, cache)` →
+  `ImportedNamespaceAwareLocalScopeProvider(SingleResourceGlobalScopeProvider, names, converter,
+CaseInsensitivityHelper, cache)` → `ElkGraphScopeProvider(local)` → `DefaultLinkingService(scope,
+LinkingHelper(services), converter)` → `ElkGraphLinker(service, LinkingDiagnosticMessageProvider, helper,
+new ElkGraphReferences(), parseResult.nodeModel)`, then `linkModel(root, consumer)`. Tests that build
+  ElkGraph objects without the parser must import `src/graph/impl/ElkGraphFactoryImpl.js` (side effect sets
+  `ElkGraphFactory.eINSTANCE`).
+- **Impact**: T18 assembles `ElkGraphText.load` from this chain.
+- **Confidence**: High
