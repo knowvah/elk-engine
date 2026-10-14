@@ -44,3 +44,4 @@ docs-site/.vitepress/goldens.json
 docs-site/.vitepress/goldens.*.json
 docs-site/parity.md
 docs-site/.vitepress/i18n-hashes.json
+test/corpus/.json-sweep/
