@@ -24,6 +24,7 @@ import type { IPropertyHolder } from '../properties/IPropertyHolder.js';
 import { ElkGraphUtil } from '../util/ElkGraphUtil.js';
 import { JsonAdapter } from './JsonAdapter.js';
 import { transformEdges } from './JsonImporterEdges.js';
+import { transferLayout } from './JsonImporterLayoutTransfer.js';
 
 const CHILDREN_KEY = 'children';
 const PORTS_KEY = 'ports';
@@ -324,6 +325,11 @@ export class JsonImporter implements JsonImporterState {
   /* ---------------------------------------------------------------------------
    *   ElkGraph positions -> Json: layout transfer (JsonImporterLayoutTransfer.ts, T16)
    */
+
+  /** Transfer the layout back to the formerly imported graph, using {@link transform}. */
+  transferLayout(graph: ElkNode): void {
+    transferLayout(this, graph);
+  }
 
   /** The Xtend `dispatch idByElement` over node, port and edge section (`ElkGraphUtil` shapes). */
   idByElement(element: unknown): JsonId | undefined {
