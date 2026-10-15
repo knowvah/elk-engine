@@ -280,3 +280,5 @@ refs run in CI.
 after load; load-then-validate cannot reach it in any registry, so missions 5/7 have nothing to regenerate for it.
 
 **Update 2026-10-15 (user):** the 13 T9 lexer recovery boundaries are canonical rows of `graph-text-lexer.json`.
+
+**Update 2026-10-15 (user):** the Xtext `Linker` passes a null unresolved-proxy message on as Java does (T16).
