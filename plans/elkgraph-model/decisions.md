@@ -123,3 +123,7 @@ any model code; append-only afterwards.
 
 `main` at `be4ddbd` (docs-site merged). Gates green at planning time are recorded in
 `decision-journal.md` by the Phase 8 pre-flight.
+
+**Amendment (2026-10-15, user decision):** D10's NPE → `TypeError` stands and is the model for JVM-raised
+exceptions nothing catches (AD-16b, `plans/elk-engine-skeleton/decisions.md`); the M5 classes it amends now
+sit under `RuntimeException` (AD-16a).

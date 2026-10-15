@@ -163,3 +163,59 @@ T1 onward the gates in README.md apply.
 
 Third-party `Require-Bundle` entries (Guava, EMF, Gson, Xtend/Xbase libs)
 are not TS directories; AD-10/AD-11 and the translation rules cover them.
+
+## AD-16: Exception policy (approved by the user 2026-10-15)
+
+Amends M5 (`plans/java-foundations/decisions.md`), D10 (`plans/elkgraph-model/decisions.md`) and AD-14.
+Context: the graph-text follow-ups of 2026-10-15 added Java-named shims for JVM-raised exceptions nothing
+catches (`StringIndexOutOfBoundsException`, the `checkCast` `ClassCastException`); the user asked whether
+errors should be idiomatic TypeScript rather than identical, and that "similar errors" stay catchable by
+parent-class handlers. Audit at that date: within each family the Java inheritance holds
+(`NumberFormatException` → `IllegalArgumentException`, the three index exceptions, Gson's
+`JsonParseException` and `IOException` families, Xtext's `ValueConverterException`), but of the 29
+exception classes the 19 family roots extend `Error` directly (2 of them port-local); Java's `Exception` /
+`RuntimeException` layers are missing, and `ArithmeticException extends RangeError` (M5) sits outside the
+Java chain.
+
+### AD-16a: Ported core keeps Java's error conditions and the Java chain
+
+- Which input fails, and at which step, is Java's (an oracle-visible behaviour; AD-13 applies).
+- Every exception ELK, Xtext, EMF or Gson declares, throws explicitly or catches keeps its Java class and
+  its whole Java parent chain. The JS `Error` stands in for `Throwable`.
+- `src/java/lang/Exception.ts` (`extends Error`) and `src/java/lang/RuntimeException.ts`
+  (`extends Exception`) are added. Unchecked exceptions extend `RuntimeException` (or their Java parent
+  below it); checked ones (`IOException`) extend `Exception`.
+- **User choice: the Java chain wins over JS built-ins.** `ArithmeticException extends RuntimeException`, no
+  longer `RangeError`. Where a class could have a JS built-in parent or its Java parent, it takes the Java
+  parent.
+- A ported Java `catch (Exception e)` or `catch (RuntimeException e)` stays a catch-all, because D10's
+  `TypeError` (Java's NPE) is not under `RuntimeException`. A narrower Java catch becomes an `instanceof`
+  check on the Java class.
+
+### AD-16b: No new shims for JVM errors nothing catches
+
+- A JVM-raised exception that no in-scope code catches (null dereference, a failed cast, a JDK
+  bounds check) uses the plain JS error (`TypeError`, `RangeError`) in new code; tests compare when it
+  happens, not its class. D10 (NPE → `TypeError`) is the model.
+- Existing shims stay and join the chain (no retrofit): `ClassCastException`,
+  `StringIndexOutOfBoundsException`, `ArithmeticException`, `checkCast`.
+
+### AD-16c: Idiomatic errors belong to the public layer (AD-14)
+
+- The later idiomatic wrapper exposes one library hierarchy under a base class (name decided with that
+  layer), with family subclasses that follow the Java grouping, so a parent handler catches similar
+  errors. Each wrapper error keeps the core error as `cause`. The core never throws wrapper errors.
+
+### Implementation step (separate, not yet done)
+
+- Add `Exception`, `RuntimeException` (with tests); re-parent the 18 Java-named classes that extend `Error` or
+  `RangeError` directly to their Java parents (the 9 family subclasses follow) (all Xtext ones checked against Xtext 2.36.0: `RuntimeException`; ELK's
+  `JsonImportException`: `RuntimeException`); port-local errors (`SyntaxFailure`,
+  `ElkGraphSerializationError`) stay `Error` subclasses unless a Java counterpart is named.
+- Frozen assertions that encode `ArithmeticException extends RangeError` and must be rewritten under this
+  decision (AD-13; the user approves the list when the step runs): `src/java/lang/JavaMath.test.ts:100-101`,
+  `src/java/lang/Int32.test.ts:66-67`, `src/java/lang/Int64.test.ts:104`,
+  `src/java/lang/ArithmeticException.test.ts:23`. `JavaMath.test.ts:54` is unaffected (`round` throws a
+  port-local `RangeError`, not a Java exception).
+- Update `docs/translation-rules.md` §6.7, the "checked exceptions" row and the AD range in `CLAUDE.md`, and
+  add a fitness test that every class named after a Java exception extends its Java parent.

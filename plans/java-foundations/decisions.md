@@ -94,3 +94,8 @@ poll; `remove(o)` replaces with the last element and re-sifts) for exactly the m
 (sites: `BoxLayoutProvider.java:550`, `StressMajorization.java:143`,
 `CoffmanGrahamLayerer.java:110,152`). Tie order and array order proven by `collections.json`;
 STOP after 3 rejected revisions.
+
+**Amendment (2026-10-15, user decision):** M5's "No `RuntimeException` base" and
+`ArithmeticException extends RangeError` are superseded by AD-16 (`plans/elk-engine-skeleton/decisions.md`):
+`Exception` / `RuntimeException` are added and every exception keeps its Java parent chain
+(`ArithmeticException extends RuntimeException`).
