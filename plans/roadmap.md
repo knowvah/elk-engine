@@ -272,3 +272,6 @@ Java's NPE); `KNOWN_EXPORTER_GAPS` is removed from `ElkGraphText.test.ts`.
 
 **Update 2026-10-15 (user):** the 31 curated `.elkt` inputs are vendored in `test/corpus/elkt-curated/`; the curated
 refs run in CI.
+
+**Update 2026-10-15 (user):** erased-generic casts are ported (`src/java/lang/JavaCast.ts`); 8 of the 10
+`ClassCastException` converter rows replay, and the 2 rows a `number` cannot represent stay documented skips.
