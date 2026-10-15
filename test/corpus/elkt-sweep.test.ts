@@ -4,8 +4,9 @@
 // registry, G3, into $ELK_ORACLE_DIR/sweep/elkt-<elkCommit>-<modelsCommit>/). One `it` per indicator:
 //   parse-equal     /898    `exportLikeOracle(load(elkt).root)` equals the oracle's parse within 1e-6; where the oracle
 //                           throws the port reports at least one error (presence, D8 #1)
-//   validate-equal  /898    `validate(root)` issues equal the oracle's exactly (order, severity, message, line, code),
-//                           models that depend on a mission-5 algorithm (G3) deferred
+//   validate-equal  /898    `validate(root)` issues equal the oracle's exactly (order, severity, message, line, code);
+//                           models naming a mission-5 algorithm (G3) are validated with its stand-in registered
+//                           (test/helpers/mission5-stand-ins.ts), the others with the plain registry
 //   writer          /1448   `serialize` equals the oracle text byte for byte; failures match by presence
 //   reparse-equal   /1448   `load(serialize(g))` equals `g` (`canonGraph`); where it cannot (lossy in the oracle too) it
 //                           equals the oracle's own reparse of the same text
@@ -27,6 +28,7 @@ import { isCoverageRun } from '../helpers/coverage-run.js';
 import { canonGraph, canonGraphWithoutPortPositions, portsWithLayoutRelevantPosition } from '../helpers/elkt-canon.js';
 import { exportLikeOracle } from '../helpers/graph-json-oracle.js';
 import { repoRoot, resolveModelsDir } from './corpus.js';
+import { withMission5StandIns } from '../helpers/mission5-stand-ins.js';
 
 const ELKT = '.elkt';
 const JSON_EXT = '.json';
@@ -48,7 +50,7 @@ const LARGEST_MODEL = 'realworld/ptolemy/hierarchical/de_trilateration_Trilatera
 const LARGEST_BUDGET_MS = isCoverageRun() ? 3000 : 1000;
 /** A diff path in the port positions, which D3a excludes from the `.json` vs `.elkt` comparison. */
 const PORT_POSITION_PATH = /ports\[[^\]]*\]\.[xy]$/;
-/** The algorithms the TS registry lacks until mission 5 (`MISSION5_ALGORITHMS`, G3): a model naming one is deferred. */
+/** The algorithms the TS registry lacks until mission 5 (`MISSION5_ALGORITHMS`, G3): a model naming one needs the stand-ins. */
 const MISSION5_ALGORITHM_VALUE = /\balgorithm\s*:\s*"?(?:[\w]+\.)*(?:fixed|box|random)\b/;
 
 interface ResultRow {
@@ -62,6 +64,8 @@ interface Verdict {
   readonly ok: number;
   readonly deferred: number;
   readonly diffs: readonly string[];
+  /** Models compared with the mission-5 stand-ins registered (validate only). */
+  readonly standIns?: number;
 }
 
 interface OracleIssue {
@@ -146,6 +150,7 @@ function verdict(total: number, deferred: number, diffs: string[]): Verdict {
 function report(indicator: string, v: Verdict, nondeterministic: number): void {
   console.log(
     `elkt sweep: ${indicator}=${v.ok}/${v.total} deferred=${v.deferred} diffs=${v.diffs.length}` +
+      (v.standIns === undefined ? '' : ` standIns=${v.standIns}`) +
       ` nondeterministic=${nondeterministic}`,
   );
 }
@@ -205,17 +210,17 @@ function validateDiff(modelsDir: string, row: ResultRow): string | undefined {
 }
 
 function validateVerdict(modelsDir: string, rows: ResultRow[]): Verdict {
-  const deferredIds: string[] = [];
   const diffs: string[] = [];
-  for (const row of rows) {
-    if (MISSION5_ALGORITHM_VALUE.test(readModel(modelsDir, row.id + ELKT))) {
-      deferredIds.push(row.id);
-      continue;
-    }
+  const check = (row: ResultRow): void => {
     const d = row.status === STATUS_OK ? validateDiff(modelsDir, row) : `oracle validation ${row.status}`;
     if (d !== undefined) diffs.push(`${row.id}\n${d}`);
-  }
-  return verdict(rows.length, deferredIds.length, diffs);
+  };
+  const needsStandIns = (row: ResultRow): boolean => MISSION5_ALGORITHM_VALUE.test(readModel(modelsDir, row.id + ELKT));
+  const plain = rows.filter((row) => !needsStandIns(row));
+  const withStandIns = rows.filter(needsStandIns);
+  plain.forEach(check);
+  withMission5StandIns(() => withStandIns.forEach(check));
+  return { ...verdict(rows.length, 0, diffs), standIns: withStandIns.length };
 }
 
 // ---- writer and reparse (one TS serialization per input, shared by both indicators)

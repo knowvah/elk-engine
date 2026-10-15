@@ -195,6 +195,8 @@ new ElkGraphReferences(), parseResult.nodeModel)`, then `linkModel(root, consume
   `Core.melk` `supports` lists reproduced all 11 `mission5` validator rows exactly. An unresolvable proxy reads
   back through `getProperty` as the option default; read `getProperties().get(...)` to see the stored proxy.
 - **Impact**: mission 5 removes the stand-in describe and the `MISSION5_ALGORITHMS` filter together.
+- **Update 2026-10-15**: the stand-ins live in `test/helpers/mission5-stand-ins.ts`; the sweep uses them for its 4 G3
+  models too (898/898). Mission 5 deletes the helper.
 - **Confidence**: High
 
 ## Observation: realworld `.elkt` and `.json` differ in port positions in all 550 models
