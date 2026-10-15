@@ -9,8 +9,9 @@
 //   writer          /1448   `serialize` equals the oracle text byte for byte; failures match by presence
 //   reparse-equal   /1448   `load(serialize(g))` equals `g` (`canonGraph`); where it cannot (lossy in the oracle too) it
 //                           equals the oracle's own reparse of the same text
-//   d3              /550    realworld `.json` and `.elkt` give equal graphs, or differ upstream: the oracle's two parses
-//                           differ the same way (T22's rule, test/helpers/d3-oracle-differences.json)
+//   d3              /550    realworld `.json` and `.elkt` give equal graphs except for port positions (D3 as amended
+//                           by D3a, plans/conformance-corpus/decisions.md; `canonGraphWithoutPortPositions`), and in
+//                           both graphs no port position can change a layout (`portsWithLayoutRelevantPosition`)
 // Each indicator logs `elkt sweep: <indicator>=<n>/<total> deferred=<d> diffs=<k>` and fails with the per-model report.
 // Skipped with a message when the models dir or the sweep dir is absent (CI has neither).
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -23,7 +24,7 @@ import { ElkGraphJson } from '../../src/graph/json/ElkGraphJson.js';
 import { ElkGraphText, type ElkTextIssue } from '../../src/graph/text/ElkGraphText.js';
 import { compareLayout, formatDiffs, type Diff } from '../golden/compare-json.js';
 import { isCoverageRun } from '../helpers/coverage-run.js';
-import { canonGraph, canonGraphWithoutPortPositions } from '../helpers/elkt-canon.js';
+import { canonGraph, canonGraphWithoutPortPositions, portsWithLayoutRelevantPosition } from '../helpers/elkt-canon.js';
 import { exportLikeOracle } from '../helpers/graph-json-oracle.js';
 import { repoRoot, resolveModelsDir } from './corpus.js';
 
@@ -45,8 +46,7 @@ const DEFAULT_ORACLE_RELATIVE_PATH = '../elk-oracle';
 const TEST_TIMEOUT_MS = isCoverageRun() ? 360_000 : 120_000;
 const LARGEST_MODEL = 'realworld/ptolemy/hierarchical/de_trilateration_Trilateration.elkt';
 const LARGEST_BUDGET_MS = isCoverageRun() ? 3000 : 1000;
-const D3_DIFFERENCES_FILE = path.join(repoRoot(), 'test', 'helpers', 'd3-oracle-differences.json');
-/** An oracle difference between a realworld `.json` and `.elkt` confined to the port positions (T22, D3). */
+/** A diff path in the port positions, which D3a excludes from the `.json` vs `.elkt` comparison. */
 const PORT_POSITION_PATH = /ports\[[^\]]*\]\.[xy]$/;
 /** The algorithms the TS registry lacks until mission 5 (`MISSION5_ALGORITHMS`, G3): a model naming one is deferred. */
 const MISSION5_ALGORITHM_VALUE = /\balgorithm\s*:\s*"?(?:[\w]+\.)*(?:fixed|box|random)\b/;
@@ -311,27 +311,32 @@ function d3Ids(modelsDir: string): string[] {
     .sort(text);
 }
 
-const confinedToPortPositions = (diffs: readonly Diff[]): boolean => diffs.every((d) => PORT_POSITION_PATH.test(d.path));
+const outsidePortPositions = (diffs: readonly Diff[]): Diff[] => diffs.filter((d) => !PORT_POSITION_PATH.test(d.path));
 
-/** The verdict of one pair: 'equal', 'upstream' (listed, confined, shared by the oracle) or a diff report. */
-function d3Verdict(modelsDir: string, id: string, listed: ReadonlySet<string>): string {
+/** The verdict of one pair: 'equal' (equal except port positions, D3a) or a diff report with the oracle's view. */
+function d3Verdict(modelsDir: string, id: string): string {
   const fromJson = ElkGraphJson.forGraph(readModel(modelsDir, id + JSON_EXT)).toElk();
   const fromText = loadClean(readModel(modelsDir, id + ELKT));
-  if (JSON.stringify(canonGraph(fromJson)) === JSON.stringify(canonGraph(fromText))) return 'equal';
-  const confined =
-    JSON.stringify(canonGraphWithoutPortPositions(fromJson)) === JSON.stringify(canonGraphWithoutPortPositions(fromText));
-  const oracle = compareLayout(oracleOutput<unknown>(KIND_PARSE_JSON, id), oracleOutput<unknown>(KIND_PARSE, id));
-  if (confined && listed.has(id) && !oracle.ok && confinedToPortPositions(oracle.diffs)) return 'upstream';
-  return `the port's .json and .elkt differ (confined to ports x/y: ${String(confined)}, listed: ${String(listed.has(id))}); ` +
-    `oracle: ${oracle.ok ? 'equal' : formatDiffs(oracle.diffs, 3)}`;
+  const relevant = [...portsWithLayoutRelevantPosition(fromJson), ...portsWithLayoutRelevantPosition(fromText)];
+  if (relevant.length > 0) {
+    return `port positions could change the layout, so D3a cannot exclude them:\n${relevant.slice(0, 5).join('\n')}`;
+  }
+  if (
+    JSON.stringify(canonGraphWithoutPortPositions(fromJson)) === JSON.stringify(canonGraphWithoutPortPositions(fromText))
+  ) {
+    return 'equal';
+  }
+  const oracle = outsidePortPositions(
+    compareLayout(oracleOutput<unknown>(KIND_PARSE_JSON, id), oracleOutput<unknown>(KIND_PARSE, id)).diffs,
+  );
+  return `the port's .json and .elkt differ beyond port positions; oracle: ${oracle.length === 0 ? 'equal' : formatDiffs(oracle, 3)}`;
 }
 
-function d3Result(modelsDir: string, ids: string[], listed: ReadonlySet<string>): Verdict & { equal: number } {
-  const verdicts = ids.map((id) => [id, d3Verdict(modelsDir, id, listed)] as const);
+function d3Result(modelsDir: string, ids: string[]): Verdict {
+  const verdicts = ids.map((id) => [id, d3Verdict(modelsDir, id)] as const);
   const equal = verdicts.filter(([, v]) => v === 'equal').length;
-  const upstream = verdicts.filter(([, v]) => v === 'upstream').length;
-  const diffs = verdicts.filter(([, v]) => v !== 'equal' && v !== 'upstream').map(([id, v]) => `${id}\n${v}`);
-  return { total: ids.length, ok: equal, deferred: upstream, diffs, equal };
+  const diffs = verdicts.filter(([, v]) => v !== 'equal').map(([id, v]) => `${id}\n${v}`);
+  return { total: ids.length, ok: equal, deferred: 0, diffs };
 }
 
 // ---- the tests
@@ -396,10 +401,8 @@ describe('elkt sweep vs the oracle', () => {
     expectNoDiffs(v);
   }, TEST_TIMEOUT_MS);
 
-  it('d3 realworld .json equals .elkt, or differs upstream', () => {
-    const listedFile = JSON.parse(readFileSync(D3_DIFFERENCES_FILE, 'utf8')) as { ids: string[] };
-    const listed = new Set(listedFile.ids.map((id) => `${REALWORLD}/${id}`));
-    const v = d3Result(modelsDir, d3Ids(modelsDir), listed);
+  it('d3 realworld .json equals .elkt except for port positions (D3a)', () => {
+    const v = d3Result(modelsDir, d3Ids(modelsDir));
     report('d3', v, 0);
     expectNoDiffs(v);
   }, TEST_TIMEOUT_MS);

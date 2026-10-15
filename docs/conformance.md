@@ -343,8 +343,8 @@ compared byte for byte (a differing case would be `nondeterministic` and exclude
   presence.
 - `reparse`: `load(serialize(g))` equals `g` (`canonGraph`, properties sorted by id); where it cannot, it must
   equal the oracle's own reparse of the same text and the oracle's round trip must be lossy too.
-- `D3`: a realworld `.json` and its `.elkt` give the same graph, or the oracle's two parses differ the same
-  way.
+- `D3`: a realworld `.json` and its `.elkt` give the same graph except for port positions (D3 as amended by
+  D3a, user 2026-10-14).
 
 **Registry mode.** The sweep always runs the oracle with `ORACLE_REGISTRY=core` (G3): the CoreOptions-only
 registry, which is the TS registry (94 option ids on both sides). The default oracle registry changes the
@@ -361,7 +361,7 @@ journal):
 | validate-equal            | 898/898 minus G3 | 894/898     | 4        | 0     |
 | writer byte-exact         | 1,448/1,448      | 1,448/1,448 | 0        | 0     |
 | reparse-equal after write | 1,448/1,448      | 1,448/1,448 | 0        | 0     |
-| D3 `.json` equals `.elkt` | 550/550          | 0/550       | 550      | 0     |
+| D3 `.json` equals `.elkt` | 550/550          | 550/550     | 0        | 0     |
 
 No case was nondeterministic and the oracle threw on none (all 898 `.elkt` parse, validate and write; all 550
 `.json` import and write). Reparse: 1,447 reload equal to the written graph; 1 (`examples/user-hints/layered/reverseEdge.elkt`)
@@ -377,13 +377,14 @@ lossy identically). The largest model (`realworld/ptolemy/hierarchical/de_trilat
   models name them as `algorithm`: `tickets/core/457_boxLayouterIgnoresMinimumSize` (`box`),
   `tickets/core/475_fixedLayoutWithLongLabels` (`fixed`), `tickets/core/489_paddingAndMinSize_Large` and
   `_Small` (`org.eclipse.elk.box`). Closed by mission 5 (the same filter as the validator vectors).
-- D3 upstream difference (all 550 realworld pairs): the `.elkt` of a realworld model carries port positions
-  of a laid-out Ptolemy graph and its `.json` has none. The oracle's two parses differ in exactly `ports[].x` and
-  `ports[].y` for the same 550 models and the port matches the oracle on both files; the 550 ids are listed in
-  `test/helpers/d3-oracle-differences.json`. D3's "parse to the same ElkGraph" therefore does not hold for the
-  corpus as is (flagged to the user). Rule: `canonGraph` trees, no tolerance, nothing excluded; a pair counts as
-  upstream only when it is listed, the difference vanishes once port x/y are blanked, and every oracle difference
-  is a port x/y.
+- D3 port positions (D3a, all 550 realworld pairs): the `.elkt` of a realworld model carries port positions of
+  a laid-out Ptolemy graph and its `.json` has none, and the oracle's two parses differ in exactly `ports[].x` and
+  `ports[].y` for every pair. The user amended D3 on 2026-10-14 to "equal except port positions". Rule:
+  `canonGraphWithoutPortPositions` trees equal (`test/helpers/elkt-canon.ts`: `canonGraph` with every port's x and
+  y blanked), no tolerance, nothing else excluded — and only while those positions cannot change a layout: in both
+  graphs every port has an explicit side and `port.index` and no node has `FIXED_POS`/`FIXED_RATIO` constraints
+  (`portsWithLayoutRelevantPosition` empty; otherwise ELK infers side or order from the position). All 48,858
+  realworld ports meet it.
 - D8 #1, syntax-error text: matched by presence only. No corpus model has a syntax error, so no sweep row uses
   it; the vectors cover it.
 
