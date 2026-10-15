@@ -253,16 +253,20 @@ public class ElktLexerVectors {
             }
             int colon = input.indexOf(':');
             String payload = input.substring(colon + 1);
-            return switch (input.substring(0, colon)) {
-                case "str" -> payload;
-                case "int" -> Integer.valueOf(payload);
-                case "long" -> Long.valueOf(payload);
-                case "double" -> Double.valueOf(payload);
-                case "float" -> Float.valueOf(payload);
-                case "bool" -> Boolean.valueOf(payload);
-                case "obj" -> new StringBuilder(payload);
-                default -> other(input.substring(0, colon), payload);
-            };
+            try {
+                return switch (input.substring(0, colon)) {
+                    case "str" -> payload;
+                    case "int" -> Integer.valueOf(payload);
+                    case "long" -> Long.valueOf(payload);
+                    case "double" -> Double.valueOf(payload);
+                    case "float" -> Float.valueOf(payload);
+                    case "bool" -> Boolean.valueOf(payload);
+                    case "obj" -> new StringBuilder(payload);
+                    default -> other(input.substring(0, colon), payload);
+                };
+            } catch (NumberFormatException e) {
+                throw new IllegalStateException("bad typed input: " + input, e);
+            }
         }
 
         private static Object other(String type, String payload) {
@@ -288,7 +292,14 @@ public class ElktLexerVectors {
 
         private static KVector kvector(String payload) {
             String[] xy = payload.split(",");
-            return new KVector(Double.parseDouble(xy[0]), Double.parseDouble(xy[1]));
+            if (xy.length != 2) {
+                throw new IllegalStateException("bad kvector input: " + payload);
+            }
+            try {
+                return new KVector(Double.parseDouble(xy[0]), Double.parseDouble(xy[1]));
+            } catch (NumberFormatException e) {
+                throw new IllegalStateException("bad kvector input: " + payload, e);
+            }
         }
     }
 
