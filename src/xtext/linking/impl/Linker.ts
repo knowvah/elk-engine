@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { EObject } from '../../../emf/ecore/EObject.js';
+import type { DiagnosticMessage } from '../../diagnostics/DiagnosticMessage.js';
 import type { IDiagnosticConsumer } from '../../diagnostics/IDiagnosticConsumer.js';
 import type { IDiagnosticProducer } from '../../diagnostics/IDiagnosticProducer.js';
 import type { ICrossReferenceNode } from '../../nodemodel/ICrossReferenceNode.js';
@@ -111,9 +112,10 @@ export class Linker extends AbstractCleaningLinker {
     if (links.length === 0) {
       if (!this.isNullValidResult(obj, eRef, node)) {
         const context = this.createDiagnosticContext(obj, eRef, node);
-        // a provider answers `null` when an unresolved reference is fine; Java would pass it on and fail
+        // a provider may answer `null` (an unresolved reference is fine); Java passes it on unchecked and the
+        // producer's createDiagnostic fails on it (LinkingDiagnosticProducer.java:27, D10: TypeError)
         const message = this.#diagnosticMessageProvider.getUnresolvedProxyMessage(context);
-        if (message !== null) producer.addDiagnostic(message);
+        producer.addDiagnostic(message as DiagnosticMessage);
       }
       return;
     }
