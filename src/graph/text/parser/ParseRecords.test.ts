@@ -44,9 +44,8 @@ describe('ElkGraphParser: value conversion policy', () => {
   });
 
   it('applies the value of a ValueConverterWithValueException and still reports it', () => {
-    const result = withStub('node a', (_value, rule) => {
+    const result = withStub('node a', () => {
       throw new ValueConverterWithValueException('recovered', null, 'fixed', null);
-      void rule;
     });
     expect([...(result.root as ElkNode).getChildren()][0]?.getIdentifier()).toBe('fixed');
     expect(result.diagnostics.map((d) => d.message)).toEqual(['recovered']);

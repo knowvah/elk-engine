@@ -192,7 +192,10 @@ describe('AbstractDeclarativeValidator', () => {
     guarded.register(() => guarded.callGuard(false));
     guarded.register(() => guarded.callGuard(true));
     const nullDeref = new Probe();
-    nullDeref.register(() => (null as unknown as { x: number }).x);
+    // the TypeError a null dereference raises (Java's NPE, D10), thrown explicitly
+    nullDeref.register(() => {
+      throw new TypeError("Cannot read properties of null (reading 'x')");
+    });
     const failing = new Probe();
     failing.register(() => {
       throw new RangeError('boom');
