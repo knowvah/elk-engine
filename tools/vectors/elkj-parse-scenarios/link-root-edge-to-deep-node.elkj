@@ -1,0 +1,1 @@
+{ "id": "r", "children": [ { "id": "a", "children": [ { "id": "deep", "ports": [ { "id": "dp" } ] } ] }, { "id": "xn" } ], "edges": [ { "id": "e", "sources": ["deep"], "targets": ["dp"] }, { "id": "f", "sources": ["xn"], "targets": ["deep"] } ] }

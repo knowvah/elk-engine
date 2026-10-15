@@ -1,0 +1,1 @@
+{ 'id': "r", 'x': 1, 'y': 2, 'width': 3, 'height': 4, 'labels': [ { 'id': "l", 'text': "t", 'x': 5, 'layoutOptions': { } } ], 'ports': [ { 'id': "p", 'width': 6, 'height': 7 } ], 'children': [ { 'id': "a" }, { 'id': "b" } ], 'edges': [ { 'id': "e", 'sources': ["a"], 'targets': ["b"], 'labels': [ { 'id': "el" } ], 'properties': { } } ], 'properties': { } }

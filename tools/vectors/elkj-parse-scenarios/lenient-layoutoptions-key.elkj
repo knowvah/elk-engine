@@ -1,0 +1,1 @@
+{ id: "root", layoutOptions: { "org.eclipse.elk.direction": "RIGHT" }, children: [ { id: "a", "layoutOptions": { "org.eclipse.elk.priority": 3 } }, { id: "b", 'layoutOptions': { "org.eclipse.elk.priority": 4 } } ] }

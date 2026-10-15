@@ -1,0 +1,1 @@
+{ "children": [ { "id": "a", "children": [ { "id": "b", "edges": [ { "sources": ["b"], "targets": ["sp"] } ] } ] }, { "id": "s", "ports": [ { "id": "sp" } ] } ] }

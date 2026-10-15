@@ -14,6 +14,11 @@ tools/vectors/elkt-parse-scenarios/
 tools/vectors/elkt-validate-scenarios/
 tools/vectors/elkt-write-scenarios/
 tools/vectors/elkt-lexer-cases.txt
+# ELK JSON text (.elkj) vector inputs: byte-meaningful (lenient/malformed JSON, CR/CRLF, BOM, invalid UTF-8)
+tools/vectors/elkj-parse-scenarios/
+tools/vectors/elkj-validate-scenarios/
+tools/vectors/elkj-write-scenarios/
+tools/vectors/elkj-lexer-cases.txt
 # Written by tools/bundle-deps.ts; the fitness test compares it byte-for-byte
 test/architecture/bundle-deps.json
 

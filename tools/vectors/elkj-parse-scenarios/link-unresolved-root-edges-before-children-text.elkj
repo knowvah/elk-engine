@@ -1,0 +1,1 @@
+{ "edges": [ { "id": "outer", "sources": ["m2"], "targets": ["m3"] } ], "children": [ { "id": "a", "edges": [ { "id": "inner", "sources": ["m1"], "targets": ["a"] } ] } ] }

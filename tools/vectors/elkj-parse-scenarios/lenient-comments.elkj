@@ -1,0 +1,6 @@
+// leading line comment
+/* block
+ comment */ { // after brace
+ "id": "root", /* inline */ "x": 1
+}
+// trailing
