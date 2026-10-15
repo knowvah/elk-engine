@@ -215,3 +215,8 @@ not only the core one, so missions 5/7 will not reach it. A JVM probe with all 2
 in 974 documents. The one route that reaches it, registering an option after load, is now recorded
 (`valueResolved-registered-after-load`, 3 mutations; the other 75 rows and the lexer, parse and write refs are
 byte-identical), and the replay compares `mutations` on every row.
+
+**Resolved (user, 2026-10-15):** flag 6 — the T9 recovery boundaries are canonical lexer rows: 12 inputs added to
+`tools/vectors/elkt-lexer-cases.txt` (11 boundaries plus the lone-CR line-number case; `-->` and `"\` were already
+rows), regenerated as a pure append (lexer rows 314 → 326, lexError rows 22 → 32; converter rows and the parse,
+validate and write refs byte-identical). The JVM rows equal every scratch-pinned expectation.
