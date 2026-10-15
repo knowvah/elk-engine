@@ -183,6 +183,7 @@ new ElkGraphReferences(), parseResult.nodeModel)`, then `linkModel(root, consume
 - **Finding**: Java `p.value.toString` throws; `src/graph/json/JsonExporter.ts:53` writes `"null"`. JSON input
   cannot reach it (importer rejects null); `.elkt` `null` values can.
 - **Impact**: follow-up fix outside graph-text; `ElkGraphText.test.ts` `KNOWN_EXPORTER_GAPS` goes red then.
+- **Resolved 2026-10-15**: `valueText` calls `toString()` on the value; the marker is removed.
 - **Confidence**: High
 
 ## Observation: algorithm-dependent checks can be verified before mission 5 with stand-ins
