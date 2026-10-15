@@ -9,7 +9,7 @@ import com.google.gson.JsonParser;
  *
  * @param id the case id
  * @param input the model file
- * @param mode {@code layout}, {@code parse} or {@code generate}
+ * @param mode {@code layout}, {@code parse}, {@code parse-elkj}, {@code convert} or {@code generate}
  * @param algorithm the full algorithm id to retarget to, or null
  * @param variant the key in variants.json, or null
  */
@@ -18,6 +18,10 @@ record CaseSpec(String id, String input, String mode, String algorithm, String v
     static final String MODE_LAYOUT = "layout";
     static final String MODE_PARSE = "parse";
     static final String MODE_GENERATE = "generate";
+    /** Like {@code parse}, but reads the file through the {@code .elkj} language whatever its extension. */
+    static final String MODE_PARSE_ELKJ = "parse-elkj";
+    /** Reads by extension, converts as ELK's ConvertGraphHandler does and writes {@code <id>.elkj}. */
+    static final String MODE_CONVERT = "convert";
 
     private static final String ALGORITHM = "algorithm";
     private static final String VARIANT = "variant";
@@ -29,7 +33,7 @@ record CaseSpec(String id, String input, String mode, String algorithm, String v
             requireString(json, key);
         }
         String mode = json.get("mode").getAsString();
-        if (!List.of(MODE_LAYOUT, MODE_PARSE, MODE_GENERATE).contains(mode)) {
+        if (!List.of(MODE_LAYOUT, MODE_PARSE, MODE_GENERATE, MODE_PARSE_ELKJ, MODE_CONVERT).contains(mode)) {
             throw new IllegalArgumentException("unknown mode '" + mode + "'");
         }
         return new CaseSpec(json.get("id").getAsString(), json.get("input").getAsString(), mode,

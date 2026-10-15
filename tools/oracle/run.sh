@@ -5,9 +5,11 @@
 # Usage: run.sh <outDir> <input.json|input.elkt>...
 #        run.sh --cases <cases.jsonl> <outDir>
 #        run.sh --list-algorithms | --list-options
-# Case file: JSON Lines {"id","input","mode":"layout"|"parse"|"generate",
-# "algorithm"?,"variant"?} ("generate" reads a grandom .elkr and writes the
-# graph unlaid-out); output is <outDir>/<id with "/" replaced by
+# Case file: JSON Lines {"id","input","mode":"layout"|"parse"|"parse-elkj"|
+# "convert"|"generate","algorithm"?,"variant"?} ("generate" reads a grandom
+# .elkr and writes the graph unlaid-out; "parse-elkj" is "parse" through the
+# .elkj language whatever the extension; "convert" writes ELK's .elkj conversion
+# as <id>.elkj, with identifierSeed=1); output is <outDir>/<id with "/" replaced by
 # "__">.json, one JSON result line per case on stdout. Each case is bounded
 # by ELK_SWEEP_TIMEOUT_MS (default 30000); a JVM that hit a timeout exits
 # with code 75 and is restarted on the cases without a result line.
@@ -24,6 +26,10 @@ EXIT_TIMEOUT=75 # keep in sync with ElkOracle.EXIT_TIMEOUT
 DEFAULT_TIMEOUT_MS=30000
 # Seeds JsonExporter id-collision suffixes (seam patch 0001; decisions D5b).
 EXPORT_SEED=1
+# Seeds GraphIdentifierGenerator id-collision suffixes, used by "convert" cases
+# (seam patch 0002; decisions D12). Set here, like EXPORT_SEED, so every case
+# run is repeatable; no other mode draws from that Random.
+IDENTIFIER_SEED=1
 ELK_ORACLE_DIR="${ELK_ORACLE_DIR:-$ROOT/../elk-oracle}"
 ORACLE_REGISTRY="${ORACLE_REGISTRY:-default}"
 P2_BUNDLES="${P2_BUNDLES:-$HOME/.m2/repository/p2/osgi/bundle}"
@@ -100,6 +106,7 @@ oracle_java() { # oracle_java <timeoutMs> <args...>; runs the harness JVM
   [ "$ORACLE_REGISTRY" = core ] && registry_opts=(-Delk.oracle.registry=core)
   java -Delk.oracle.variants="$VARIANTS_FILE" -Delk.oracle.timeoutMs="$timeout" \
     -Dorg.eclipse.elk.graph.json.exportSeed="$EXPORT_SEED" \
+    -Dorg.eclipse.elk.graph.util.identifierSeed="$IDENTIFIER_SEED" \
     ${registry_opts[@]+"${registry_opts[@]}"} \
     -cp "$CLASSES:$CP" ElkOracle "$@"
 }

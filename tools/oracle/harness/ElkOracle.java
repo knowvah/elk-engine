@@ -35,6 +35,9 @@ import com.google.gson.JsonArray;
  * case per line, output named by id, one JSON result line per case on stdout)
  * and {@code ElkOracle --list-algorithms}. Case mode {@code generate} reads a
  * random-graph config ({@code .elkr}) and writes the generated graph unlaid-out.
+ * Case mode {@code parse-elkj} parses like {@code parse} but reads the file through the
+ * {@code .elkj} language; {@code convert} reads by extension and writes ELK's own {@code .elkj}
+ * conversion as {@code <id>.elkj}.
  * System properties set by run.sh: {@value #VARIANTS_PROPERTY} (variants.json path) and {@value #TIMEOUT_PROPERTY}
  * (per-case limit in ms, cases form only).
  */
@@ -58,7 +61,7 @@ public final class ElkOracle {
     private static final String LIST_OPTIONS_FLAG = "--list-options";
     private static final String USAGE = "usage: ElkOracle <outDir> <input>... | "
             + "ElkOracle --cases <cases.jsonl> <outDir> | ElkOracle --list-algorithms | "
-            + "ElkOracle --list-options";
+            + "ElkOracle --list-options (case modes: layout, parse, parse-elkj, convert, generate)";
 
     private ElkOracle() {
     }
@@ -176,6 +179,7 @@ public final class ElkOracle {
         System.out.flush();
         try {
             Files.deleteIfExists(runner.outputPath(id));
+            Files.deleteIfExists(runner.elkjPath(id));
         } catch (IOException e) {
             System.err.println("ElkOracle: cannot remove output of " + id + ": " + e);
         }
