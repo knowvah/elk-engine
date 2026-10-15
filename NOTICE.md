@@ -12,7 +12,8 @@ Java sources and is made available under the same license.
   `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`.
 - Test models: https://github.com/eclipse-elk/elk-models at commit
   `ac5af2ba511c0037e4f347e8bd91f013950951c7`. The models are referenced by a pinned manifest
-  and are not vendored in this repository.
+  and are not vendored in this repository, except 31 `.elkt` test inputs copied unchanged to
+  `test/corpus/elkt-curated/` (EPL-2.0, upstream headers kept).
 
 ## Copyright
 

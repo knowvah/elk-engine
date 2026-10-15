@@ -6,6 +6,7 @@
 # CoreOptions-only registry (ORACLE_REGISTRY=core): the TS registry is the
 # same set (C8). Output is byte-stable: no timestamps.
 # A model the oracle rejects has no ref file, only an `outcomes` entry.
+# Then vendors the inputs to test/corpus/elkt-curated (vendor-elkt-curated.sh).
 # Usage: regen-elkt-refs.sh
 set -euo pipefail
 
@@ -147,6 +148,8 @@ main() {
   write_meta "$STAGE_DIR/$META_FILE" "$WORK_DIR/results.jsonl" "$WORK_DIR/options.json" "$WORK_DIR/algorithms.json"
   swap_dirs "$STAGE_DIR"
   echo "wrote $count refs + $META_FILE to test/golden/refs/elkt-parse" >&2
+  # the inputs the refs were recorded from, so the curated test runs without elk-models
+  ELK_MODELS_DIR="$MODELS_DIR" "$ROOT/test/corpus/vendor-elkt-curated.sh"
 }
 
 main "$@"

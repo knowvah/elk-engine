@@ -164,12 +164,14 @@ All expected values come from the JVM oracle or the Java source before the imple
 | Evidence                                                             | Records                                                                                       | How to run                                                                         |
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `test/golden/refs/java/graph-text-{lexer,parse,validate,write}.json` | token streams, converter rows, parse/link diagnostics, `@Check` issues, writer output (T2-T5) | `npx vitest run src/graph/text src/xtext`                                          |
-| `test/golden/refs/elkt-parse/` (31 curated models, `_meta.json`)     | oracle parse-only JSON export of the models in `test/corpus/elkt-curated.json`                | `npx vitest run src/graph/text/ElkGraphText.curated.test.ts` (needs elk-models)    |
+| `test/golden/refs/elkt-parse/` (31 curated models, `_meta.json`)     | oracle parse-only JSON export of the models in `test/corpus/elkt-curated.json`                | `npx vitest run src/graph/text/ElkGraphText.curated.test.ts`                       |
 | `test/golden/elkt-roundtrip.test.ts`                                 | write/reparse round trip and the D3 `.json` vs `.elkt` comparison                             | `npx vitest run test/golden/elkt-roundtrip.test.ts`                                |
 | Local sweep: 898 `.elkt` + 550 realworld `.json`                     | parse, validate, write, reparse and D3 verdicts per model (T23)                               | `tools/oracle/elkt-sweep.sh`, then `npx vitest run test/corpus/elkt-sweep.test.ts` |
 
-The curated refs read their inputs from `$ELK_MODELS_DIR` and skip when it is absent, so CI (which
-has no elk-models) runs only the vectors; see [deferrals](#deferrals). The sweep output lives under
+The curated refs read their 31 inputs (about 49 KB, EPL-2.0) from `test/corpus/elkt-curated/`, copied
+byte-for-byte from the pinned elk-models (`-text` in `.gitattributes`) and checked against the
+`inputSha256` in `_meta.json`, so they run in CI. Only the Trilateration load-budget test needs
+`$ELK_MODELS_DIR`. The sweep output lives under
 `$ELK_ORACLE_DIR/sweep/` (AD-5), never in the repo. Counts and the accepted differences are in
 [conformance.md](../conformance.md#elk-text-elkt).
 
@@ -185,7 +187,9 @@ script checks the pinned ELK commit and the Xtext version and exits non-zero on 
    programs without running them. Scenario inputs are in `tools/vectors/elkt-*-scenarios/` (byte-meaningful,
    `-text` in `.gitattributes`).
 2. **Curated refs**: `tools/oracle/regen-elkt-refs.sh` (no arguments) runs the harness in `parse` mode
-   with `ORACLE_REGISTRY=core` over `test/corpus/elkt-curated.json` and writes `test/golden/refs/elkt-parse/`.
+   with `ORACLE_REGISTRY=core` over `test/corpus/elkt-curated.json`, writes `test/golden/refs/elkt-parse/`
+   and then vendors the inputs to `test/corpus/elkt-curated/` (`test/corpus/vendor-elkt-curated.sh`, which
+   also runs on its own after a curated-list change).
 3. **Registry modes**: `ORACLE_REGISTRY=core` (G3, used by every graph-text script) registers CoreOptions
    only; the default registers every algorithm and changes 182 of the 898 `.elkt` exports (layered keys).
    `tools/oracle/run.sh --list-options` prints the registry's option ids.
@@ -206,7 +210,6 @@ script checks the pinned ELK commit and the Xtext version and exits non-zero on 
 | G1 `isQuotingNecessary` always `false` | Xtend drops the unused `map` result (`xtend-gen` `ElkGraphSemanticSequencer.java:80-94`); strings that need quoting reach the writer unescaped and may not reparse. Kept, cited in a comment                                                                                                                                           |
 | D3 `.json` vs `.elkt`                  | Equal except port positions (D3a, user 2026-10-14): all 550 realworld `.elkt` carry port `position` the `.json` lacks, and the oracle's parses differ in exactly those fields; compared with `canonGraphWithoutPortPositions`, guarded by `portsWithLayoutRelevantPosition` (side + index on every port, no `FIXED_POS`/`FIXED_RATIO`) |
 | Lossy round trips                      | 8 write rows lose information in the oracle too (`intValue()` saturation, unescaped G1 strings, a key that is a keyword); `LOSSY_ROUND_TRIP` checks them against the recorded reparse                                                                                                                                                  |
-| Curated refs in CI                     | Inputs are read from `$ELK_MODELS_DIR`; vendor the 31 inputs (about 49 KB, EPL-2.0) or fetch the pinned corpus in CI                                                                                                                                                                                                                   |
 | `T4` proxy-resolution mutation         | Under the core registry the key converter and validator resolve identical text identically; `mutations` is `[]` in all 75 validator cases                                                                                                                                                                                              |
 
 Not ported: `ElkGraphSemanticSequencer`'s generic NFA backtracking path, Xtext's content assist, index,

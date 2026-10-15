@@ -327,8 +327,8 @@ Changes to `tools/oracle/` or `tools/corpus/` also need:
 
 Port: `src/graph/text` over `src/xtext` (internal entry point `ElkGraphText`: `load`, `validate`,
 `serialize`; design and runbook in [elk-text.md](architecture/elk-text.md)). Evidence is two-tier (G7):
-the committed JVM vectors and about 30 curated refs run in CI, and the sweep below measures the whole
-corpus locally, because elk-models is not vendored.
+the committed JVM vectors and 31 curated refs (inputs vendored in `test/corpus/elkt-curated/`) run in
+CI, and the sweep below measures the whole corpus locally, because elk-models is not vendored.
 
 **What is compared.** Every `.elkt` model under `$ELK_MODELS_DIR` (898) and every realworld `.json`
 model (550), each with the oracle's output at the pinned ELK commit, every case in two separate JVM runs
