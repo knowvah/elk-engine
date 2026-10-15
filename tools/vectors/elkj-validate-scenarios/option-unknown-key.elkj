@@ -1,0 +1,10 @@
+// @covers unknown option keys and wrongly targeted options: no validator issue
+{
+  id: "root",
+  layoutOptions: {
+    "org.example.unknown": 1,
+    unknownBare: "plain",
+    "org.eclipse.elk.edge.thickness": 3,
+    "org.eclipse.elk.port.side": "NORTH"
+  }
+}

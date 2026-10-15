@@ -1,0 +1,11 @@
+// @covers duplicate property keys (same option twice, full id and suffix spelling) on one element
+{
+  id: "root",
+  layoutOptions: {
+    "org.eclipse.elk.direction": "DOWN",
+    "org.eclipse.elk.direction": "UP",
+    "org.example.custom": 1,
+    "org.example.custom": 2
+  },
+  children: [ { id: "a", layoutOptions: { direction: "DOWN", "elk.direction": "UP", "org.eclipse.elk.direction": "LEFT" } } ]
+}

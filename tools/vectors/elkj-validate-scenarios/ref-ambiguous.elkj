@@ -1,0 +1,6 @@
+// @covers reference to an identifier shared by two nodes (ambiguous or first-wins as recorded)
+{
+  id: "root",
+  children: [ { id: "dup" }, { id: "dup" }, { id: "b" } ],
+  edges: [ { id: "e", sources: [ "dup" ], targets: [ "b" ] } ]
+}

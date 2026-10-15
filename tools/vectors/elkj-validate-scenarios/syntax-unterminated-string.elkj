@@ -1,0 +1,5 @@
+// @covers syntax error: unterminated string (presence only)
+{
+  id: "root",
+  layoutOptions: { "org.example.k": "never closed }
+}

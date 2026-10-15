@@ -1,0 +1,6 @@
+// @covers the same property key on different elements: no collision
+{
+  id: "root",
+  layoutOptions: { "org.eclipse.elk.direction": "DOWN" },
+  children: [ { id: "a", layoutOptions: { "org.eclipse.elk.direction": "UP" } } ]
+}

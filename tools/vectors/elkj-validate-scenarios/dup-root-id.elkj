@@ -1,0 +1,2 @@
+// @covers a child with the same identifier as the root
+{ id: "root", children: [ { id: "root" } ] }

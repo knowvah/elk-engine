@@ -1,0 +1,5 @@
+// @covers property value that is null, an object or an array (not allowed by the Property rule)
+{
+  id: "root",
+  layoutOptions: { "org.example.a": null, "org.example.b": { x: 1 }, "org.example.c": [ 1 ] }
+}

@@ -1,0 +1,5 @@
+// @covers empty property key (value converter: cannot convert empty string)
+{
+  id: "root",
+  layoutOptions: { "": 1, ok: 2 }
+}

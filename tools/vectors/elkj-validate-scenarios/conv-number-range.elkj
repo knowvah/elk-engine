@@ -1,0 +1,9 @@
+// @covers numbers out of range or malformed for their converters
+{
+  id: "root",
+  x: 1e999,
+  y: 99999999999999999999,
+  width: -1e999,
+  height: 1.5,
+  layoutOptions: { "org.example.big": 99999999999999999999, "org.example.huge": 1e999 }
+}

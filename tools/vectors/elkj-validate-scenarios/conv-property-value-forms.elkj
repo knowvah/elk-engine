@@ -1,0 +1,11 @@
+// @covers property value forms: strings, numbers, booleans, single quotes
+{
+  id: "root",
+  layoutOptions: {
+    "org.example.s": 'single',
+    "org.example.n": 1.5e3,
+    "org.example.b": true,
+    "org.eclipse.elk.direction": 'DOWN',
+    "org.eclipse.elk.spacing.nodeNode": 12
+  }
+}

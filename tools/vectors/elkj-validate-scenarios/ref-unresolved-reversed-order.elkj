@@ -1,0 +1,10 @@
+// @covers linking diagnostic order: targets written before sources, unresolved in several edges
+{
+  id: "root",
+  children: [ { id: "a" } ],
+  edges: [
+    { id: "e1", targets: [ "t1" ], sources: [ "s1" ] },
+    { id: "e2", targets: [ "a", "t2" ], sources: [ "s2", "a" ] },
+    { id: "e3", sources: [ "s3" ], targets: [ "t3" ] }
+  ]
+}

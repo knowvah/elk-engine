@@ -1,0 +1,6 @@
+// @covers elements without an identifier (nodes, labels, edges)
+{
+  children: [ { }, { ports: [ { x: 1 } ] } ],
+  labels: [ { text: "t" } ],
+  edges: [ { sources: [ "a" ], targets: [ "b" ] } ]
+}

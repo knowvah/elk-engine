@@ -1,0 +1,9 @@
+// @covers legacy de.cau.cs.kieler key, elk. prefix and bare suffix spellings of one option: collision recorded as the JVM reports it
+{
+  id: "root",
+  layoutOptions: {
+    "de.cau.cs.kieler.direction": "DOWN",
+    "elk.direction": "UP",
+    direction: "LEFT"
+  }
+}

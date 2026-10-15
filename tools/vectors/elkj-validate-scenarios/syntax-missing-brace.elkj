@@ -1,0 +1,4 @@
+// @covers syntax error: missing closing brace (presence only)
+{
+  id: "root",
+  children: [ { id: "a" }

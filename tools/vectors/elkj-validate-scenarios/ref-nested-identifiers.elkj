@@ -1,0 +1,9 @@
+// @covers references across hierarchy levels and to same-named ports of different nodes
+{
+  id: "root",
+  children: [
+    { id: "a", ports: [ { id: "p" } ], children: [ { id: "inner" } ] },
+    { id: "b", ports: [ { id: "p" } ] }
+  ],
+  edges: [ { id: "e", sources: [ "inner" ], targets: [ "p" ] } ]
+}
