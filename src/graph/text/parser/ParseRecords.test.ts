@@ -17,16 +17,6 @@ function run(text: string): ParseResult {
   return parse(text, SERVICES);
 }
 
-function root(text: string): ElkNode {
-  const result = run(text);
-  expect(result.diagnostics).toEqual([]);
-  return result.root as ElkNode;
-}
-
-function geometry(n: ElkNode): number[] {
-  return [n.getX(), n.getY(), n.getWidth(), n.getHeight()];
-}
-
 describe('ElkGraphParser: value conversion policy', () => {
   const stub = (toValue: IValueConverterService['toValue']): IValueConverterService => ({
     toValue,

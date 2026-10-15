@@ -92,12 +92,6 @@ function run(text: string): ParseResult {
   return parse(text, SERVICES);
 }
 
-function root(text: string): ElkNode {
-  const result = run(text);
-  expect(result.diagnostics).toEqual([]);
-  return result.root as ElkNode;
-}
-
 // ---- normalised graph shapes, actual and recorded ----
 
 interface Shape {

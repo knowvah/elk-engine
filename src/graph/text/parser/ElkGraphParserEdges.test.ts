@@ -20,10 +20,6 @@ function root(text: string): ElkNode {
   return result.root as ElkNode;
 }
 
-function geometry(n: ElkNode): number[] {
-  return [n.getX(), n.getY(), n.getWidth(), n.getHeight()];
-}
-
 function sectionOf(edge: ElkEdge) {
   const s = [...edge.getSections()][0] as ElkEdgeSection;
   return {

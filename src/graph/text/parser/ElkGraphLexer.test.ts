@@ -41,11 +41,6 @@ function expectedHidden(token: RecordedToken): boolean {
   return token.hidden || HIDDEN_TOKEN_TYPES.has(token.type);
 }
 
-function summary(input: string): { lexError: boolean; tokens: [string, string][] } {
-  const result = tokenizeWithDiagnostics(input);
-  return { lexError: result.lexError, tokens: result.tokens.map((t) => [t.type, t.text]) };
-}
-
 function median(values: number[]): number {
   return [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]!;
 }

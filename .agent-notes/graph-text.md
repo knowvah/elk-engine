@@ -253,3 +253,14 @@ new ElkGraphReferences(), parseResult.nodeModel)`, then `linkModel(root, consume
 - **Impact**: algorithm missions need no regeneration for line 101; any future after-load registration test
   can reuse `test/helpers/elkt-validate-mutations.ts`.
 - **Confidence**: High
+
+## Observation: unused declarations outside the graph-text PR
+
+- **Context**: PR #10 code-quality review (CodeQL "unused variable"), 2026-10-15
+- **Finding**: `npx tsc --noEmit -p . --noUnusedLocals` reports 34 unused locals/imports in files the PR does not
+  touch (6 files: `src/core/options` ×2, `src/java/util`, `src/graph/json`, `test/melk`, and a complexity
+  fixture under `test/architecture/fixtures/` that may be unused on purpose). The PR's own files are clean. The project
+  tsconfig does not set `noUnusedLocals`, so nothing gates them.
+- **Impact**: CodeQL may flag them on a later PR; a dedicated cleanup PR (and possibly `noUnusedLocals` in
+  tsconfig) would stop them recurring.
+- **Confidence**: High

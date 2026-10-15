@@ -173,13 +173,26 @@ public class ElktLexerVectors {
                 if (c != '\\') {
                     sb.append(c);
                 } else if (raw.charAt(i) == 'u') {
-                    sb.append((char) Integer.parseInt(raw.substring(i + 1, i + 5), 16));
+                    sb.append(unicode(raw, i));
                     i += 5;
                 } else {
                     sb.append(simple(raw.charAt(i++)));
                 }
             }
             return sb.toString();
+        }
+
+        /** The char of the escape {@code \\uXXXX} whose 'u' is at {@code u}; a malformed one is a hard error. */
+        private static char unicode(String raw, int u) {
+            String hex = raw.substring(u + 1, Math.min(u + 5, raw.length()));
+            try {
+                if (hex.length() == 4) {
+                    return (char) Integer.parseInt(hex, 16);
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalStateException("bad escape \\u" + hex, e);
+            }
+            throw new IllegalStateException("bad escape \\u" + hex);
         }
 
         private static char simple(char e) {

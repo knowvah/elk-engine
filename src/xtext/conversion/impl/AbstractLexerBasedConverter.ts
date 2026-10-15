@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { AbstractRule } from '../../AbstractRule.js';
 import { IllegalStateException } from '../../../java/lang/IllegalStateException.js';
-import type { INode } from '../../nodemodel/INode.js';
 import { getLexerRuleName } from '../../parser/antlr/TokenTool.js';
 import type { RuleSpecific } from '../IValueConverter.js';
 import { ValueConverterException } from '../ValueConverterException.js';

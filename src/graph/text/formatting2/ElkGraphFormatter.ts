@@ -134,7 +134,6 @@ export class ElkGraphFormatter extends AbstractFormatter2 {
 
   /** @see org.eclipse.elk.graph.text/src/org/eclipse/elk/graph/text/formatting2/ElkGraphFormatter.xtend:98-113 */
   protected _formatElkPort(port: ElkPort, document: IFormattableDocument): void {
-    const ext = this.textRegionExtensions;
     this.appendKeyword(document, port, elkPortAccess.portKeyword_0, one_space);
     this.spaceColonsAndCommas(port, document);
     this.interiorOfBrackets(
@@ -154,7 +153,6 @@ export class ElkGraphFormatter extends AbstractFormatter2 {
 
   /** @see org.eclipse.elk.graph.text/src/org/eclipse/elk/graph/text/formatting2/ElkGraphFormatter.xtend:115-130 */
   protected _formatElkLabel(label: ElkLabel, document: IFormattableDocument): void {
-    const ext = this.textRegionExtensions;
     this.appendKeyword(document, label, elkLabelAccess.labelKeyword_0, one_space);
     this.spaceColonsAndCommas(label, document);
     this.interiorOfBrackets(
@@ -283,7 +281,6 @@ export class ElkGraphFormatter extends AbstractFormatter2 {
 
   /** @see org.eclipse.elk.graph.text/src/org/eclipse/elk/graph/text/formatting2/ElkGraphFormatter.xtend:193-218 */
   private formatShapeLayout(shape: ElkShape, document: IFormattableDocument): void {
-    const ext = this.textRegionExtensions;
     const access = shapeLayoutAccess;
     let propCount = 0;
     if (transientValues.isSet(shape, ElkFeature.X) || transientValues.isSet(shape, ElkFeature.Y)) propCount++;
@@ -311,7 +308,6 @@ export class ElkGraphFormatter extends AbstractFormatter2 {
 
   /** @see org.eclipse.elk.graph.text/src/org/eclipse/elk/graph/text/formatting2/ElkGraphFormatter.xtend:220-234 */
   private formatEdgeLayout(edge: ElkEdge, document: IFormattableDocument): void {
-    const ext = this.textRegionExtensions;
     const access = edgeLayoutAccess;
     const sectionCount = edge.getSections().size();
     if (sectionCount === 0) {

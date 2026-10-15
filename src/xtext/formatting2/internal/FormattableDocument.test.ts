@@ -25,7 +25,6 @@ const ENTRIES: ReadonlyArray<readonly [string, string]> = [
 ];
 const noSpace: HiddenRegionFormatterInit = (f) => f.noSpace();
 const newLine: HiddenRegionFormatterInit = (f) => f.newLine();
-const indent: HiddenRegionFormatterInit = (f) => f.indent();
 
 type Rule = (root: ToyObject, entry: ToyObject, document: IFormattableDocument, ext: ITextRegionExtensions) => void;
 /** Formats `block { a : 1 , b : 2 }` with a rule applied once, to the root, giving it the entry `a`. */
