@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { RuntimeException } from '../../../java/lang/RuntimeException.js';
 import type { ITextSegment } from '../regionaccess/ITextSegment.js';
 
 /** One titled region (Java `Pair<String, ITextSegment>`). */
@@ -13,7 +14,7 @@ export interface TitledRegion {
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/internal/RegionsOutsideFrameException.java
  */
-export class RegionsOutsideFrameException extends Error {
+export class RegionsOutsideFrameException extends RuntimeException {
   private readonly frameRegion: ITextSegment;
   private readonly frameTitle: string;
   private readonly regions: readonly TitledRegion[];

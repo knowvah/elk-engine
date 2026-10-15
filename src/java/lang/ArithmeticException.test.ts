@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ArithmeticException } from './ArithmeticException.js';
 import { IllegalArgumentException } from '../lang/IllegalArgumentException.js';
 import { IndexOutOfBoundsException } from '../lang/IndexOutOfBoundsException.js';
+import { RuntimeException } from './RuntimeException.js';
 
 describe('ArithmeticException', () => {
   it('carries the Java simple name and message', () => {
@@ -20,7 +21,7 @@ describe('ArithmeticException', () => {
   it('is an instance of its parent chain', () => {
     const e = new ArithmeticException('m');
     expect(e instanceof ArithmeticException).toBe(true);
-    expect(e instanceof RangeError).toBe(true);
+    expect(e instanceof RuntimeException).toBe(true);
     expect(e instanceof Error).toBe(true);
   });
 

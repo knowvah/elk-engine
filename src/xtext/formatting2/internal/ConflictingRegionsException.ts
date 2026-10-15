@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { RuntimeException } from '../../../java/lang/RuntimeException.js';
 import type { RegionTrace } from './RegionTrace.js';
 
 /**
@@ -8,7 +9,7 @@ import type { RegionTrace } from './RegionTrace.js';
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/internal/ConflictingRegionsException.java
  */
-export class ConflictingRegionsException extends Error {
+export class ConflictingRegionsException extends RuntimeException {
   private readonly traces: readonly RegionTrace[];
   private readonly baseMessage: string;
 
