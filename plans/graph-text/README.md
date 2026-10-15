@@ -199,3 +199,7 @@ and `prop-known-null` passes.
 **Resolved (user, 2026-10-15):** flag 5, the T7 part — `src/java/lang/StringIndexOutOfBoundsException.ts` added; the
 three recorded trailing-backslash rows (not two) now match class and message, and `TextRegionRewriter`'s
 `String.substring` range check throws it too.
+
+**Resolved (user, 2026-10-15):** flag 4 — the 31 curated inputs are vendored byte-for-byte in
+`test/corpus/elkt-curated/` (`test/corpus/vendor-elkt-curated.sh`, also run by `regen-elkt-refs.sh`), so the curated
+refs run in CI; only the Trilateration load budget still needs elk-models.

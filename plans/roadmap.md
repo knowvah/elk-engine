@@ -269,3 +269,6 @@ identically", `D3_ORACLE_DIFFERENCES`), and syntax errors match by presence only
 Java's NPE); `KNOWN_EXPORTER_GAPS` is removed from `ElkGraphText.test.ts`.
 
 **Update 2026-10-15 (user):** the `StringIndexOutOfBoundsException` shim is added to `src/java/lang`.
+
+**Update 2026-10-15 (user):** the 31 curated `.elkt` inputs are vendored in `test/corpus/elkt-curated/`; the curated
+refs run in CI.
