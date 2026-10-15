@@ -139,3 +139,17 @@ Added while writing the task specs; approved after Phase 8. They are binding lik
   injectable `Random` as the paired seam.
 - **D2 unchanged.** Retarget seeds only the root; `random`'s nested composites keep its default
   seed 0 (unseeded) — a genuine ELK behavior, reported as `nondeterministic`.
+
+## Amendments (approved by the user 2026-10-14)
+
+- **D3a — port positions excluded.** D3's check ("a realworld model's `.json` and `.elkt` parse to the same
+  ElkGraph") compares the two graphs **except for port positions** (`ports[].x`, `ports[].y`). Reason
+  (graph-text T22/T23): every realworld `.elkt` carries the laid-out port positions of its Ptolemy source and its
+  `.json` has none; the oracle's own core-registry parses of the two files differ in exactly those fields for all
+  550 models. Everything else (identifiers, structure, edges, sections, labels, all other geometry, properties)
+  must be equal with no tolerance. The exclusion is only valid while the excluded positions cannot change a
+  layout: in both graphs every port has an explicit side and `port.index` and no node has `FIXED_POS` or
+  `FIXED_RATIO` constraints (otherwise ELK infers side or order from positions, `LGraphUtil.calcPortSide`,
+  `PortListSorter.java:44-47`); any such port fails the check. Implemented as `canonGraphWithoutPortPositions` plus
+  `portsWithLayoutRelevantPosition` (`test/helpers/elkt-canon.ts`); result 550/550, 0 layout-relevant ports (all
+  48,858 realworld ports carry side and index; constraints are only `FIXED_ORDER` and `FREE`).

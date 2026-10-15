@@ -260,3 +260,7 @@ identically", `D3_ORACLE_DIFFERENCES`), and syntax errors match by presence only
   31 curated `.elkt` inputs or fetch the pinned corpus in CI so the curated refs run there; add a
   `StringIndexOutOfBoundsException` shim to `src/java/lang`; decide whether the 13 lexer recovery boundaries pinned
   in T9 become canonical lexer vector rows in a later regeneration.
+
+**Update 2026-10-14 (user):** D3 amended (D3a, `plans/conformance-corpus/decisions.md`): realworld `.json` and
+`.elkt` must be equal except for port positions; the graph-text tests now assert 550/550 under that rule and the
+`D3_ORACLE_DIFFERENCES` list is removed.
