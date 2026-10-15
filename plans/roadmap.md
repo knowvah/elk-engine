@@ -267,3 +267,5 @@ identically", `D3_ORACLE_DIFFERENCES`), and syntax errors match by presence only
 
 **Update 2026-10-15 (user):** the `JsonExporter` null option value gap is fixed (a null value throws a `TypeError`,
 Java's NPE); `KNOWN_EXPORTER_GAPS` is removed from `ElkGraphText.test.ts`.
+
+**Update 2026-10-15 (user):** the `StringIndexOutOfBoundsException` shim is added to `src/java/lang`.

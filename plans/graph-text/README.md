@@ -195,3 +195,7 @@ D3 is now 550/550.
 **Resolved (user, 2026-10-15):** flag 3 — `JsonExporter` `valueText` now calls `toString()` on the value, so
 a null option value throws a `TypeError` (D10) as Java's `p.value.toString` NPEs; `KNOWN_EXPORTER_GAPS` is removed
 and `prop-known-null` passes.
+
+**Resolved (user, 2026-10-15):** flag 5, the T7 part — `src/java/lang/StringIndexOutOfBoundsException.ts` added; the
+three recorded trailing-backslash rows (not two) now match class and message, and `TextRegionRewriter`'s
+`String.substring` range check throws it too.
