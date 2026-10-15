@@ -355,13 +355,18 @@ comparison. Missions 5 and 7 register more algorithms and regenerate these refs 
 **Result** (oracle ELK `8aaa3c1`, elk-models `ac5af2b`, 2026-10-14; counts equal the graph-text decision
 journal):
 
-| Indicator                 | Bar              | Measured    | Deferred | Diffs |
-| ------------------------- | ---------------- | ----------- | -------- | ----- |
-| parse-equal               | 898/898          | 898/898     | 0        | 0     |
-| validate-equal            | 898/898 minus G3 | 894/898     | 4        | 0     |
-| writer byte-exact         | 1,448/1,448      | 1,448/1,448 | 0        | 0     |
-| reparse-equal after write | 1,448/1,448      | 1,448/1,448 | 0        | 0     |
-| D3 `.json` equals `.elkt` | 550/550          | 550/550     | 0        | 0     |
+| Indicator                 | Bar         | Measured    | Deferred | Diffs |
+| ------------------------- | ----------- | ----------- | -------- | ----- |
+| parse-equal               | 898/898     | 898/898     | 0        | 0     |
+| validate-equal            | 898/898     | 898/898     | 0        | 0     |
+| writer byte-exact         | 1,448/1,448 | 1,448/1,448 | 0        | 0     |
+| reparse-equal after write | 1,448/1,448 | 1,448/1,448 | 0        | 0     |
+| D3 `.json` equals `.elkt` | 550/550     | 550/550     | 0        | 0     |
+
+Validate-equal (2026-10-15): the 4 models that name `fixed` or `box` (G3: in the oracle's core registry, not
+yet in the TS one) are validated with stand-ins registered (`test/helpers/mission5-stand-ins.ts`, the option
+support of `Core.melk`, no layout code) and match exactly; without them they differ only by "No layout algorithm
+with identifier … can be found". Mission 5 drops the stand-ins.
 
 No case was nondeterministic and the oracle threw on none (all 898 `.elkt` parse, validate and write; all 550
 `.json` import and write). Reparse: 1,447 reload equal to the written graph; 1 (`examples/user-hints/layered/reverseEdge.elkt`)
@@ -397,7 +402,7 @@ the T5 vectors and the sweep agree byte for byte.
 (`parse/`, `parse-json/`, `validate/`, `write/`, `results.jsonl`, `summary.json`; never in the repo, AD-5) and
 skips when the stamp (oracle build, harness and tool sources, models commit, input hashes) is fresh. Then
 `npx vitest run test/corpus/elkt-sweep.test.ts` (skipped with a message without elk-models or the sweep) logs
-`elkt sweep: <indicator>=<n>/<total> deferred=<d> diffs=<k>` for each indicator and fails with the per-model
+`elkt sweep: <indicator>=<n>/<total> deferred=<d> diffs=<k>` (validate adds `standIns=<s>`) for each indicator and fails with the per-model
 report. A mismatch outside the deferrals above is a defect to diagnose against the oracle, never a number to
 adjust.
 

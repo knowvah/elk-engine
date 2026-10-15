@@ -2,11 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { AbstractLayoutProvider } from '../../../core/AbstractLayoutProvider.js';
-import { LayoutAlgorithmData } from '../../../core/data/LayoutAlgorithmData.js';
-import type { ILayoutMetaDataProvider } from '../../../core/data/ILayoutMetaDataProvider.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
-import type { IFactory } from '../../../core/util/IFactory.js';
 import { LayoutOptionValidator } from '../../../core/validation/LayoutOptionValidator.js';
 import { BasicEList } from '../../../emf/common/util/BasicEList.js';
 import type { EObject } from '../../../emf/ecore/EObject.js';
@@ -50,6 +46,7 @@ import {
   registerAfterLoad,
   snapshotEntries,
 } from '../../../../test/helpers/elkt-validate-mutations.js';
+import { MISSION5_ALGORITHMS, registerMission5StandIns } from '../../../../test/helpers/mission5-stand-ins.js';
 
 const VALIDATE_REF = fileURLToPath(
   new URL('../../../../test/golden/refs/java/graph-text-validate.json', import.meta.url),
@@ -58,8 +55,6 @@ const CODE_SYNTAX = 'org.eclipse.xtext.diagnostics.Diagnostic.Syntax';
 const CODE_RANGE = 'org.eclipse.xtext.diagnostics.Diagnostic.Syntax.Range';
 const CODE_LINKING = 'org.eclipse.xtext.diagnostics.Diagnostic.Linking';
 const DEFERRED_TO_MISSION5 = 'mission5';
-/** The algorithms the TS registry lacks until mission 5; the rows that depend on them are deferred (G3). */
-const MISSION5_ALGORITHMS: readonly string[] = ['fixed', 'box', 'random'];
 
 interface IssueRow {
   readonly severity: string;
@@ -271,59 +266,9 @@ describe('ElkGraphValidator', () => {
   });
 });
 
-/** The option ids (suffixes) each deferred algorithm supports, from `Core.melk` (ids absent from the registry are dropped). */
-const SUPPORTED_BY_ALGORITHM: ReadonlyMap<string, readonly string[]> = new Map([
-  [
-    'fixed',
-    ['padding', 'position', 'bendPoints', 'nodeSize.constraints', 'nodeSize.minimum', 'nodeSize.fixedGraphSize'],
-  ],
-  [
-    'box',
-    [
-      'padding',
-      'spacing.nodeNode',
-      'priority',
-      'expandNodes',
-      'nodeSize.constraints',
-      'nodeSize.options',
-      'aspectRatio',
-      'interactive',
-      'nodeSize.minimum',
-      'box.packingMode',
-      'contentAlignment',
-    ],
-  ],
-  ['random', ['padding', 'spacing.nodeNode', 'randomSeed', 'aspectRatio']],
-]);
-
-const STUB_FACTORY: IFactory<AbstractLayoutProvider> = {
-  create: () => ({}) as AbstractLayoutProvider,
-  destroy: () => undefined,
-};
-
-/** Registers stand-ins for the mission 5 algorithms with the option support `Core.melk` declares. */
-function registerMission5Algorithms(): void {
-  const service = LayoutMetaDataService.getInstance();
-  const provider: ILayoutMetaDataProvider = {
-    apply: (registry) => {
-      for (const [suffix, supported] of SUPPORTED_BY_ALGORITHM) {
-        const id = `org.eclipse.elk.${suffix}`;
-        registry.register(new LayoutAlgorithmData.Builder().id(id).name(suffix).providerFactory(STUB_FACTORY).create());
-        for (const option of supported) {
-          const data = service.getOptionData(`org.eclipse.elk.${option}`);
-          if (data !== null) {
-            registry.addOptionSupport(id, data.getId(), null);
-          }
-        }
-      }
-    },
-  };
-  service.registerLayoutMetaDataProviders(provider);
-}
-
 describe('ElkGraphValidator on the rows deferred to mission 5, with stand-in algorithms', () => {
   it.each(deferred.map((c) => [c.id, c] as const))('%s', (_id, recorded) => {
-    registerMission5Algorithms();
+    registerMission5StandIns();
     const { issues, logged } = validateText(recorded.input);
     expect(logged).toEqual([]);
     expect(issues).toEqual(recorded.issues);
