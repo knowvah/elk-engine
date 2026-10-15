@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
 import { LayoutOptionValidator } from '../../core/validation/LayoutOptionValidator.js';
-import type { EObject } from '../../emf/ecore/EObject.js';
 import type { Diagnostic } from '../../xtext/diagnostics/Diagnostic.js';
 import type { IDiagnosticConsumer } from '../../xtext/diagnostics/IDiagnosticConsumer.js';
 import { Severity } from '../../xtext/diagnostics/Severity.js';

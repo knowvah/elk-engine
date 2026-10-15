@@ -24,7 +24,6 @@ const CLASS_LAYOUT_OPTION_DATA = 'org.eclipse.elk.core.data.LayoutOptionData';
 const CLASS_PROPERTY = 'org.eclipse.elk.graph.properties.Property';
 const CLASS_PROXY = 'org.eclipse.elk.core.util.internal.LayoutOptionProxy';
 const CLASS_DOUBLE = 'java.lang.Double';
-const CLASS_INTEGER = 'java.lang.Integer';
 const CLASS_STRING = 'java.lang.String';
 const CLASS_VCE = 'org.eclipse.xtext.conversion.ValueConverterException';
 const CLASS_VCE_WITH_VALUE = 'org.eclipse.xtext.conversion.ValueConverterWithValueException';
