@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: EPL-2.0
+import { checkCast } from '../../../java/lang/JavaCast.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import type { IProperty } from '../../../graph/properties/IProperty.js';
-import { Property } from '../../../graph/properties/Property.js';
+import { isIProperty, Property } from '../../../graph/properties/Property.js';
 import type { IDValueConverter } from '../../../xtext/conversion/impl/IDValueConverter.js';
 import type { TokenSource } from '../../../xtext/conversion/impl/AbstractLexerBasedConverter.js';
 import { AbstractValueConverter } from '../../../xtext/conversion/impl/AbstractValueConverter.js';
@@ -11,6 +12,7 @@ import * as Strings from '../../../xtext/util/Strings.js';
 import { createIdValueConverter } from '../naming/ElkGraphQualifiedNameConverter.js';
 
 const DELIMITER = '.';
+const IPROPERTY_CLASS = 'org.eclipse.elk.graph.properties.IProperty';
 
 /**
  * Converts the `PropertyKey` datatype rule: a dotted identifier that resolves, by suffix, to a registered layout
@@ -28,6 +30,8 @@ export class PropertyKeyValueConverter extends AbstractValueConverter<IProperty<
   }
 
   toString(value: IProperty<unknown> | null): string {
+    // the JVM bridge of toString(IProperty) casts the erased value first
+    checkCast(value, isIProperty, IPROPERTY_CLASS);
     if (value === null) {
       throw new ValueConverterException('IProperty value may not be null.', null, null);
     }

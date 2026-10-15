@@ -401,6 +401,11 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   from `Double.parseDouble` (`core/src/.../math/KVector.java:531`): `Number(s)` accepts `""` (0) and
   hex, Java rejects them and accepts a trailing `d`/`f` and surrounding whitespace (Javadoc trims)
   -> `JavaDouble.parseDouble` (`src/java/lang/JavaDouble.ts`; `text.json` `parseDouble`, 96 rows).
+- **Erased generic casts.** Where a ported generic is reached through an `unknown` boundary (Xtext's
+  `IValueConverterService.toString(Object, String)`), the JVM's bridge-method checkcast becomes an explicit
+  `checkCast(value, guard, javaName)` (`src/java/lang/JavaCast.ts`) at the method that binds the type, so a
+  wrong-typed value throws `ClassCastException` before the body runs; null passes. `Integer` and `Double` share
+  `isNumber`. Evidence: 8 converter rows of `graph-text-lexer.json` (class only; the JDK text is unspecified).
 - `catch (Exception e)` that cleans up and rethrows (`core/src/.../RecursiveGraphLayoutEngine.java:463`,
   disposes the provider, `throw exception`): a plain `try/catch` rethrow in TS.
 

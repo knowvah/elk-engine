@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
+import { checkCast, isNumber } from '../../../java/lang/JavaCast.js';
+import { JavaClass } from '../../../java/lang/JavaClass.js';
 import * as JavaInteger from '../../../java/lang/JavaInteger.js';
 import { NumberFormatException } from '../../../java/lang/NumberFormatException.js';
 import type { INode } from '../../nodemodel/INode.js';
@@ -19,6 +21,8 @@ export class INTValueConverter extends AbstractLexerBasedConverter<number> {
   }
 
   protected override assertValidValue(value: number | null): void {
+    // the JVM bridge of assertValidValue(Integer) casts the erased value first
+    checkCast(value, isNumber, JavaClass.Integer.javaName);
     super.assertValidValue(value);
     if ((value as number) < 0) {
       throw new ValueConverterException(

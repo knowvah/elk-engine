@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
+import { checkCast, isString } from '../../java/lang/JavaCast.js';
+import { JavaClass } from '../../java/lang/JavaClass.js';
 import type { AbstractRule } from '../AbstractRule.js';
 import type { INode } from '../nodemodel/INode.js';
 
@@ -50,7 +52,8 @@ export function isRuleSpecific(
  */
 export const NO_OP_CONVERTER: IValueConverter<unknown> = {
   toString(value: unknown): string {
-    return value as string;
+    // an IValueConverter<String>: the JVM bridge of toString(String) casts the erased value
+    return checkCast(value, isString, JavaClass.String.javaName) as string;
   },
   toValue(string: string | null): unknown {
     return string;

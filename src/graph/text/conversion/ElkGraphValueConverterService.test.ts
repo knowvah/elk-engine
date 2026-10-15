@@ -6,6 +6,7 @@ import { LayoutOptionData } from '../../../core/data/LayoutOptionData.js';
 import { KVector } from '../../../core/math/KVector.js';
 import { LayoutOptionProxy } from '../../../core/util/internal/LayoutOptionProxy.js';
 import { Property } from '../../../graph/properties/Property.js';
+import { ClassCastException } from '../../../java/lang/ClassCastException.js';
 import { toString as doubleToString } from '../../../java/lang/DoubleToString.js';
 import type { AbstractRule } from '../../../xtext/AbstractRule.js';
 import { NO_OP_CONVERTER } from '../../../xtext/conversion/IValueConverter.js';
@@ -27,8 +28,17 @@ const CLASS_INTEGER = 'java.lang.Integer';
 const CLASS_STRING = 'java.lang.String';
 const CLASS_VCE = 'org.eclipse.xtext.conversion.ValueConverterException';
 const CLASS_VCE_WITH_VALUE = 'org.eclipse.xtext.conversion.ValueConverterWithValueException';
-/** Java `Float` cannot be told from a `Double` in a `number`-only value model (see PropertyValueValueConverter). */
-const UNREPRESENTABLE_INPUTS: ReadonlySet<string> = new Set(['float:2.0']);
+/**
+ * Rows whose Java box type a `number` cannot carry, as `converter.toString(input)`: a `Float` prints `2.0` where a
+ * whole `Double` prints `1` (`StringValue` `double:1.0`), and an `Integer` fails the `Double` cast where a whole
+ * `Double` converts (`Number` `double:1.0`); one TypeScript value would need both outputs.
+ */
+const UNREPRESENTABLE_ROWS: ReadonlySet<string> = new Set([
+  'StringValue.toString(float:2.0)',
+  'Number.toString(int:1)',
+]);
+const rowKey = (row: Row): string => `${row.converter}.${row.op}(${row.input ?? 'null'})`;
+const isUnrepresentable = (row: Row): boolean => UNREPRESENTABLE_ROWS.has(rowKey(row));
 /** Converters replayed through the service; the other terminals (DefaultTerminalConverter) are not registered. */
 const REPLAYED: ReadonlySet<string> = new Set([
   'Number',
@@ -129,9 +139,12 @@ describe('ElkGraphValueConverterService vectors', () => {
   it('replays every converter row that a TypeScript value can express', () => {
     let replayed = 0;
     for (const row of rows) {
-      if (row.error?.cls === CLASS_CAST || UNREPRESENTABLE_INPUTS.has(row.input ?? '')) continue;
+      if (isUnrepresentable(row)) continue;
       const label = `${row.converter}.${row.op}(${JSON.stringify(row.input)})`;
-      if (row.error !== undefined) {
+      if (row.error?.cls === CLASS_CAST) {
+        // the JDK's cast message is JDK-version text (ElktLexerVectors.java:36): the class only
+        expect(() => run(service, row), label).toThrow(ClassCastException);
+      } else if (row.error !== undefined) {
         let thrown: unknown = null;
         try {
           run(service, row);
@@ -155,13 +168,9 @@ describe('ElkGraphValueConverterService vectors', () => {
     expect(replayed).toBeGreaterThan(400);
   });
 
-  it('skips only the Java type-cast failures and the Float row', () => {
-    const skipped = rows.filter((row) => row.error?.cls === CLASS_CAST || UNREPRESENTABLE_INPUTS.has(row.input ?? ''));
-    const casts = skipped.filter((row) => row.error?.cls === CLASS_CAST);
-    expect(casts.length).toBe(
-      casts.filter((row) => /^(int|str):/.test(row.input ?? '') || row.input === 'long:5').length,
-    );
-    expect(skipped.filter((row) => row.error?.cls !== CLASS_CAST).map((row) => row.input)).toEqual(['float:2.0']);
+  it('skips only the two rows a number cannot represent', () => {
+    expect(rows.filter(isUnrepresentable).map(rowKey).sort()).toEqual([...UNREPRESENTABLE_ROWS].sort());
+    expect(rows.filter((row) => row.error?.cls === CLASS_CAST && !isUnrepresentable(row)).length).toBe(8);
   });
 
   it('serves the ELK converters under their rule names, one shared value converter', () => {

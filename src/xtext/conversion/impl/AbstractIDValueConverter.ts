@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
+import { checkCast, isString } from '../../../java/lang/JavaCast.js';
+import { JavaClass } from '../../../java/lang/JavaClass.js';
 import { STRING } from '../../../java/util/HashStrategy.js';
 import { JavaHashSet } from '../../../java/util/JavaHashSet.js';
 import type { INode } from '../../nodemodel/INode.js';
@@ -50,6 +52,8 @@ export abstract class AbstractIDValueConverter extends AbstractLexerBasedConvert
   }
 
   protected override assertValidValue(value: string | null): void {
+    // the JVM bridge of assertValidValue(String) casts the erased value first
+    checkCast(value, isString, JavaClass.String.javaName);
     super.assertValidValue(value);
     if ((value as string).length === 0) {
       throw new ValueConverterException(`${this.getRuleName()} may not be empty.`, null, null);
