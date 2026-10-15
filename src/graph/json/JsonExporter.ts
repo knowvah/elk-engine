@@ -41,7 +41,8 @@ const DOUBLE_TYPE_NAME = 'DOUBLE';
 /**
  * The text Java's `toString` gives a stored option value. A TypeScript number does not say whether it was an
  * `Integer` or a `Double`; the registered option's type decides (as in the importer's `parseValue`), any other
- * number prints as a JavaScript number.
+ * number prints as a JavaScript number. A null value fails at `toString` with a TypeError, as Java's
+ * `p.value.toString` throws a NullPointerException (D10); `.elkt` input can store one (`direction: null`).
  */
 function valueText(key: IProperty<unknown>, value: unknown): string {
   if (typeof value === 'number') {
@@ -50,7 +51,7 @@ function valueText(key: IProperty<unknown>, value: unknown): string {
       return DoubleToString.toString(value);
     }
   }
-  return String(value);
+  return (value as object).toString();
 }
 
 /** Java `Object.equals` of two properties, which both compare by id (D5). */

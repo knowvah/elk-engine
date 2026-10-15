@@ -16,7 +16,6 @@ import { ElkGraphText, LinkingCollector, SerializationException } from './ElkGra
 const VALIDATE_REF = fileURLToPath(new URL('../../../test/golden/refs/java/graph-text-validate.json', import.meta.url));
 const PARSE_REF = fileURLToPath(new URL('../../../test/golden/refs/java/graph-text-parse.json', import.meta.url));
 const SYNTAX = 'syntax';
-const KNOWN_EXPORTER_GAPS: ReadonlySet<string> = new Set(['prop-known-null']);
 const NULL_POINTER = 'java.lang.NullPointerException';
 
 interface RecordedDiagnostic {
@@ -66,11 +65,7 @@ describe('ElkGraphText.load: replay of the recorded JVM cases', () => {
       expect(ElkGraphText.load(c.input).errors).toEqual(c.diagnostics.map(strip));
     });
 
-    // JsonExporter.ts:53 renders a null option value as "null" where the JVM exporter throws an NPE
-    // (Map.Entry.getValue().toString()); the exporter is not this task's file, so the row is expected to
-    // fail until it is fixed (reported to the orchestrator).
-    const exportTest = KNOWN_EXPORTER_GAPS.has(c.id) ? it.fails : it;
-    exportTest('builds the recorded model, properties included (an NPE of the exporter is a TypeError)', () => {
+    it('builds the recorded model, properties included (an NPE of the exporter is a TypeError)', () => {
       const { root } = ElkGraphText.load(c.input);
       const recorded = typeof c.json === 'string' ? (JSON.parse(c.json) as RecordedExport) : c.json;
       if ('throws' in recorded) {
