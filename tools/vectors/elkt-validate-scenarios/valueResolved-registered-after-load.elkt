@@ -1,0 +1,9 @@
+// @covers 82-83, 100-101 (a proxy resolved during validation: the option is registered after loading), 84-97, 104-115 on the resolved value
+// @register-after-load
+org.eclipse.elk.probe.lateSpacing: 5
+node n { org.eclipse.elk.probe.lateSpacing: -1 }
+node m { org.eclipse.elk.probe.lateSpacing: abc }
+node k { probe.lateSpacing: 2 }
+node q {
+    port p { org.eclipse.elk.probe.lateSpacing: 1 }
+}

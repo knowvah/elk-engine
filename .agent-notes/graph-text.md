@@ -238,3 +238,15 @@ new ElkGraphReferences(), parseResult.nodeModel)`, then `linkModel(root, consume
 - **Impact**: any new erased-generic boundary (mission 4c's JSON-text converters) should use `checkCast`
   (`src/java/lang/JavaCast.ts`) at the binding method.
 - **Confidence**: High
+
+## Observation: validator line 101 needs a registry change between load and validation
+
+- **Context**: T4 follow-up (2026-10-15)
+- **Finding**: value conversion and validation resolve with the same `toLayoutOption(entry.key)` and text, and the
+  key converter's suffix lookup already accepts legacy ids; with all 250 options, 974 documents gave 0
+  mutations. Registering an option after load resolves the proxies (recorded as
+  `valueResolved-registered-after-load`). A suffix key (`probe.lateSpacing`) stays unknown then: the key is a plain
+  `Property` with the suffix as id, and `getOptionData` needs the full id.
+- **Impact**: algorithm missions need no regeneration for line 101; any future after-load registration test
+  can reuse `test/helpers/elkt-validate-mutations.ts`.
+- **Confidence**: High

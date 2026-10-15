@@ -43,6 +43,13 @@ import { ELK_GRAPH_KEYWORDS } from '../parser/ElkGraphTokenType.js';
 import { ElkGraphScopeProvider } from '../scoping/ElkGraphScopeProvider.js';
 import type { ElkNode } from '../../ElkNode.js';
 import { ElkGraphValidator, elkGraphMapEntryFeatures } from './ElkGraphValidator.js';
+import {
+  type MutationRow,
+  type RegisteredAfterLoad,
+  mutations,
+  registerAfterLoad,
+  snapshotEntries,
+} from '../../../../test/helpers/elkt-validate-mutations.js';
 
 const VALIDATE_REF = fileURLToPath(
   new URL('../../../../test/golden/refs/java/graph-text-validate.json', import.meta.url),
@@ -65,7 +72,9 @@ interface RecordedCase {
   readonly id: string;
   readonly input: string;
   readonly deferred?: string;
+  readonly registeredAfterLoad?: RegisteredAfterLoad;
   readonly issues: readonly IssueRow[];
+  readonly mutations: readonly MutationRow[];
 }
 
 const cases = (JSON.parse(readFileSync(VALIDATE_REF, 'utf8')) as { cases: RecordedCase[] }).cases;
@@ -139,7 +148,14 @@ function sortRows(rows: IssueRow[]): IssueRow[] {
   );
 }
 
-function validateText(text: string): { issues: IssueRow[]; logged: string[]; hasSyntaxError: boolean } {
+/**
+ * Parses, links and validates `text` as the recorder does; `lateOption` is registered between loading and
+ * validating (`@register-after-load`). `mutations` are the entries validation replaced.
+ */
+function validateText(
+  text: string,
+  lateOption?: RegisteredAfterLoad,
+): { issues: IssueRow[]; logged: string[]; hasSyntaxError: boolean; mutations: MutationRow[] } {
   const valueConverters = new ElkGraphValueConverterService();
   const parsed = parse(text, valueConverters);
   const resourceErrors: ResourceDiagnostic[] = parsed.diagnostics.map((d) => ({
@@ -155,8 +171,17 @@ function validateText(text: string): { issues: IssueRow[]; logged: string[]; has
       resourceErrors.push({ message: d.message, line: d.line, syntax: false, code: CODE_LINKING });
     }
   }
+  const before = parsed.root === null ? [] : snapshotEntries(parsed.root);
+  if (lateOption !== undefined) {
+    registerAfterLoad(lateOption);
+  }
   const result = validateModel(parsed.root, resourceErrors, parsed.positions);
-  return { ...result, hasSyntaxError: parsed.diagnostics.some((d) => d.kind === 'syntax') };
+  const after = parsed.root === null ? [] : snapshotEntries(parsed.root);
+  return {
+    ...result,
+    hasSyntaxError: parsed.diagnostics.some((d) => d.kind === 'syntax'),
+    mutations: mutations(before, after),
+  };
 }
 
 afterEach(() => {
@@ -165,8 +190,14 @@ afterEach(() => {
 
 describe('ElkGraphValidator replay of graph-text-validate.json', () => {
   it.each(replayed.map((c) => [c.id, c] as const))('%s', (_id, recorded) => {
-    const { issues, logged, hasSyntaxError } = validateText(recorded.input);
+    const {
+      issues,
+      logged,
+      hasSyntaxError,
+      mutations: changed,
+    } = validateText(recorded.input, recorded.registeredAfterLoad);
     expect(logged).toEqual([]);
+    expect(changed).toEqual(recorded.mutations);
     const expectsSyntaxError = recorded.issues.some((i) => i.code === CODE_SYNTAX);
     expect(hasSyntaxError).toBe(expectsSyntaxError);
     if (!expectsSyntaxError) {
