@@ -282,3 +282,8 @@ after load; load-then-validate cannot reach it in any registry, so missions 5/7 
 **Update 2026-10-15 (user):** the 13 T9 lexer recovery boundaries are canonical rows of `graph-text-lexer.json`.
 
 **Update 2026-10-15 (user):** the Xtext `Linker` passes a null unresolved-proxy message on as Java does (T16).
+
+**Update 2026-10-15 (user):** AD-16 exception policy approved (`plans/elk-engine-skeleton/decisions.md`). Follow-up, any
+time before the first npm publish: add `Exception`/`RuntimeException`, re-parent the 18 Java-named root exception classes to their
+Java parents (`ArithmeticException` leaves `RangeError`), rewrite the 6 listed frozen assertions with the user's approval,
+and add the inheritance fitness test.
