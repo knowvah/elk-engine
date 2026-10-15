@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
-import { IndexOutOfBoundsException } from '../../java/lang/IndexOutOfBoundsException.js';
+import { StringIndexOutOfBoundsException } from '../../java/lang/StringIndexOutOfBoundsException.js';
 import { StringBuilder } from '../../java/lang/StringBuilder.js';
 
 const HEX_DIGITS = '0123456789ABCDEF';
@@ -41,13 +41,12 @@ const ESCAPE_SEQUENCES: ReadonlyMap<number, string> = new Map([
 ]);
 
 /**
- * `String.charAt` as a `char` (UTF-16 code unit): out-of-range access throws like Java. Java throws
- * `StringIndexOutOfBoundsException` (a subclass of `IndexOutOfBoundsException` with no shim yet), so
- * the supertype is thrown with the JDK 21 message.
+ * `String.charAt` as a `char` (UTF-16 code unit): out-of-range access throws Java's
+ * `StringIndexOutOfBoundsException` with the JDK 21 message.
  */
 function charAt(s: string, index: number): number {
   if (index < 0 || index >= s.length) {
-    throw new IndexOutOfBoundsException(`Index ${index} out of bounds for length ${s.length}`);
+    throw new StringIndexOutOfBoundsException(`Index ${index} out of bounds for length ${s.length}`);
   }
   return s.charCodeAt(index);
 }

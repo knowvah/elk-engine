@@ -39,7 +39,8 @@
   `spacing` are ambiguous suffixes → unknown `Property` + `LayoutOptionProxy`. `Strings.split` drops
   trailing empties only; `convertFromJavaString` throws `StringIndexOutOfBoundsException` on a trailing
   backslash; unknown converter rule names fall back to identity. JDK-originated messages are
-  JDK-version text: compare the class only.
+  JDK-version text: compare the class only. (2026-10-15: `src/java/lang/StringIndexOutOfBoundsException.ts` now
+  exists; the three trailing-backslash rows match class and message.)
 - **Impact**: T7/T8/T13 tests read these rows, not intuition.
 - **Confidence**: High
 

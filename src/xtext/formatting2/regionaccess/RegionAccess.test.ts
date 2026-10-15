@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { IllegalStateException } from '../../../java/lang/IllegalStateException.js';
 import { IndexOutOfBoundsException } from '../../../java/lang/IndexOutOfBoundsException.js';
+import { StringIndexOutOfBoundsException } from '../../../java/lang/StringIndexOutOfBoundsException.js';
 import { buildToyBlock, TOY, ToyObject } from '../../../../test/helpers/xtext/ToyBlockFixture.js';
 import type { FeatureRef } from './FeatureRef.js';
 import type { ISemanticRegion } from './ISemanticRegion.js';
@@ -384,6 +385,16 @@ describe('text segments, replacements and rewriting', () => {
     expect(() =>
       rewriter.renderToString([rewriter.createReplacement(0, 5, 'x'), rewriter.createReplacement(3, 0, 'y')]),
     ).toThrow(IndexOutOfBoundsException);
+  });
+
+  it("throws String.substring's StringIndexOutOfBoundsException for overlapping replacements", () => {
+    const { access } = toy();
+    const rewriter = access.getRewriter();
+    // the region text is a Java String: subSequence is substring, whose range check throws the subclass
+    const render = () =>
+      rewriter.renderToString([rewriter.createReplacement(0, 5, 'x'), rewriter.createReplacement(3, 0, 'y')]);
+    expect(render).toThrow(StringIndexOutOfBoundsException);
+    expect(render).toThrow('begin 5, end 3, length 14');
   });
 
   it('validates replacement arguments and describes itself', () => {
