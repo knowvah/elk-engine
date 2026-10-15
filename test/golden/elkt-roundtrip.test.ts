@@ -7,15 +7,17 @@
 //    T5 success row and every curated model (test/corpus/elkt-curated.json, from $ELK_MODELS_DIR when present).
 // c. D3 (plans/conformance-corpus/decisions.md#d3--model-id-and-source): for every realworld model that has both
 //    `<id>.json` and `<id>.elkt`, `ElkGraphJson.forGraph(json).toElk()` and `ElkGraphText.load(elkt).root` are
-//    equal graphs.
+//    equal graphs except for port positions.
 //
-// D3 EQUALITY RULE (plans/graph-text/decisions.md, refinement 9): `canonNode` trees equal (test/helpers/
-// graph-json-canon.ts): identifiers, containment structure, edge endpoints and section topology, geometry
-// (doubles as `DoubleToString` text, exact), labels' text, and every property as `{id, text}` after proxy
-// resolution against the CoreOptions-only registry. No property is excluded and no tolerance is applied. A model
-// that differs is checked against the oracle's own core-registry parses of the same two files
-// (`ORACLE_REGISTRY=core`); if the oracle differs the same way it is listed in D3_ORACLE_DIFFERENCES with its
-// mechanism, otherwise the port is wrong.
+// D3 EQUALITY RULE (plans/graph-text/decisions.md refinement 9, amended by D3a in
+// plans/conformance-corpus/decisions.md, user 2026-10-14): `canonGraph` trees (test/helpers/elkt-canon.ts) equal
+// with the x and y of every port blanked: identifiers, containment structure, edge endpoints and section topology,
+// all other geometry (doubles as `DoubleToString` text, exact), labels' text, and every property as `{id, text}`
+// after proxy resolution against the CoreOptions-only registry. No tolerance. Port positions are excluded because
+// every realworld `.elkt` carries the laid-out port positions its `.json` lacks; the oracle's own core-registry
+// parses of the two files differ in exactly those fields (T22, all 550 models). The exclusion holds only while
+// those positions cannot change a layout: in both graphs every port has an explicit side and `port.index` and no
+// node has `FIXED_POS`/`FIXED_RATIO` constraints (`portsWithLayoutRelevantPosition` is empty).
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -25,11 +27,16 @@ import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService
 import '../../src/graph/impl/ElkGraphFactoryImpl.js';
 import { ElkGraphJson } from '../../src/graph/json/ElkGraphJson.js';
 import type { ElkNode } from '../../src/graph/ElkNode.js';
+import type { ElkPort } from '../../src/graph/ElkPort.js';
+import { ElkGraphUtil } from '../../src/graph/util/ElkGraphUtil.js';
+import { CoreOptions } from '../../src/core/options/CoreOptions.js';
+import { PortConstraints } from '../../src/core/options/PortConstraints.js';
+import { PortSide } from '../../src/core/options/PortSide.js';
 import { ElkGraphText, SerializationException } from '../../src/graph/text/ElkGraphText.js';
 import { repoRoot, resolveModelsDir } from '../corpus/corpus.js';
 import { isCoverageRun } from '../helpers/coverage-run.js';
 import { buildWriteInput, type WriteSource } from '../helpers/elkt-write-cases.js';
-import { canonGraph, canonGraphWithoutPortPositions } from '../helpers/elkt-canon.js';
+import { canonGraph, canonGraphWithoutPortPositions, portsWithLayoutRelevantPosition } from '../helpers/elkt-canon.js';
 
 const WRITE_REF = path.join(repoRoot(), 'test', 'golden', 'refs', 'java', 'graph-text-write.json');
 const CURATED = path.join(repoRoot(), 'test', 'corpus', 'elkt-curated.json');
@@ -39,18 +46,6 @@ const JSON_EXT = '.json';
 const REALWORLD_MODEL_COUNT = 550;
 const D3_TIMEOUT_MS = 60_000;
 const D3_TIMEOUT_COVERAGE_MS = 240_000;
-
-const D3_DIFFERENCES_FILE = path.join(repoRoot(), 'test', 'helpers', 'd3-oracle-differences.json');
-
-/**
- * Realworld ids whose `.json` and `.elkt` differ on the oracle as well (id -> mechanism). All 550: see the
- * mechanism text in the data file. FLAGGED FOR THE USER at mission end: under the strict D3 rule no realworld model
- * has equal `.json` and `.elkt` graphs, because the `.elkt` exports carry port positions.
- */
-export const D3_ORACLE_DIFFERENCES: ReadonlyMap<string, string> = (() => {
-  const data = JSON.parse(readFileSync(D3_DIFFERENCES_FILE, 'utf8')) as { mechanism: string; ids: string[] };
-  return new Map(data.ids.map((id) => [id, data.mechanism]));
-})();
 
 interface WriteRow {
   readonly id: string;
@@ -162,36 +157,75 @@ function realworldIds(dir: string): string[] {
     .sort();
 }
 
+describe('D3a guard: port positions that could change a layout', () => {
+  function graphWithPort(): { root: ElkNode; node: ElkNode; port: ElkPort } {
+    const root = ElkGraphUtil.createGraph();
+    root.setIdentifier('g');
+    const node = ElkGraphUtil.createNode(root);
+    node.setIdentifier('n');
+    const port = ElkGraphUtil.createPort(node);
+    port.setIdentifier('p');
+    port.setProperty(CoreOptions.PORT_SIDE, PortSide.EAST);
+    port.setProperty(CoreOptions.PORT_INDEX, 0);
+    return { root, node, port };
+  }
+
+  it('accepts a port with an explicit side and index under FIXED_ORDER', () => {
+    const { root, node } = graphWithPort();
+    node.setProperty(CoreOptions.PORT_CONSTRAINTS, PortConstraints.FIXED_ORDER);
+    expect(portsWithLayoutRelevantPosition(root)).toEqual([]);
+  });
+
+  it('flags a port without a side, a port without an index, and FIXED_POS / FIXED_RATIO nodes', () => {
+    const noSide = graphWithPort();
+    noSide.port.setProperty(CoreOptions.PORT_SIDE, PortSide.UNDEFINED);
+    expect(portsWithLayoutRelevantPosition(noSide.root)).toEqual([
+      'g/n/p: no side (ELK infers it from the position, LGraphUtil.calcPortSide)',
+    ]);
+    const noIndex = graphWithPort();
+    noIndex.port.getProperties().removeKey(CoreOptions.PORT_INDEX);
+    expect(portsWithLayoutRelevantPosition(noIndex.root)).toEqual([
+      'g/n/p: no port.index (FIXED_ORDER infers the order from positions, PortListSorter.java:44-47)',
+    ]);
+    for (const constraints of [PortConstraints.FIXED_POS, PortConstraints.FIXED_RATIO]) {
+      const fixed = graphWithPort();
+      fixed.node.setProperty(CoreOptions.PORT_CONSTRAINTS, constraints);
+      expect(portsWithLayoutRelevantPosition(fixed.root)).toEqual([`g/n/p: constraints ${constraints.toString()}`]);
+    }
+  });
+});
+
 describe.skipIf(skipReason !== '')(`D3: realworld .json and .elkt yield the same ElkGraph${note}`, () => {
   if (skipReason !== '') {
     it.skip(`skipped: ${skipReason}`, () => undefined);
     return;
   }
   it(
-    'every realworld model with both formats is equal under the recorded rule, or listed with its oracle evidence',
+    'every realworld model with both formats is equal except for port positions (D3a)',
     () => {
       const ids = realworldIds(modelsDir);
       const root = path.join(modelsDir, REALWORLD);
       const differing: string[] = [];
-      const unconfined: string[] = [];
+      const layoutRelevant: string[] = [];
       for (const id of ids) {
         const fromJson = ElkGraphJson.forGraph(readFileSync(path.join(root, id + JSON_EXT), 'utf8')).toElk();
         const fromText = loaded(readFileSync(path.join(root, id + ELKT), 'utf8'));
-        if (JSON.stringify(canonGraph(fromJson)) !== JSON.stringify(canonGraph(fromText))) {
+        for (const [source, graph] of [[JSON_EXT, fromJson], [ELKT, fromText]] as const) {
+          layoutRelevant.push(...portsWithLayoutRelevantPosition(graph).map((p) => `${id}${source} ${p}`));
+        }
+        if (
+          JSON.stringify(canonGraphWithoutPortPositions(fromJson)) !==
+          JSON.stringify(canonGraphWithoutPortPositions(fromText))
+        ) {
           differing.push(id);
-          // a listed difference must be confined to its mechanism (the port positions of the .elkt)
-          if (
-            JSON.stringify(canonGraphWithoutPortPositions(fromJson)) !==
-            JSON.stringify(canonGraphWithoutPortPositions(fromText))
-          ) {
-            unconfined.push(id);
-          }
         }
       }
-      console.log(`D3: realworld models=${ids.length} differing=${differing.length} unconfined=${unconfined.length}`);
+      console.log(
+        `D3: realworld models=${ids.length} differing=${differing.length} layout-relevant ports=${layoutRelevant.length}`,
+      );
       expect(ids).toHaveLength(REALWORLD_MODEL_COUNT);
-      expect(unconfined).toEqual([]);
-      expect(differing).toEqual([...D3_ORACLE_DIFFERENCES.keys()].sort());
+      expect(layoutRelevant).toEqual([]);
+      expect(differing).toEqual([]);
     },
     isCoverageRun() ? D3_TIMEOUT_COVERAGE_MS : D3_TIMEOUT_MS,
   );
