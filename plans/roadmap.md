@@ -287,3 +287,5 @@ after load; load-then-validate cannot reach it in any registry, so missions 5/7 
 time before the first npm publish: add `Exception`/`RuntimeException`, re-parent the 18 Java-named root exception classes to their
 Java parents (`ArithmeticException` leaves `RangeError`), rewrite the 6 listed frozen assertions with the user's approval,
 and add the inheritance fitness test.
+
+**Update 2026-10-15 (user):** AD-16 is implemented (base classes, 18 re-parented classes, fitness test).

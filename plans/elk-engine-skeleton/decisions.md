@@ -219,3 +219,10 @@ Java chain.
   port-local `RangeError`, not a Java exception).
 - Update `docs/translation-rules.md` §6.7, the "checked exceptions" row and the AD range in `CLAUDE.md`, and
   add a fitness test that every class named after a Java exception extends its Java parent.
+
+**AD-16 implemented (2026-10-15).** `Exception` and `RuntimeException` added in `src/java/lang`; the 18 classes
+re-parented (9 subclasses follow); the six listed assertions rewritten with the user's approval;
+`test/architecture/exception-hierarchy.fitness.test.ts` pins all 31 parents and fails on an unlisted exception class.
+One behaviour change follows the Java: `DefaultDeclarativeQualifiedNameProvider.invokeDispatcher` rethrows only
+`RangeError` (Java `Error`), so an `ArithmeticException` from a dispatched method now gives `null`, as
+`PolymorphicDispatcher.java:304-307` does, instead of propagating.
