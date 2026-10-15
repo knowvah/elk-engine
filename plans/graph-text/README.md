@@ -188,3 +188,6 @@ trip); 4c (`graph.json.text`) next; any time — exporter null fix, `StringIndex
 inputs for CI, T9 boundary rows in a T2 regeneration. Details: `plans/roadmap.md` (2026-10-14 revision).
 
 **Landing (stop 14):** the user signs, pushes and opens the PR with the commands under "Branch and landing (G8)".
+
+**Resolved after the summary (user, 2026-10-14):** flag 1 — D3 amended to "equal except port positions" (D3a);
+D3 is now 550/550.
