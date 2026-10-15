@@ -203,3 +203,9 @@ three recorded trailing-backslash rows (not two) now match class and message, an
 **Resolved (user, 2026-10-15):** flag 4 — the 31 curated inputs are vendored byte-for-byte in
 `test/corpus/elkt-curated/` (`test/corpus/vendor-elkt-curated.sh`, also run by `regen-elkt-refs.sh`), so the curated
 refs run in CI; only the Trilateration load budget still needs elk-models.
+
+**Resolved (user, 2026-10-15):** flag 5, the T13 part — 8 of the 10 `ClassCastException` converter rows now replay:
+the JVM's erased-generic checkcast is ported as `checkCast` (`src/java/lang/JavaCast.ts`) at the 7 converter methods
+that bind the type. Two rows stay skipped as irreducible: `StringValue` `float:2.0` and `Number` `int:1` each need a
+different output from the same `number` than a sibling `double:1.0` row (documented in
+`docs/architecture/elk-text.md` §7).
