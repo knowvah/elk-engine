@@ -91,6 +91,7 @@ M` (code `org.eclipse.emf.ecore.14`, holder's first line), twice per collision. 
   consumes only the first digit (`10.` → `<invalid>` `1`, `<invalid>` `0`, `'.'`). The raw lexer leaves
   WS/comments on the default channel; the hidden set belongs to the token stream.
 - **Impact**: T15 error spans and T13's converter re-lex checks see these exact boundaries.
+- **Update 2026-10-15**: recorded as canonical rows in `graph-text-lexer.json` (family `recovery boundaries`).
 - **Confidence**: High
 
 ## Observation: Java `^` binds looser than `<`

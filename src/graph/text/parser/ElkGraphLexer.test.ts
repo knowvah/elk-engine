@@ -62,8 +62,8 @@ describe('ElkGraphLexer replays the recorded JVM lexer rows', () => {
   const rows = loadRows();
 
   it('has the recorded rows, including the lexer-error ones', () => {
-    expect(rows.length).toBe(314);
-    expect(rows.filter((row) => row.lexError).length).toBe(22);
+    expect(rows.length).toBe(326);
+    expect(rows.filter((row) => row.lexError).length).toBe(32);
   });
 
   it.each(rows.map((row) => [JSON.stringify(row.input), row] as const))('%s', (_label, row) => {
@@ -86,100 +86,37 @@ describe('ElkGraphLexer replays the recorded JVM lexer rows', () => {
   });
 });
 
-describe('ElkGraphLexer boundaries absent from the recorded rows (JVM lexer, scratch run)', () => {
-  const invalid = ElkGraphTokenType.INVALID;
-  const cases: [string, boolean, [string, string][]][] = [
-    [
-      'a-1',
-      false,
-      [
-        ['RULE_ID', 'a'],
-        ['RULE_SIGNED_INT', '-1'],
-      ],
-    ],
-    ["'x", true, [[invalid, "'x"]]],
-    [
-      '10.',
-      true,
-      [
-        [invalid, '1'],
-        [invalid, '0'],
-        ["'.'", '.'],
-      ],
-    ],
-    [
-      '+1.',
-      true,
-      [
-        [invalid, '+1'],
-        ["'.'", '.'],
-      ],
-    ],
-    [
-      '-1.',
-      true,
-      [
-        [invalid, '-1'],
-        ["'.'", '.'],
-      ],
-    ],
-    [
-      '1ex',
-      true,
-      [
-        [invalid, '1e'],
-        ['RULE_ID', 'x'],
-      ],
-    ],
-    [
-      '1.5ex',
-      true,
-      [
-        [invalid, '1.5e'],
-        ['RULE_ID', 'x'],
-      ],
-    ],
-    [
-      '1e+x',
-      true,
-      [
-        [invalid, '1e+'],
-        ['RULE_ID', 'x'],
-      ],
-    ],
-    [
-      '-->',
-      false,
-      [
-        ['RULE_ANY_OTHER', '-'],
-        ["'->'", '->'],
-      ],
-    ],
-    ['/*', true, [[invalid, '/*']]],
-    ['1.0E', true, [[invalid, '1.0E']]],
-    [
-      '// x\r\r\ny',
-      true,
-      [
-        [invalid, '// x\r\r'],
-        ['RULE_WS', '\n'],
-        ['RULE_ID', 'y'],
-      ],
-    ],
-    ['"\\', true, [[invalid, '"\\']]],
-  ];
+/**
+ * Recovery boundaries found by the T9 differential fuzz (~300k inputs) against `InternalElkGraphLexer`, first pinned
+ * from a scratch JVM run and now recorded rows of the lexer vectors (replayed above with lines, channels and offsets).
+ */
+const FUZZ_BOUNDARIES: readonly string[] = [
+  'a-1',
+  "'x",
+  '10.',
+  '+1.',
+  '-1.',
+  '1ex',
+  '1.5ex',
+  '1e+x',
+  '-->',
+  '/*',
+  '1.0E',
+  '// x\r\r\ny',
+  '"\\',
+  'a\rb\nc',
+  '',
+];
 
-  it.each(cases)('%j', (input, lexError, tokens) => {
-    expect(summary(input)).toEqual({ lexError, tokens });
-  });
+describe('ElkGraphLexer recovery boundaries from the T9 fuzz', () => {
+  const inputs = new Set(loadRows().map((row) => row.input));
 
-  it('numbers the line of a token after a lone carriage return and after a newline', () => {
-    expect(tokenize('a\rb\nc').map((t) => t.line)).toEqual([1, 1, 1, 1, 2]);
-  });
-
-  it('returns no tokens for empty input', () => {
-    expect(summary('')).toEqual({ lexError: false, tokens: [] });
-  });
+  it.each(FUZZ_BOUNDARIES.map((input) => [JSON.stringify(input), input] as const))(
+    '%s is a recorded JVM row',
+    (_label, input) => {
+      expect(inputs.has(input)).toBe(true);
+    },
+  );
 });
 
 describe('ElkGraphTokenType', () => {

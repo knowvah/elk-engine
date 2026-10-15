@@ -344,6 +344,22 @@ lex key: "value" other: 'v' third: true fourth: null fifth: -1.5e3
 lex graph g\nnode n1 {\n  layout [ size: 30, 20 ]\n  port p1\n  label "n1"\n}\nnode n2\nedge n1.p1 -> n2 {\n  layout [ ]\n}\n// done\n
 lex graph g\n// a sample model\nnode n1 {\n  layout [ size: 30, 20 position: 10, 10 ]\n  elk.direction: RIGHT\n  port p1 { layout [ position: 30, 5 ] }\n  label "n1" { layout [ size: 10, 8 ] }\n}\nnode n2 { layout [ size: 30, 20 ] }\nedge e1: n1.p1 -> n2 {\n  label "e1"\n  section s1 [ start: 30, 5 end: 100, 10 bends: 50, 5 | 50, 10 ]\n}\nedge n2 -> n1\n/* end\n   of file */\n
 
+# ---- recovery boundaries (T9 differential fuzz of the TS lexer, ~300k inputs; were pinned from a scratch run) ----
+#   EarlyExitException does not consume (1ex), a FLOAT dfa no-viable-alt consumes one digit (10.), recover()
+#   consumes one char into <invalid> (// x\r\r\ny), and line numbers after a lone CR and a LF (a\rb\nc).
+lex a-1
+lex 'x
+lex 10.
+lex +1.
+lex -1.
+lex 1ex
+lex 1.5ex
+lex 1e+x
+lex /*
+lex 1.0E
+lex // x\r\r\ny
+lex a\rb\nc
+
 # ================= converters =================
 # ---- ID ----
 conv ID toValue
