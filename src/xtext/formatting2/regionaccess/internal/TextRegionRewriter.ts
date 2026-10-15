@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: EPL-2.0
-import { IndexOutOfBoundsException } from '../../../../java/lang/IndexOutOfBoundsException.js';
+import { StringIndexOutOfBoundsException } from '../../../../java/lang/StringIndexOutOfBoundsException.js';
 import type { Appendable, ITextRegionRewriter } from '../ITextRegionRewriter.js';
 import type { ITextRegionAccess } from '../ITextRegionAccess.js';
 import type { ITextReplacement } from '../ITextReplacement.js';
 import type { ITextSegment } from '../ITextSegment.js';
 import { TextReplacement } from './TextReplacement.js';
 
-/** `CharSequence.subSequence(start, end)`: throws on an invalid range where `slice` would clamp. */
+/**
+ * `String.subSequence(start, end)` (the region text is a `String`): throws `StringIndexOutOfBoundsException` on
+ * an invalid range where `slice` would clamp.
+ */
 function subSequence(text: string, start: number, end: number): string {
   if (start < 0 || end > text.length || start > end) {
-    throw new IndexOutOfBoundsException(`begin ${start}, end ${end}, length ${text.length}`);
+    throw new StringIndexOutOfBoundsException(`begin ${start}, end ${end}, length ${text.length}`);
   }
   return text.slice(start, end);
 }

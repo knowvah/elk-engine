@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
 import { IndexOutOfBoundsException } from '../../java/lang/IndexOutOfBoundsException.js';
+import { StringIndexOutOfBoundsException } from '../../java/lang/StringIndexOutOfBoundsException.js';
 import * as Strings from './Strings.js';
 
 const LEXER_REF = new URL('../../../test/golden/refs/java/graph-text-lexer.json', import.meta.url);
@@ -72,6 +73,17 @@ describe('Strings vectors (graph-text-lexer.json)', () => {
         expect(e, label).toBeInstanceOf(expectedClass);
         expect(e.message, label).toBe(row.error.msg);
       }
+    }
+  });
+
+  it('throws the recorded StringIndexOutOfBoundsException for a trailing backslash', () => {
+    const recorded = rows.filter((row) => row.error?.cls === STRING_INDEX);
+    expect(recorded.length).toBe(3);
+    for (const row of recorded) {
+      const useUnicode = row.op === `${FROM_JAVA}/unicode`;
+      const e = caught(() => Strings.convertFromJavaString(row.input, useUnicode)) as Error;
+      expect(e, JSON.stringify(row.input)).toBeInstanceOf(StringIndexOutOfBoundsException);
+      expect(e.message, JSON.stringify(row.input)).toBe(row.error!.msg);
     }
   });
 });
