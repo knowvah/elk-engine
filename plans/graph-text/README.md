@@ -191,3 +191,7 @@ inputs for CI, T9 boundary rows in a T2 regeneration. Details: `plans/roadmap.md
 
 **Resolved after the summary (user, 2026-10-14):** flag 1 — D3 amended to "equal except port positions" (D3a);
 D3 is now 550/550.
+
+**Resolved (user, 2026-10-15):** flag 3 — `JsonExporter` `valueText` now calls `toString()` on the value, so
+a null option value throws a `TypeError` (D10) as Java's `p.value.toString` NPEs; `KNOWN_EXPORTER_GAPS` is removed
+and `prop-known-null` passes.
