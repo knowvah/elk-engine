@@ -12,6 +12,7 @@ import type { ElkNode } from '../ElkNode.js';
 import { ElkGraphUtil } from '../util/ElkGraphUtil.js';
 import { ElkGraphSerializationError } from './serializer/ElkGraphSerializationError.js';
 import { ElkGraphText, LinkingCollector, SerializationException } from './ElkGraphText.js';
+import { type RegisteredAfterLoad, registerAfterLoad } from '../../../test/helpers/elkt-validate-mutations.js';
 
 const VALIDATE_REF = fileURLToPath(new URL('../../../test/golden/refs/java/graph-text-validate.json', import.meta.url));
 const PARSE_REF = fileURLToPath(new URL('../../../test/golden/refs/java/graph-text-parse.json', import.meta.url));
@@ -156,6 +157,7 @@ interface ValidateCase {
   readonly id: string;
   readonly input: string;
   readonly deferred?: string;
+  readonly registeredAfterLoad?: RegisteredAfterLoad;
   readonly issues: readonly RecordedIssue[];
 }
 
@@ -174,6 +176,10 @@ const validateCases = (JSON.parse(readFileSync(VALIDATE_REF, 'utf8')) as { cases
 describe('ElkGraphText.validate against graph-text-validate.json', () => {
   it.each(validateCases.map((c) => [c.id, c] as const))('%s', (_id, recorded) => {
     const { root } = ElkGraphText.load(recorded.input);
+    // @register-after-load: the recorder registers the option between loading and validating
+    if (recorded.registeredAfterLoad !== undefined) {
+      registerAfterLoad(recorded.registeredAfterLoad);
+    }
     expect(sortedIssues(ElkGraphText.validate(root as ElkNode))).toEqual(recorded.issues);
   });
 

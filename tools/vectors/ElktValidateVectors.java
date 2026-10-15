@@ -10,10 +10,15 @@
 //   Directive comments (any position among the leading "//" lines):
 //     // @covers <ElkGraphValidator.xtend line ranges, free text>   (required)
 //     // @deferred mission5                                         (optional)
+//     // @register-after-load                                       (optional, at most one scenario)
+//   @register-after-load registers LATE_OPTION (below) between loading and validating the document. A JVM
+//   registration cannot be undone, so that scenario runs after all others (output order is unchanged).
 // Output <outDir>/graph-text-validate.json: 2-space indent at the top level, one compact case per line, cases
 //   sorted by id (String order), trailing newline:
 //   { elkCommit, xtextVersion, registry: "core", cases: [ CASE ] }
-//   CASE = { id, input, covers, deferred?, issues: [ISSUE], mutations: [MUTATION] }
+//   CASE = { id, input, covers, deferred?, registeredAfterLoad?, issues: [ISSUE], mutations: [MUTATION] }
+//   registeredAfterLoad = { id, group, name, type, defaultValue, lowerBound, targets: [String] }: the option registered
+//   between load and validation (Type/Target constant names; values as their Java toString).
 //        | { id, input, covers, deferred?, throws: {class, message} }   // validate() itself threw
 //   input = the complete file text including the directive lines, so line numbers are those of the file.
 //   ISSUE = { severity: "error"|"warning"|"info", message, line (1-based), code (String|null) }
@@ -24,17 +29,20 @@
 //   dumped for comparison with -Delkt.validate.raw=<file> (not part of the ref).
 //   MUTATION = { path, key, valueClassBefore, valueClassAfter }: a property entry (EMapPropertyHolder.getProperties
 //   in document order) whose value class changed during validation, i.e. a LayoutOptionProxy replaced by its
-//   resolved value (ElkGraphValidator.xtend:101). NOTE: always [] in the core registry: a proxy only survives
-//   conversion when the option is unknown or the text unparseable, and validation re-resolves with the same option
-//   and text; the only difference (legacy ids, LayoutMetaDataService.getOptionData) needs algorithm bundles that
-//   register legacy ids (layered etc., missions 5/7). path = EcoreUtil relative URI fragment path from the root
-//   ("" = root node, "/@children.0/@ports.1"); key = the property id; classes are binary class names.
+//   resolved value (ElkGraphValidator.xtend:101). Load-then-validate never mutates, in any registry: the value
+//   converter (PropertyValueValueConverter.xtend:72-73) and the validator (:81-83) both resolve with
+//   toLayoutOption(entry.key) and the same text, and the key converter's suffix lookup already accepts legacy
+//   ids (LayoutMetaDataService.getOptionDataBySuffix). Probed 2026-10-15 with every algorithm bundle registered
+//   (250 options): 974 documents (all 898 corpus .elkt, these scenarios, legacy-id keys), 83 surviving proxies,
+//   0 mutations. Only a registry change between load and validation reaches it (@register-after-load).
+//   path = EcoreUtil relative URI fragment path from the root
+//   ("" = root node, "@children.0/@ports.1"); key = the property id; classes are binary class names.
 // Branches of ElkGraphValidator.xtend that no .elkt document can reach in the core registry (the TS port keeps
 // them; there is nothing to record). Each was probed while writing the scenarios:
-//   - 82-83, 100-101 (proxy resolved during validation, entry.value = value): conversion and validation parse the
-//     same text with the same option; the only difference is a legacy option id (getOptionData resolves legacy ids,
-//     the converter's suffix lookup did not), and no core option has one. Scenario valueResolved-proxy-not-reachable
-//     records the legacy-id attempt; "mutations" is [] in every case. Missions 5/7 (layered etc.) can reach it.
+//   - 82-83, 100-101 (proxy resolved during validation, entry.value = value) by load-then-validate: conversion
+//     and validation resolve the same text with the same option (see MUTATION). Scenario
+//     valueResolved-proxy-not-reachable records a non-legacy de.cau.cs.kieler key; the branch itself is recorded
+//     by valueResolved-registered-after-load.
 //   - 86-87 (STRING option left unresolved) and 96 without optionClass: STRING parses every text; every core
 //     OBJECT/ENUM option has an optionClass.
 //   - 106-107 / LayoutOptionValidator "does not match the type" and 111-112 (WARNING severity): parseValue only
@@ -55,6 +63,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.eclipse.elk.core.data.LayoutMetaDataService;
+import org.eclipse.elk.core.data.LayoutOptionData;
 import org.eclipse.elk.graph.EMapPropertyHolder;
 import org.eclipse.elk.graph.text.ElkGraphStandaloneSetup;
 import org.eclipse.emf.common.util.URI;
@@ -74,6 +83,13 @@ public class ElktValidateVectors {
     private static final String OUTPUT = "graph-text-validate.json", RAW_PROPERTY = "elkt.validate.raw";
     private static final Pattern COVERS = Pattern.compile("^//\\s*@covers\\s+(.+?)\\s*$");
     private static final Pattern DEFERRED = Pattern.compile("^//\\s*@deferred\\s+(\\S+)\\s*$");
+    private static final Pattern LATE = Pattern.compile("^//\\s*@register-after-load\\s*$");
+    /** The option a @register-after-load scenario registers after loading: unknown to the parse, known to validation. */
+    private static final LayoutOptionData LATE_OPTION = new LayoutOptionData.Builder()
+            .id("org.eclipse.elk.probe.lateSpacing").group("probe").name("Late Spacing")
+            .description("Registered between loading and validating a document.")
+            .type(LayoutOptionData.Type.DOUBLE).optionClass(Double.class).defaultValue(0.0).lowerBound(0.0)
+            .targets(EnumSet.of(LayoutOptionData.Target.NODES, LayoutOptionData.Target.PARENTS)).create();
 
     /** One property entry observed before validation: where it lives and what its value class was. */
     private record Entry(String path, String key, String valueClass) { }
@@ -85,8 +101,19 @@ public class ElktValidateVectors {
         List<Path> files = scenarioFiles(dir);
         StringBuilder raw = new StringBuilder();
         List<Map<String, Object>> cases = new ArrayList<>();
+        List<Path> late = new ArrayList<>();
         for (Path file : files) {
-            cases.add(record(file, raw));
+            if (isLate(file)) {
+                late.add(file);
+            } else {
+                cases.add(record(file, raw, false));
+            }
+        }
+        if (late.size() > 1) {
+            throw new IllegalStateException("at most one @register-after-load scenario: " + late);
+        }
+        for (Path file : late) {
+            cases.add(record(file, raw, true));
         }
         cases.sort(Comparator.comparing(c -> (String) c.get("id")));
         Files.writeString(Path.of(args[0]).resolve(OUTPUT), render(cases), StandardCharsets.UTF_8);
@@ -102,7 +129,25 @@ public class ElktValidateVectors {
         }
     }
 
-    private static Map<String, Object> record(final Path file, final StringBuilder raw) throws IOException {
+    private static boolean isLate(final Path file) throws IOException {
+        return Arrays.stream(Files.readString(file, StandardCharsets.UTF_8).split("\n", -1))
+                .anyMatch(line -> LATE.matcher(line).matches());
+    }
+
+    private static Map<String, Object> lateOptionRow() {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("id", LATE_OPTION.getId());
+        row.put("group", LATE_OPTION.getGroup());
+        row.put("name", LATE_OPTION.getName());
+        row.put("type", LATE_OPTION.getType().name());
+        row.put("defaultValue", String.valueOf(LATE_OPTION.getDefault()));
+        row.put("lowerBound", String.valueOf(LATE_OPTION.getLowerBound()));
+        row.put("targets", LATE_OPTION.getTargets().stream().map(Enum::name).toList());
+        return row;
+    }
+
+    private static Map<String, Object> record(final Path file, final StringBuilder raw, final boolean late)
+            throws IOException {
         String name = file.getFileName().toString();
         String text = Files.readString(file, StandardCharsets.UTF_8);
         Map<String, Object> row = new LinkedHashMap<>();
@@ -115,6 +160,10 @@ public class ElktValidateVectors {
         }
         Resource resource = new ResourceSetImpl().getResource(URI.createFileURI(file.toAbsolutePath().toString()), true);
         List<Entry> before = snapshot(resource);
+        if (late) {
+            LayoutMetaDataService.getInstance().registerLayoutMetaDataProviders(registry -> registry.register(LATE_OPTION));
+            row.put("registeredAfterLoad", lateOptionRow());
+        }
         try {
             List<Issue> issues = ((XtextResource) resource).getResourceServiceProvider().getResourceValidator()
                     .validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
