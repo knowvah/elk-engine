@@ -209,3 +209,9 @@ the JVM's erased-generic checkcast is ported as `checkCast` (`src/java/lang/Java
 that bind the type. Two rows stay skipped as irreducible: `StringValue` `float:2.0` and `Number` `int:1` each need a
 different output from the same `number` than a sibling `double:1.0` row (documented in
 `docs/architecture/elk-text.md` §7).
+
+**Resolved (user, 2026-10-15):** flag 2 — line 101 is unreachable by load-then-validate under **any** registry,
+not only the core one, so missions 5/7 will not reach it. A JVM probe with all 250 options found 0 mutations
+in 974 documents. The one route that reaches it, registering an option after load, is now recorded
+(`valueResolved-registered-after-load`, 3 mutations; the other 75 rows and the lexer, parse and write refs are
+byte-identical), and the replay compares `mutations` on every row.

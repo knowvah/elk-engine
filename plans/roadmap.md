@@ -275,3 +275,6 @@ refs run in CI.
 
 **Update 2026-10-15 (user):** erased-generic casts are ported (`src/java/lang/JavaCast.ts`); 8 of the 10
 `ClassCastException` converter rows replay, and the 2 rows a `number` cannot represent stay documented skips.
+
+**Update 2026-10-15 (user):** the validator's line-101 proxy resolution is recorded through an option registered
+after load; load-then-validate cannot reach it in any registry, so missions 5/7 have nothing to regenerate for it.
