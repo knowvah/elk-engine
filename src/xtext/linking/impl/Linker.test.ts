@@ -418,7 +418,10 @@ describe('Linker', () => {
     expect(linker.getLinkingHelper()).toBe(helper);
   });
 
-  it('skips a null unresolved message without failing', () => {
+  // Java passes a null unresolved-proxy message to the producer (Linker.java:136-137), whose createDiagnostic
+  // dereferences it (LinkingDiagnosticProducer.java:27): a NullPointerException, a TypeError here (D10). Was a
+  // port-local skip until the user's T16 decision of 2026-10-15.
+  it('fails on a null unresolved message like the Java producer', () => {
     const a = new Obj('a');
     const helper = new LinkingHelper(IDENTITY_CONVERTER);
     const quiet = new (class extends LinkingDiagnosticMessageProvider {
@@ -429,11 +432,9 @@ describe('Linker', () => {
     const service = new DefaultLinkingService({ getScope: () => scopeOf() }, helper, dotConverter);
     const consumer = new Collector();
 
-    new Linker(service, quiet, helper, new ToyAccess(), new ToyNodes().with(a, xref('single', 'q', 1))).linkModel(
-      a,
-      consumer,
-    );
+    const linker = new Linker(service, quiet, helper, new ToyAccess(), new ToyNodes().with(a, xref('single', 'q', 1)));
 
+    expect(() => linker.linkModel(a, consumer)).toThrow(TypeError);
     expect(consumer.diagnostics).toEqual([]);
   });
 
