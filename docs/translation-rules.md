@@ -385,8 +385,16 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 - The 6 custom ELK exceptions are all `RuntimeException`, e.g.
   `core/src/.../UnsupportedGraphException.java:22` (`G 'extends (Exception|RuntimeException)'`).
   Checked ones are JDK: `IOException` (6 catches), `InstantiationException`/`IllegalAccessException`
-  (reflection, 7), `NoSuchFieldException` (2). TS has no checked exceptions: plain `Error`
-  subclasses, keep every throw site and message. Classes (M5), in `src/java/lang/`:
+  (reflection, 7), `NoSuchFieldException` (2). TS has no checked exceptions; keep every throw site
+  and message. **Hierarchy (AD-16a):** every exception class extends its Java parent; JS `Error` stands in
+  for `Throwable`, with `src/java/lang/Exception.ts` and `RuntimeException.ts` below it (unchecked under
+  `RuntimeException`, `IOException` under `Exception`), so a handler for a parent catches the family. The
+  Java parent wins over a JS built-in (`ArithmeticException extends RuntimeException`, not `RangeError`).
+  A ported `catch (Exception | RuntimeException)` stays a catch-all (D10's `TypeError` is not under them);
+  a narrower catch is an `instanceof` check. New code adds no Java-named shim for a JVM error nothing
+  catches: use `TypeError`/`RangeError` (AD-16b). Idiomatic errors belong to the AD-14 public layer
+  (AD-16c). `test/architecture/exception-hierarchy.fitness.test.ts` pins every class's parent.
+  Classes (M5), in `src/java/lang/`:
   `IllegalArgumentException`, `NumberFormatException`, `IndexOutOfBoundsException`,
   `ArrayIndexOutOfBoundsException`, `ArithmeticException`; amendments
   `UnsupportedOperationException` (immutable helpers), `IllegalStateException`

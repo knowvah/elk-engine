@@ -6,6 +6,7 @@ import { ResourceScopeCache } from '../util/ResourceScopeCache.js';
 import { DefaultDeclarativeQualifiedNameProvider } from './DefaultDeclarativeQualifiedNameProvider.js';
 import type { IQualifiedNameConverter } from './IQualifiedNameConverter.js';
 import { QualifiedName } from './QualifiedName.js';
+import { ArithmeticException } from '../../java/lang/ArithmeticException.js';
 
 /** The minimal InternalEObject surface the provider and EcoreUtil.getRootContainer touch. */
 class Node {
@@ -122,6 +123,14 @@ describe('DefaultDeclarativeQualifiedNameProvider dispatch', () => {
       throw 'not an error';
     });
     expect(thrownString.getFullyQualifiedName(asEObject(new Node(null)))).toBeNull();
+  });
+
+  it('swallows a Java RuntimeException that used to be a RangeError (only java.lang.Error propagates)', () => {
+    // PolymorphicDispatcher.java:304-307 rethrows only an Error; ArithmeticException is a RuntimeException (AD-16a)
+    const dividing = new DispatchingProvider(() => {
+      throw new ArithmeticException('/ by zero');
+    });
+    expect(dividing.getFullyQualifiedName(asEObject(new Node('x')))?.toString()).toBe('x');
   });
 
   it('a name-less element has no name even when its dispatch throws (fallback is null)', () => {

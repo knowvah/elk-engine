@@ -96,9 +96,9 @@ describe('floorDiv / floorMod', () => {
     }
   });
 
-  it('throws RangeError on a zero divisor', () => {
-    expect(() => floorDiv(1, 0)).toThrow(RangeError);
-    expect(() => floorMod(1, 0)).toThrow(RangeError);
+  it('throws ArithmeticException on a zero divisor', () => {
+    expect(() => floorDiv(1, 0)).toThrow(ArithmeticException);
+    expect(() => floorMod(1, 0)).toThrow(ArithmeticException);
   });
 
   it('returns +0 rather than -0', () => {

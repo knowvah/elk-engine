@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { RuntimeException } from '../../../java/lang/RuntimeException.js';
 import type { INode } from '../../nodemodel/INode.js';
 
 /** The Java package of the exceptions a linking cause can be (`ValueConverterException` and subclasses). */
@@ -21,7 +22,7 @@ function javaCauseMessage(cause: Error): string {
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/linking/impl/IllegalNodeException.java
  */
-export class IllegalNodeException extends Error {
+export class IllegalNodeException extends RuntimeException {
   readonly #node: INode;
 
   constructor(node: INode, messageOrCause?: string | Error, cause?: Error) {

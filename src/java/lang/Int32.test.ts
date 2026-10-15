@@ -62,9 +62,9 @@ describe('Int32 named cases', () => {
     expect(rem(INT_MIN, -1)).toBe(0);
   });
 
-  it('div and rem throw RangeError on a zero divisor', () => {
-    expect(() => div(1, 0)).toThrow(RangeError);
-    expect(() => rem(1, 0)).toThrow(RangeError);
+  it('div and rem throw ArithmeticException on a zero divisor', () => {
+    expect(() => div(1, 0)).toThrow(ArithmeticException);
+    expect(() => rem(1, 0)).toThrow(ArithmeticException);
   });
 
   it('neg wraps MIN_VALUE and returns +0 for 0', () => {

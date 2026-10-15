@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { RuntimeException } from '../../java/lang/RuntimeException.js';
 import type { INode } from '../nodemodel/INode.js';
 
 /**
@@ -8,7 +9,7 @@ import type { INode } from '../nodemodel/INode.js';
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/conversion/ValueConverterException.java
  */
-export class ValueConverterException extends Error {
+export class ValueConverterException extends RuntimeException {
   readonly #node: INode | null;
   readonly #message: string | null;
 

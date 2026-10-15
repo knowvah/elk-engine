@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { RuntimeException } from '../java/lang/RuntimeException.js';
 
 /** A `Throwable` as Java's `Throwable.toString()` renders it: `<fully qualified class>: <message>`. */
 export function throwableToString(error: Error): string {
@@ -12,7 +13,7 @@ export function throwableToString(error: Error): string {
  *
  * @see https://www.javadoc.io/doc/com.google.code.gson/gson/2.11.0/com.google.gson/com/google/gson/JsonParseException.html
  */
-export class JsonParseException extends Error {
+export class JsonParseException extends RuntimeException {
   readonly javaName: string = 'com.google.gson.JsonParseException';
 
   constructor(messageOrCause: string | Error, cause?: Error) {

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { RuntimeException } from '../../../java/lang/RuntimeException.js';
 
 /**
  * Thrown by a {@link TextSegmentSet} without tracing when two segments conflict; `AbstractFormatter2` then
@@ -6,7 +7,7 @@
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/internal/RegionTraceMissingException.java
  */
-export class RegionTraceMissingException extends Error {
+export class RegionTraceMissingException extends RuntimeException {
   /**
    * Java `super(cause)`: the detail message is `cause.toString()` (class name, plus `: message` when there is
    * one), or none when there is no cause.

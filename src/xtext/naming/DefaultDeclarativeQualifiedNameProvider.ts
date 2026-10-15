@@ -71,7 +71,11 @@ export class DefaultDeclarativeQualifiedNameProvider extends AbstractImpl {
     return this.computeFullyQualifiedNameFromNameAttribute(obj);
   }
 
-  /** `PolymorphicDispatcher.invoke` with `NullErrorHandler`. */
+  /**
+   * `PolymorphicDispatcher.invoke` with `NullErrorHandler`: only a `java.lang.Error` propagates
+   * (`PolymorphicDispatcher.java:304-307`), here the engine's `RangeError` (stack overflow); every Java exception,
+   * all under `RuntimeException` (AD-16a), and the `TypeError` standing for an NPE give `null`.
+   */
   private invokeDispatcher(obj: EObject): QualifiedName | null {
     try {
       return this.qualifiedName(obj);

@@ -12,7 +12,7 @@ and must run in a browser.
 
 Keep the `plans/` contents — they are the archaeology of this effort. Never
 delete or rewrite them; append to the active mission's `decision-journal.md`.
-Locked decisions (AD-1…AD-15) live in `plans/elk-engine-skeleton/decisions.md`.
+Locked decisions (AD-1…AD-16) live in `plans/elk-engine-skeleton/decisions.md`.
 
 ## The Java Is Sacred
 
@@ -88,7 +88,7 @@ Full list: [`docs/translation-rules.md`](docs/translation-rules.md). Core rows:
 | Guava                         | small local helpers; never a dependency                                                                                                                                                                                        |
 | EMF (ElkGraph)                | plain classes, Java accessor names (AD-11)                                                                                                                                                                                     |
 | `assert`                      | dev-only check helper, no production cost                                                                                                                                                                                      |
-| checked exceptions            | plain `Error` subclasses; keep throw sites                                                                                                                                                                                     |
+| checked exceptions            | `Error` subclasses with the Java parent chain (`Exception`, `RuntimeException`; AD-16); keep throw sites                                                                                                                       |
 
 Hazards: Java `int` arithmetic wraps at 32 bits; field defaults are zero/null/
 false, not `undefined`; `Random` draws (`nextInt`, `nextDouble`, `nextFloat`,

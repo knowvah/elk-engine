@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { RuntimeException } from '../../../java/lang/RuntimeException.js';
 import type { ITextSegment } from '../regionaccess/ITextSegment.js';
 
 /**
@@ -6,7 +7,7 @@ import type { ITextSegment } from '../regionaccess/ITextSegment.js';
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/internal/RegionTrace.java
  */
-export class RegionTrace extends Error {
+export class RegionTrace extends RuntimeException {
   private readonly region: ITextSegment;
 
   constructor(message: string, region: ITextSegment) {

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { ArithmeticException } from './ArithmeticException.js';
 import * as Int64 from './Int64.js';
+import { RuntimeException } from './RuntimeException.js';
 
 const VECTORS_URL = new URL('../../../test/golden/refs/java/numeric.json', import.meta.url);
 const DIV_ZERO_MESSAGE = '/ by zero';
@@ -101,7 +102,7 @@ describe('Int64 named cases', () => {
         caught = e;
       }
       expect(caught).toBeInstanceOf(ArithmeticException);
-      expect(caught).toBeInstanceOf(RangeError);
+      expect(caught).toBeInstanceOf(RuntimeException);
       expect((caught as Error).message).toBe(DIV_ZERO_MESSAGE);
     }
   });

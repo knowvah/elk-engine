@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { RuntimeException } from '../../java/lang/RuntimeException.js';
 
 /**
  * Exception indicating that something is wrong with a passed json. The four Java constructors
@@ -8,7 +9,7 @@
  *
  * @see org.eclipse.elk.graph.json/src/org/eclipse/elk/graph/json/JsonImportException.xtend
  */
-export class JsonImportException extends Error {
+export class JsonImportException extends RuntimeException {
   constructor(message?: string, cause?: unknown) {
     super(message, cause === undefined ? undefined : { cause });
     this.name = 'JsonImportException';
