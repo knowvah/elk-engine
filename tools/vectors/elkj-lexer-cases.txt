@@ -1,0 +1,1605 @@
+# SPDX-License-Identifier: EPL-2.0
+# Cases for ElkjLexerVectors.java (format: see that file's header). Escapes: \n \r \t \\ \uXXXX; "<null>" = null.
+# Families: keywords (3 spellings + near misses), literals, punctuation, STRING, numbers, ids, comments, whitespace,
+# lines, recovery boundaries; converters: Number PropertyKey StringValue NumberValue BooleanValue ID STRING INT
+# SIGNED_INT FLOAT, unknown rule, Document (node-dependent PropertyValue.toValue).
+
+# ---- keywords: every key in three spellings ----
+lex "children"
+lex 'children'
+lex children
+lex "ports"
+lex 'ports'
+lex ports
+lex "labels"
+lex 'labels'
+lex labels
+lex "edges"
+lex 'edges'
+lex edges
+lex "layoutOptions"
+lex 'layoutOptions'
+lex layoutOptions
+lex "properties"
+lex 'properties'
+lex properties
+lex "id"
+lex 'id'
+lex id
+lex "x"
+lex 'x'
+lex x
+lex "y"
+lex 'y'
+lex y
+lex "width"
+lex 'width'
+lex width
+lex "height"
+lex 'height'
+lex height
+lex "sources"
+lex 'sources'
+lex sources
+lex "targets"
+lex 'targets'
+lex targets
+lex "text"
+lex 'text'
+lex text
+
+# ---- keywords: near misses and case ----
+lex "childrenx"
+lex 'childrenx'
+lex childrenx
+lex "Children"
+lex 'Children'
+lex Children
+lex "children
+lex 'children
+lex children"
+lex children'
+lex "children'
+lex 'children"
+lex "portsx"
+lex 'portsx'
+lex portsx
+lex "Ports"
+lex 'Ports'
+lex Ports
+lex "ports
+lex 'ports
+lex ports"
+lex ports'
+lex "ports'
+lex 'ports"
+lex "labelsx"
+lex 'labelsx'
+lex labelsx
+lex "Labels"
+lex 'Labels'
+lex Labels
+lex "labels
+lex 'labels
+lex labels"
+lex labels'
+lex "labels'
+lex 'labels"
+lex "edgesx"
+lex 'edgesx'
+lex edgesx
+lex "Edges"
+lex 'Edges'
+lex Edges
+lex "edges
+lex 'edges
+lex edges"
+lex edges'
+lex "edges'
+lex 'edges"
+lex "layoutOptionsx"
+lex 'layoutOptionsx'
+lex layoutOptionsx
+lex "Layoutoptions"
+lex 'Layoutoptions'
+lex Layoutoptions
+lex "layoutOptions
+lex 'layoutOptions
+lex layoutOptions"
+lex layoutOptions'
+lex "layoutOptions'
+lex 'layoutOptions"
+lex "propertiesx"
+lex 'propertiesx'
+lex propertiesx
+lex "Properties"
+lex 'Properties'
+lex Properties
+lex "properties
+lex 'properties
+lex properties"
+lex properties'
+lex "properties'
+lex 'properties"
+lex "idx"
+lex 'idx'
+lex idx
+lex "Id"
+lex 'Id'
+lex Id
+lex "id
+lex 'id
+lex id"
+lex id'
+lex "id'
+lex 'id"
+lex "xx"
+lex 'xx'
+lex xx
+lex "X"
+lex 'X'
+lex X
+lex "x
+lex 'x
+lex x"
+lex x'
+lex "x'
+lex 'x"
+lex "yx"
+lex 'yx'
+lex yx
+lex "Y"
+lex 'Y'
+lex Y
+lex "y
+lex 'y
+lex y"
+lex y'
+lex "y'
+lex 'y"
+lex "widthx"
+lex 'widthx'
+lex widthx
+lex "Width"
+lex 'Width'
+lex Width
+lex "width
+lex 'width
+lex width"
+lex width'
+lex "width'
+lex 'width"
+lex "heightx"
+lex 'heightx'
+lex heightx
+lex "Height"
+lex 'Height'
+lex Height
+lex "height
+lex 'height
+lex height"
+lex height'
+lex "height'
+lex 'height"
+lex "sourcesx"
+lex 'sourcesx'
+lex sourcesx
+lex "Sources"
+lex 'Sources'
+lex Sources
+lex "sources
+lex 'sources
+lex sources"
+lex sources'
+lex "sources'
+lex 'sources"
+lex "targetsx"
+lex 'targetsx'
+lex targetsx
+lex "Targets"
+lex 'Targets'
+lex Targets
+lex "targets
+lex 'targets
+lex targets"
+lex targets'
+lex "targets'
+lex 'targets"
+lex "textx"
+lex 'textx'
+lex textx
+lex "Text"
+lex 'Text'
+lex Text
+lex "text
+lex 'text
+lex text"
+lex text'
+lex "text'
+lex 'text"
+lex "idx"
+lex 'Id'
+lex children2
+lex "children "
+lex " id"
+lex "id"x
+lex "id""id"
+lex 'id''id'
+lex id id
+lex "id" 'id' id
+lex "layoutOptions"
+lex "LayoutOptions"
+lex "layoutoptions"
+lex "properties"x
+lex "x"y
+lex xy
+lex x1
+lex x_
+lex _x
+lex x.y
+
+# ---- literals and punctuation ----
+lex true
+lex false
+lex null
+lex True
+lex FALSE
+lex Null
+lex truee
+lex nul
+lex "true"
+lex 'false'
+lex "null"
+lex {
+lex }
+lex [
+lex ]
+lex :
+lex ,
+lex {}
+lex []
+lex {"a":1}
+lex {}[]:,
+lex { } [ ] : ,
+lex ;
+lex (
+lex )
+lex <
+lex >
+lex =
+lex /
+lex \\
+lex .
+lex |
+lex ->
+lex #
+lex @
+lex $
+lex %
+lex &
+lex *
+lex !
+lex ?
+lex ~
+lex `
+
+# ---- STRING ----
+lex ""
+lex ''
+lex "a"
+lex 'a'
+lex "a b"
+lex 'a b'
+lex "a'b"
+lex 'a"b'
+lex "a\\"b"
+lex 'a\\'b'
+lex "a\\\\"
+lex "\\n"
+lex "\\u0041"
+lex "\\uzz"
+lex "\\x"
+lex "\\
+lex "abc
+lex 'abc
+lex "abc'
+lex 'abc"
+lex "a\nb"
+lex 'a\nb'
+lex "a\rb"
+lex "a\r\nb"
+lex "a\tb"
+lex "é"
+lex "日本"
+lex "\ud83d\ude00"
+lex "\ud83d"
+lex "a" "b"
+lex "a""b"
+lex "a"'b'
+lex "/* x */"
+lex "// x"
+lex "a:b"
+lex "{}"
+lex "a\\\\\\"b"
+lex "\\"
+lex "\\""
+lex "\\\\"
+lex "a\\
+
+# ---- numbers ----
+lex 0
+lex 007
+lex +1
+lex -1
+lex +
+lex -
+lex +-
+lex -x
+lex 1.5
+lex 1.
+lex .5
+lex 1.e3
+lex 1e5
+lex 1E5
+lex 1e+5
+lex 1E-5
+lex 1.5e3
+lex 1e
+lex 1e+
+lex 1e-
+lex 1.5e
+lex 1.5.3
+lex 1..2
+lex -1.5e-3
+lex +.5
+lex 1-2
+lex 1+2
+lex 1,2
+lex 1:2
+lex a1.5
+lex e5
+lex 1e5x
+lex 1.a
+lex a.1
+lex 00.50
+lex 123456789012345678901234567890
+lex -.5
+lex +1.5
+lex 1 .5
+lex 1. 5
+lex 1e5.5
+lex 1e5e5
+lex 10.
+lex 1ex
+lex 1ex1
+lex -0
+lex -0.0
+lex 0e0
+lex 1E
+lex 1E+
+lex -1.
+lex +1.
+lex -1e
+lex 1.5E+10
+lex 1.e
+lex 1e 5
+lex 1 e5
+lex - 1
+lex + 1
+lex 1_000
+lex 0x10
+lex 1f
+lex 1d
+lex 1L
+lex NaN
+lex Infinity
+lex -Infinity
+lex --1
+lex ++1
+lex -+1
+lex 1.5-
+lex 1.5+
+lex [1,2]
+lex [1.5,-2]
+lex {"x":-1}
+lex 1e5 1e5
+lex 1.5.
+lex ..
+lex .
+
+# ---- IDs ----
+lex a
+lex abc
+lex _
+lex _a
+lex a_
+lex a1
+lex A
+lex Ab_1
+lex $
+lex $a
+lex a$
+lex a-b
+lex a.b
+lex a:b
+lex a b
+lex ab cd
+lex ^a
+lex ^id
+lex ^true
+lex ^
+lex ^1
+lex ^^a
+lex a^b
+lex ^_
+lex ^a1_B
+lex ^ a
+lex ^a^b
+lex 1^a
+lex é
+lex éa
+lex aé
+lex 日
+lex a日
+lex \u00a0a
+lex a\u0301
+lex nodeLabels.placement
+lex org.eclipse.elk.direction
+lex elk.direction
+lex elk
+
+# ---- comments ----
+lex //
+lex // x
+lex // x\n
+lex // x\ny
+lex // x\r
+lex // x\r\n
+lex // x\r\ny
+lex // x\r\r\ny
+lex // x\n\ny
+lex //x//y
+lex a//x
+lex a// x\nb
+lex 1//x
+lex "a"//x
+lex /* */
+lex /* x */
+lex /**/
+lex /***/
+lex /* x
+lex /*
+lex /
+lex / /
+lex /* x *
+lex /* x */ y
+lex /* a\nb */
+lex /* a\r\nb */ c
+lex /* a */ /* b */
+lex /* /* x */ */
+lex /* // x */
+lex // /* x
+lex a/**/b
+lex 1/**/2
+lex /*x*/1
+lex /* "x */"
+lex / * x * /
+lex //\r\r\ny
+
+# ---- whitespace ----
+lex 
+lex    
+lex  
+lex \t
+lex \n
+lex \r
+lex \r\n
+lex  \t\r\n 
+lex a b
+lex a\tb
+lex a\nb
+lex a\rb
+lex a\r\nb
+lex \u000b
+lex \u000c
+lex \u00a0
+lex \ufeff
+lex \u2028
+lex \u2029
+lex \u0085
+lex \u0000
+lex \u0001
+lex \u001f
+lex a\u000bb
+lex a\u000cb
+lex a\u00a0b
+lex \ufeffa
+lex \ufeff{}
+lex \u3000
+lex \u200b
+lex 😀
+lex \ud83d
+lex a\ud83db
+lex \ude00
+
+# ---- lines ----
+lex a\nb\nc
+lex a\r\nb\r\nc
+lex a\rb\rc
+lex a\n\nb
+lex a\r\n\r\nb
+lex a\r\rb
+lex a\n\rb
+lex "a\nb"\nc
+lex "a\r\nb"\nc
+lex /* a\nb */\nc
+lex /* a\r\nb */\nc
+lex // x\nb\n// y\nc
+lex {\n"id": "n",\n"x": 1\n}
+lex {\r\n"id": "n",\r\n"x": 1\r\n}
+lex \n\n\n
+lex \r\r\r
+lex \r\n\r\n\r\n
+lex a\u2028b
+lex a\u0085b
+
+# ---- recovery boundaries and generic samples ----
+lex 10.
+lex 1ex
+lex 1e+x
+lex 1.5e+
+lex "abc\n
+lex 'abc\n
+lex /* x\ny
+lex // x\r
+lex // x\r\r
+lex // x\r\r\ny
+lex "
+lex '
+lex ^
+lex "'
+lex 1.2.3
+lex 1..
+lex ..1
+lex 1.e
+lex 1.5e5.5
+lex -
+lex +
+lex --
+lex 1e5e
+lex "id":"n"
+lex 'id':'n'
+lex id:"n"
+lex {"id":"n","children":[{"id":"c"}],"edges":[{"id":"e","sources":["a"],"targets":["b"]}]}
+lex {id:"n",layoutOptions:{"elk.direction":"UP",'spacing.nodeNode':10,algorithm:layered,"a":true,"b":null}}
+lex {"id":"n","labels":[{"text":"hi","x":1.5,"y":-2,"width":+3,"height":4e1}],"ports":[{"id":"p"}],"properties":{}}
+lex // c\n{"id":"n"} /* d */
+lex {"id":"n",}
+lex [1,2,]
+lex {"a":[{}],"b":{"c":[]}}
+
+# ---- converters: terminals ----
+conv ID toValue abc
+conv ID toValue ^abc
+conv ID toValue ^^a
+conv ID toValue ^node
+conv ID toValue ^
+conv ID toValue a^b
+conv ID toValue
+conv ID toValue <null>
+conv ID toValue é
+conv ID toValue _a1
+conv ID toString str:abc
+conv ID toString str:id
+conv ID toString str:children
+conv ID toString str:true
+conv ID toString str:null
+conv ID toString str:^a
+conv ID toString str:a b
+conv ID toString str:a.b
+conv ID toString str:Node
+conv ID toString str:1a
+conv ID toString str:
+conv ID toString str:é
+conv ID toString str:a-b
+conv ID toString <null>
+conv ID toString int:1
+conv ID toString bool:true
+conv STRING toValue ""
+conv STRING toValue ''
+conv STRING toValue "a"
+conv STRING toValue 'a'
+conv STRING toValue "a'b"
+conv STRING toValue 'a"b'
+conv STRING toValue "a\\"b"
+conv STRING toValue "a\\\\"
+conv STRING toValue "\\n"
+conv STRING toValue "\\t"
+conv STRING toValue "\\u0041"
+conv STRING toValue "\\uzzzz"
+conv STRING toValue "\\x"
+conv STRING toValue "\\"
+conv STRING toValue "\\q"
+conv STRING toValue "a\nb"
+conv STRING toValue 'abc"
+conv STRING toValue "
+conv STRING toValue
+conv STRING toValue abc
+conv STRING toValue "a
+conv STRING toValue a"
+conv STRING toValue <null>
+conv STRING toValue "\\'"
+conv STRING toValue '\\"'
+conv STRING toValue "\\0"
+conv STRING toValue "\\b\\f"
+conv STRING toString str:a
+conv STRING toString str:a"b
+conv STRING toString str:a'b
+conv STRING toString str:a\tb
+conv STRING toString str:a\nb
+conv STRING toString str:a\u001fb
+conv STRING toString str:😀
+conv STRING toString str:// x
+conv STRING toString str:\\
+conv STRING toString str:
+conv STRING toString str:é
+conv STRING toString <null>
+conv STRING toString int:1
+conv STRING toString obj:abc
+conv INT toValue 0
+conv INT toValue 007
+conv INT toValue 99999999999999999999
+conv INT toValue 2147483647
+conv INT toValue 2147483648
+conv INT toValue -1
+conv INT toValue 1.5
+conv INT toValue abc
+conv INT toValue
+conv INT toValue <null>
+conv INT toString int:0
+conv INT toString int:-1
+conv INT toString int:2147483647
+conv INT toString long:5
+conv INT toString str:7
+conv INT toString <null>
+conv INT toString double:1.5
+conv SIGNED_INT toValue 1
+conv SIGNED_INT toValue -1
+conv SIGNED_INT toValue +1
+conv SIGNED_INT toValue 007
+conv SIGNED_INT toValue +007
+conv SIGNED_INT toValue -0
+conv SIGNED_INT toValue 99999999999999999999
+conv SIGNED_INT toValue -2147483648
+conv SIGNED_INT toValue -2147483649
+conv SIGNED_INT toValue abc
+conv SIGNED_INT toValue 1.5
+conv SIGNED_INT toValue
+conv SIGNED_INT toValue <null>
+conv SIGNED_INT toString int:1
+conv SIGNED_INT toString int:-1
+conv SIGNED_INT toString long:5
+conv SIGNED_INT toString str:+7
+conv SIGNED_INT toString <null>
+conv FLOAT toValue 1.5
+conv FLOAT toValue -1.5
+conv FLOAT toValue +1.5
+conv FLOAT toValue 1e3
+conv FLOAT toValue 1E+3
+conv FLOAT toValue 1.e3
+conv FLOAT toValue .5
+conv FLOAT toValue 1.
+conv FLOAT toValue 1e400
+conv FLOAT toValue 4.9e-324
+conv FLOAT toValue NaN
+conv FLOAT toValue Infinity
+conv FLOAT toValue abc
+conv FLOAT toValue
+conv FLOAT toValue <null>
+conv FLOAT toValue 1.5f
+conv FLOAT toValue 0x1p3
+conv FLOAT toString double:1.0
+conv FLOAT toString double:1.5
+conv FLOAT toString double:-0.0
+conv FLOAT toString double:1.0E-5
+conv FLOAT toString double:1.0E21
+conv FLOAT toString double:NaN
+conv FLOAT toString double:Infinity
+conv FLOAT toString float:1.5
+conv FLOAT toString int:1
+conv FLOAT toString <null>
+conv Bogus toValue abc
+conv Bogus toValue
+conv Bogus toValue <null>
+conv Bogus toString str:abc
+conv Bogus toString int:5
+conv Bogus toString <null>
+conv WS toString str: 
+
+# ---- Number (NumberValueConverter) ----
+conv Number toValue 1
+conv Number toValue -1
+conv Number toValue +1
+conv Number toValue 1.5
+conv Number toValue 1e3
+conv Number toValue 1E+3
+conv Number toValue .5
+conv Number toValue 1.
+conv Number toValue NaN
+conv Number toValue Infinity
+conv Number toValue -Infinity
+conv Number toValue 0x10
+conv Number toValue 0x1p3
+conv Number toValue 1f
+conv Number toValue 1d
+conv Number toValue 1F
+conv Number toValue 1D
+conv Number toValue  1
+conv Number toValue 1 
+conv Number toValue   
+conv Number toValue
+conv Number toValue abc
+conv Number toValue 1_0
+conv Number toValue 1,5
+conv Number toValue --1
+conv Number toValue 1e
+conv Number toValue 1e400
+conv Number toValue 1e-400
+conv Number toValue 4.9e-324
+conv Number toValue 00.50
+conv Number toValue 007
+conv Number toValue 123456789012345678901234567890
+conv Number toValue <null>
+conv Number toString double:1.0
+conv Number toString double:0.0
+conv Number toString double:-0.0
+conv Number toString double:-1.0
+conv Number toString double:42.0
+conv Number toString double:1.5
+conv Number toString double:-1.5
+conv Number toString double:0.1
+conv Number toString double:1.0E-5
+conv Number toString double:1.0E21
+conv Number toString double:1.0E10
+conv Number toString double:3000000000.0
+conv Number toString double:-3000000000.0
+conv Number toString double:2147483647.0
+conv Number toString double:2147483648.0
+conv Number toString double:123456789.5
+conv Number toString double:1.0E7
+conv Number toString double:1.0E-3
+conv Number toString double:NaN
+conv Number toString double:Infinity
+conv Number toString double:-Infinity
+conv Number toString double:4.9E-324
+conv Number toString double:1.7976931348623157E308
+conv Number toString <null>
+conv Number toString int:1
+conv Number toString str:1
+
+# ---- PropertyKey (PropertyKeyValueConverter), core registry ----
+conv PropertyKey toValue direction
+conv PropertyKey toValue org.eclipse.elk.direction
+conv PropertyKey toValue elk.direction
+conv PropertyKey toValue eclipse.elk.direction
+conv PropertyKey toValue org.eclipse.elk.Direction
+conv PropertyKey toValue Direction
+conv PropertyKey toValue nodeNode
+conv PropertyKey toValue spacing.nodeNode
+conv PropertyKey toValue elk.spacing.nodeNode
+conv PropertyKey toValue spacing
+conv PropertyKey toValue padding
+conv PropertyKey toValue edgeLabels.inline
+conv PropertyKey toValue nodeLabels.placement
+conv PropertyKey toValue placement
+conv PropertyKey toValue portConstraints
+conv PropertyKey toValue layered.spacing.nodeNodeBetweenLayers
+conv PropertyKey toValue algorithm
+conv PropertyKey toValue priority
+conv PropertyKey toValue position
+conv PropertyKey toValue size
+conv PropertyKey toValue unknownKey
+conv PropertyKey toValue my.custom.key
+conv PropertyKey toValue a.b.c
+conv PropertyKey toValue org.eclipse.elk.noSuchOption
+conv PropertyKey toValue org.eclipse.elk
+conv PropertyKey toValue elk
+conv PropertyKey toValue .
+conv PropertyKey toValue direction.
+conv PropertyKey toValue .direction
+conv PropertyKey toValue ..direction
+conv PropertyKey toValue elk..direction
+conv PropertyKey toValue ^direction
+conv PropertyKey toValue ^node
+conv PropertyKey toValue org.eclipse.elk.^direction
+conv PropertyKey toValue ^org.eclipse.elk.direction
+conv PropertyKey toValue ^node.^edge
+conv PropertyKey toValue node
+conv PropertyKey toValue ^
+conv PropertyKey toValue ^^a
+conv PropertyKey toValue a^b
+conv PropertyKey toValue 1a
+conv PropertyKey toValue
+conv PropertyKey toValue <null>
+conv PropertyKey toValue  
+conv PropertyKey toValue direction 
+conv PropertyKey toValue "direction"
+conv PropertyKey toValue 'direction'
+conv PropertyKey toValue "org.eclipse.elk.direction"
+conv PropertyKey toValue 'elk.direction'
+conv PropertyKey toValue "spacing.nodeNode"
+conv PropertyKey toValue "unknown"
+conv PropertyKey toValue 'unknown'
+conv PropertyKey toValue "my.custom.key"
+conv PropertyKey toValue ""
+conv PropertyKey toValue ''
+conv PropertyKey toValue "
+conv PropertyKey toValue "a
+conv PropertyKey toValue a"
+conv PropertyKey toValue "a'
+conv PropertyKey toValue '"'
+conv PropertyKey toValue "'
+conv PropertyKey toValue '"
+conv PropertyKey toValue "^node"
+conv PropertyKey toValue "a b"
+conv PropertyKey toValue "a-b"
+conv PropertyKey toValue "1a"
+conv PropertyKey toValue "a.1b"
+conv PropertyKey toValue "id"
+conv PropertyKey toValue 'id'
+conv PropertyKey toValue "layoutOptions"
+conv PropertyKey toString opt:org.eclipse.elk.direction
+conv PropertyKey toString opt:org.eclipse.elk.padding
+conv PropertyKey toString opt:org.eclipse.elk.spacing.nodeNode
+conv PropertyKey toString opt:org.eclipse.elk.nodeLabels.placement
+conv PropertyKey toString opt:org.eclipse.elk.edgeLabels.inline
+conv PropertyKey toString opt:org.eclipse.elk.portConstraints
+conv PropertyKey toString opt:org.eclipse.elk.algorithm
+conv PropertyKey toString opt:org.eclipse.elk.position
+conv PropertyKey toString opt:org.eclipse.elk.priority
+conv PropertyKey toString opt:org.eclipse.elk.spacing.edgeEdge
+conv PropertyKey toString opt:org.eclipse.elk.spacing.portPort
+conv PropertyKey toString opt:org.eclipse.elk.json.edgeCoords
+conv PropertyKey toString prop:org.eclipse.elk.direction
+conv PropertyKey toString prop:org.eclipse.elk.spacing.nodeNode
+conv PropertyKey toString prop:org.eclipse.elk.noSuchOption
+conv PropertyKey toString prop:my.custom.key
+conv PropertyKey toString prop:a
+conv PropertyKey toString prop:a.b.c
+conv PropertyKey toString prop:node
+conv PropertyKey toString prop:node.edge
+conv PropertyKey toString prop:org.eclipse.elk.node
+conv PropertyKey toString prop:x.node.y
+conv PropertyKey toString prop:1a
+conv PropertyKey toString prop:a-b
+conv PropertyKey toString prop:a..b
+conv PropertyKey toString prop:.a
+conv PropertyKey toString prop:a.
+conv PropertyKey toString prop:.
+conv PropertyKey toString prop:^a
+conv PropertyKey toString prop:
+conv PropertyKey toString prop:id
+conv PropertyKey toString prop:children.id
+conv PropertyKey toString <null>
+conv PropertyKey toString str:direction
+conv PropertyKey toString int:1
+conv PropertyKey toString proxy:x
+
+# ---- PropertyValue family, null node (StringValue NumberValue BooleanValue) ----
+conv StringValue toValue "abc"
+conv StringValue toValue 'abc'
+conv StringValue toValue ""
+conv StringValue toValue ''
+conv StringValue toValue "a b"
+conv StringValue toValue "\\n"
+conv StringValue toValue "
+conv StringValue toValue '
+conv StringValue toValue
+conv StringValue toValue null
+conv StringValue toValue <null>
+conv StringValue toValue abc
+conv StringValue toValue a.b
+conv StringValue toValue ^a
+conv StringValue toValue 1abc
+conv StringValue toValue 1.5
+conv StringValue toValue 1
+conv StringValue toValue -1
+conv StringValue toValue +1e3
+conv StringValue toValue 007
+conv StringValue toValue 1.
+conv StringValue toValue true
+conv StringValue toValue false
+conv StringValue toValue True
+conv StringValue toValue .
+conv StringValue toValue a..b
+conv StringValue toValue ^
+conv StringValue toValue $x
+conv StringValue toValue _x
+conv StringValue toValue éx
+conv StringValue toValue 日
+conv StringValue toValue a b
+conv StringValue toValue "a
+conv StringValue toValue a"
+conv StringValue toValue '"
+conv StringValue toValue "'
+conv StringValue toValue ""x
+conv StringValue toValue "null"
+conv StringValue toValue "true"
+conv StringValue toValue 'null'
+conv StringValue toValue "1.5"
+conv StringValue toValue  
+conv StringValue toValue   x 
+conv StringValue toValue """
+conv StringValue toValue "'"
+conv StringValue toValue 'a"
+conv NumberValue toValue "abc"
+conv NumberValue toValue 'abc'
+conv NumberValue toValue ""
+conv NumberValue toValue ''
+conv NumberValue toValue "a b"
+conv NumberValue toValue "\\n"
+conv NumberValue toValue "
+conv NumberValue toValue '
+conv NumberValue toValue
+conv NumberValue toValue null
+conv NumberValue toValue <null>
+conv NumberValue toValue abc
+conv NumberValue toValue a.b
+conv NumberValue toValue ^a
+conv NumberValue toValue 1abc
+conv NumberValue toValue 1.5
+conv NumberValue toValue 1
+conv NumberValue toValue -1
+conv NumberValue toValue +1e3
+conv NumberValue toValue 007
+conv NumberValue toValue 1.
+conv NumberValue toValue true
+conv NumberValue toValue false
+conv NumberValue toValue True
+conv NumberValue toValue .
+conv NumberValue toValue a..b
+conv NumberValue toValue ^
+conv NumberValue toValue $x
+conv NumberValue toValue _x
+conv NumberValue toValue éx
+conv NumberValue toValue 日
+conv NumberValue toValue a b
+conv NumberValue toValue "a
+conv NumberValue toValue a"
+conv NumberValue toValue '"
+conv NumberValue toValue "'
+conv NumberValue toValue ""x
+conv NumberValue toValue "null"
+conv NumberValue toValue "true"
+conv NumberValue toValue 'null'
+conv NumberValue toValue "1.5"
+conv NumberValue toValue  
+conv NumberValue toValue   x 
+conv NumberValue toValue """
+conv NumberValue toValue "'"
+conv NumberValue toValue 'a"
+conv BooleanValue toValue "abc"
+conv BooleanValue toValue 'abc'
+conv BooleanValue toValue ""
+conv BooleanValue toValue ''
+conv BooleanValue toValue "a b"
+conv BooleanValue toValue "\\n"
+conv BooleanValue toValue "
+conv BooleanValue toValue '
+conv BooleanValue toValue
+conv BooleanValue toValue null
+conv BooleanValue toValue <null>
+conv BooleanValue toValue abc
+conv BooleanValue toValue a.b
+conv BooleanValue toValue ^a
+conv BooleanValue toValue 1abc
+conv BooleanValue toValue 1.5
+conv BooleanValue toValue 1
+conv BooleanValue toValue -1
+conv BooleanValue toValue +1e3
+conv BooleanValue toValue 007
+conv BooleanValue toValue 1.
+conv BooleanValue toValue true
+conv BooleanValue toValue false
+conv BooleanValue toValue True
+conv BooleanValue toValue .
+conv BooleanValue toValue a..b
+conv BooleanValue toValue ^
+conv BooleanValue toValue $x
+conv BooleanValue toValue _x
+conv BooleanValue toValue éx
+conv BooleanValue toValue 日
+conv BooleanValue toValue a b
+conv BooleanValue toValue "a
+conv BooleanValue toValue a"
+conv BooleanValue toValue '"
+conv BooleanValue toValue "'
+conv BooleanValue toValue ""x
+conv BooleanValue toValue "null"
+conv BooleanValue toValue "true"
+conv BooleanValue toValue 'null'
+conv BooleanValue toValue "1.5"
+conv BooleanValue toValue  
+conv BooleanValue toValue   x 
+conv BooleanValue toValue """
+conv BooleanValue toValue "'"
+conv BooleanValue toValue 'a"
+conv StringValue toString <null>
+conv StringValue toString double:1.0
+conv StringValue toString double:-3.0
+conv StringValue toString double:0.0
+conv StringValue toString double:-0.0
+conv StringValue toString double:1.5
+conv StringValue toString double:1.0E-5
+conv StringValue toString double:1.0E21
+conv StringValue toString double:3000000000.0
+conv StringValue toString double:NaN
+conv StringValue toString double:Infinity
+conv StringValue toString double:-Infinity
+conv StringValue toString int:5
+conv StringValue toString int:-5
+conv StringValue toString long:5
+conv StringValue toString float:1.5
+conv StringValue toString float:2.0
+conv StringValue toString bool:true
+conv StringValue toString bool:false
+conv StringValue toString enum:org.eclipse.elk.core.options.Direction.UP
+conv StringValue toString enum:org.eclipse.elk.core.options.PortConstraints.FIXED_ORDER
+conv StringValue toString enum:java.util.concurrent.TimeUnit.SECONDS
+conv StringValue toString str:true
+conv StringValue toString str:false
+conv StringValue toString str:null
+conv StringValue toString str:True
+conv StringValue toString str:1.5
+conv StringValue toString str:1e3
+conv StringValue toString str:1
+conv StringValue toString str:-1
+conv StringValue toString str:+1
+conv StringValue toString str:.5
+conv StringValue toString str:1.
+conv StringValue toString str:NaN
+conv StringValue toString str:Infinity
+conv StringValue toString str:-Infinity
+conv StringValue toString str:0x10
+conv StringValue toString str:1f
+conv StringValue toString str:1d
+conv StringValue toString str: 1
+conv StringValue toString str:1 
+conv StringValue toString str:abc
+conv StringValue toString str:a.b
+conv StringValue toString str:a b
+conv StringValue toString str:1abc
+conv StringValue toString str:
+conv StringValue toString str:""
+conv StringValue toString str:'x'
+conv StringValue toString str:"x"
+conv StringValue toString str:^x
+conv StringValue toString str:node
+conv StringValue toString str:a,b
+conv StringValue toString str:é
+conv StringValue toString str:a\nb
+conv StringValue toString str:a"b
+conv StringValue toString str:a'b
+conv StringValue toString str:\\
+conv StringValue toString str:with space.and.dots
+conv StringValue toString kvector:1,2
+conv StringValue toString kvector:1.5,-2.5
+conv StringValue toString obj:abc
+conv StringValue toString obj:a b
+conv StringValue toString obj:1.5
+conv StringValue toString obj:
+conv StringValue toString obj:true
+conv StringValue toString proxy:abc
+conv StringValue toString proxy:1.5
+conv StringValue toString proxy:true
+conv StringValue toString proxy:null
+conv StringValue toString proxy:a b
+conv StringValue toString proxy:a.b
+conv StringValue toString proxy:
+conv StringValue toString proxy:"x"
+conv NumberValue toString double:2.0
+conv NumberValue toString double:2.5
+conv NumberValue toString int:3
+conv NumberValue toString str:4
+conv NumberValue toString <null>
+conv BooleanValue toString bool:true
+conv BooleanValue toString bool:false
+conv BooleanValue toString str:true
+conv BooleanValue toString str:false
+conv BooleanValue toString str:null
+conv BooleanValue toString <null>
+conv BooleanValue toString int:1
+
+# ---- Document: PropertyValue.toValue with a real node (known and unknown keys, both quote styles) ----
+conv Document parse direction: UP
+conv Document parse direction: DOWN
+conv Document parse direction: up
+conv Document parse direction: NOSUCH
+conv Document parse direction: "UP"
+conv Document parse direction: 'UP'
+conv Document parse direction: "RIGHT"
+conv Document parse direction: 1
+conv Document parse direction: true
+conv Document parse direction: null
+conv Document parse direction: ""
+conv Document parse direction: ''
+conv Document parse direction: -1
+conv Document parse direction: "  UP  "
+conv Document parse elk.direction: UP
+conv Document parse org.eclipse.elk.direction: RIGHT
+conv Document parse org.eclipse.elk.direction: "LEFT"
+conv Document parse "direction": UP
+conv Document parse "direction": "UP"
+conv Document parse 'direction': UP
+conv Document parse 'direction': 'UP'
+conv Document parse "org.eclipse.elk.direction": "LEFT"
+conv Document parse 'elk.direction': 'DOWN'
+conv Document parse spacing.nodeNode: 10
+conv Document parse spacing.nodeNode: 10.5
+conv Document parse spacing.nodeNode: -3
+conv Document parse spacing.nodeNode: 1e2
+conv Document parse spacing.nodeNode: "10"
+conv Document parse spacing.nodeNode: '2.5'
+conv Document parse spacing.nodeNode: abc
+conv Document parse spacing.nodeNode: "abc"
+conv Document parse spacing.nodeNode: true
+conv Document parse spacing.nodeNode: null
+conv Document parse spacing.nodeNode: ""
+conv Document parse spacing.nodeNode: +3
+conv Document parse spacing.nodeNode: 1.
+conv Document parse spacing.nodeNode: .5
+conv Document parse spacing.nodeNode: 1..2
+conv Document parse spacing.nodeNode: "1e2"
+conv Document parse spacing.nodeNode: "+5"
+conv Document parse spacing.nodeNode: 007
+conv Document parse "spacing.nodeNode": 10
+conv Document parse "spacing.nodeNode": "10"
+conv Document parse priority: 3
+conv Document parse priority: 3.5
+conv Document parse priority: -1
+conv Document parse priority: "7"
+conv Document parse priority: abc
+conv Document parse priority: 99999999999
+conv Document parse priority: "-2"
+conv Document parse priority: 1e2
+conv Document parse priority: true
+conv Document parse omitNodeMicroLayout: true
+conv Document parse omitNodeMicroLayout: false
+conv Document parse omitNodeMicroLayout: "true"
+conv Document parse omitNodeMicroLayout: True
+conv Document parse omitNodeMicroLayout: 1
+conv Document parse omitNodeMicroLayout: abc
+conv Document parse omitNodeMicroLayout: "false"
+conv Document parse omitNodeMicroLayout: null
+conv Document parse omitNodeMicroLayout: ""
+conv Document parse algorithm: layered
+conv Document parse algorithm: org.eclipse.elk.layered
+conv Document parse algorithm: "org.eclipse.elk.layered"
+conv Document parse algorithm: 'x y'
+conv Document parse algorithm: a.b.c
+conv Document parse algorithm: 12
+conv Document parse algorithm: true
+conv Document parse algorithm: ""
+conv Document parse algorithm: null
+conv Document parse algorithm: "layered"
+conv Document parse position: "1,2"
+conv Document parse position: "(1,2)"
+conv Document parse position: "[1.5, 2.5]"
+conv Document parse position: 1
+conv Document parse position: abc
+conv Document parse position: ""
+conv Document parse position: "x,y"
+conv Document parse "position": "1,2"
+conv Document parse elk.padding: "[top=1,left=2,bottom=3,right=4]"
+conv Document parse elk.padding: 5
+conv Document parse elk.padding: "[top=a]"
+conv Document parse elk.padding: "1,2,3,4"
+conv Document parse padding: "[top=1,left=2,bottom=3,right=4]"
+conv Document parse padding: 5
+conv Document parse padding: "5"
+conv Document parse size: 12
+conv Document parse size: abc
+conv Document parse size: "1,2"
+conv Document parse nodeLabels.placement: "H_LEFT V_TOP"
+conv Document parse nodeLabels.placement: "H_LEFT, V_TOP INSIDE"
+conv Document parse nodeLabels.placement: INSIDE
+conv Document parse nodeLabels.placement: "INSIDE"
+conv Document parse nodeLabels.placement: "[INSIDE, H_LEFT]"
+conv Document parse nodeLabels.placement: "NOSUCH"
+conv Document parse nodeLabels.placement: ""
+conv Document parse portConstraints: FIXED_ORDER
+conv Document parse portConstraints: "FIXED_POS"
+conv Document parse portConstraints: "NOSUCH"
+conv Document parse portConstraints: 1
+conv Document parse edgeLabels.inline: true
+conv Document parse edgeLabels.inline: "false"
+conv Document parse edgeLabels.inline: abc
+conv Document parse custom.unknown.key: 12
+conv Document parse custom.unknown.key: abc
+conv Document parse custom.unknown.key: "abc"
+conv Document parse custom.unknown.key: true
+conv Document parse custom.unknown.key: a.b
+conv Document parse custom.unknown.key: 'q'
+conv Document parse custom.unknown.key: ""
+conv Document parse custom.unknown.key: null
+conv Document parse custom.unknown.key: -1.5e3
+conv Document parse custom.unknown.key: 1abc
+conv Document parse custom.unknown.key: 1.5
+conv Document parse custom.unknown.key: "1.5"
+conv Document parse custom.unknown.key: false
+conv Document parse custom.unknown.key: "null"
+conv Document parse custom.unknown.key: [1]
+conv Document parse custom.unknown.key: {}
+conv Document parse "custom key": 1
+conv Document parse "custom key": "v"
+conv Document parse "custom key": 'v'
+conv Document parse 'custom key': 1
+conv Document parse 'custom key': 'v'
+conv Document parse unknown: 1
+conv Document parse unknown: "v"
+conv Document parse x: 1
+conv Document parse x: "v"
+conv Document parse id: "n"
+conv Document parse id: 1
+conv Document parse text: "t"
+conv Document parse "unknown": 1
+conv Document parse "unknown": "v"
+conv Document parse 'unknown': 1
+conv Document parse 'unknown': 'v'
+conv Document parse a:b: 1
+conv Document parse : 1
+conv Document parse "": 1
+conv Document parse ": 1
+conv Document parse node: 1
+conv Document parse ^node: 1
+conv Document parse a.^node.b: 1
+conv Document parse a . b: 1
+conv Document parse direction: UP priority: 3
+conv Document parse direction: UP, priority: 3
+conv Document parse direction: UP, direction: DOWN
+conv Document parse direction:
+conv Document parse direction
+conv Document parse : UP
+conv Document parse 1: UP
+conv Document parse true: UP
+conv Document parse null: UP
+conv Document parse -1: UP
+conv Document parse a: b: c
+conv Document parse "direction": UP,
+conv Document parse spacing.nodeNode: 10 20
+
+# ---- Document: quoted-key forms (dotted keys are not bare ID in the grammar) ----
+conv Document parse "elk.direction": UP
+conv Document parse 'elk.direction': UP
+conv Document parse "org.eclipse.elk.direction": RIGHT
+conv Document parse 'org.eclipse.elk.direction': RIGHT
+conv Document parse 'org.eclipse.elk.direction': "LEFT"
+conv Document parse 'spacing.nodeNode': 10
+conv Document parse "spacing.nodeNode": 10.5
+conv Document parse 'spacing.nodeNode': 10.5
+conv Document parse "spacing.nodeNode": -3
+conv Document parse 'spacing.nodeNode': -3
+conv Document parse "spacing.nodeNode": 1e2
+conv Document parse 'spacing.nodeNode': 1e2
+conv Document parse 'spacing.nodeNode': "10"
+conv Document parse "spacing.nodeNode": '2.5'
+conv Document parse 'spacing.nodeNode': '2.5'
+conv Document parse "spacing.nodeNode": abc
+conv Document parse 'spacing.nodeNode': abc
+conv Document parse "spacing.nodeNode": "abc"
+conv Document parse 'spacing.nodeNode': "abc"
+conv Document parse "spacing.nodeNode": true
+conv Document parse 'spacing.nodeNode': true
+conv Document parse "spacing.nodeNode": null
+conv Document parse 'spacing.nodeNode': null
+conv Document parse "spacing.nodeNode": ""
+conv Document parse 'spacing.nodeNode': ""
+conv Document parse "spacing.nodeNode": +3
+conv Document parse 'spacing.nodeNode': +3
+conv Document parse "spacing.nodeNode": 1.
+conv Document parse 'spacing.nodeNode': 1.
+conv Document parse "spacing.nodeNode": .5
+conv Document parse 'spacing.nodeNode': .5
+conv Document parse "spacing.nodeNode": 1..2
+conv Document parse 'spacing.nodeNode': 1..2
+conv Document parse "spacing.nodeNode": "1e2"
+conv Document parse 'spacing.nodeNode': "1e2"
+conv Document parse "spacing.nodeNode": "+5"
+conv Document parse 'spacing.nodeNode': "+5"
+conv Document parse "spacing.nodeNode": 007
+conv Document parse 'spacing.nodeNode': 007
+conv Document parse "elk.padding": "[top=1,left=2,bottom=3,right=4]"
+conv Document parse 'elk.padding': "[top=1,left=2,bottom=3,right=4]"
+conv Document parse "elk.padding": 5
+conv Document parse 'elk.padding': 5
+conv Document parse "elk.padding": "[top=a]"
+conv Document parse 'elk.padding': "[top=a]"
+conv Document parse "elk.padding": "1,2,3,4"
+conv Document parse 'elk.padding': "1,2,3,4"
+conv Document parse "nodeLabels.placement": "H_LEFT V_TOP"
+conv Document parse 'nodeLabels.placement': "H_LEFT V_TOP"
+conv Document parse "nodeLabels.placement": "H_LEFT, V_TOP INSIDE"
+conv Document parse 'nodeLabels.placement': "H_LEFT, V_TOP INSIDE"
+conv Document parse "nodeLabels.placement": INSIDE
+conv Document parse 'nodeLabels.placement': INSIDE
+conv Document parse "nodeLabels.placement": "INSIDE"
+conv Document parse 'nodeLabels.placement': "INSIDE"
+conv Document parse "nodeLabels.placement": "[INSIDE, H_LEFT]"
+conv Document parse 'nodeLabels.placement': "[INSIDE, H_LEFT]"
+conv Document parse "nodeLabels.placement": "NOSUCH"
+conv Document parse 'nodeLabels.placement': "NOSUCH"
+conv Document parse "nodeLabels.placement": ""
+conv Document parse 'nodeLabels.placement': ""
+conv Document parse "edgeLabels.inline": true
+conv Document parse 'edgeLabels.inline': true
+conv Document parse "edgeLabels.inline": "false"
+conv Document parse 'edgeLabels.inline': "false"
+conv Document parse "edgeLabels.inline": abc
+conv Document parse 'edgeLabels.inline': abc
+conv Document parse "custom.unknown.key": 12
+conv Document parse 'custom.unknown.key': 12
+conv Document parse "custom.unknown.key": abc
+conv Document parse 'custom.unknown.key': abc
+conv Document parse "custom.unknown.key": "abc"
+conv Document parse 'custom.unknown.key': "abc"
+conv Document parse "custom.unknown.key": true
+conv Document parse 'custom.unknown.key': true
+conv Document parse "custom.unknown.key": a.b
+conv Document parse 'custom.unknown.key': a.b
+conv Document parse "custom.unknown.key": 'q'
+conv Document parse 'custom.unknown.key': 'q'
+conv Document parse "custom.unknown.key": ""
+conv Document parse 'custom.unknown.key': ""
+conv Document parse "custom.unknown.key": null
+conv Document parse 'custom.unknown.key': null
+conv Document parse "custom.unknown.key": -1.5e3
+conv Document parse 'custom.unknown.key': -1.5e3
+conv Document parse "custom.unknown.key": 1abc
+conv Document parse 'custom.unknown.key': 1abc
+conv Document parse "custom.unknown.key": 1.5
+conv Document parse 'custom.unknown.key': 1.5
+conv Document parse "custom.unknown.key": "1.5"
+conv Document parse 'custom.unknown.key': "1.5"
+conv Document parse "custom.unknown.key": false
+conv Document parse 'custom.unknown.key': false
+conv Document parse "custom.unknown.key": "null"
+conv Document parse 'custom.unknown.key': "null"
+conv Document parse "custom.unknown.key": [1]
+conv Document parse 'custom.unknown.key': [1]
+conv Document parse "custom.unknown.key": {}
+conv Document parse 'custom.unknown.key': {}
+conv Document parse "spacing.nodeNode": 10 20
+conv Document parse 'spacing.nodeNode': 10 20
+conv Document parse 'direction': "UP"
+conv Document parse direction: 'RIGHT'
+conv Document parse "direction": 'RIGHT'
+conv Document parse 'direction': 'RIGHT'
+conv Document parse direction: "3"
+conv Document parse "direction": "3"
+conv Document parse 'direction': "3"
+conv Document parse direction: '3.5'
+conv Document parse "direction": '3.5'
+conv Document parse 'direction': '3.5'
+conv Document parse direction: "true"
+conv Document parse "direction": "true"
+conv Document parse 'direction': "true"
+conv Document parse direction: 'false'
+conv Document parse "direction": 'false'
+conv Document parse 'direction': 'false'
+conv Document parse direction: "layered"
+conv Document parse "direction": "layered"
+conv Document parse 'direction': "layered"
+conv Document parse direction: "FIXED_ORDER"
+conv Document parse "direction": "FIXED_ORDER"
+conv Document parse 'direction': "FIXED_ORDER"
+conv Document parse direction: "1,2"
+conv Document parse "direction": "1,2"
+conv Document parse 'direction': "1,2"
+conv Document parse direction: "12"
+conv Document parse "direction": "12"
+conv Document parse 'direction': "12"
+conv Document parse priority: "UP"
+conv Document parse "priority": "UP"
+conv Document parse 'priority': "UP"
+conv Document parse priority: 'RIGHT'
+conv Document parse "priority": 'RIGHT'
+conv Document parse 'priority': 'RIGHT'
+conv Document parse priority: "3"
+conv Document parse "priority": "3"
+conv Document parse 'priority': "3"
+conv Document parse priority: '3.5'
+conv Document parse "priority": '3.5'
+conv Document parse 'priority': '3.5'
+conv Document parse priority: "true"
+conv Document parse "priority": "true"
+conv Document parse 'priority': "true"
+conv Document parse priority: 'false'
+conv Document parse "priority": 'false'
+conv Document parse 'priority': 'false'
+conv Document parse priority: "layered"
+conv Document parse "priority": "layered"
+conv Document parse 'priority': "layered"
+conv Document parse priority: "FIXED_ORDER"
+conv Document parse "priority": "FIXED_ORDER"
+conv Document parse 'priority': "FIXED_ORDER"
+conv Document parse priority: "1,2"
+conv Document parse "priority": "1,2"
+conv Document parse 'priority': "1,2"
+conv Document parse priority: "12"
+conv Document parse "priority": "12"
+conv Document parse 'priority': "12"
+conv Document parse omitNodeMicroLayout: "UP"
+conv Document parse "omitNodeMicroLayout": "UP"
+conv Document parse 'omitNodeMicroLayout': "UP"
+conv Document parse omitNodeMicroLayout: 'RIGHT'
+conv Document parse "omitNodeMicroLayout": 'RIGHT'
+conv Document parse 'omitNodeMicroLayout': 'RIGHT'
+conv Document parse omitNodeMicroLayout: "3"
+conv Document parse "omitNodeMicroLayout": "3"
+conv Document parse 'omitNodeMicroLayout': "3"
+conv Document parse omitNodeMicroLayout: '3.5'
+conv Document parse "omitNodeMicroLayout": '3.5'
+conv Document parse 'omitNodeMicroLayout': '3.5'
+conv Document parse "omitNodeMicroLayout": "true"
+conv Document parse 'omitNodeMicroLayout': "true"
+conv Document parse omitNodeMicroLayout: 'false'
+conv Document parse "omitNodeMicroLayout": 'false'
+conv Document parse 'omitNodeMicroLayout': 'false'
+conv Document parse omitNodeMicroLayout: "layered"
+conv Document parse "omitNodeMicroLayout": "layered"
+conv Document parse 'omitNodeMicroLayout': "layered"
+conv Document parse omitNodeMicroLayout: "FIXED_ORDER"
+conv Document parse "omitNodeMicroLayout": "FIXED_ORDER"
+conv Document parse 'omitNodeMicroLayout': "FIXED_ORDER"
+conv Document parse omitNodeMicroLayout: "1,2"
+conv Document parse "omitNodeMicroLayout": "1,2"
+conv Document parse 'omitNodeMicroLayout': "1,2"
+conv Document parse omitNodeMicroLayout: "12"
+conv Document parse "omitNodeMicroLayout": "12"
+conv Document parse 'omitNodeMicroLayout': "12"
+conv Document parse algorithm: "UP"
+conv Document parse "algorithm": "UP"
+conv Document parse 'algorithm': "UP"
+conv Document parse algorithm: 'RIGHT'
+conv Document parse "algorithm": 'RIGHT'
+conv Document parse 'algorithm': 'RIGHT'
+conv Document parse algorithm: "3"
+conv Document parse "algorithm": "3"
+conv Document parse 'algorithm': "3"
+conv Document parse algorithm: '3.5'
+conv Document parse "algorithm": '3.5'
+conv Document parse 'algorithm': '3.5'
+conv Document parse algorithm: "true"
+conv Document parse "algorithm": "true"
+conv Document parse 'algorithm': "true"
+conv Document parse algorithm: 'false'
+conv Document parse "algorithm": 'false'
+conv Document parse 'algorithm': 'false'
+conv Document parse "algorithm": "layered"
+conv Document parse 'algorithm': "layered"
+conv Document parse algorithm: "FIXED_ORDER"
+conv Document parse "algorithm": "FIXED_ORDER"
+conv Document parse 'algorithm': "FIXED_ORDER"
+conv Document parse algorithm: "1,2"
+conv Document parse "algorithm": "1,2"
+conv Document parse 'algorithm': "1,2"
+conv Document parse algorithm: "12"
+conv Document parse "algorithm": "12"
+conv Document parse 'algorithm': "12"
+conv Document parse size: "UP"
+conv Document parse "size": "UP"
+conv Document parse 'size': "UP"
+conv Document parse size: 'RIGHT'
+conv Document parse "size": 'RIGHT'
+conv Document parse 'size': 'RIGHT'
+conv Document parse size: "3"
+conv Document parse "size": "3"
+conv Document parse 'size': "3"
+conv Document parse size: '3.5'
+conv Document parse "size": '3.5'
+conv Document parse 'size': '3.5'
+conv Document parse size: "true"
+conv Document parse "size": "true"
+conv Document parse 'size': "true"
+conv Document parse size: 'false'
+conv Document parse "size": 'false'
+conv Document parse 'size': 'false'
+conv Document parse size: "layered"
+conv Document parse "size": "layered"
+conv Document parse 'size': "layered"
+conv Document parse size: "FIXED_ORDER"
+conv Document parse "size": "FIXED_ORDER"
+conv Document parse 'size': "FIXED_ORDER"
+conv Document parse "size": "1,2"
+conv Document parse 'size': "1,2"
+conv Document parse size: "12"
+conv Document parse "size": "12"
+conv Document parse 'size': "12"
+conv Document parse position: "UP"
+conv Document parse "position": "UP"
+conv Document parse 'position': "UP"
+conv Document parse position: 'RIGHT'
+conv Document parse "position": 'RIGHT'
+conv Document parse 'position': 'RIGHT'
+conv Document parse position: "3"
+conv Document parse "position": "3"
+conv Document parse 'position': "3"
+conv Document parse position: '3.5'
+conv Document parse "position": '3.5'
+conv Document parse 'position': '3.5'
+conv Document parse position: "true"
+conv Document parse "position": "true"
+conv Document parse 'position': "true"
+conv Document parse position: 'false'
+conv Document parse "position": 'false'
+conv Document parse 'position': 'false'
+conv Document parse position: "layered"
+conv Document parse "position": "layered"
+conv Document parse 'position': "layered"
+conv Document parse position: "FIXED_ORDER"
+conv Document parse "position": "FIXED_ORDER"
+conv Document parse 'position': "FIXED_ORDER"
+conv Document parse 'position': "1,2"
+conv Document parse position: "12"
+conv Document parse "position": "12"
+conv Document parse 'position': "12"
+conv Document parse padding: "UP"
+conv Document parse "padding": "UP"
+conv Document parse 'padding': "UP"
+conv Document parse padding: 'RIGHT'
+conv Document parse "padding": 'RIGHT'
+conv Document parse 'padding': 'RIGHT'
+conv Document parse padding: "3"
+conv Document parse "padding": "3"
+conv Document parse 'padding': "3"
+conv Document parse padding: '3.5'
+conv Document parse "padding": '3.5'
+conv Document parse 'padding': '3.5'
+conv Document parse padding: "true"
+conv Document parse "padding": "true"
+conv Document parse 'padding': "true"
+conv Document parse padding: 'false'
+conv Document parse "padding": 'false'
+conv Document parse 'padding': 'false'
+conv Document parse padding: "layered"
+conv Document parse "padding": "layered"
+conv Document parse 'padding': "layered"
+conv Document parse padding: "FIXED_ORDER"
+conv Document parse "padding": "FIXED_ORDER"
+conv Document parse 'padding': "FIXED_ORDER"
+conv Document parse padding: "1,2"
+conv Document parse "padding": "1,2"
+conv Document parse 'padding': "1,2"
+conv Document parse padding: "12"
+conv Document parse "padding": "12"
+conv Document parse 'padding': "12"
+conv Document parse portConstraints: "UP"
+conv Document parse "portConstraints": "UP"
+conv Document parse 'portConstraints': "UP"
+conv Document parse portConstraints: 'RIGHT'
+conv Document parse "portConstraints": 'RIGHT'
+conv Document parse 'portConstraints': 'RIGHT'
+conv Document parse portConstraints: "3"
+conv Document parse "portConstraints": "3"
+conv Document parse 'portConstraints': "3"
+conv Document parse portConstraints: '3.5'
+conv Document parse "portConstraints": '3.5'
+conv Document parse 'portConstraints': '3.5'
+conv Document parse portConstraints: "true"
+conv Document parse "portConstraints": "true"
+conv Document parse 'portConstraints': "true"
+conv Document parse portConstraints: 'false'
+conv Document parse "portConstraints": 'false'
+conv Document parse 'portConstraints': 'false'
+conv Document parse portConstraints: "layered"
+conv Document parse "portConstraints": "layered"
+conv Document parse 'portConstraints': "layered"
+conv Document parse portConstraints: "FIXED_ORDER"
+conv Document parse "portConstraints": "FIXED_ORDER"
+conv Document parse 'portConstraints': "FIXED_ORDER"
+conv Document parse portConstraints: "1,2"
+conv Document parse "portConstraints": "1,2"
+conv Document parse 'portConstraints': "1,2"
+conv Document parse portConstraints: "12"
+conv Document parse "portConstraints": "12"
+conv Document parse 'portConstraints': "12"
