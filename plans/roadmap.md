@@ -289,3 +289,7 @@ Java parents (`ArithmeticException` leaves `RangeError`), rewrite the 6 listed f
 and add the inheritance fitness test.
 
 **Update 2026-10-15 (user):** AD-16 is implemented (base classes, 18 re-parented classes, fitness test).
+
+**Update 2026-10-15 (user):** the 4 G3 sweep models are compared with the mission-5 stand-ins (validate-equal
+898/898). Mission 5 deletes `test/helpers/mission5-stand-ins.ts` and the selections that use it (the validator test's
+`mission5` rows, the sweep's `MISSION5_ALGORITHM_VALUE`).

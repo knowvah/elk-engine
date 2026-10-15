@@ -224,3 +224,7 @@ validate and write refs byte-identical). The JVM rows equal every scratch-pinned
 **Resolved (user, 2026-10-15):** flag 7 — the user chose to follow the Java: a null unresolved-proxy message now
 reaches the producer and fails there as Java's NPE does (`TypeError`, D10); the frozen test `Linker.test.ts` "skips
 a null unresolved message" was rewritten with the user's approval (AD-13). ELK's own provider never returns null.
+
+**Resolved (user, 2026-10-15):** flag 8 — the 4 G3 models are no longer deferred: the sweep validates them with the
+mission-5 stand-ins (`test/helpers/mission5-stand-ins.ts`, shared with the validator test) and all 4 match the oracle
+exactly (validate-equal 898/898). Control: without the stand-ins each differs only by the missing-algorithm error.
