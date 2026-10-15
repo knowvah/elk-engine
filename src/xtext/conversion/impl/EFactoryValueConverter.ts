@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
+import { checkCast, isString } from '../../../java/lang/JavaCast.js';
+import { JavaClass } from '../../../java/lang/JavaClass.js';
 import type { INode } from '../../nodemodel/INode.js';
 import type { IValueConverter } from '../IValueConverter.js';
 
@@ -13,7 +15,8 @@ import type { IValueConverter } from '../IValueConverter.js';
  */
 export class EFactoryValueConverter implements IValueConverter<string> {
   toString(value: string | null): string {
-    return value as string;
+    // EcoreFactoryImpl.convertEStringToString: `(String) instanceValue`
+    return checkCast(value, isString, JavaClass.String.javaName) as string;
   }
 
   toValue(string: string | null, _node: INode | null): string | null {

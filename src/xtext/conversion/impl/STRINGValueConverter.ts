@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
+import { checkCast, isString } from '../../../java/lang/JavaCast.js';
+import { JavaClass } from '../../../java/lang/JavaClass.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import type { INode } from '../../nodemodel/INode.js';
 import { JavaStringConverter } from '../../util/JavaStringConverter.js';
@@ -21,6 +23,8 @@ export class STRINGValueConverter extends AbstractLexerBasedConverter<string> im
   }
 
   protected override toEscapedString(value: string): string {
+    // the JVM bridge of toEscapedString(String) casts the erased value (assertValidValue is not overridden)
+    checkCast(value, isString, JavaClass.String.javaName);
     return QUOTE + Strings.convertToJavaString(value, false) + QUOTE;
   }
 

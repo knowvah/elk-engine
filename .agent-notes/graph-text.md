@@ -228,3 +228,13 @@ new ElkGraphReferences(), parseResult.nodeModel)`, then `linkModel(root, consume
   `{#elk-text-elkt}` fixes it (verified in the built HTML).
 - **Impact**: give linked numbered headings explicit anchors.
 - **Confidence**: High
+
+## Observation: Java converter casts are bridge-method checkcasts, ported at the binding method
+
+- **Context**: replaying the T13 `ClassCastException` converter rows (2026-10-15)
+- **Finding**: the service calls converters erased; the cast happens in the JVM bridge of the first method a class
+  overrides with its concrete type, before the body runs (null passes). `INT` and `Double` both map to `number`, so
+  `Number.toString(int:1)` (CCE) and `StringValue.toString(float:2.0)` (`2.0`) cannot be reproduced.
+- **Impact**: any new erased-generic boundary (mission 4c's JSON-text converters) should use `checkCast`
+  (`src/java/lang/JavaCast.ts`) at the binding method.
+- **Confidence**: High

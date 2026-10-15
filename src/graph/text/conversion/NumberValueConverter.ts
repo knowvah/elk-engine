@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
+import { checkCast, isNumber } from '../../../java/lang/JavaCast.js';
+import { JavaClass } from '../../../java/lang/JavaClass.js';
 import { toString as doubleToString } from '../../../java/lang/DoubleToString.js';
 import * as JavaDouble from '../../../java/lang/JavaDouble.js';
 import * as JavaMath from '../../../java/lang/JavaMath.js';
@@ -18,6 +20,8 @@ import * as Strings from '../../../xtext/util/Strings.js';
  */
 export class NumberValueConverter extends AbstractValueConverter<number> {
   toString(value: number | null): string {
+    // the JVM bridge of toString(Double) casts the erased value first
+    checkCast(value, isNumber, JavaClass.Double.javaName);
     if (value === null) {
       throw new ValueConverterException('Double value may not be null.', null, null);
     }
