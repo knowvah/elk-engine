@@ -264,3 +264,6 @@ identically", `D3_ORACLE_DIFFERENCES`), and syntax errors match by presence only
 **Update 2026-10-14 (user):** D3 amended (D3a, `plans/conformance-corpus/decisions.md`): realworld `.json` and
 `.elkt` must be equal except for port positions; the graph-text tests now assert 550/550 under that rule and the
 `D3_ORACLE_DIFFERENCES` list is removed.
+
+**Update 2026-10-15 (user):** the `JsonExporter` null option value gap is fixed (a null value throws a `TypeError`,
+Java's NPE); `KNOWN_EXPORTER_GAPS` is removed from `ElkGraphText.test.ts`.
