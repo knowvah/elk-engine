@@ -11,6 +11,8 @@ import { LayoutMetaDataService } from '../../core/data/LayoutMetaDataService.js'
 import { ElkGraphText } from './ElkGraphText.js';
 
 const REFS_DIR = path.join(repoRoot(), 'test', 'golden', 'refs', 'elkt-parse');
+// The curated inputs, vendored byte-for-byte from the pinned elk-models by test/corpus/vendor-elkt-curated.sh.
+const INPUTS_DIR = path.join(repoRoot(), 'test', 'corpus', 'elkt-curated');
 const META_FILE = '_meta.json';
 const LARGEST_MODEL = 'realworld/ptolemy/hierarchical/de_trilateration_Trilateration.elkt';
 const LOAD_BUDGET_MS = 1000;
@@ -47,10 +49,11 @@ describe('ElkGraphText.load: curated elk-models refs', () => {
     expect(Object.keys(inputSha256).sort()).toEqual(curated.map((m) => m.id).sort());
   });
 
-  describe.skipIf(skipReason !== '')(`against the oracle${note}`, () => {
+  describe('against the oracle', () => {
     it.each(curated.map((m) => [m.id, m] as const))('%s', (id, model) => {
-      const text = readFileSync(path.join(modelsDir, model.path), 'utf8');
-      expect(createHash('sha256').update(text).digest('hex')).toBe(inputSha256[id]);
+      const bytes = readFileSync(path.join(INPUTS_DIR, model.path));
+      expect(createHash('sha256').update(bytes).digest('hex')).toBe(inputSha256[id]);
+      const text = bytes.toString('utf8');
       const { root, errors } = ElkGraphText.load(text);
       expect(errors).toEqual([]);
       const ref: unknown = JSON.parse(readFileSync(refFile(id), 'utf8'));
