@@ -194,8 +194,8 @@ describe('ResourceValidatorImpl', () => {
       constructor() {
         super();
         this.addCheck(isBranch, () => {
-          const algorithm = null as unknown as { id: string };
-          this.warning(`unreached ${algorithm.id}`, null);
+          // the TypeError a null dereference raises (Java's NPE, D10), thrown explicitly
+          throw new TypeError("Cannot read properties of null (reading 'id')");
         });
         this.addCheck(isBranch, () => {
           this.guard(false);

@@ -147,6 +147,9 @@ public class ElktParseVectors {
 
     /** Insertion-ordered object from alternating key, value arguments. */
     static Map<String, Object> obj(Object... keyValues) {
+        if (keyValues.length % 2 != 0) {
+            throw new IllegalArgumentException("obj needs key, value pairs; got " + keyValues.length + " arguments");
+        }
         Map<String, Object> m = new LinkedHashMap<>();
         for (int i = 0; i < keyValues.length; i += 2) {
             m.put((String) keyValues[i], keyValues[i + 1]);
