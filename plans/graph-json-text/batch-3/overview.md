@@ -7,7 +7,7 @@ source); T10 needs only `src/xtext`. Disjoint write-sets; parallel.
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T9 | `ElkGraphJsonValueConverterService` and the `Number`, `PropertyKey`, `PropertyValue` converters | typescript-pro | src/graph/json/text/conversion/** (+ tests) | T2, T8 | [ ] |
-| T10 | `ElkGraphJsonQualifiedNameProvider`, `ElkGraphJsonScopeProvider` | typescript-pro | src/graph/json/text/naming/**, src/graph/json/text/scoping/** (+ tests) | — | [ ] |
+| T9 | `ElkGraphJsonValueConverterService` and the `Number`, `PropertyKey`, `PropertyValue` converters | typescript-pro | src/graph/json/text/conversion/** (+ tests) | T2, T8 | [x] |
+| T10 | `ElkGraphJsonQualifiedNameProvider`, `ElkGraphJsonScopeProvider` | typescript-pro | src/graph/json/text/naming/**, src/graph/json/text/scoping/** (+ tests) | — | [x] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green.
