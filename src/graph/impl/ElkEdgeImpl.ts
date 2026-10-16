@@ -3,7 +3,7 @@ import type { EList } from '../../emf/common/util/EList.js';
 import type { EClass } from '../../emf/ecore/EClass.js';
 import type { InternalEObject } from '../../emf/ecore/InternalEObject.js';
 import { EObjectContainmentWithInverseEList } from '../../emf/ecore/util/EObjectContainmentWithInverseEList.js';
-import { ManyInverse } from '../../emf/ecore/util/EObjectWithInverseEList.js';
+import { ManyInverse } from '../../emf/ecore/util/EObjectWithInverseResolvingEList.js';
 import { EcoreUtil } from '../../emf/ecore/util/EcoreUtil.js';
 import * as Joiner from '../../guava/Joiner.js';
 import * as Strings from '../../guava/Strings.js';
@@ -18,9 +18,11 @@ import { ElkGraphElementImpl } from './ElkGraphElementImpl.js';
 
 /**
  * An implementation of the model object '<em><b>Elk Edge</b></em>'. `sources`/`targets` are
- * `EObjectWithInverseResolvingEList.ManyInverse` in Java; proxy resolution is not ported, leaving
- * `ManyInverse`. Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications (incl. the
- * `else eNotify` arm of `setContainingNode`), the `eIsProxy()` arm of `toString` (no proxies).
+ * `EObjectWithInverseResolvingEList.ManyInverse` as in Java (D13): `get` resolves proxy endpoints.
+ * Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications (incl. the `else eNotify` arm
+ * of `setContainingNode`). The `eIsProxy()` arm of `toString` is not ported: proxies are always
+ * `ElkNode`s (never edges), and under D10 `super.toString()` would only differ from the regular
+ * output for the proxy `ElkNode` itself, whose arm belongs to `ElkNodeImpl`.
  *
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkEdgeImpl.java
  */
