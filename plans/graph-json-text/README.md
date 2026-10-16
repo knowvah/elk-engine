@@ -126,7 +126,7 @@ commits per task. `npm run docs:build` green before T18 is marked done.
 | [5](batch-5/overview.md) | Linking — re-scoped by D13 (lazy linking, EMF proxies); T12 superseded | T12a–T12f, T12h | 4 | [x] |
 | [6](batch-6/overview.md) | `ElkGraphJsonText.load` (amended by D13) | T13 | 5, 1b | [x] |
 | [7](batch-7/overview.md) | Validation; serializer | T14–T15 | 6 | [x] |
-| [8](batch-8/overview.md) | Formatter and `serialize` | T16 | 7 | [ ] |
+| [8](batch-8/overview.md) | Formatter and `serialize` | T16 | 7 | [x] |
 | [9](batch-9/overview.md) | Local sweep; docs and plans | T17–T18 | 8 | [ ] |
 
 ## Documents
