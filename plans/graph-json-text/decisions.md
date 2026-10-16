@@ -21,6 +21,7 @@ parser), the standing rules and amendments (`plans/core-metadata/decisions.md`),
 | D10 | AD-16 applies: Java error conditions and exception chains; no new Java-named shims for uncaught JVM errors |
 | D11 | Linking: eager resolution at load with lazy-equivalent observable results, proven by vectors (B) |
 | D12 | Oracle seam patch `0002` makes `GraphIdentifierGenerator`'s id-collision `Random` seedable (proposed in Phase 7; approved by the user 2026-10-15) |
+| D13 | D11 amended to option A (user, 2026-10-16): port `LazyLinker`, `LazyLinkingResource`, `LazyURIEncoder` and the EMF proxy/resource subset; amends mission-2 D4 |
 
 ## D1 — Shared parse runtime
 
@@ -81,3 +82,22 @@ Decision: patch `tools/oracle/patches/0002-graph-seedable-GraphIdentifierGenerat
 when set and changes nothing otherwise; only the harness `convert` mode sets it (seed 1). The TS never consumes the
 sequence (it only parses the converted files), so no shim is needed. Every existing ref stays byte-identical after the
 rebuild. If the user rejects D12: tier 1 excludes those 48 models and the journal lists them.
+
+## D13 — Lazy linking and EMF proxies (D11 option A; user, 2026-10-16)
+
+Fact: T3 recorded that an unresolved `.elkj` reference stays in `sources`/`targets` as an EMF proxy (fragment `|n`,
+`LazyURIEncoder` index mode), linking diagnostics appear only when a reference is resolved (access,
+`EcoreUtil2.resolveLazyCrossReferences`, validation), and the JSON export stops at the first unresolved proxy. The port
+had no proxies or resources (mission-2 D4, `plans/elkgraph-model/decisions.md`).
+Decision: port Xtext 2.36's `LazyURIEncoder`, `LazyLinker`, `LazyLinkingResource` (every branch except
+`OPTION_RESOLVE_ALL` and the eager-linking flag, which no caller passes) into `src/xtext/linking/lazy/`, and the EMF
+subset they need: `URI` (string operations only), `Resource`/`ResourceSet` (`getURI`, `getContents`, `getErrors`,
+`getWarnings`, `getEObject`), `eProxyURI`/`eIsProxy`/`eResolveProxy`/`eResource()`, `EcoreUtil.resolve`, and the
+resolving lists (`EObjectResolvingEList`, `EObjectWithInverseResolvingEList.ManyInverse`) for `ElkEdge.sources/targets`
+and `ElkConnectableShape.incomingEdges/outgoingEdges`. This amends mission-2 D4 for exactly these surfaces. `.elkt`
+keeps its eager `ElkGraphLinker`; the list changes are behaviour-neutral without proxies (the 4b suite and vectors are
+the gate). The `.elkj` proxy class is `ElkNode` (first instantiable `ElkConnectableShape` subtype in `elkgraph.ecore`),
+created by a `graph.json.text` subclass so `src/xtext` never imports `src/graph`. The export of an unresolved reference
+follows the 2026-10-14 unknown-endpoint mapping (oracle NPE → port message-less `IllegalArgumentException`,
+`docs/conformance.md`). Inverse state after resolution is recorded on the JVM (T12h) before T12e lands.
+Plan record: `batch-5/d13-plan.md`. Tasks: T12a–T12f, T12h replace T12; T13/T14 amended.

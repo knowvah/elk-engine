@@ -38,3 +38,14 @@ shape, re-declared locally if importing it would cross bundles). Consumed by T14
 
 ## Observability / Rollback
 N/A — no new observable operations. Reversible: revert the commit.
+
+## Amendment (D13, 2026-10-16)
+T12 is replaced by T12a–T12f (lazy linking). `ElkGraphJsonTextServices` assembles `ElkGraphJsonLazyLinker` (T12f) and a
+`LazyLinkingResource` (T12d) in a `ResourceSetImpl` (T12a) with the T10 scope/naming and the default linking service;
+`load` parses into that resource and runs `linkModel` (proxies, no linking diagnostics). `errors` = the resource's
+errors right after load (T3 `diagnosticsAtLoad`); the result keeps the live resource so later access/validation append
+to its errors. Replay adds `proxiesAtLoad`, `diagnosticsAfterLinks`, `diagnosticsAfterResolveOnly`,
+`diagnosticsAfterExport` and `json` from an export-only load; the export of an unresolved reference expects the
+message-less `IllegalArgumentException` (2026-10-14 unknown-endpoint mapping, extended to `.elkj` by D13; extend the
+`docs/conformance.md` entry in T18) and exactly the one `diagnosticsAfterExport` diagnostic. Also replay
+`graph-json-text-inverse.json` (T12h) through `load`. Write-set unchanged.

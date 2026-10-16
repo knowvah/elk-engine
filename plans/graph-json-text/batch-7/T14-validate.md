@@ -39,3 +39,12 @@ Upstream `validation/*.xtend`, `src-gen/.../validation/AbstractElkGraphJsonValid
 
 ## Observability / Rollback
 N/A — no new observable operations. Reversible: revert the commit.
+
+## Amendment (D13, 2026-10-16)
+There are no "deferred diagnostics": `validate` runs Xtext's `ResourceValidatorImpl.validate`, which resolves first
+(`ResourceValidatorImpl.java:75`, `:161-162` = `EcoreUtil2.resolveLazyCrossReferences`) and then collects the live
+resource's errors/warnings. The port's `resolveProxies` is a no-op (`src/xtext/validation/ResourceValidatorImpl.ts`
+header line 15): implement it (delegating to T12d's `LazyLinkingResource.resolveLazyCrossReferences` when the resource
+is one; unchanged no-op behaviour for `.elkt`'s resources, whose 4b tests must stay unchanged). Write-set adds
+`src/xtext/validation/ResourceValidatorImpl.ts` (+ its test). `validate` takes what it needs to reach the resource
+(the load result or the root via `eResource()`); keep the 4b `ElkTextIssue` shape.
