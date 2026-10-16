@@ -12,8 +12,8 @@ within a sub-batch have disjoint write-sets and run in parallel.
 | 5a | T12h | JVM vectors: inverse state and resolution paths | java-architect | tools/vectors/ElkjInverseVectors.java, test/golden/refs/java/graph-json-text-inverse.json | — | [x] |
 | 5b | T12b | EMF resolving lists | typescript-pro | src/emf/common/util/BasicEList.ts, src/emf/ecore/util/{EObjectEList,EObjectWithInverseEList,EObjectResolvingEList}.ts (+ tests) | T12a | [x] |
 | 5b | T12c | `LazyURIEncoder`, `LazyLinker` | typescript-pro | src/xtext/linking/lazy/{LazyURIEncoder,LazyLinker}.ts (+ tests) | T12a | [x] |
-| 5c | T12d | `LazyLinkingResource` | typescript-pro | src/xtext/linking/lazy/LazyLinkingResource*.ts (+ tests) | T12b, T12c | [ ] |
-| 5c | T12e | ElkGraph resolving lists | typescript-pro | src/graph/impl/{ElkEdgeImpl,ElkConnectableShapeImpl}.ts (+ tests) | T12b, T12h | [ ] |
+| 5c | T12d | `LazyLinkingResource` | typescript-pro | src/xtext/linking/lazy/LazyLinkingResource*.ts (+ tests) | T12b, T12c | [x] |
+| 5c | T12e | ElkGraph resolving lists | typescript-pro | src/graph/impl/{ElkEdgeImpl,ElkConnectableShapeImpl}.ts (+ tests) | T12b, T12h | [x] |
 | 5d | T12f | `.elkj` lazy-linker wiring and reference table | typescript-pro | src/graph/json/text/linking/** (+ tests) | T12d, T12e | [ ] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green, plus the full layout suite and a
