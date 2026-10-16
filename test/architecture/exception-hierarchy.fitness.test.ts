@@ -39,6 +39,11 @@ import { RegionTrace } from '../../src/xtext/formatting2/internal/RegionTrace.js
 import { RegionTraceMissingException } from '../../src/xtext/formatting2/internal/RegionTraceMissingException.js';
 import { RegionsOutsideFrameException } from '../../src/xtext/formatting2/internal/RegionsOutsideFrameException.js';
 import { IllegalNodeException } from '../../src/xtext/linking/impl/IllegalNodeException.js';
+import {
+  OperationCanceledError,
+  OperationCanceledException,
+} from '../../src/xtext/linking/lazy/LazyLinkingResourceCancel.js';
+import { CyclicLinkingException } from '../../src/xtext/linking/lazy/LazyLinkingResourceTypes.js';
 import { GuardException } from '../../src/xtext/validation/GuardException.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -85,6 +90,12 @@ const JAVA_PARENTS: ReadonlyMap<ErrorClass, ErrorClass> = new Map<ErrorClass, Er
   [RegionTraceMissingException, RuntimeException],
   [RegionsOutsideFrameException, RuntimeException],
   [RegionTrace, RuntimeException],
+  // LazyLinkingResource.CyclicLinkingException extends AssertionError, OperationCanceledError (Xtext) extends
+  // java.lang.Error: neither AssertionError nor Error is shimmed (D10), so both extend JS Error (= Throwable)
+  [CyclicLinkingException, Error],
+  [OperationCanceledError, Error],
+  // Eclipse runtime: org.eclipse.core.runtime.OperationCanceledException
+  [OperationCanceledException, RuntimeException],
   // port-local, no Java class
   [SyntaxFailure, Error],
   [ElkGraphSerializationError, Error],
