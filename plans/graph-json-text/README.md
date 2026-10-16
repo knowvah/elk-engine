@@ -133,3 +133,51 @@ commits per task. `npm run docs:build` green before T18 is marked done.
 
 [decisions.md](decisions.md) · [decision-journal.md](decision-journal.md) ·
 [diagrams/data-flow.md](diagrams/data-flow.md) · [diagrams/component-map.md](diagrams/component-map.md)
+
+## Mission summary (2026-10-16)
+
+**Tasks:** 18/18 planned tasks done (T1-T18). T12 was superseded by D13 and executed as T12a-T12f plus T12h (inverse
+state vectors); all tasks one unsigned commit each, plus `fix(T1)` (`_meta` provenance after patch `0002`),
+`fix(T11)` (injectable line source), `fix(T16)` (named literals, explicit round-trip timeout), and one `docs(plans)`
+commit per batch. T18 was executed by the `documentation-engineer` agent (the planned `technical-writer` has no
+Edit/Bash).
+
+**Evidence:** JVM vectors replayed in CI: lexer 554 rows (101 `lexError`), parse 439 (282 exact, 157 syntax rows by
+presence; Document rows 366 exact + 124 presence), validate 28 (21 exact, 7 presence), write 126 (115 formatted
+byte-exact, 11 errors; reparse 89 exact + 26 lossy), inverse state 69 cases x load/access/resolve (276/276),
+converter rows 523 replayed. Curated: 34 entries (15 tier 1, 19 tier 2), 15 refs, 34/34 hashes. Local sweep
+(`docs/conformance.md` section 8, size-capped): `tier1-parse-equal=344/344` (144 exact, 200 presence),
+`tier1-validate-equal=344/344`, `tier2-parse-equal=666/666` (591 exact, 75 both reject), `writer-byte-exact=351/351`
+(315 byte-exact, 36 oracle failures matched), `reparse-equal=315/315`, 0 nondeterministic (selection 345 <= 5 KB + 6
+sampled larger; oracle 2 h 04 min, TS 4.2 s). Last batch gate (batch 8): format 0, typecheck 0, complexity clean,
+coverage 0 with 17,265 passed + 68 curated `skipIf` branches (99.38/97.92/99.38/99.41), 4b vectors cmp-identical,
+`regen-elkt-refs.sh` no diff.
+
+**User decisions:** D12 approved at mission start (patch `0002`, harness `convert` mode only, seed 1); `_meta`
+provenance of three existing refs updated after the patch (T1, stop 4); T7 `SessionVocabulary` (stop 5, D1 amended);
+**D13** (2026-10-16): D11 option A, lazy linking with EMF proxies; the IAE mapping extension (an unresolved `.elkj`
+reference on export follows the 2026-10-14 unknown-endpoint entry); **D2 amendment** (2026-10-16): size-capped sweep.
+
+**Open flags and follow-ups:**
+
+1. 45 SIGNED_INT/FLOAT converter rows need Xtext's `DefaultTerminalConverter` (`registerEFactoryConverters`),
+   unported and unreachable from the grammar, plus 3 type-erasure skips (T9). A task with `src/xtext` in its
+   write-set would port it.
+2. `.elkt` likely has the same bare-CR diagnostic-line deviation fixed for `.elkj` in `fix(T11)`; 4b has no
+   bare-CR diagnostic vector, so a vector must be recorded first.
+3. `ElkNodeImpl.toString` proxy arm not ported (T12e; outside its write-set, no caller prints a proxy).
+4. The sweep sample is 6 larger graphs instead of ~40 (T17); a fuller run is a parameter change but days of CPU.
+5. Cleanups: the serializer duplicates the scope wiring of `createElkGraphJsonLinking` (T15); `ElkGraphCopy`
+   duplicates 4b's `copyGraph` (AD-8; a shared home in `src/graph/util` would serve both); `ExceptionDiagnostic` and
+   the cancellation stand-ins live in `src/xtext/linking/lazy/` and could move to `xtext/diagnostics`/`util`
+   (T12d).
+6. Pre-existing timing flake `src/xtext/scoping/impl/ImportedNamespaceAwareLocalScopeProvider.test.ts` (300 ms
+   budget) under machine load; left unchanged (AD-13).
+7. Write-set extensions, all journaled: the orchestrator's `exception-hierarchy.fitness.test.ts` entry (T12d) and
+   `EValidatorRegistrar` null branch (T14); agents' new files `src/emf/ecore/util/InternalEList.ts` and
+   `test/helpers/emf/ResourceNode.ts` (T12a), `test/helpers/graph-json-text-linking.ts` (T12f),
+   `test/helpers/graph-json-text-shapes.ts` (T13), `test/helpers/elkj-write-cases.ts` (T15), and T3's
+   `.prettierignore` entries for the lenient fixtures.
+8. No ELK prose typo was corrected in this mission (nothing under "upstream typos").
+9. Landing (stop 16): the commands under "Branch and landing (D9)" above. Commits are unsigned; the user signs by
+   rebase (YubiKey PIN + touch per commit), pushes, opens the PR and merges with a merge commit.
