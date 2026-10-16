@@ -8,8 +8,8 @@ within a sub-batch have disjoint write-sets and run in parallel.
 
 | Sub | ID | Description | Agent | Writes | Depends On | Done |
 |-----|----|-------------|-------|--------|------------|------|
-| 5a | T12a | EMF `URI`, `Resource`/`ResourceSet`, EObject proxy surface, `EcoreUtil.resolve` | typescript-pro | src/emf/common/util/URI.ts, src/emf/ecore/resource/**, src/emf/ecore/{EObject,InternalEObject}.ts, src/emf/ecore/impl/BasicEObjectImpl.ts, src/emf/ecore/util/EcoreUtil.ts (+ tests) | — | [ ] |
-| 5a | T12h | JVM vectors: inverse state and resolution paths | java-architect | tools/vectors/ElkjInverseVectors.java, test/golden/refs/java/graph-json-text-inverse.json | — | [ ] |
+| 5a | T12a | EMF `URI`, `Resource`/`ResourceSet`, EObject proxy surface, `EcoreUtil.resolve` | typescript-pro | src/emf/common/util/URI.ts, src/emf/ecore/resource/**, src/emf/ecore/{EObject,InternalEObject}.ts, src/emf/ecore/impl/BasicEObjectImpl.ts, src/emf/ecore/util/EcoreUtil.ts (+ tests) | — | [x] |
+| 5a | T12h | JVM vectors: inverse state and resolution paths | java-architect | tools/vectors/ElkjInverseVectors.java, test/golden/refs/java/graph-json-text-inverse.json | — | [x] |
 | 5b | T12b | EMF resolving lists | typescript-pro | src/emf/common/util/BasicEList.ts, src/emf/ecore/util/{EObjectEList,EObjectWithInverseEList,EObjectResolvingEList}.ts (+ tests) | T12a | [ ] |
 | 5b | T12c | `LazyURIEncoder`, `LazyLinker` | typescript-pro | src/xtext/linking/lazy/{LazyURIEncoder,LazyLinker}.ts (+ tests) | T12a | [ ] |
 | 5c | T12d | `LazyLinkingResource` | typescript-pro | src/xtext/linking/lazy/LazyLinkingResource*.ts (+ tests) | T12b, T12c | [ ] |
