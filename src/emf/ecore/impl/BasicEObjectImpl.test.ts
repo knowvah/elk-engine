@@ -3,6 +3,9 @@ import { describe, expect, it } from 'vitest';
 import type { EList } from '../../common/util/EList.js';
 import type { EClass } from '../EClass.js';
 import { EOPPOSITE_FEATURE_BASE, type InternalEObject } from '../InternalEObject.js';
+import { URI } from '../../common/util/URI.js';
+import { ResourceImpl } from '../resource/impl/ResourceImpl.js';
+import { ResourceSetImpl } from '../resource/impl/ResourceSetImpl.js';
 import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import { EObjectContainmentWithInverseEList } from '../util/EObjectContainmentWithInverseEList.js';
 import { BasicEObjectImpl } from './BasicEObjectImpl.js';
@@ -186,5 +189,126 @@ describe('BasicEObjectImpl toString', () => {
   it('is the Java implementation class name derived from the EClass name, with no identity hash', () => {
     expect(new Node('n').toString()).toBe('org.eclipse.elk.graph.impl.ElkNodeImpl');
     expect(String(new Port('p'))).toBe('org.eclipse.elk.graph.impl.ElkPortImpl');
+  });
+});
+
+describe('BasicEObjectImpl proxies', () => {
+  const PROXY = URI.createURI('file:/a.elkj#|0');
+
+  it('is not a proxy without a proxy URI', () => {
+    const n = new Node('n');
+    expect(n.eProxyURI()).toBeNull();
+    expect(n.eIsProxy()).toBe(false);
+  });
+
+  it('becomes a proxy with eSetProxyURI and a resolved object again with null', () => {
+    const n = new Node('n');
+    n.eSetProxyURI(PROXY);
+    expect(n.eProxyURI()).toBe(PROXY);
+    expect(n.eIsProxy()).toBe(true);
+    n.eSetProxyURI(null);
+    expect(n.eProxyURI()).toBeNull();
+    expect(n.eIsProxy()).toBe(false);
+  });
+
+  it('keeps the proxy URI and the direct resource independent', () => {
+    const n = new Node('n');
+    const resource = new ResourceImpl();
+    resource.getContents().add(n);
+    n.eSetProxyURI(PROXY);
+    expect(n.eDirectResource()).toBe(resource);
+    expect(n.eProxyURI()).toBe(PROXY);
+  });
+
+  it('eResolveProxy resolves through the resource set of this object', () => {
+    const target = new Node('target');
+    const owner = new Node('owner');
+    const resource = new ResourceImpl(URI.createURI('file:/a.elkj'));
+    resource.getContents().addAll([target, owner]);
+    new ResourceSetImpl().getResources().add(resource);
+    const proxy = new Node('proxy');
+    proxy.eSetProxyURI(URI.createURI('file:/a.elkj#/0'));
+    expect(owner.eResolveProxy(proxy)).toBe(target);
+    const lost = new Node('lost');
+    expect(lost.eResolveProxy(proxy)).toBe(proxy);
+  });
+});
+
+describe('BasicEObjectImpl resources', () => {
+  it('has no resource unless it or a container is a direct content', () => {
+    const [g, n1] = [new Node('g'), new Node('n1')];
+    g.children.add(n1);
+    expect(n1.eDirectResource()).toBeNull();
+    expect(n1.eResource()).toBeNull();
+    expect(n1.eInternalResource()).toBeNull();
+  });
+
+  it('finds the resource of the root through any depth of containers', () => {
+    const n = sampleGraph();
+    const resource = new ResourceImpl();
+    resource.getContents().add(n['g'] as Node);
+    for (const id of ['g', 'lg', 'n1', 'ln1', 'lln1', 'n2', 'n3']) {
+      expect((n[id] as Node).eResource()).toBe(resource);
+    }
+    expect((n['n2'] as Node).eDirectResource()).toBeNull();
+    expect((n['g'] as Node).eDirectResource()).toBe(resource);
+  });
+
+  it('stops at a container cycle that has no resource', () => {
+    const [a, b] = [new Node('a'), new Node('b')];
+    a.children.add(b);
+    b.children.add(a);
+    expect(a.eResource()).toBeNull();
+  });
+
+  it('restarts the walk from the current container after 100000 steps in a cycle above the start', () => {
+    const [x, a, b] = [new Node('x'), new Node('a'), new Node('b')];
+    a.children.add(x);
+    a.children.add(b);
+    b.children.add(a);
+    expect(x.eInternalContainer()).toBe(a);
+    expect(x.eResource()).toBeNull();
+  });
+
+  it('eSetResource moves a root from its old resource and stores the new one', () => {
+    const root = new Node('r');
+    const [first, second] = [new ResourceImpl(), new ResourceImpl()];
+    first.getContents().add(root);
+    root.eSetResource(second);
+    expect(first.getContents().size()).toBe(0);
+    expect(root.eDirectResource()).toBe(second);
+    root.eSetResource(null);
+    expect(root.eDirectResource()).toBeNull();
+  });
+
+  it('eSetResource detaches a contained object from its container', () => {
+    const [g, n] = [new Node('g'), new Node('n')];
+    g.children.add(n);
+    const resource = new ResourceImpl();
+    n.eSetResource(resource);
+    expect(n.eInternalContainer()).toBeNull();
+    expect(g.children.size()).toBe(0);
+    expect(n.eDirectResource()).toBe(resource);
+    expect(n.removedFrom).toEqual([PARENT]);
+  });
+
+  it('putting a root into a container removes it from the resource contents', () => {
+    const [g, n] = [new Node('g'), new Node('n')];
+    const resource = new ResourceImpl();
+    resource.getContents().addAll([g, n]);
+    g.children.add(n);
+    expect(resource.getContents().toArray()).toEqual([g]);
+    expect(n.eDirectResource()).toBeNull();
+    expect(n.eResource()).toBe(resource);
+    expect(n.eContainer()).toBe(g);
+  });
+
+  it('clearing the container of a resource root keeps it in the resource', () => {
+    const n = new Node('n');
+    const resource = new ResourceImpl();
+    resource.getContents().add(n);
+    n.eBasicSetContainer(null, PARENT);
+    expect(n.eDirectResource()).toBe(resource);
+    expect(resource.getContents().toArray()).toEqual([n]);
   });
 });
