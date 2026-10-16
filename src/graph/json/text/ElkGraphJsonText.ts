@@ -16,6 +16,7 @@ import type {
 import type { ContainmentSlot, IssueLocator } from '../../../xtext/validation/IssueLocator.js';
 import { ResourceValidatorImpl } from '../../../xtext/validation/ResourceValidatorImpl.js';
 import type { ElkNode } from '../../ElkNode.js';
+import { writeFormatted } from './formatting2/ElkGraphJsonWriter.js';
 import { ParseResourceDiagnostic, loadParsedModel } from './linking/ElkGraphJsonLinkingServices.js';
 import { parse } from './parser/ElkGraphJsonParser.js';
 import { createElkGraphJsonServices } from './ElkGraphJsonTextServices.js';
@@ -215,5 +216,23 @@ export const ElkGraphJsonText = {
     return createResourceValidator()
       .validate([root], diagnostics, CheckMode.ALL, loaded?.positions ?? UNLOCATED, resource)
       .map(toIssue);
+  },
+
+  /**
+   * The port of `ISerializer.serialize(EcoreUtil.copy(root), SaveOptions.newBuilder().format().getOptions())` (D3):
+   * the grammar-specific serializer's token sequence, rendered through the grammar's formatter. The graph is copied
+   * first (a copy keeps references that resolve inside the tree, so the unresolved ones of a loaded graph are
+   * dropped, as `EcoreUtil.copy` does), so `root` keeps its content. The output is Xtext's own and often does not
+   * reload cleanly: it writes known option keys as bare dotted suffixes, `null` values as `null`, NaN, hex and
+   * `4.9E-324` numbers, unescaped quotes and the empty port, label or edge as `{ "" : }`, none of which the `.elkj`
+   * grammar accepts (T5).
+   *
+   * @param root the graph to write
+   * @returns the `.elkj` text
+   * @throws ElkGraphJsonSerializationError when the graph cannot be written: an edge with sections, a property without
+   *   key or with a list value, a reference that is not in scope, or a value no converter can print
+   */
+  serialize(root: ElkNode): string {
+    return writeFormatted(root);
   },
 };
