@@ -1,0 +1,4 @@
+{"id":"r","labels":[{"text":"no id"},{"text":5,"id":7},{"text":"props","layoutOptions":{"org.eclipse.elk.edgeLabels.placement":"HEAD"},"x":1,"y":2,"width":3,"height":4},{"id":"textless"},{}],
+ "ports":[{"id":"p","labels":[{"text":"port label","properties":{"org.eclipse.elk.font.size":9}}]}],
+ "children":[{"id":"a"},{"id":"b"}],
+ "edges":[{"id":"e","source":"a","target":"b","labels":[{"text":"edge label","id":"l1","width":10,"height":5,"layoutOptions":{"org.eclipse.elk.edgeLabels.inline":true}}]}]}

@@ -1,0 +1,63 @@
+{
+	"id": "G1",
+	"children": [
+		{
+			"id": "N1",
+			"children": [
+				{
+					"id": "N2",
+					"ports": [
+						{
+							"id": "P2",
+							"layoutOptions": {
+								port.side: "WEST"
+							},
+							"layoutOptions": { port.borderOffset: -20 },
+							"y": 55,
+							"width": 20,
+							"height": 16
+						}
+					],
+					"ports": [{
+						"id": "P5",
+						"layoutOptions": {
+							port.side: "EAST"
+						},
+						"layoutOptions": { port.borderOffset: -20 },
+						"y": 55,
+						"width": 20,
+						"height": 16
+					} ],
+					"layoutOptions": {
+						nodeSize.constraints: "[MINIMUM_SIZE]"
+					},
+					"layoutOptions": { insideSelfLoops.activate: true },
+					"layoutOptions": { portConstraints: "FIXED_SIDE" },
+					"layoutOptions": { nodeSize.minimum: "(255.0,100.0)" },
+					"x": 12,
+					"y": 12,
+					"width": 152,
+					"height": 100
+				}
+			],
+			"edges": [
+				{
+					"sources": [ "P2" ],
+					"targets": [ "P5" ],
+					"id": "E1",
+					"labels": [
+						{ "text": "test_label", "id": "L1", "width": 47, "height": 21 }
+					],
+					"layoutOptions": { insideSelfLoops.yo: true }
+				}
+			]
+		}
+	],
+	"layoutOptions": {
+		direction: "RIGHT"
+	},
+	"layoutOptions": { hierarchyHandling: "SEPARATE_CHILDREN" },
+	"layoutOptions": { algorithm: "org.eclipse.elk.layered" },
+	"layoutOptions": { nodeLabels.placement: "[]" },
+	"layoutOptions": { nodeSize.minimum: "(100.0,100.0)" }
+}

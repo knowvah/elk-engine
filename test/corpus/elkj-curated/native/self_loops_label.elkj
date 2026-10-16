@@ -1,0 +1,12 @@
+{
+	"id": "G1",
+	"children": [
+		{ "id": "n1" }
+	],
+	"edges": [
+		{ "sources": [ "n1" ], "targets": [ "n1" ], "id": "E1", "labels": [
+				{ "text": "litr, sed diam nonumy eirmod tempor invidunt u", "id": "L1" }
+			] }
+	],
+	"layoutOptions": { edgeRouting: "SPLINES" }
+}

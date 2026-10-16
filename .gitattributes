@@ -6,3 +6,4 @@ tools/vectors/elkt-*-scenarios/*.elkt -text
 tools/vectors/elkj-*-scenarios/** -text
 # Vendored elk-models inputs: hashed byte-for-byte against the oracle refs.
 test/corpus/elkt-curated/** -text
+test/corpus/elkj-curated/** -text

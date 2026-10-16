@@ -1,0 +1,77 @@
+{
+  "id": "G1",
+  "children": [
+    {
+      "id": "outer",
+      "ports": [
+        {
+          "id": "p1",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        },
+        {
+          "id": "p2",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "children": [
+        {
+          "id": "inner",
+          "ports": [
+            {
+              "id": "p1_g8985",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0
+            },
+            {
+              "id": "p2_g4588",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 0.0,
+              "height": 0.0
+            }
+          ],
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0,
+      "edges": [
+        {
+          "id": "E1",
+          "sources": [
+            "p1"
+          ],
+          "targets": [
+            "p1_g8985"
+          ]
+        },
+        {
+          "id": "E2",
+          "sources": [
+            "p2_g4588"
+          ],
+          "targets": [
+            "p2"
+          ]
+        }
+      ]
+    }
+  ],
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0
+}

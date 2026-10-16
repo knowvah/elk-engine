@@ -1,0 +1,14 @@
+{
+	"id": "G1",
+	"children": [
+		{
+			"id": "n1",
+			"layoutOptions": { "layering.layerChoiceConstraint": 1 }
+		}
+	],
+	"children": [{ "id": "n2" } ],
+	"edges": [
+		{ "sources": [ "n1" ], "targets": [ "n2" ], "id": "E1" }
+	],
+	"layoutOptions": { interactiveLayout: true }
+}

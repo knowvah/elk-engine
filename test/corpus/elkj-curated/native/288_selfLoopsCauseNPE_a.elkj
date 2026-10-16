@@ -1,0 +1,20 @@
+{
+	"id": "G1",
+	"children": [
+		{ "id": "A1" }
+	],
+	"children": [{
+		"id": "A2",
+		"children": [
+			{ "id": "B1" }
+		]
+	} ],
+	"edges": [
+		{ "sources": [ "A2" ], "targets": [ "A2" ], "id": "E1" }
+	],
+	"edges": [{ "sources": [ "A1" ], "targets": [ "B1" ], "id": "E2" } ],
+	"layoutOptions": {
+		hierarchyHandling: "INCLUDE_CHILDREN"
+	},
+	"layoutOptions": { edgeRouting: "SPLINES" }
+}

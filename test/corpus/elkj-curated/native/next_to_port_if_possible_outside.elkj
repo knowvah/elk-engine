@@ -1,0 +1,48 @@
+{
+	"id": "G1",
+	"children": [
+		{
+			"id": "n1",
+			"ports": [
+				{
+					"id": "in1",
+					"layoutOptions": { port.side: "WEST" }
+				}
+			],
+			"ports": [{
+				"id": "in2",
+				"layoutOptions": { port.side: "WEST" }
+			} ],
+			"ports": [{
+				"id": "in3",
+				"layoutOptions": { port.side: "WEST" }
+			} ],
+			"ports": [{
+				"id": "out1",
+				"layoutOptions": { port.side: "EAST" }
+			} ],
+			"ports": [{
+				"id": "out2",
+				"layoutOptions": { port.side: "EAST" }
+			} ],
+			"ports": [{
+				"id": "out3",
+				"layoutOptions": { port.side: "EAST" }
+			} ],
+			"layoutOptions": {
+				portLabels.placement: "[INSIDE, NEXT_TO_PORT_IF_POSSIBLE]"
+			},
+			"layoutOptions": { portConstraints: "FIXED_SIDE" }
+		}
+	],
+	"children": [{
+		"id": "n2",
+		"ports": [
+			{ "id": "in1_g8985" }
+		],
+		"layoutOptions": { portLabels.placement: "[OUTSIDE, NEXT_TO_PORT_IF_POSSIBLE]" }
+	} ],
+	"edges": [
+		{ "sources": [ "out2" ], "targets": [ "in1_g8985" ], "id": "E1" }
+	]
+}

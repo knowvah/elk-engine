@@ -1,0 +1,16 @@
+{
+	"id": "G1",
+	"children": [
+		{
+			"id": "ExcellentHierarchicalNode",
+			"children": [
+				{ "id": "N1" }
+			],
+			"children": [{ "id": "N2" } ],
+			"edges": [
+				{ "sources": [ "N1" ], "targets": [ "N2" ], "id": "E1" }
+			],
+			"layoutOptions": { nodeLabels.placement: "[H_CENTER, V_TOP, INSIDE]" }
+		}
+	]
+}

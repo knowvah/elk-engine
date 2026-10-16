@@ -1,0 +1,40 @@
+{
+  "id": "G1",
+  "children": [
+    {
+      "id": "n1",
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    }
+  ],
+  "layoutOptions": {
+    "edgeRouting": "SPLINES"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0,
+  "edges": [
+    {
+      "id": "E1",
+      "sources": [
+        "n1"
+      ],
+      "targets": [
+        "n1"
+      ],
+      "labels": [
+        {
+          "text": "litr, sed diam nonumy eirmod tempor invidunt u",
+          "id": "L1",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ]
+    }
+  ]
+}

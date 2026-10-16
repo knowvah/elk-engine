@@ -1,0 +1,295 @@
+{
+	"id": "G1",
+	"children": [
+		{
+			"id": "N1",
+			"ports": [
+				{
+					"id": "P1",
+					"layoutOptions": {
+						port.side: "WEST"
+					},
+					"layoutOptions": { port.index: 0 },
+					"width": 8,
+					"height": 8
+				}
+			],
+			"labels": [
+				{ "text": "val", "id": "L1", "width": 15, "height": 15 }
+			],
+			"layoutOptions": {
+				portConstraints: "FIXED_ORDER"
+			},
+			"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+			"width": 60,
+			"height": 40
+		}
+	],
+	"children": [{
+		"id": "N2",
+		"ports": [
+			{
+				"id": "P2",
+				"layoutOptions": {
+					port.side: "EAST"
+				},
+				"layoutOptions": { port.index: 0 },
+				"width": 8,
+				"height": 8
+			}
+		],
+		"labels": [
+			{ "text": "SingleEvent", "id": "L2", "width": 68, "height": 15 }
+		],
+		"layoutOptions": {
+			portConstraints: "FIXED_ORDER"
+		},
+		"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+		"width": 66,
+		"height": 46
+	} ],
+	"children": [{
+		"id": "N3",
+		"ports": [
+			{
+				"id": "P3",
+				"layoutOptions": {
+					port.side: "EAST"
+				},
+				"layoutOptions": { port.index: 0 },
+				"width": 8,
+				"height": 8
+			}
+		],
+		"ports": [{
+			"id": "P4",
+			"layoutOptions": {
+				port.side: "WEST"
+			},
+			"layoutOptions": { port.index: -1 },
+			"width": 8,
+			"height": 8
+		} ],
+		"labels": [
+			{ "text": "StringConst", "id": "L3", "width": 68, "height": 15 }
+		],
+		"layoutOptions": {
+			portConstraints: "FIXED_ORDER"
+		},
+		"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+		"width": 85,
+		"height": 25
+	} ],
+	"children": [{
+		"id": "N4",
+		"ports": [
+			{
+				"id": "P5",
+				"layoutOptions": {
+					port.side: "EAST"
+				},
+				"layoutOptions": { port.index: 0 },
+				"width": 8,
+				"height": 8
+			}
+		],
+		"labels": [
+			{ "text": "SingleEvent5", "id": "L4", "width": 76, "height": 15 }
+		],
+		"layoutOptions": {
+			portConstraints: "FIXED_ORDER"
+		},
+		"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+		"width": 66,
+		"height": 46
+	} ],
+	"children": [{
+		"id": "N5",
+		"ports": [
+			{
+				"id": "P6",
+				"layoutOptions": {
+					port.side: "WEST"
+				},
+				"layoutOptions": { port.index: 0 },
+				"width": 8,
+				"height": 8
+			}
+		],
+		"labels": [
+			{ "text": "val1", "id": "L5", "width": 23, "height": 15 }
+		],
+		"layoutOptions": {
+			portConstraints: "FIXED_ORDER"
+		},
+		"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+		"width": 60,
+		"height": 40
+	} ],
+	"children": [{
+		"id": "N6",
+		"ports": [
+			{
+				"id": "P7",
+				"layoutOptions": {
+					port.side: "EAST"
+				},
+				"layoutOptions": { port.index: 0 },
+				"width": 8,
+				"height": 8
+			}
+		],
+		"labels": [
+			{ "text": "SingleEvent2", "id": "L6", "width": 76, "height": 15 }
+		],
+		"layoutOptions": {
+			portConstraints: "FIXED_ORDER"
+		},
+		"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+		"width": 66,
+		"height": 46
+	} ],
+	"children": [{
+		"id": "N7",
+		"ports": [
+			{
+				"id": "P8",
+				"layoutOptions": {
+					port.side: "EAST"
+				},
+				"layoutOptions": { port.index: 0 },
+				"width": 8,
+				"height": 8
+			}
+		],
+		"ports": [{
+			"id": "P9",
+			"layoutOptions": {
+				port.side: "WEST"
+			},
+			"layoutOptions": { port.index: -1 },
+			"width": 8,
+			"height": 8
+		} ],
+		"labels": [
+			{ "text": "Const", "id": "L7", "width": 34, "height": 15 }
+		],
+		"layoutOptions": {
+			portConstraints: "FIXED_ORDER"
+		},
+		"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+		"width": 14,
+		"height": 25
+	} ],
+	"children": [{
+		"id": "N8",
+		"ports": [
+			{
+				"id": "P10",
+				"layoutOptions": {
+					port.side: "WEST"
+				},
+				"layoutOptions": { port.index: 0 },
+				"width": 8,
+				"height": 8
+			}
+		],
+		"labels": [
+			{ "text": "val2", "id": "L8", "width": 23, "height": 15 }
+		],
+		"layoutOptions": {
+			portConstraints: "FIXED_ORDER"
+		},
+		"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+		"width": 60,
+		"height": 40
+	} ],
+	"children": [{
+		"id": "N9",
+		"ports": [
+			{
+				"id": "P11",
+				"layoutOptions": {
+					port.side: "EAST"
+				},
+				"layoutOptions": { port.index: 0 },
+				"width": 8,
+				"height": 8
+			}
+		],
+		"labels": [
+			{ "text": "SingleEvent3", "id": "L9", "width": 76, "height": 15 }
+		],
+		"layoutOptions": {
+			portConstraints: "FIXED_ORDER"
+		},
+		"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+		"width": 66,
+		"height": 46
+	} ],
+	"children": [{
+		"id": "N10",
+		"ports": [
+			{
+				"id": "P12",
+				"layoutOptions": {
+					port.side: "EAST"
+				},
+				"layoutOptions": { port.index: 0 },
+				"width": 8,
+				"height": 8
+			}
+		],
+		"ports": [{
+			"id": "P13",
+			"layoutOptions": {
+				port.side: "WEST"
+			},
+			"layoutOptions": { port.index: -1 },
+			"width": 8,
+			"height": 8
+		} ],
+		"labels": [
+			{ "text": "Const2", "id": "L10", "width": 42, "height": 15 }
+		],
+		"layoutOptions": {
+			portConstraints: "FIXED_ORDER"
+		},
+		"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+		"width": 33,
+		"height": 25
+	} ],
+	"children": [{
+		"id": "N11",
+		"ports": [
+			{
+				"id": "P14",
+				"layoutOptions": {
+					port.side: "WEST"
+				},
+				"layoutOptions": { port.index: 0 },
+				"width": 8,
+				"height": 8
+			}
+		],
+		"labels": [
+			{ "text": "val3", "id": "L11", "width": 23, "height": 15 }
+		],
+		"layoutOptions": {
+			portConstraints: "FIXED_ORDER"
+		},
+		"layoutOptions": { nodeLabels.placement: "[H_LEFT, V_TOP, OUTSIDE]" },
+		"width": 60,
+		"height": 40
+	} ],
+	"edges": [
+		{ "sources": [ "P2" ], "targets": [ "P4" ], "id": "E1" }
+	],
+	"edges": [{ "sources": [ "P3" ], "targets": [ "P1" ], "id": "E2" } ],
+	"edges": [{ "sources": [ "P5" ], "targets": [ "P6" ], "id": "E3" } ],
+	"edges": [{ "sources": [ "P7" ], "targets": [ "P9" ], "id": "E4" } ],
+	"edges": [{ "sources": [ "P8" ], "targets": [ "P10" ], "id": "E5" } ],
+	"edges": [{ "sources": [ "P11" ], "targets": [ "P13" ], "id": "E6" } ],
+	"edges": [{ "sources": [ "P12" ], "targets": [ "P14" ], "id": "E7" } ],
+	"layoutOptions": { portConstraints: "FREE" }
+}

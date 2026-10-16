@@ -1,0 +1,29 @@
+{
+	"id": "G1",
+	"children": [
+		{
+			"id": "n1",
+			"ports": [
+				{
+					"id": "p1",
+					"layoutOptions": { port.side: "WEST" }
+				}
+			],
+			"ports": [{
+				"id": "p2",
+				"layoutOptions": { port.side: "EAST" }
+			} ],
+			"layoutOptions": { portConstraints: "FIXED_SIDE" }
+		}
+	],
+	"edges": [
+		{ "sources": [ "n1" ], "targets": [ "n1" ], "id": "E1" }
+	],
+	"edges": [{ "sources": [ "n1" ], "targets": [ "n1" ], "id": "E2" } ],
+	"edges": [{ "sources": [ "n1" ], "targets": [ "n1" ], "id": "E3" } ],
+	"edges": [{ "sources": [ "p1" ], "targets": [ "p2" ], "id": "E4" } ],
+	"layoutOptions": {
+		spacing.nodeSelfLoop: 30
+	},
+	"layoutOptions": { spacing.edgeEdge: 10 }
+}

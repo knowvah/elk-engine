@@ -1,0 +1,47 @@
+{
+  "id": "G1",
+  "children": [
+    {
+      "id": "n2",
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "n1",
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "comment",
+      "layoutOptions": {
+        "commentBox": "true"
+      },
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    }
+  ],
+  "layoutOptions": {
+    "separateConnectedComponents": "false"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0,
+  "edges": [
+    {
+      "id": "E1",
+      "sources": [
+        "comment"
+      ],
+      "targets": [
+        "n1"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,398 @@
+{
+  "models": [
+    {
+      "id": "native/546_borderGaps",
+      "tier": 1,
+      "source": "elk-models:tickets/layered/546_borderGaps.elkt",
+      "covers": [
+        "duplicate-ids",
+        "edges",
+        "missing-ids",
+        "nesting",
+        "oracle-parses-clean",
+        "ports"
+      ]
+    },
+    {
+      "id": "native/south_port",
+      "tier": 1,
+      "source": "elk-models:tests/layered/compaction_oned/nsport/south_port.elkt",
+      "covers": [
+        "duplicate-ids",
+        "layout-options",
+        "missing-ids",
+        "oracle-syntax-error",
+        "ports"
+      ]
+    },
+    {
+      "id": "native/182_minNodeSizeForHierarchicalNodes",
+      "tier": 1,
+      "source": "elk-models:tickets/layered/182_minNodeSizeForHierarchicalNodes.elkt",
+      "covers": [
+        "duplicate-ids",
+        "layout-options",
+        "nesting",
+        "oracle-syntax-error",
+        "shape-geometry"
+      ]
+    },
+    {
+      "id": "native/next_to_port_if_possible_outside",
+      "tier": 1,
+      "source": "elk-models:tests/core/label_placement/port_labels/next_to_port_if_possible_outside.elkt",
+      "covers": [
+        "duplicate-ids",
+        "layout-options",
+        "oracle-syntax-error",
+        "port-labels"
+      ]
+    },
+    {
+      "id": "native/layer_constraints_01",
+      "tier": 1,
+      "source": "elk-models:tests/layered/layer_constraints/01.elkt",
+      "covers": [
+        "all-ids-present",
+        "edges",
+        "layout-options",
+        "oracle-parses-clean"
+      ]
+    },
+    {
+      "id": "native/sloppy_curvature",
+      "tier": 1,
+      "source": "elk-models:tests/layered/splines/sloppy_curvature.elkt",
+      "covers": [
+        "edges",
+        "layout-options",
+        "missing-ids",
+        "oracle-parses-clean"
+      ]
+    },
+    {
+      "id": "native/multiple_comments",
+      "tier": 1,
+      "source": "elk-models:tests/layered/comment_boxes/multiple_comments.elkt",
+      "covers": [
+        "edges",
+        "labels",
+        "missing-ids",
+        "oracle-parses-clean"
+      ]
+    },
+    {
+      "id": "native/self_loops_label",
+      "tier": 1,
+      "source": "elk-models:tests/layered/self_loops/label.elkt",
+      "covers": [
+        "edge-labels",
+        "missing-ids",
+        "oracle-parses-clean",
+        "self-loop"
+      ]
+    },
+    {
+      "id": "native/288_selfLoopsCauseNPE_a",
+      "tier": 1,
+      "source": "elk-models:tickets/layered/288_selfLoopsCauseNPE_a.elkt",
+      "covers": [
+        "missing-ids",
+        "oracle-parses-clean",
+        "ports",
+        "self-loop"
+      ]
+    },
+    {
+      "id": "native/inside_placement_hierarchicalNode",
+      "tier": 1,
+      "source": "elk-models:tests/layered/node_label_placement/inside_placement_hierarchicalNode.elkt",
+      "covers": [
+        "missing-ids",
+        "nesting",
+        "node-labels",
+        "oracle-syntax-error"
+      ]
+    },
+    {
+      "id": "native/lastLayer",
+      "tier": 1,
+      "source": "elk-models:tests/layered/interactive_layout/lastLayer.elkt",
+      "covers": [
+        "layout-options",
+        "missing-ids",
+        "oracle-parses-clean",
+        "shape-geometry"
+      ]
+    },
+    {
+      "id": "native/296_undefinedExternalPortSides",
+      "tier": 1,
+      "source": "elk-models:tickets/core/296_undefinedExternalPortSides.elkt",
+      "covers": [
+        "missing-ids",
+        "nesting",
+        "oracle-syntax-error",
+        "ports"
+      ]
+    },
+    {
+      "id": "native/spacing_labels",
+      "tier": 1,
+      "source": "elk-models:examples/general/spacing/labels.elkt",
+      "covers": [
+        "labels",
+        "layout-options",
+        "oracle-syntax-error",
+        "ports",
+        "property-values"
+      ]
+    },
+    {
+      "id": "native/273_insideSelfLoopsWithLabels",
+      "tier": 1,
+      "source": "elk-models:tickets/layered/273_insideSelfLoopsWithLabels.elkt",
+      "covers": [
+        "all-ids-present",
+        "edge-labels",
+        "oracle-syntax-error",
+        "self-loop"
+      ]
+    },
+    {
+      "id": "native/hlacerti_multidatatypes_producer",
+      "tier": 1,
+      "source": "elk-models:realworld/ptolemy/flattened/hlacerti_multidatatypes_producer.json",
+      "covers": [
+        "json-source",
+        "labels",
+        "oracle-syntax-error",
+        "ports",
+        "property-values"
+      ]
+    },
+    {
+      "id": "json/ptolemy_MacReception",
+      "tier": 2,
+      "source": "elk-models:realworld/ptolemy/flattened/wireless_network_MacReception.json",
+      "covers": [
+        "edges",
+        "labels",
+        "oracle-parses-clean",
+        "ports",
+        "realworld"
+      ]
+    },
+    {
+      "id": "json/ptolemy_Scrambler",
+      "tier": 2,
+      "source": "elk-models:realworld/ptolemy/hierarchical/comm_scrambler_Scrambler.json",
+      "covers": [
+        "edges",
+        "labels",
+        "nesting",
+        "oracle-parses-clean",
+        "ports",
+        "realworld"
+      ]
+    },
+    {
+      "id": "json/ptolemy_Trilateration_largest",
+      "tier": 2,
+      "source": "elk-models:realworld/ptolemy/hierarchical/de_trilateration_Trilateration.json",
+      "covers": [
+        "largest-model",
+        "nesting",
+        "oracle-parses-clean",
+        "realworld"
+      ]
+    },
+    {
+      "id": "json/ok-basic",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/ok-basic.json",
+      "covers": [
+        "children",
+        "edges",
+        "json-member-unknown",
+        "labels",
+        "node-root",
+        "oracle-parses-clean",
+        "ports",
+        "quoted-keywords",
+        "shape-geometry",
+        "unresolved-reference"
+      ]
+    },
+    {
+      "id": "json/ok-labels",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/ok-labels.json",
+      "covers": [
+        "edge-labels",
+        "id-non-string",
+        "labels",
+        "oracle-syntax-error",
+        "port-labels",
+        "properties-key",
+        "property-boolean",
+        "property-number",
+        "text-non-string"
+      ]
+    },
+    {
+      "id": "json/ok-duplicate-ids",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/ok-duplicate-ids.json",
+      "covers": [
+        "duplicate-ids",
+        "edges",
+        "multi-source-edge",
+        "oracle-parses-clean",
+        "ports"
+      ]
+    },
+    {
+      "id": "json/ok-ids-numeric",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/ok-ids-numeric.json",
+      "covers": [
+        "edges",
+        "id-non-string",
+        "oracle-syntax-error",
+        "unresolved-reference"
+      ]
+    },
+    {
+      "id": "json/export-ids-missing",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/export-ids-missing.json",
+      "covers": [
+        "edge-sections",
+        "missing-ids",
+        "oracle-syntax-error",
+        "ports"
+      ]
+    },
+    {
+      "id": "json/ok-lenient-syntax",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/ok-lenient-syntax.json",
+      "covers": [
+        "bare-keywords",
+        "bare-value",
+        "block-comment",
+        "line-comment",
+        "oracle-syntax-error",
+        "single-quoted-keywords",
+        "single-quoted-string"
+      ]
+    },
+    {
+      "id": "json/ok-option-values",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/ok-option-values.json",
+      "covers": [
+        "layout-options",
+        "oracle-parses-clean",
+        "property-boolean",
+        "property-number",
+        "property-string"
+      ]
+    },
+    {
+      "id": "json/ok-unknown-options",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/ok-unknown-options.json",
+      "covers": [
+        "empty-key",
+        "layout-options",
+        "oracle-syntax-error",
+        "unknown-option-key"
+      ]
+    },
+    {
+      "id": "json/ok-nan-literal",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/ok-nan-literal.json",
+      "covers": [
+        "nan-literal",
+        "oracle-syntax-error"
+      ]
+    },
+    {
+      "id": "json/ok-edges-extended",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/ok-edges-extended.json",
+      "covers": [
+        "edge-sections",
+        "json-member-unknown",
+        "multi-source-edge",
+        "multi-target-edge",
+        "oracle-syntax-error",
+        "property-number"
+      ]
+    },
+    {
+      "id": "json/err-shape-unknown-source",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/err-shape-unknown-source.json",
+      "covers": [
+        "edges",
+        "oracle-linking-error",
+        "unresolved-reference"
+      ]
+    },
+    {
+      "id": "json/err-malformed-garbage",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/err-malformed-garbage.json",
+      "covers": [
+        "malformed-input",
+        "oracle-syntax-error"
+      ]
+    },
+    {
+      "id": "json/err-malformed-trailing-comma",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/err-malformed-trailing-comma.json",
+      "covers": [
+        "oracle-parses-clean",
+        "trailing-comma"
+      ]
+    },
+    {
+      "id": "json/err-empty",
+      "tier": 2,
+      "source": "repo:tools/vectors/graph-json-scenarios/err-empty.json",
+      "covers": [
+        "empty-input",
+        "oracle-syntax-error"
+      ]
+    },
+    {
+      "id": "json/two-sections",
+      "tier": 2,
+      "source": "repo:tools/vectors/transfer-scenarios/two-sections.json",
+      "covers": [
+        "edge-sections",
+        "json-member-unknown",
+        "oracle-syntax-error",
+        "properties-key",
+        "unquoted-member-key"
+      ]
+    },
+    {
+      "id": "json/topdownpacking-hierarchy-small",
+      "tier": 2,
+      "source": "repo:test/corpus/generated/topdownpacking-hierarchy-small.json",
+      "covers": [
+        "generated",
+        "layout-options",
+        "nesting",
+        "oracle-parses-clean",
+        "shape-geometry"
+      ]
+    }
+  ]
+}

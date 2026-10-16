@@ -1,0 +1,15 @@
+{
+	"id": "G1",
+	"children": [
+		{ "id": "n2" }
+	],
+	"children": [{ "id": "n1" } ],
+	"children": [{
+		"id": "comment",
+		"layoutOptions": { commentBox: true }
+	} ],
+	"edges": [
+		{ "sources": [ "comment" ], "targets": [ "n1" ], "id": "E1" }
+	],
+	"layoutOptions": { separateConnectedComponents: false }
+}

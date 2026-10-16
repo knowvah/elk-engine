@@ -1,0 +1,38 @@
+{
+  "id": "G1",
+  "children": [
+    {
+      "id": "n1",
+      "layoutOptions": {},
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "n2",
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    }
+  ],
+  "layoutOptions": {
+    "interactiveLayout": "true"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0,
+  "edges": [
+    {
+      "id": "E1",
+      "sources": [
+        "n1"
+      ],
+      "targets": [
+        "n2"
+      ]
+    }
+  ]
+}

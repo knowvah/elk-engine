@@ -1,0 +1,15 @@
+{
+	"id": "G1",
+	"children": [
+		{ "id": "n1" }
+	],
+	"children": [{ "id": "n2" } ],
+	"children": [{ "id": "n3" } ],
+	"edges": [
+		{ "sources": [ "n1" ], "targets": [ "n2" ], "id": "E1" }
+	],
+	"edges": [{ "sources": [ "n1" ], "targets": [ "n2" ], "id": "E2" } ],
+	"edges": [{ "sources": [ "n1" ], "targets": [ "n2" ], "id": "E3" } ],
+	"edges": [{ "sources": [ "n1" ], "targets": [ "n3" ], "id": "E4" } ],
+	"layoutOptions": { edgeRouting: "SPLINES" }
+}
