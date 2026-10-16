@@ -2,7 +2,7 @@
 /**
  * Fitness function (AD-16a): every exception class in `src/` extends its Java parent, so a handler for a
  * parent class catches the whole family as in Java. JS `Error` stands in for `Throwable`. Parents are those
- * of the Java classes (JDK Javadoc, Gson, EMF, Xtext 2.36.0 and ELK sources at the pinned commits); the two
+ * of the Java classes (JDK Javadoc, Gson, EMF, Xtext 2.36.0 and ELK sources at the pinned commits); the three
  * port-local errors have no Java counterpart and extend `Error`. A new exception class must be added here.
  */
 import { readdirSync, readFileSync } from 'node:fs';
@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { BasicIndexOutOfBoundsException } from '../../src/emf/common/util/BasicIndexOutOfBoundsException.js';
 import { JsonImportException } from '../../src/graph/json/JsonImportException.js';
 import { SyntaxFailure } from '../../src/xtext/parser/SyntaxFailure.js';
+import { ElkGraphJsonSerializationError } from '../../src/graph/json/text/serializer/ElkGraphJsonSerializationError.js';
 import { ElkGraphSerializationError } from '../../src/graph/text/serializer/ElkGraphSerializationError.js';
 import { JsonIOException } from '../../src/gson/JsonIOException.js';
 import { JsonParseException } from '../../src/gson/JsonParseException.js';
@@ -99,6 +100,7 @@ const JAVA_PARENTS: ReadonlyMap<ErrorClass, ErrorClass> = new Map<ErrorClass, Er
   // port-local, no Java class
   [SyntaxFailure, Error],
   [ElkGraphSerializationError, Error],
+  [ElkGraphJsonSerializationError, Error],
 ]);
 
 function sourceFiles(dir: string): string[] {
