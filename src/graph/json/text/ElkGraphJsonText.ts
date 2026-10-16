@@ -1,12 +1,26 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ResourceDiagnostic } from '../../../emf/ecore/resource/Resource.js';
-import type { LazyLinkingResource } from '../../../xtext/linking/lazy/LazyLinkingResource.js';
+import { Severity } from '../../../xtext/diagnostics/Severity.js';
+import { LazyLinkingResource } from '../../../xtext/linking/lazy/LazyLinkingResource.js';
 import { XtextLinkingDiagnostic } from '../../../xtext/linking/impl/XtextLinkingDiagnostic.js';
-import type { IssueLocator } from '../../../xtext/validation/IssueLocator.js';
+import { CheckMode } from '../../../xtext/validation/CheckMode.js';
+import { CompositeEValidator } from '../../../xtext/validation/CompositeEValidator.js';
+import { Diagnostician } from '../../../xtext/validation/Diagnostician.js';
+import { DiagnosticConverterImpl } from '../../../xtext/validation/DiagnosticConverterImpl.js';
+import { EValidatorRegistrar } from '../../../xtext/validation/EValidatorRegistrar.js';
+import type {
+  Issue,
+  ResourceDiagnostic as ValidatorResourceDiagnostic,
+  ResourceDiagnostics,
+} from '../../../xtext/validation/Issue.js';
+import type { ContainmentSlot, IssueLocator } from '../../../xtext/validation/IssueLocator.js';
+import { ResourceValidatorImpl } from '../../../xtext/validation/ResourceValidatorImpl.js';
 import type { ElkNode } from '../../ElkNode.js';
 import { ParseResourceDiagnostic, loadParsedModel } from './linking/ElkGraphJsonLinkingServices.js';
 import { parse } from './parser/ElkGraphJsonParser.js';
 import { createElkGraphJsonServices } from './ElkGraphJsonTextServices.js';
+import { elkGraphJsonMapEntryFeatures } from './validation/ElkGraphJsonMapEntryFeatures.js';
+import { ElkGraphJsonValidator } from './validation/ElkGraphJsonValidator.js';
 
 /** Where a diagnostic of {@link ElkGraphJsonText.load} came from. */
 export type ElkJsonTextDiagnosticKind = 'syntax' | 'linking' | 'conversion';
@@ -57,6 +71,96 @@ export function diagnosticsOf(resource: LazyLinkingResource): ElkJsonTextDiagnos
   ];
 }
 
+/** An `IResourceValidator` issue: the result of {@link ElkGraphJsonText.validate}. */
+export interface ElkJsonTextIssue {
+  readonly severity: 'error' | 'warning';
+  readonly message: string;
+  readonly line: number;
+  readonly code: string | null;
+}
+
+const CODE_SYNTAX = 'org.eclipse.xtext.diagnostics.Diagnostic.Syntax';
+const CODE_CONVERSION = 'org.eclipse.xtext.diagnostics.Diagnostic.Syntax.Range';
+const CODE_LINKING = 'org.eclipse.xtext.diagnostics.Diagnostic.Linking';
+
+const RESOURCE_CODES: Readonly<Record<ElkJsonTextDiagnosticKind, string>> = {
+  syntax: CODE_SYNTAX,
+  conversion: CODE_CONVERSION,
+  linking: CODE_LINKING,
+};
+
+/** What `load` keeps for `validate`; keyed by the root so the graph can be collected, written once per load. */
+interface LoadedResource {
+  readonly resource: LazyLinkingResource;
+  readonly positions: IssueLocator;
+}
+
+const LOADED = new WeakMap<ElkNode, LoadedResource>();
+
+const NO_SLOT: ContainmentSlot = { feature: { getName: () => '' }, index: -1 };
+
+/** The locator of a graph without node model: nothing has a line, so every issue falls back to line 0. */
+const UNLOCATED: IssueLocator = {
+  objectStartLine: () => null,
+  featureStartLines: () => [],
+  containingSlot: () => NO_SLOT,
+};
+
+/** The validator's view of a resource diagnostic, converted at the moment it is read (the lists are live). */
+function toValidatorDiagnostic(d: ResourceDiagnostic): ValidatorResourceDiagnostic {
+  const kind = kindOf(d);
+  return {
+    message: d.getMessage() ?? '',
+    line: d.getLine(),
+    syntax: kind !== 'linking',
+    code: RESOURCE_CODES[kind],
+  };
+}
+
+/** `Resource.getErrors()` and `getWarnings()` as the validator reads them: live, after the proxies are resolved. */
+function liveDiagnostics(resource: LazyLinkingResource): ResourceDiagnostics {
+  return {
+    get errors() {
+      return [...resource.getErrors()].map(toValidatorDiagnostic);
+    },
+    get warnings() {
+      return [...resource.getWarnings()].map(toValidatorDiagnostic);
+    },
+  };
+}
+
+function toIssue(issue: Issue): ElkJsonTextIssue {
+  return {
+    severity: issue.severity === Severity.WARNING ? 'warning' : 'error',
+    message: issue.message,
+    line: issue.lineNumber,
+    code: issue.code,
+  };
+}
+
+function logValidationFailure(message: string, error: unknown): void {
+  console.error(JSON.stringify({ level: 'error', msg: message, service: 'elk-engine', error: String(error) }));
+}
+
+/**
+ * `ElkGraphJsonStandaloneSetup`'s validator wiring: `EValidatorRegistrar` registers the (empty)
+ * `ElkGraphJsonValidator` for the ElkGraph package, for which the registry holds no validator (the `.elkj` setup
+ * never registers one; the recorded output reports each EMF constraint once), so the registrar's `null` branch starts
+ * a fresh `CompositeEValidator` whose own defaults hold EMF's `EObjectValidator` — unlike `.elkt`, whose registry
+ * default adds a second, plain one.
+ *
+ * @see org.eclipse.elk.graph.json.text/src/org/eclipse/elk/graph/json/text/ElkGraphJsonRuntimeModule.xtend
+ * @see org.eclipse.xtext/src/org/eclipse/xtext/validation/EValidatorRegistrar.java
+ */
+function createResourceValidator(): ResourceValidatorImpl {
+  const registrar = new EValidatorRegistrar(
+    null,
+    () => new CompositeEValidator(elkGraphJsonMapEntryFeatures, logValidationFailure),
+  );
+  const composite = registrar.register(new ElkGraphJsonValidator());
+  return new ResourceValidatorImpl(new Diagnostician(composite), new DiagnosticConverterImpl(), logValidationFailure);
+}
+
 /**
  * The entry point of the ELK JSON textual format (`.elkj`), internal (D5): the port of reading an `.elkj` through
  * `ElkGraphJsonStandaloneSetup` and a `ResourceSetImpl`.
@@ -78,6 +182,38 @@ export const ElkGraphJsonText = {
     const services = createElkGraphJsonServices();
     const result = parse(text, services.valueConverters);
     const resource = loadParsedModel(result, services.linking);
+    if (result.root !== null) {
+      LOADED.set(result.root, { resource, positions: result.positions });
+    }
     return { root: result.root, errors: diagnosticsOf(resource), resource, positions: result.positions };
+  },
+
+  /**
+   * The port of `IResourceValidator.validate(resource, CheckMode.ALL, ...)`: Xtext first resolves the lazy cross
+   * references of the resource (`ResourceValidatorImpl.resolveProxies`), which appends the linking errors to the live
+   * `resource.getErrors()`; then it reports the load diagnostics (errors, then warnings: syntax, value conversion,
+   * linking, with the Xtext issue codes) and the EMF `EObjectValidator` checks of every object of the tree in
+   * `eAllContents` order. The `.elkj` validator has no checks of its own (no `LayoutOptionValidator`). Issues come in
+   * emission order; sort them to compare (the recorded vectors sort by line, severity, code, message).
+   *
+   * Validating mutates the resource as the Java validator does: it resolves the lazy references in place. Calling it
+   * again returns the same issues, because the resolved references and the recorded linking errors are not added twice.
+   *
+   * `line` is the 1-based start line of the object's node in the text `root` was loaded from. A graph that was not
+   * produced by {@link load} has no node model: every issue has line `0`, and the load diagnostics are those of its
+   * resource, if it has a lazy linking one, else none.
+   *
+   * @param root the root returned by {@link load}, or any ElkGraph
+   * @returns the issues
+   */
+  validate(root: ElkNode): readonly ElkJsonTextIssue[] {
+    const loaded = LOADED.get(root);
+    const eResource = root.eResource();
+    const resource = loaded?.resource ?? (eResource instanceof LazyLinkingResource ? eResource : null);
+    const diagnostics: ResourceDiagnostics =
+      resource === null ? { errors: [], warnings: [] } : liveDiagnostics(resource);
+    return createResourceValidator()
+      .validate([root], diagnostics, CheckMode.ALL, loaded?.positions ?? UNLOCATED, resource)
+      .map(toIssue);
   },
 };

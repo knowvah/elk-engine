@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { EObject } from '../../emf/ecore/EObject.js';
 import { Severity } from '../diagnostics/Severity.js';
+import { LazyLinkingResource } from '../linking/lazy/LazyLinkingResource.js';
 import { CheckMode } from './CheckMode.js';
 import { CheckType } from './CheckType.js';
 import type { ErrorLog } from './CompositeEValidator.js';
@@ -12,8 +13,9 @@ import type { IssueLocator } from './IssueLocator.js';
 /**
  * Validates a loaded resource: its load diagnostics first (errors, then warnings), then the
  * validator diagnostics of each content root. A failure while validating one root is logged and
- * dropped together with all issues of that root, as in Java. Reduced: `resolveProxies` is a no-op
- * (linking is eager), cancellation is dropped, the Xtext language name and the concrete-syntax
+ * dropped together with all issues of that root, as in Java. Reduced: `resolveProxies` resolves only a
+ * `LazyLinkingResource` (`EcoreUtil2.resolveLazyCrossReferences`; any other resource is already linked eagerly) and
+ * is passed no cancel indicator, otherwise cancellation is dropped, the Xtext language name and the concrete-syntax
  * validator option are not needed (concrete-syntax validation is not ported), and Java's
  * `Resource` is the pair of its contents and its load diagnostics.
  *
@@ -40,6 +42,8 @@ export class ResourceValidatorImpl {
    * @param resourceDiagnostics the load diagnostics (`getErrors()`, `getWarnings()`)
    * @param mode which check types to run
    * @param locator the node-model lookups behind the issue lines
+   * @param resource the resource whose lazy cross references are resolved first (`resolveProxies`); when it is a
+   *   `LazyLinkingResource`, `resourceDiagnostics` must read its live error and warning lists, as Java does
    * @returns the issues in emission order
    */
   validate(
@@ -47,11 +51,13 @@ export class ResourceValidatorImpl {
     resourceDiagnostics: ResourceDiagnostics,
     mode: CheckMode,
     locator: IssueLocator,
+    resource: object | null = null,
   ): Issue[] {
     const result: Issue[] = [];
     const acceptor = (issue: Issue): void => {
       result.push(issue);
     };
+    this.resolveProxies(resource);
     try {
       if (mode.shouldCheck(CheckType.FAST)) {
         this.collectResourceDiagnostics(resourceDiagnostics, acceptor);
@@ -63,6 +69,13 @@ export class ResourceValidatorImpl {
       this.#logError('Error validating resource', e);
     }
     return result;
+  }
+
+  /** @see org.eclipse.xtext/src/org/eclipse/xtext/validation/ResourceValidatorImpl.java#resolveProxies(Resource) */
+  protected resolveProxies(resource: object | null): void {
+    if (resource instanceof LazyLinkingResource) {
+      resource.resolveLazyCrossReferences(null);
+    }
   }
 
   protected collectResourceDiagnostics(

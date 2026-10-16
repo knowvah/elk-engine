@@ -35,6 +35,14 @@ describe('EValidatorRegistrar', () => {
     expect(names(composite)).toEqual(['DefaultEObjectValidator', 'EObjectValidator', 'FirstValidator']);
   });
 
+  it('starts a fresh composite when the registry holds no validator for the package', () => {
+    const registrar = new EValidatorRegistrar(null, newComposite);
+
+    const composite = registrar.register(new FirstValidator());
+
+    expect(names(composite)).toEqual(['DefaultEObjectValidator', 'FirstValidator']);
+  });
+
   it('adds later registrations to the same composite and ignores a second validator of one class', () => {
     const registrar = new EValidatorRegistrar(new EObjectValidator(NO_MAPS), newComposite);
     const first = registrar.register(new FirstValidator());

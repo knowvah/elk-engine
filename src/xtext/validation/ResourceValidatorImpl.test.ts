@@ -4,6 +4,7 @@ import { BasicEList } from '../../emf/common/util/BasicEList.js';
 import type { EList } from '../../emf/common/util/EList.js';
 import type { EClass } from '../../emf/ecore/EClass.js';
 import type { EObject } from '../../emf/ecore/EObject.js';
+import { LazyLinkingResource } from '../linking/lazy/LazyLinkingResource.js';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
 import { Severity } from '../diagnostics/Severity.js';
 import { AbstractDeclarativeValidator } from './AbstractDeclarativeValidator.js';
@@ -405,6 +406,62 @@ describe('ResourceValidatorImpl', () => {
       'EObjectValidator',
       'OrderValidatorQuiet',
     ]);
+  });
+});
+
+describe('ResourceValidatorImpl resolveProxies', () => {
+  /** A `LazyLinkingResource` whose resolution is observable; its services are never reached. */
+  function lazyResource(onResolve: (monitor: unknown) => void): LazyLinkingResource {
+    const resource = Object.create(LazyLinkingResource.prototype) as LazyLinkingResource;
+    resource.resolveLazyCrossReferences = onResolve;
+    return resource;
+  }
+
+  it('resolves a lazy linking resource before it reads the load diagnostics, which are then the live ones', () => {
+    class QuietValidator extends AbstractDeclarativeValidator {}
+    const { root, locator } = buildTree();
+    const { resourceValidator } = pipeline(new QuietValidator());
+    const monitors: unknown[] = [];
+    const added: ResourceDiagnostic[] = [];
+    const resource = lazyResource((monitor) => {
+      monitors.push(monitor);
+      added.push({ message: 'late', line: 7, syntax: false, code: 'linking' });
+    });
+    const live = {
+      get errors(): readonly ResourceDiagnostic[] {
+        return added;
+      },
+      warnings: [],
+    };
+
+    const issues = resourceValidator.validate([root], live, CheckMode.ALL, locator, resource);
+
+    expect(monitors).toEqual([null]);
+    expect(issues.map((i) => [i.message, i.lineNumber, i.code])).toEqual([['late', 7, 'linking']]);
+  });
+
+  it('leaves any other resource alone', () => {
+    class QuietValidator extends AbstractDeclarativeValidator {}
+    const { root, locator } = buildTree();
+    const { resourceValidator } = pipeline(new QuietValidator());
+    const plain = { resolveLazyCrossReferences: () => expect.fail('must not resolve') };
+
+    expect(resourceValidator.validate([root], NO_RESOURCE_DIAGNOSTICS, CheckMode.ALL, locator, plain)).toEqual([]);
+    expect(resourceValidator.validate([root], NO_RESOURCE_DIAGNOSTICS, CheckMode.ALL, locator, null)).toEqual([]);
+  });
+
+  it('does not swallow a failure of the resolution: it happens outside the logged section', () => {
+    class QuietValidator extends AbstractDeclarativeValidator {}
+    const { root, locator } = buildTree();
+    const { resourceValidator, logged } = pipeline(new QuietValidator());
+    const resource = lazyResource(() => {
+      throw new IllegalArgumentException('boom');
+    });
+
+    expect(() => resourceValidator.validate([root], NO_RESOURCE_DIAGNOSTICS, CheckMode.ALL, locator, resource)).toThrow(
+      'boom',
+    );
+    expect(logged).toEqual([]);
   });
 });
 
