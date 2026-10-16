@@ -5,7 +5,10 @@ import type { ElkEdgeSection } from '../../ElkEdgeSection.js';
 import { ElkGraphFactory } from '../../ElkGraphFactory.js';
 import type { ElkGraphElement } from '../../ElkGraphElement.js';
 import type { ElkNode } from '../../ElkNode.js';
-import { type GroupMember, type ParseSession, RuleName, type TokenCursor, Tok } from './ParseRecords.js';
+import type { GroupMember } from '../../../xtext/parser/GroupMember.js';
+import type { ParseSession } from '../../../xtext/parser/ParseSession.js';
+import type { TokenCursor } from '../../../xtext/parser/TokenCursor.js';
+import { RuleName, Tok } from './ParseRecords.js';
 
 /** Converted text of a `QualifiedId`: concatenated, and as `NodeModelUtils.getTokenText` reads it. */
 export interface QualifiedText {

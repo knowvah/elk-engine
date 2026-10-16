@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { BasicIndexOutOfBoundsException } from '../../src/emf/common/util/BasicIndexOutOfBoundsException.js';
 import { JsonImportException } from '../../src/graph/json/JsonImportException.js';
-import { SyntaxFailure } from '../../src/graph/text/parser/ParseRecords.js';
+import { SyntaxFailure } from '../../src/xtext/parser/SyntaxFailure.js';
 import { ElkGraphSerializationError } from '../../src/graph/text/serializer/ElkGraphSerializationError.js';
 import { JsonIOException } from '../../src/gson/JsonIOException.js';
 import { JsonParseException } from '../../src/gson/JsonParseException.js';
