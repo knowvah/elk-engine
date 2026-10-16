@@ -7,6 +7,7 @@ import type { ElkNode } from '../../../ElkNode.js';
 import type { ElkShape } from '../../../ElkShape.js';
 import { ElkPropertyToValueMapEntryImpl } from '../../../impl/ElkPropertyToValueMapEntryImpl.js';
 import type { IProperty } from '../../../properties/IProperty.js';
+import type { Token } from '../../../../xtext/parser/Token.js';
 import type { ParseSession } from '../../../../xtext/parser/ParseSession.js';
 import { RuleName, Tok } from './ElkGraphJsonRecords.js';
 
@@ -91,7 +92,7 @@ export class ElkGraphJsonElementRules {
   /** `ElkId: KeyId ':' identifier=STRING` (ElkGraphJson.xtext:89-91). */
   parseId(owner: ElkGraphElement): void {
     const token = this.#session.cursor.expect(Tok.STRING);
-    this.#session.assign({ owner, feature: 'identifier', rule: RuleName.STRING }, token, (v) =>
+    this.#session.assignToken({ owner, feature: 'identifier', rule: RuleName.STRING }, token, (v) =>
       owner.setIdentifier(v as string),
     );
   }
@@ -99,7 +100,7 @@ export class ElkGraphJsonElementRules {
   /** `KeyText ':' text=STRING` (ElkGraphJson.xtext:57). */
   parseText(label: ElkLabel): void {
     const token = this.#session.cursor.expect(Tok.STRING);
-    this.#session.assign({ owner: label, feature: 'text', rule: RuleName.STRING }, token, (v) =>
+    this.#session.assignToken({ owner: label, feature: 'text', rule: RuleName.STRING }, token, (v) =>
       label.setText(v as string),
     );
   }
@@ -155,7 +156,7 @@ export class ElkGraphJsonElementRules {
         index: counts[feature]++,
         ruleName: RuleName.STRING,
         text: token.text,
-        line: token.line,
+        line: this.#session.cursor.lineOf(token),
       });
     });
   }
@@ -175,7 +176,7 @@ export class ElkGraphJsonElementRules {
     const start = cursor.position();
     const entry = new ElkPropertyToValueMapEntryImpl();
     const key = this.#parsePropertyKey();
-    this.#session.assign({ owner: entry, feature: 'key', rule: RuleName.PROPERTY_KEY }, key, (v) =>
+    this.#session.assignToken({ owner: entry, feature: 'key', rule: RuleName.PROPERTY_KEY }, key, (v) =>
       entry.setTypedKey(v as IProperty<unknown>),
     );
     cursor.expect(Tok.COLON);
@@ -185,7 +186,7 @@ export class ElkGraphJsonElementRules {
   }
 
   /** `PropertyKey hidden(): STRING | ID` (ElkGraphJson.xtext:120-122): a single token. */
-  #parsePropertyKey(): { readonly text: string; readonly line: number } {
+  #parsePropertyKey(): Token {
     const { cursor } = this.#session;
     if (cursor.type() !== Tok.STRING && cursor.type() !== Tok.ID) {
       throw cursor.mismatch(RuleName.PROPERTY_KEY);
@@ -200,7 +201,7 @@ export class ElkGraphJsonElementRules {
     if (rule === undefined) {
       throw cursor.mismatch('a property value');
     }
-    this.#session.assign({ owner: entry, feature: 'value', rule }, cursor.next(), (v) => entry.setTypedValue(v));
+    this.#session.assignToken({ owner: entry, feature: 'value', rule }, cursor.next(), (v) => entry.setTypedValue(v));
   }
 
   /** `JsonObject` (ElkGraphJson.xtext:148): parsed and discarded. */

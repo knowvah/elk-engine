@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { TOKEN_LINE_SOURCE, type LineSource } from './LineSource.js';
 import { SyntaxFailure } from './SyntaxFailure.js';
 import type { Token } from './Token.js';
 
@@ -14,9 +15,12 @@ const EOF_TOKEN_TEXT = '<EOF>';
 export class TokenCursor<T extends Token = Token> {
   readonly #tokens: T[];
   readonly #eof: Token;
+  readonly #lines: LineSource;
   #pos = 0;
 
-  constructor(all: readonly T[]) {
+  /** @param lines how a token's line is derived; the lexer's own lines by default */
+  constructor(all: readonly T[], lines: LineSource = TOKEN_LINE_SOURCE) {
+    this.#lines = lines;
     this.#tokens = all.filter((t) => !t.hidden);
     const last = all[all.length - 1];
     this.#eof =
@@ -26,7 +30,7 @@ export class TokenCursor<T extends Token = Token> {
             type: EOF_TOKEN_TYPE,
             text: EOF_TOKEN_TEXT,
             offset: last.offset + last.text.length,
-            line: endLine(last),
+            line: lines.endLine(last),
             hidden: false,
           };
   }
@@ -66,16 +70,21 @@ export class TokenCursor<T extends Token = Token> {
   lineFrom(start: number): number {
     const first = this.#tokens[start];
     if (this.#pos > start && first !== undefined) {
-      return first.line;
+      return this.#lines.startLine(first);
     }
     const previous = this.#tokens[start - 1];
-    return previous === undefined ? 1 : endLine(previous);
+    return previous === undefined ? 1 : this.#lines.endLine(previous);
+  }
+
+  /** The line of `token` as the diagnostics and records of this parse report it. */
+  lineOf(token: Token): number {
+    return this.#lines.startLine(token);
   }
 
   /** The syntax error for an unexpected next token. */
   mismatch(expected: string): SyntaxFailure {
     const found = this.peek();
-    return new SyntaxFailure(`mismatched input '${found.text}' expecting ${expected}`, found.line);
+    return new SyntaxFailure(`mismatched input '${found.text}' expecting ${expected}`, this.lineOf(found));
   }
 
   expect(type: string): T | Token {
@@ -88,12 +97,4 @@ export class TokenCursor<T extends Token = Token> {
   accept(type: string): T | Token | null {
     return this.type() === type ? this.next() : null;
   }
-}
-
-function endLine(token: Token): number {
-  let line = token.line;
-  for (let i = token.text.indexOf('\n'); i !== -1; i = token.text.indexOf('\n', i + 1)) {
-    line++;
-  }
-  return line;
 }

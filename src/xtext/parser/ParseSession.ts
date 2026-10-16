@@ -9,6 +9,7 @@ import type { Assignment } from './Assignment.js';
 import { ConversionNode } from './ConversionNode.js';
 import type { GroupMember } from './GroupMember.js';
 import type { ParseDiagnostic } from './ParseDiagnostic.js';
+import type { LineSource } from './LineSource.js';
 import { ParseRecords } from './ParseRecords.js';
 import type { SessionVocabulary } from './SessionVocabulary.js';
 import type { Span } from './Span.js';
@@ -31,8 +32,13 @@ export class ParseSession<T extends Token = Token> {
   readonly #vocabulary: SessionVocabulary;
   readonly #reported = new Set<INode>();
 
-  constructor(tokens: readonly T[], services: IValueConverterService, vocabulary: SessionVocabulary) {
-    this.cursor = new TokenCursor<T>(tokens);
+  constructor(
+    tokens: readonly T[],
+    services: IValueConverterService,
+    vocabulary: SessionVocabulary,
+    lines?: LineSource,
+  ) {
+    this.cursor = new TokenCursor<T>(tokens, lines);
     this.#services = services;
     this.#vocabulary = vocabulary;
   }
@@ -51,6 +57,11 @@ export class ParseSession<T extends Token = Token> {
     } catch (e) {
       this.#report(wrapConverterFailure(e, node), node);
     }
+  }
+
+  /** `assign` for a value that is one token: its line comes from the line source of the parse. */
+  assignToken(a: Assignment, token: Token, apply: (value: unknown) => void): void {
+    this.assign(a, { text: token.text, line: this.cursor.lineOf(token) }, apply);
   }
 
   #convertAndApply(a: Assignment, node: INode, apply: (value: unknown) => void): void {
@@ -81,7 +92,7 @@ export class ParseSession<T extends Token = Token> {
   /** `feature=ID`. */
   identifier(owner: EObject, feature: string, apply: (value: string) => void): void {
     const token = this.cursor.expect(this.#vocabulary.idToken);
-    this.assign({ owner, feature, rule: this.#vocabulary.idRule }, token, (v) => apply(v as string));
+    this.assignToken({ owner, feature, rule: this.#vocabulary.idRule }, token, (v) => apply(v as string));
   }
 
   /**
@@ -95,7 +106,7 @@ export class ParseSession<T extends Token = Token> {
     const set = (v: unknown): void => apply(v as number);
     if (next.type === this.#vocabulary.signedIntToken || next.type === this.#vocabulary.floatToken) {
       this.cursor.next();
-      this.assign(assignment, next, set);
+      this.assignToken(assignment, next, set);
     } else if (follow.has(next.type)) {
       this.assign(assignment, { text: '', line: this.cursor.lineFrom(this.cursor.position()) }, set);
     } else {
