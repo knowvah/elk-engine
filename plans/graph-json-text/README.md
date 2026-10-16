@@ -123,7 +123,7 @@ commits per task. `npm run docs:build` green before T18 is marked done.
 | [2](batch-2/overview.md) | Shared parse runtime; lexer | T7–T8 | 1 | [x] |
 | [3](batch-3/overview.md) | Value converters; naming and scoping | T9–T10 | 2 | [x] |
 | [4](batch-4/overview.md) | Parser | T11 | 3 | [x] |
-| [5](batch-5/overview.md) | Linking — re-scoped by D13 (lazy linking, EMF proxies); T12 superseded | T12a–T12f, T12h | 4 | [ ] |
+| [5](batch-5/overview.md) | Linking — re-scoped by D13 (lazy linking, EMF proxies); T12 superseded | T12a–T12f, T12h | 4 | [x] |
 | [6](batch-6/overview.md) | `ElkGraphJsonText.load` (amended by D13) | T13 | 5, 1b | [ ] |
 | [7](batch-7/overview.md) | Validation; serializer | T14–T15 | 6 | [ ] |
 | [8](batch-8/overview.md) | Formatter and `serialize` | T16 | 7 | [ ] |

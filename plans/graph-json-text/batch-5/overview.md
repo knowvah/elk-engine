@@ -14,7 +14,7 @@ within a sub-batch have disjoint write-sets and run in parallel.
 | 5b | T12c | `LazyURIEncoder`, `LazyLinker` | typescript-pro | src/xtext/linking/lazy/{LazyURIEncoder,LazyLinker}.ts (+ tests) | T12a | [x] |
 | 5c | T12d | `LazyLinkingResource` | typescript-pro | src/xtext/linking/lazy/LazyLinkingResource*.ts (+ tests) | T12b, T12c | [x] |
 | 5c | T12e | ElkGraph resolving lists | typescript-pro | src/graph/impl/{ElkEdgeImpl,ElkConnectableShapeImpl}.ts (+ tests) | T12b, T12h | [x] |
-| 5d | T12f | `.elkj` lazy-linker wiring and reference table | typescript-pro | src/graph/json/text/linking/** (+ tests) | T12d, T12e | [ ] |
+| 5d | T12f | `.elkj` lazy-linker wiring and reference table | typescript-pro | src/graph/json/text/linking/** (+ tests) | T12d, T12e | [x] |
 
 Batch done when every task's acceptance criteria pass and the README gates are green, plus the full layout suite and a
 before/after benchmark of edge-endpoint access (d13-plan risk 8).
