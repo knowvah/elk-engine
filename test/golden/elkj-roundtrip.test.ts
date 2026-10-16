@@ -124,8 +124,14 @@ function syntaxClass(written: string): Outcome | null {
 
 type Tree = unknown;
 const SHAPE_KEYS: ReadonlySet<string> = new Set(['x', 'y', 'width', 'height']);
-const INT_MAX = 2147483647;
-const INT_MIN = -2147483648;
+const ID_KEY = 'id';
+const SOURCES_KEY = 'sources';
+const TARGETS_KEY = 'targets';
+const KEY_FAILURE = "'PropertyKey'";
+const STRING_FAILURE = "'STRING'";
+const VALUE_FAILURE = 'is not allowed to have a value';
+const INT_MAX = 2 ** 31 - 1;
+const INT_MIN = -(2 ** 31);
 
 /** `canon` with `rewrite` applied to every `[key, value]` of every object, depth first. */
 function rewriteTree(tree: Tree, rewrite: (key: string, value: unknown) => unknown): Tree {
@@ -151,15 +157,15 @@ const numbers =
 
 /** Property ids without one pair of surrounding quotes. */
 const unquotedKeys = (key: string, value: unknown): unknown =>
-  key === 'id' && typeof value === 'string' ? value.replace(/^"(.*)"$/, '$1') : value;
+  key === ID_KEY && typeof value === 'string' ? value.replace(/^"(.*)"$/, '$1') : value;
 
 const withoutEndpoints = (key: string, value: unknown): unknown =>
-  key === 'sources' || key === 'targets' ? [] : value;
+  key === SOURCES_KEY || key === TARGETS_KEY ? [] : value;
 
 const same = (a: Tree, b: Tree): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 /** Names the difference between the loaded and the reloaded graph; `divergence` when no class explains it. */
-function classifyDifference(before: Tree, after: Tree, unresolved: boolean): Outcome | Outcomes.DIVERGENCE {
+function classifyDifference(before: Tree, after: Tree, unresolved: boolean): Outcome {
   if (unresolved) {
     return same(rewriteTree(before, withoutEndpoints), rewriteTree(after, withoutEndpoints)) ? Outcomes.UNRESOLVED : Outcomes.DIVERGENCE;
   }
@@ -174,14 +180,14 @@ function classifyDifference(before: Tree, after: Tree, unresolved: boolean): Out
 }
 
 /** The converter failures a loaded graph can reach (sections and list values cannot be loaded from `.elkj`). */
-function serializationClass(message: string): Outcome | Outcomes.DIVERGENCE {
-  if (message.includes("'PropertyKey'")) return Outcomes.SERIALIZATION_KEY;
-  if (message.includes("'STRING'")) return Outcomes.SERIALIZATION_STRING;
-  return message.includes('is not allowed to have a value') ? Outcomes.SERIALIZATION_VALUE : Outcomes.DIVERGENCE;
+function serializationClass(message: string): Outcome {
+  if (message.includes(KEY_FAILURE)) return Outcomes.SERIALIZATION_KEY;
+  if (message.includes(STRING_FAILURE)) return Outcomes.SERIALIZATION_STRING;
+  return message.includes(VALUE_FAILURE) ? Outcomes.SERIALIZATION_VALUE : Outcomes.DIVERGENCE;
 }
 
 /** Writes and reloads the graph and names what happened; `divergence`: reload errors or differences outside the classes. */
-function classify(root: ElkNode, unresolved: boolean): Outcome | Outcomes.DIVERGENCE {
+function classify(root: ElkNode, unresolved: boolean): Outcome {
   const before = canonGraph(root);
   let written: string;
   try {
@@ -201,30 +207,38 @@ beforeEach(() => {
   LayoutMetaDataService.getInstance();
 });
 
+/** The 712 KB curated model takes ~5 s to write and reload under coverage on a loaded machine (vitest default: 5 s). */
+const ROUND_TRIP_TIMEOUT_MS = 60_000;
+
+/** The loadable inputs (16 curated, 265 T3 scenarios) and where each ends up; the counts are part of the report. */
+const EXPECTED_CASES = 281;
+const EXPECTED_COUNTS: Readonly<Record<string, number>> = {
+  [Outcomes.EQUAL]: 193,
+  [Outcomes.SERIALIZATION_KEY]: 34,
+  [Outcomes.SERIALIZATION_STRING]: 1,
+  [Outcomes.SERIALIZATION_VALUE]: 1,
+  [Outcomes.DOTTED_KEY]: 14,
+  [Outcomes.EMPTY_ELEMENT]: 4,
+  [Outcomes.UNRESOLVED]: 28,
+  [Outcomes.NUMBER_CLAMP]: 5,
+  [Outcomes.KEY_QUOTING]: 1,
+};
+
 describe('ElkGraphJsonText round trip', () => {
   const cases = loadable();
-  const outcomes = new Map<string, Outcome | Outcomes.DIVERGENCE>();
+  const outcomes = new Map<string, Outcome>();
 
   it.each(cases.map((c) => [c.id, c] as const))('%s: reloads equal or falls into a documented class', (_id, c) => {
     const outcome = classify(c.root, c.unresolved);
     outcomes.set(c.id, outcome);
     expect(outcome).not.toBe(Outcomes.DIVERGENCE);
-  });
+  }, ROUND_TRIP_TIMEOUT_MS);
 
-  it('counts 281 cases, 193 equal and 88 in the documented classes', () => {
+  it('classifies every case, all but the equal ones into a documented class', () => {
     const counts: Record<string, number> = {};
     for (const o of outcomes.values()) counts[o] = (counts[o] ?? 0) + 1;
-    expect(cases).toHaveLength(281);
-    expect(counts).toEqual({
-      equal: 193,
-      Outcomes.SERIALIZATION_KEY: 34,
-      Outcomes.SERIALIZATION_STRING: 1,
-      Outcomes.SERIALIZATION_VALUE: 1,
-      Outcomes.DOTTED_KEY: 14,
-      Outcomes.EMPTY_ELEMENT: 4,
-      unresolved: 28,
-      Outcomes.NUMBER_CLAMP: 5,
-      Outcomes.KEY_QUOTING: 1,
-    });
+    expect(cases).toHaveLength(EXPECTED_CASES);
+    expect(counts).toEqual(EXPECTED_COUNTS);
+    expect(Object.values(EXPECTED_COUNTS).reduce((sum, n) => sum + n, 0)).toBe(EXPECTED_CASES);
   });
 });

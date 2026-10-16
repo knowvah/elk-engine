@@ -45,7 +45,7 @@ beforeEach(() => {
 const input = (c: RecordedCase): ElkNode => buildElkjWriteInput(c.source, c.id);
 
 describe('ElkGraphJsonText.serialize against the recorded writer rows', () => {
-  it('replays 126 rows, 115 written and 11 failing; 26 written rows do not reparse', () => {
+  it('replays every recorded row: written, failing and not reparsing counts as recorded', () => {
     expect([cases.length, written.length, failing.length, lossy.length]).toEqual([
       RECORDED_ROWS,
       WRITTEN_ROWS,
@@ -83,6 +83,7 @@ describe('ElkGraphJsonText.serialize: the output reloaded', () => {
 });
 
 describe('ElkGraphJsonText.serialize: the input graph', () => {
+  const CHILD_COUNT = 2;
   const TEXT =
     '{ "id": "g", "children": [ { "id": "a" }, { "id": "b" } ], "edges": [ { "id": "e", "sources": [ "a" ], "targets": [ "missing" ] } ] }';
 
@@ -93,7 +94,7 @@ describe('ElkGraphJsonText.serialize: the input graph', () => {
     const edge = root.getContainedEdges().get(0);
     expect(edge.getSources().size()).toBe(1);
     expect(edge.getTargets().size()).toBe(1);
-    expect(root.getChildren().size()).toBe(2);
+    expect(root.getChildren().size()).toBe(CHILD_COUNT);
     expect(written).toBe(ElkGraphJsonText.serialize(root));
   });
 

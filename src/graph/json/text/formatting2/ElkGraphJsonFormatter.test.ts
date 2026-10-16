@@ -10,9 +10,14 @@ import type { ElkNode } from '../../../ElkNode.js';
 import { ElkGraphJsonFormatter } from './ElkGraphJsonFormatter.js';
 import { writeFormatted } from './ElkGraphJsonWriter.js';
 
+const ROOT_ID = 'g';
+const CHILD_ID = 'a';
+const ROOT_LINE = `{ "id": "${ROOT_ID}" }`;
+const CHILD_LINE = `{ "id": "${CHILD_ID}" }`;
+
 function graph(): ElkNode {
   const root = ElkGraphUtil.createGraph();
-  root.setIdentifier('g');
+  root.setIdentifier(ROOT_ID);
   return root;
 }
 
@@ -20,13 +25,13 @@ const write = (root: ElkNode): string => writeFormatted(root, ExceptionAcceptor.
 
 describe('ElkGraphJsonFormatter layout', () => {
   it('writes a node without children, ports, labels or properties on one line', () => {
-    expect(write(graph())).toBe('{ "id": "g" }');
+    expect(write(graph())).toBe(ROOT_LINE);
   });
 
   it('breaks and indents a node with a child, the child compact', () => {
     const root = graph();
-    ElkGraphUtil.createNode(root).setIdentifier('a');
-    expect(write(root)).toBe('{\n\t"id": "g",\n\t"children": [\n\t\t{ "id": "a" }\n\t]\n}');
+    ElkGraphUtil.createNode(root).setIdentifier(CHILD_ID);
+    expect(write(root)).toBe(`{\n\t"id": "${ROOT_ID}",\n\t"children": [\n\t\t${CHILD_LINE}\n\t]\n}`);
   });
 });
 
