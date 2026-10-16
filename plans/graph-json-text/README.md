@@ -127,7 +127,7 @@ commits per task. `npm run docs:build` green before T18 is marked done.
 | [6](batch-6/overview.md) | `ElkGraphJsonText.load` (amended by D13) | T13 | 5, 1b | [x] |
 | [7](batch-7/overview.md) | Validation; serializer | T14–T15 | 6 | [x] |
 | [8](batch-8/overview.md) | Formatter and `serialize` | T16 | 7 | [x] |
-| [9](batch-9/overview.md) | Local sweep; docs and plans | T17–T18 | 8 | [ ] |
+| [9](batch-9/overview.md) | Local sweep; docs and plans | T17–T18 | 8 | [x] |
 
 ## Documents
 
@@ -181,3 +181,12 @@ reference on export follows the 2026-10-14 unknown-endpoint entry); **D2 amendme
 8. No ELK prose typo was corrected in this mission (nothing under "upstream typos").
 9. Landing (stop 16): the commands under "Branch and landing (D9)" above. Commits are unsigned; the user signs by
    rebase (YubiKey PIN + touch per commit), pushes, opens the PR and merges with a merge commit.
+
+### Final gates (2026-10-16, orchestrator)
+
+format 0 · typecheck 0 · complexity clean · coverage 0 (17,273 passed + 68 curated `skipIf` branches;
+99.38/97.92/99.38/99.41) · `docs:build` 0 · 4b vectors cmp-identical · `regen-elkt-refs.sh` no diff ·
+`elkj-vectors.sh` cmp-identical (lexer, parse, validate, write, inverse) · `regen-elkj-refs.sh` no diff. The plain
+full run hit the known `ImportedNamespaceAwareLocalScopeProvider` 300 ms flake once at load ≈ 54 (JVM replay running);
+3/3 green in isolation. Also stale, outside T18's write-set: `docs/architecture/port-map.md` has no `graph.json.text`
+section and `inventory.md`'s row predates the port (follow-up). Mission stops at stop 16 for signing and landing.
