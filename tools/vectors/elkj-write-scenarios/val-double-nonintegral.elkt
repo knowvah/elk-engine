@@ -1,0 +1,5 @@
+graph g
+org.eclipse.elk.spacing.nodeNode: 1.5
+org.eclipse.elk.spacing.edgeEdge: -2.25
+org.eclipse.elk.spacing.portPort: 0.1
+org.eclipse.elk.aspectRatio: 33.333333333333336

@@ -1,0 +1,5 @@
+{
+  "id": "g", "custom": "dropped", "n": 5, "flag": true, "nothing": null, "arr": [1, "two", [3], { "k": false }],
+  "obj": { "deep": { "er": [1, 2] } },
+  "children": [{ "id": "a", "extra": { "z": 1 }, "ports": [{ "id": "p", "meta": [1, 2, 3] }] }]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "g",
+  "children": [
+    { "id": "a", "ports": [{ "id": "p" }], "children": [{ "id": "c" }, { "id": "d" }], "edges": [{ "id": "cd", "sources": ["c"], "targets": ["d"] }] },
+    { "id": "b" }
+  ],
+  "edges": [
+    { "id": "e1", "sources": ["a", "b"], "targets": ["c", "p"] },
+    { "id": "e4", "sources": [], "targets": [] }
+  ]
+}

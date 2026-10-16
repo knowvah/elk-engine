@@ -1,0 +1,11 @@
+{
+  "id": "g",
+  "layoutOptions": {
+    "org.eclipse.elk.direction": "DOWN",
+    "elk.edgeRouting": "ORTHOGONAL",
+    alignment: "TOP",
+    plain: "yes",
+    custom_key: 1.5,
+    "spacing.nodeNode": 12
+  }
+}

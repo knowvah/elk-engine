@@ -1,0 +1,5 @@
+graph g
+priority: 1
+direction: DOWN
+debugMode: true
+node a

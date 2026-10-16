@@ -1,0 +1,12 @@
+{
+  "id": "g",
+  "layoutOptions": {
+    "org.eclipse.elk.edgeRouting": "ORTHOGONAL",
+    "org.eclipse.elk.nodeSize.constraints": "PORTS, NODE_LABELS",
+    "org.eclipse.elk.position": "(1.5,2)",
+    "org.eclipse.elk.padding": "[top=1,left=2.5,bottom=3,right=4]",
+    "org.eclipse.elk.spacing.nodeNode": 20,
+    "org.eclipse.elk.commentBox": true,
+    "org.eclipse.elk.spacing.individual": "spacing.nodeNode:3"
+  }
+}

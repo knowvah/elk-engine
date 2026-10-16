@@ -1,0 +1,7 @@
+{
+  "id": "g",
+  "layoutOptions": {
+    "p.int": 5, "p.signed": -5, "p.plus": +7, "p.float": 1.5, "p.exp": 1.5e3, "p.bool": true, "p.bool2": false,
+    "p.string": "abc", "p.stringnum": "5", "p.single": 'abc', "p.escaped": "a\"b\\c\nd"
+  }
+}
