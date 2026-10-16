@@ -101,3 +101,12 @@ created by a `graph.json.text` subclass so `src/xtext` never imports `src/graph`
 follows the 2026-10-14 unknown-endpoint mapping (oracle NPE → port message-less `IllegalArgumentException`,
 `docs/conformance.md`). Inverse state after resolution is recorded on the JVM (T12h) before T12e lands.
 Plan record: `batch-5/d13-plan.md`. Tasks: T12a–T12f, T12h replace T12; T13/T14 amended.
+
+## D2 amendment — size-capped sweep (user, 2026-10-16)
+
+Fact: the oracle's `.elkj` serializer (Xtext stack-pruning PDA search) took 113–678 s per corpus graph in a 9-graph
+sample (1.5–33 KB; 57 min single-JVM at load ≈ 20), so converting and writing all 1,448 graphs twice is days of CPU.
+Decision: tier 2 (`parse-elkj`, cheap) runs on all 550 realworld + repo ELK JSON; tier 1 (`convert` → `parse`/
+`validate`) and the writer run on every corpus graph ≤ 5 KB (345) plus a deterministic stratified sample of ~40
+larger graphs; determinism is double-run on 30 of them; the sweep scripts take the size cap and sample as parameters so a
+full run stays possible. T18 records the revised 4c exit in the roadmap.
