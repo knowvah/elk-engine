@@ -118,7 +118,7 @@ commits per task. `npm run docs:build` green before T18 is marked done.
 
 | Batch | Name | Tasks | Depends on | Status |
 |-------|------|-------|------------|--------|
-| [1](batch-1/overview.md) | Evidence: oracle modes and JVM vectors | T1–T5 | — | [ ] |
+| [1](batch-1/overview.md) | Evidence: oracle modes and JVM vectors | T1–T5 | — | [x] |
 | [1b](batch-1b/overview.md) | Curated refs and vendored inputs | T6 | T1 | [ ] |
 | [2](batch-2/overview.md) | Shared parse runtime; lexer | T7–T8 | 1 | [ ] |
 | [3](batch-3/overview.md) | Value converters; naming and scoping | T9–T10 | 2 | [ ] |
