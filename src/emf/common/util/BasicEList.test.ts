@@ -444,3 +444,44 @@ describe('BasicEList did* hooks', () => {
     expect(list.calls).toEqual(['remove 0 a', 'remove 1 b']);
   });
 });
+
+/** Transforms elements as they are fetched, like a proxy-resolving list. */
+class UpperCaseOnGetEList extends BasicEList<string> {
+  protected override resolve(_index: number, object: string): string {
+    return object.toUpperCase();
+  }
+}
+
+describe('BasicEList get, basicGet and the resolve hook', () => {
+  it('hands the stored element to resolve in get and in iteration, not in basicGet or toArray', () => {
+    const list = new UpperCaseOnGetEList();
+    list.addAll(['a', 'b']);
+    expect(list.get(1)).toBe('B');
+    expect([...list]).toEqual(['A', 'B']);
+    expect(list.basicGet(1)).toBe('b');
+    expect(list.toArray()).toEqual(['a', 'b']);
+  });
+
+  it('returns the element unchanged when resolve is not overridden', () => {
+    const list = listOf('a', 'b');
+    expect([list.get(0), list.basicGet(0)]).toEqual(['a', 'a']);
+  });
+
+  it('range-checks basicGet against the size and a missing data array', () => {
+    const list = new BasicEList<string>();
+    expect(() => list.basicGet(0)).toThrow(new BasicIndexOutOfBoundsException(0, 0));
+    list.add('a');
+    expect(() => list.basicGet(1)).toThrow(new BasicIndexOutOfBoundsException(1, 1));
+  });
+
+  it('answers contains without going through indexOf', () => {
+    class NoIndexOf extends BasicEList<string> {
+      override indexOf(): number {
+        throw new Error('contains must scan on its own');
+      }
+    }
+    const list = new NoIndexOf();
+    list.addUnique('a');
+    expect([list.contains('a'), list.contains('b')]).toEqual([true, false]);
+  });
+});

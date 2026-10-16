@@ -9,8 +9,17 @@ import { EOPPOSITE_FEATURE_BASE, type InternalEObject } from '../InternalEObject
  * `inverseAdd`/`inverseRemove`/`contains` of `EcoreEList`, and `EObjectEList`'s flags. EMF picks
  * the inverse call with `hasNavigableInverse()`; here this class makes the opposite-less call and
  * `EObjectWithInverseEList` overrides it with the navigable one. Overloads: `addUnique(int, E)` →
- * `addUniqueAt`, `basicAdd(E, msgs)` → `basicAdd`, `basicRemove(Object, msgs)` → `basicRemove`.
- * EMF is EPL-2.0 (decision D1).
+ * `addUniqueAt`, `basicAdd(E, msgs)` → `basicAdd`, `basicRemove(Object, msgs)` → `basicRemove`,
+ * `resolve(int, EObject)` → `resolveEObject`.
+ *
+ * Proxies: `hasProxies()` is false here and true in `EObjectResolvingEList` and
+ * `EObjectWithInverseResolvingEList`. A resolving list resolves in `get` (and so in `iterator`,
+ * `listIterator` and `toArray`), `contains` and `indexOf`; `basicGet` and `basicAdd`/`basicRemove`
+ * never do. `indexOf` scans for proxies only when `hasProxies()`: EMF scans always, but a list
+ * without proxies finds none, so the result is the same. Not ported: the proxy scan inside the
+ * containment arm of `contains` (no containment list here resolves; `resolveEObject` keeps its
+ * containment arm); `lastIndexOf` and `removeAll` (`resolve(E)`) have no caller; the
+ * `isInstance` test of `contains` (the type system); notifications. EMF is EPL-2.0 (decision D1).
  *
  * @see org.eclipse.emf.ecore.util.EObjectEList
  * @see org.eclipse.emf.ecore.util.EcoreEList
@@ -40,6 +49,48 @@ export class EObjectEList<E extends InternalEObject> extends BasicEList<E> {
   /** @see org.eclipse.emf.ecore.util.EcoreEList#isContainment() */
   protected isContainment(): boolean {
     return false;
+  }
+
+  /** @see org.eclipse.emf.ecore.util.EcoreEList#hasProxies() */
+  protected hasProxies(): boolean {
+    return false;
+  }
+
+  /**
+   * `isEObject()` is always true here.
+   *
+   * @see org.eclipse.emf.ecore.util.EcoreEList#resolve(int, Object)
+   */
+  protected override resolve(index: number, object: E): E {
+    return this.hasProxies() ? this.resolveEObject(index, object) : object;
+  }
+
+  /**
+   * Replaces the slot with the resolved object when `eObject` is a proxy that resolves. No inverse
+   * is added on the resolved object and none removed from the proxy (a containment list moves it).
+   *
+   * @see org.eclipse.emf.ecore.util.EcoreEList#resolve(int, EObject)
+   */
+  protected resolveEObject(index: number, eObject: E): E {
+    const resolved = this.resolveProxy(eObject);
+    if (resolved === eObject) {
+      return eObject;
+    }
+    const oldObject = (this.data as Array<E | null>)[index] as E;
+    this.assign(index, this.validate(index, resolved));
+    this.didSet(index, resolved, oldObject);
+    if (this.isContainment()) {
+      this.inverseRemove(eObject);
+      if (resolved.eInternalContainer() === null) {
+        this.inverseAdd(resolved);
+      }
+    }
+    return resolved;
+  }
+
+  /** @see org.eclipse.emf.ecore.util.EcoreEList#resolveProxy(EObject) */
+  protected resolveProxy(eObject: E): E {
+    return eObject.eIsProxy() ? (this.owner.eResolveProxy(eObject) as E) : eObject;
   }
 
   /** @see org.eclipse.emf.common.notify.impl.NotifyingListImpl#addUnique(Object) */
@@ -142,7 +193,8 @@ export class EObjectEList<E extends InternalEObject> extends BasicEList<E> {
 
   /**
    * More than four elements of a containment list: membership is read from the element's container
-   * and container feature id. EMF also short-cuts single-valued navigable inverses via `eGet`,
+   * and container feature id. Otherwise a miss is retried against the resolved elements of a
+   * resolving list, without replacing any slot. EMF also short-cuts single-valued navigable inverses via `eGet`,
    * which the port does not have (D4); the scan gives the same answer for a consistent model.
    *
    * @see org.eclipse.emf.ecore.util.EcoreEList#contains(Object)
@@ -151,7 +203,34 @@ export class EObjectEList<E extends InternalEObject> extends BasicEList<E> {
     if (this.listSize > 4 && this.isContainment()) {
       return object.eContainer() === this.owner && this.isContainerFeatureID(object.eContainerFeatureID());
     }
-    return super.contains(object);
+    const result = super.contains(object);
+    return result || (this.hasProxies() && this.resolvedIndexOf(object) !== -1);
+  }
+
+  /** Resolving first, then by resolved element, without replacing any slot. @see org.eclipse.emf.ecore.util.EcoreEList#indexOf(Object) */
+  override indexOf(object: E): number {
+    const index = super.indexOf(object);
+    return index >= 0 || !this.hasProxies() ? index : this.resolvedIndexOf(object);
+  }
+
+  /** The position whose element resolves to `object`, or -1. */
+  private resolvedIndexOf(object: E): number {
+    for (let i = 0; i < this.listSize; ++i) {
+      if (this.resolveProxy((this.data as E[])[i] as E) === object) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /** @see org.eclipse.emf.ecore.util.EcoreEList#toArray() */
+  override toArray(): E[] {
+    if (this.hasProxies()) {
+      for (let i = this.listSize - 1; i >= 0; --i) {
+        this.get(i);
+      }
+    }
+    return super.toArray();
   }
 
   /** The `!hasNavigableInverse()` arm of `EcoreEList.contains`. */
