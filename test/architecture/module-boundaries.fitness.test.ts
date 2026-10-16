@@ -35,9 +35,9 @@ const JS_SUFFIX = '.js';
  *   plain TypeScript at the call site, docs/translation-rules.md section 8)
  * - org.antlr.runtime, org.eclipse.equinox.common -> no directory (G6: lexer/parser are hand-written;
  *   nothing from equinox is reached)
- * Only the graph.text bundle requires Xtext; src/index.ts stays exempt.
+ * Only the graph.text and graph.json.text bundles require Xtext; src/index.ts stays exempt.
  */
-const XTEXT_CLIENT_BUNDLES: readonly string[] = ['src/graph/text'];
+const XTEXT_CLIENT_BUNDLES: readonly string[] = ['src/graph/text', 'src/graph/json/text'];
 
 const committed: BundleDeps = JSON.parse(readFileSync(join(REPO_ROOT, COMMITTED_JSON_RELATIVE), 'utf8')) as BundleDeps;
 
@@ -516,6 +516,16 @@ describe('src/xtext boundary (graph-text T6)', () => {
   it('lets graph.text import src/xtext', () => {
     const imp = "import { IScope } from '../../xtext/scoping/IScope.js';";
     expect(checkFile('src/graph/text/ElkGraphText.ts', imp, committed)).toEqual([]);
+  });
+
+  it('lets graph.json.text import src/xtext but not graph.text', () => {
+    const xtext = "import { Token } from '../../../../xtext/parser/Token.js';";
+    expect(checkFile('src/graph/json/text/parser/ElkGraphJsonLexer.ts', xtext, committed)).toEqual([]);
+    const sibling = "import { tokenize } from '../../../text/parser/ElkGraphLexer.js';";
+    expect(checkFile('src/graph/json/text/parser/ElkGraphJsonLexer.ts', sibling, committed)).toEqual([
+      'src/graph/json/text/parser/ElkGraphJsonLexer.ts -> src/graph/text/parser/ElkGraphLexer.ts: ' +
+        'src/graph/json/text may not import src/graph/text',
+    ]);
   });
 
   it('forbids other bundles importing src/xtext', () => {
