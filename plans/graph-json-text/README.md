@@ -200,3 +200,15 @@ T16b ([batch-8/T16b-roundtrip-vectors.md](batch-8/T16b-roundtrip-vectors.md)): o
 
 The open items are consolidated, with status, in [follow-ups.md](follow-ups.md): B1–B3 before landing (final gate,
 T16b docs, signing), F1–F6 port fidelity, C1–C6 cleanups and tooling.
+
+### T16b results (2026-10-18)
+
+T16b1 recorded `test/golden/refs/java/graph-json-text-roundtrip.json` (281 rows, `tools/vectors/ElkjRoundTripVectors.java`,
+about 2.8 CPU-hours; stage-1 double run byte-identical). T16b2 replays it in `test/golden/elkj-roundtrip.test.ts`:
+244/244 written texts byte-equal (226 reparse exact + export equal, 18 presence), 37/37 error rows (36 serializer
+failures matched by class; 1 copy failure `IndexOutOfBoundsException: targetIndex=1, size=1`, message byte-equal) and
+27/27 unresolved-endpoint drops. Fix: `src/graph/json/text/formatting2/ElkGraphCopy.ts` ports the bidirectional
+many-valued arm of EMF `Copier.copyReference`; T16 class counts become unresolved 28 → 27 plus `copy-failure` 1.
+Flag: `input-lone-surrogate-escape` uses the recorder's `getBytes(UTF_8)` transport. Final gate 2026-10-18:
+`elkj-vectors.sh` cmp-identical for lexer, parse, validate, write, inverse, roundtrip. Docs updated (follow-up B2);
+open items are in [follow-ups.md](follow-ups.md).

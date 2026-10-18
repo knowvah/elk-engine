@@ -476,8 +476,21 @@ Xtext error messages embed the output URI, and `ElkjSweep.java` normalises the d
   `org.eclipse.emf.ecore.14` per map-key collision); `.elkt` reports twice. No `LayoutOptionValidator` runs.
 - **Round-trip lossy classes** (281 loadable inputs: 193 equal, 88 in asserted classes, 0 divergences): 34
   quoted unknown keys unwritable, 1 keyword string, 1 list value, 14 bare dotted keys, 4 empty elements written
-  `{ "" : }`, 28 unresolved endpoints dropped by the copy, 5 int32 saturation or `-0.0`, 1 bare key that gains
+  `{ "" : }`, 27 unresolved endpoints dropped by the copy (oracle-verified, see below), 1 copy failure, 5 int32 saturation or `-0.0`, 1 bare key that gains
   quotes. Each class is asserted per case in `test/golden/elkj-roundtrip.test.ts`.
+- **Round-trip oracle vectors (T16b, 2026-10-18).** `test/golden/refs/java/graph-json-text-roundtrip.json` holds
+  281 rows from `tools/vectors/ElkjRoundTripVectors.java` (the oracle's loadable set equals the TS round trip's
+  281: 16 curated + 265 T3 scenarios). Replay: 244/244 written texts byte-equal (226 reparse exact plus export
+  equal, 18 presence), 37/37 error rows (36 serializer `RuntimeException` against
+  `ElkGraphJsonSerializationError` by class, message text not comparable because Xtext embeds the object and
+  URI; 1 copy failure `IndexOutOfBoundsException: targetIndex=1, size=1` with a byte-equal message) and 27/27
+  unresolved-endpoint drops. The claim that the copy drops unresolved endpoints moved from source-derived
+  (EMF `Copier.copyReference`) to oracle-verified; the class count is 27, not 28, because `ElkGraphCopy` now
+  ports the bidirectional many-valued arm and `sources: ["a","a"]` throws like the JVM (the 28th, now
+  `copy-failure`).
+- **Lone-surrogate transport (`.elkj` quirk).** The recorder reloads text via `getBytes(UTF_8)`, which turns a
+  lone surrogate into `?`; for `input-lone-surrogate-escape` only, the replay applies the same transport before
+  its oracle-layer reload. This is a harness artifact, not an `.elkj` behaviour difference.
 - **Oracle conversions mostly do not reparse in the oracle itself.** Its serializer writes bare dotted option
   keys, `null` values, NaN, `4.9E-324` and unescaped quotes, and fails on edge sections and KVectorChain/List
   values; hence the 200 presence rows of `tier1-parse-equal`.

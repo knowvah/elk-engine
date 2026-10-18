@@ -10,8 +10,8 @@ date here when one does; never delete a row).
 
 | # | Item | Owner | Status |
 |---|------|-------|--------|
-| B1 | Finish the final gate: `elkj-vectors.sh` full replay incl. `ElkjRoundTripVectors` (the 712 KB model alone takes hours) — all six refs `cmp`-identical; close the brief | orchestrator | open |
-| B2 | Docs predate T16b: add the round-trip vectors (281 rows, 244 byte-equal, 37 errors, 27 endpoint drops), the `ElkGraphCopy` bidirectional-copy fix and the lone-surrogate transport note to `docs/architecture/elk-json-text.md` (evidence table, runbook: recorder cost), `docs/conformance.md` §8 and the README mission summary | orchestrator / documentation-engineer | open |
+| B1 | Finish the final gate: `elkj-vectors.sh` full replay incl. `ElkjRoundTripVectors` (the 712 KB model alone takes hours) — all six refs `cmp`-identical; close the brief | orchestrator | closed 2026-10-18 (journal B1) |
+| B2 | Docs predate T16b: add the round-trip vectors (281 rows, 244 byte-equal, 37 errors, 27 endpoint drops), the `ElkGraphCopy` bidirectional-copy fix and the lone-surrogate transport note to `docs/architecture/elk-json-text.md` (evidence table, runbook: recorder cost), `docs/conformance.md` §8 and the README mission summary | orchestrator / documentation-engineer | closed 2026-10-18 (journal B2) |
 | B3 | Landing (stop 16): user signs by rebase (YubiKey), pushes, opens the PR (size justification), merges with "Create a merge commit" — commands in README "Branch and landing (D9)" | user | open |
 
 ## After landing — port fidelity

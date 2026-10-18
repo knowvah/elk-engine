@@ -118,3 +118,22 @@
   timeout (5.4 s at load 26 against the 5 s default).
 - **Impact**: do not treat these as defects of a change; capture full-run output to name a flaky test.
 - **Confidence**: High
+
+## Observation: `ElkGraphCopy` lacked EMF's bidirectional many-valued copy branch
+
+- **Context**: T16b1/T16b2, oracle round-trip vectors
+- **Finding**: `EcoreUtil.copy` on `sources: ["a","a"]` throws `IndexOutOfBoundsException: targetIndex=1, size=1`
+  (`copyReference`: second `a` found at position 0 while index is 1, so `move(1, a)` on a size-1 list). The TS copy
+  skipped the `indexOf`/`addUnique`/`move` branch. Ported in `ElkGraphCopy.ts`. 4b's `copyGraph` has the same gap (F3).
+- **Impact**: unresolved-endpoint class is 27 (was 28) plus one `copy-failure`; check any other EMF copy port.
+- **Confidence**: High
+
+## Observation: round-trip recorder cost and transport artifact
+
+- **Context**: T16b1
+- **Finding**: `ElkjRoundTripVectors` costs about 2.8 CPU-hours, mostly the 712 KB `ptolemy_Trilateration_largest`
+  (3.7 h wall alone); `elkj-vectors.sh` and the replay now take hours. The recorder reloads via `getBytes(UTF_8)`,
+  so a lone surrogate becomes `?`; the test applies the same transport for `input-lone-surrogate-escape` only.
+  `edgesBefore` flags all endpoints as proxies (lazy linking).
+- **Impact**: use the `[cacheDir [idsFile]]` args for partial reruns; a lone-surrogate mismatch is transport, not port.
+- **Confidence**: High
