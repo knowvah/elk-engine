@@ -190,3 +190,8 @@ format 0 · typecheck 0 · complexity clean · coverage 0 (17,273 passed + 68 cu
 full run hit the known `ImportedNamespaceAwareLocalScopeProvider` 300 ms flake once at load ≈ 54 (JVM replay running);
 3/3 green in isolation. Also stale, outside T18's write-set: `docs/architecture/port-map.md` has no `graph.json.text`
 section and `inventory.md`'s row predates the port (follow-up). Mission stops at stop 16 for signing and landing.
+
+### Re-opened 2026-10-18 (user)
+
+T16b ([batch-8/T16b-roundtrip-vectors.md](batch-8/T16b-roundtrip-vectors.md)): oracle round-trip vectors for the
+`.elkj` writer, all 281 loadable inputs (T16b1 recorder, T16b2 replay). Stop 16 is reached again after it.
