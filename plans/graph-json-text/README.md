@@ -195,3 +195,8 @@ section and `inventory.md`'s row predates the port (follow-up). Mission stops at
 
 T16b ([batch-8/T16b-roundtrip-vectors.md](batch-8/T16b-roundtrip-vectors.md)): oracle round-trip vectors for the
 `.elkj` writer, all 281 loadable inputs (T16b1 recorder, T16b2 replay). Stop 16 is reached again after it.
+
+### Follow-ups (2026-10-18)
+
+The open items are consolidated, with status, in [follow-ups.md](follow-ups.md): B1–B3 before landing (final gate,
+T16b docs, signing), F1–F6 port fidelity, C1–C6 cleanups and tooling.
