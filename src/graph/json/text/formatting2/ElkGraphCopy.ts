@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-import type { ElkConnectableShape } from '../../../ElkConnectableShape.js';
+import type { EList } from '../../../../emf/common/util/EList.js';
 import type { ElkEdge } from '../../../ElkEdge.js';
 import type { ElkEdgeSection } from '../../../ElkEdgeSection.js';
 import type { ElkGraphElement } from '../../../ElkGraphElement.js';
@@ -107,8 +107,8 @@ function copied<T extends object>(copies: Copies, original: T | null): T | null 
 function copyEdgeReferences(node: ElkNode, copies: Copies): void {
   for (const edge of node.getContainedEdges()) {
     const copy = copies.get(edge) as ElkEdge;
-    for (const source of edge.getSources()) addCopied(copy.getSources(), copied<ElkConnectableShape>(copies, source));
-    for (const target of edge.getTargets()) addCopied(copy.getTargets(), copied<ElkConnectableShape>(copies, target));
+    copyBidirectionalMany(edge.getSources(), copy.getSources(), copies);
+    copyBidirectionalMany(edge.getTargets(), copy.getTargets(), copies);
     for (const section of edge.getSections()) copySectionLinks(section, copies);
   }
   for (const child of node.getChildren()) {
@@ -116,18 +116,35 @@ function copyEdgeReferences(node: ElkNode, copies: Copies): void {
   }
 }
 
-function addCopied<T>(list: { add(o: T): boolean }, target: T | null): void {
-  if (target !== null) list.add(target);
+/**
+ * `Copier.copyReference`, many-valued arm of a bidirectional reference (every ElkGraph cross reference has an
+ * `eOpposite`, so `useOriginalReferences` never applies): a referenced object outside the copy is skipped; a copy not
+ * yet in the target list is inserted at `index`; one already there at another position is moved to `index`, which
+ * throws when `index` is past the end (a repeated reference: `sources: ["a", "a"]`).
+ *
+ * @see org.eclipse.emf.ecore/src/org/eclipse/emf/ecore/util/EcoreUtil.java (Copier.copyReference, ~line 760)
+ */
+function copyBidirectionalMany<T extends object>(source: Iterable<T>, target: EList<T>, copies: Copies): void {
+  let index = 0;
+  for (const referenced of source) {
+    const copy = copied<T>(copies, referenced);
+    if (copy === null) continue;
+    const position = target.indexOf(copy);
+    if (position === -1) {
+      target.addAt(index, copy);
+    } else if (index !== position) {
+      target.moveElement(index, copy);
+    }
+    ++index;
+  }
 }
 
 function copySectionLinks(section: ElkEdgeSection, copies: Copies): void {
   const copy = copies.get(section) as ElkEdgeSection;
   copy.setIncomingShape(copied(copies, section.getIncomingShape()));
   copy.setOutgoingShape(copied(copies, section.getOutgoingShape()));
-  for (const next of section.getOutgoingSections()) {
-    // the opposite (`incomingSections`) is maintained by the model
-    addCopied(copy.getOutgoingSections(), copied(copies, next));
-  }
+  // the opposite (`incomingSections`) is maintained by the model
+  copyBidirectionalMany(section.getOutgoingSections(), copy.getOutgoingSections(), copies);
 }
 
 /**
