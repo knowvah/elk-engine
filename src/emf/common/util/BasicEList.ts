@@ -17,8 +17,10 @@ const NULL_DATA_MESSAGE = 'Cannot load from object array because "this.data" is 
  * `BasicEList` (the `data` array, `size`, `grow`) in one class. The backing array grows exactly as
  * EMF's does, so the JVM's `ArrayIndexOutOfBoundsException` messages for negative indices (which
  * EMF never checks) name the same capacities. Elements compare by identity (`useEquals` has no
- * TypeScript counterpart). Not ported: notifications, `modCount`/`ConcurrentModificationException`,
- * proxies (`resolve`), `didChange` (no subclass here overrides it). EMF is EPL-2.0 (decision D1).
+ * TypeScript counterpart). `get` hands the stored element to the `resolve` hook (identity here;
+ * `EObjectEList` overrides it to resolve proxies) and `basicGet` reads without it, as EMF's do.
+ * Not ported: notifications, `modCount`/`ConcurrentModificationException`, `didChange` (no
+ * subclass here overrides it), the `basic*` iterators and views. EMF is EPL-2.0 (decision D1).
  *
  * @see org.eclipse.emf.common.util.BasicEList
  * @see org.eclipse.emf.common.util.AbstractEList
@@ -43,6 +45,15 @@ export class BasicEList<E> implements EList<E> {
     if (!this.canContainNull() && object === null) {
       throw new IllegalArgumentException("The 'no null' constraint is violated");
     }
+    return object;
+  }
+
+  /**
+   * Transforms an element as it is fetched by `get`; the base returns it unchanged.
+   *
+   * @see org.eclipse.emf.common.util.AbstractEList#resolve(int, Object)
+   */
+  protected resolve(_index: number, object: E): E {
     return object;
   }
 
@@ -81,8 +92,14 @@ export class BasicEList<E> implements EList<E> {
     return this.listSize === 0;
   }
 
+  /** A scan of its own: subclasses give `indexOf` resolving semantics that `contains` must not inherit. */
   contains(object: E): boolean {
-    return this.indexOf(object) !== -1;
+    for (let i = 0; i < this.listSize; ++i) {
+      if ((this.data as Array<E | null>)[i] === object) {
+        return true;
+      }
+    }
+    return false;
   }
 
   indexOf(object: E): number {
@@ -100,6 +117,18 @@ export class BasicEList<E> implements EList<E> {
 
   /** @see org.eclipse.emf.common.util.BasicEList#get(int) */
   get(index: number): E {
+    if (this.data === null || index >= this.listSize) {
+      throw new BasicIndexOutOfBoundsException(index, this.listSize);
+    }
+    return this.resolve(index, this.load(index));
+  }
+
+  /**
+   * The element at `index` without `resolve`.
+   *
+   * @see org.eclipse.emf.common.util.BasicEList#basicGet(int)
+   */
+  basicGet(index: number): E {
     if (this.data === null || index >= this.listSize) {
       throw new BasicIndexOutOfBoundsException(index, this.listSize);
     }

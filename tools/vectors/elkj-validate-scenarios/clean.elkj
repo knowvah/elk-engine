@@ -1,0 +1,9 @@
+// @covers clean document: no issues from any stage
+{
+  id: "root",
+  children: [
+    { id: "a", ports: [ { id: "p" } ], labels: [ { id: "l", text: "A" } ] },
+    { id: "b" }
+  ],
+  edges: [ { id: "e", sources: [ "p" ], targets: [ "b" ] } ]
+}

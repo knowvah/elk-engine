@@ -40,8 +40,7 @@ export class EObjectWithInverseEList<E extends InternalEObject> extends EObjectE
 /**
  * The opposite is many-valued too. EMF's only use of `hasManyInverse()` is to skip the
  * `eGet`-based `contains` shortcut that `EObjectEList` does not port (D4), so the class adds no
- * behaviour here. ElkGraph's `EObjectWithInverseResolvingEList.ManyInverse` only adds proxy
- * resolution, which the port has no use for.
+ * behaviour here. The proxy-resolving counterpart is `EObjectWithInverseResolvingEList.ManyInverse`.
  *
  * @see org.eclipse.emf.ecore.util.EObjectWithInverseEList.ManyInverse
  */

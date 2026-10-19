@@ -1,0 +1,1 @@
+{ 'id': 'root', 'labels': [ { 'id': 'l', 'text': 'hi there' } ], 'children': [ { 'id': 'a' }, { 'id': 'b' } ], 'edges': [ { 'id': 'e', 'sources': ['a'], 'targets': ['b'] } ], 'layoutOptions': { 'org.eclipse.elk.direction': 'RIGHT' } }

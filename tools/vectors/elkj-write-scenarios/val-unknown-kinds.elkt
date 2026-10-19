@@ -1,0 +1,9 @@
+graph g
+p.id: abc
+p.qualified: a.b.c
+p.int: 5
+p.signed: -5
+p.float: 1.5e3
+p.bool: true
+p.bool2: false
+p.k_null: null

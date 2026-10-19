@@ -12,17 +12,14 @@ import { ElkPropertyToValueMapEntryImpl } from '../../impl/ElkPropertyToValueMap
 import type { IProperty } from '../../properties/IProperty.js';
 import { tokenizeWithDiagnostics } from './ElkGraphLexer.js';
 import { ElkEdgeRules, readQualifiedId } from './ElkGraphParserEdges.js';
-import {
-  type GroupMember,
-  ParseSession,
-  type ParseResult,
-  RuleName,
-  type Span,
-  SyntaxFailure,
-  Tok,
-} from './ParseRecords.js';
+import { ParseSession } from '../../../xtext/parser/ParseSession.js';
+import type { GroupMember } from '../../../xtext/parser/GroupMember.js';
+import type { Span } from '../../../xtext/parser/Span.js';
+import { SyntaxFailure } from '../../../xtext/parser/SyntaxFailure.js';
+import { ELK_GRAPH_VOCABULARY, type ParseResult, RuleName, Tok } from './ParseRecords.js';
 
-export type { ParseDiagnostic, ParseResult } from './ParseRecords.js';
+export type { ParseDiagnostic } from '../../../xtext/parser/ParseDiagnostic.js';
+export type { ParseResult } from './ParseRecords.js';
 
 const AFTER_COORDINATE = new Set<string>([Tok.COMMA]);
 const AFTER_LAYOUT: readonly string[] = [Tok.RBRACKET];
@@ -268,7 +265,7 @@ export class ElkGraphParser {
  */
 export function parse(text: string, services: IValueConverterService): ParseResult {
   const lexed = tokenizeWithDiagnostics(text);
-  const session = new ParseSession(lexed.tokens, services);
+  const session = new ParseSession(lexed.tokens, services, ELK_GRAPH_VOCABULARY);
   const parser = new ElkGraphParser(session);
   try {
     parser.parseRootNode();

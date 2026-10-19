@@ -1,0 +1,1 @@
+{ "children": [ { "id": "a" } ], "ports": [ { "id": "p", "labels": [ { "text": "pl" } ] } ], "edges": [ { "sources": ["a"], "targets": ["p"], "labels": [ { "text": "el" } ] } ] }

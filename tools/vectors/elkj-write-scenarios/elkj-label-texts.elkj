@@ -1,0 +1,4 @@
+{ "id": "g", "labels": [
+  { "text": "plain" }, { "text": "" }, { "text": "q\"b\\s\nn\tt" }, { "text": "hé 日" },
+  { "id": "nested", "text": "outer", "labels": [{ "text": "inner" }] }
+] }

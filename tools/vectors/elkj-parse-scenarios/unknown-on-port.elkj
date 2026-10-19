@@ -1,0 +1,1 @@
+{ "ports": [ { "id": "p", "foo": { "a": [ 1 ] }, "bar": null } ] }

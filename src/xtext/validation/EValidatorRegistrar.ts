@@ -9,19 +9,21 @@ import type { EValidator } from './emf/EValidator.js';
  * fresh composite: `[default EObjectValidator, plain EObjectValidator, language validator]`. The
  * plain one differs in class from the composite's default one, so both stay, and EMF's
  * `EObjectValidator` constraints run twice for each object (the recorded JVM output holds every
- * `org.eclipse.emf.ecore.14` issue twice).
+ * `org.eclipse.emf.ecore.14` issue twice). A package the registry holds no validator for (`null`) gets a fresh
+ * composite with only its own defaults (`.elkj`: each constraint once).
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/validation/EValidatorRegistrar.java
  */
 export class EValidatorRegistrar {
-  #validator: EValidator;
+  #validator: EValidator | null;
   readonly #newComposite: () => CompositeEValidator;
 
   /**
-   * @param registryDefault what the registry returns for the package before any registration (EMF's `EObjectValidator`)
+   * @param registryDefault what the registry returns for the package before any registration (EMF's
+   *   `EObjectValidator`, or `null` when none is registered)
    * @param newComposite the composite provider (Guice `compositeProvider`)
    */
-  constructor(registryDefault: EValidator, newComposite: () => CompositeEValidator) {
+  constructor(registryDefault: EValidator | null, newComposite: () => CompositeEValidator) {
     this.#validator = registryDefault;
     this.#newComposite = newComposite;
   }
@@ -32,7 +34,9 @@ export class EValidatorRegistrar {
    */
   register(registerMe: EValidator): CompositeEValidator {
     let composite: CompositeEValidator;
-    if (this.#validator instanceof CompositeEValidator) {
+    if (this.#validator === null) {
+      composite = this.#newComposite();
+    } else if (this.#validator instanceof CompositeEValidator) {
       composite = this.#validator;
     } else {
       composite = this.#newComposite();

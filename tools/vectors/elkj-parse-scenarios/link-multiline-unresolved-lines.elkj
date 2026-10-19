@@ -1,0 +1,16 @@
+{
+  "children": [
+    { "id": "a" }
+  ],
+  "edges": [
+    {
+      "sources": [
+        "m1",
+        "a"
+      ],
+      "targets": [
+        "m2"
+      ]
+    }
+  ]
+}

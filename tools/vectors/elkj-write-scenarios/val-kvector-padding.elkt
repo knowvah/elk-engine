@@ -1,0 +1,4 @@
+graph g
+org.eclipse.elk.^position: "(1.5,2)"
+org.eclipse.elk.padding: "[top=1,left=2.5,bottom=3,right=4]"
+org.eclipse.elk.nodeSize.minimum: "(10,20)"

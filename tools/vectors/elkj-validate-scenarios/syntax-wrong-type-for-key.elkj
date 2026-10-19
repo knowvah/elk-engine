@@ -1,0 +1,7 @@
+// @covers known keys with the wrong value shape (presence only)
+{
+  id: "root",
+  children: { id: "a" },
+  x: "text",
+  width: true
+}

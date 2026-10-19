@@ -1,0 +1,5 @@
+{
+  'id': "g",
+  children: [{ id: 'a', "labels": [{ 'text': 'single' }, { text: "double" }] }],
+  'layoutOptions': { 'org.eclipse.elk.direction': 'DOWN' }
+}

@@ -1,0 +1,42 @@
+{
+	"id": "G1",
+	"children": [
+		{
+			"id": "P1",
+			"children": [
+				{ "id": "N1", "width": 20, "height": 20 }
+			],
+			"ports": [
+				{
+					"id": "P1_g8985",
+					"layoutOptions": { port.side: "NORTH" }
+				}
+			],
+			"ports": [{
+				"id": "P2",
+				"layoutOptions": { port.side: "NORTH" }
+			} ],
+			"ports": [{
+				"id": "P3",
+				"layoutOptions": { port.side: "NORTH" }
+			} ],
+			"ports": [{
+				"id": "P4",
+				"layoutOptions": { port.side: "NORTH" }
+			} ],
+			"ports": [{
+				"id": "P5",
+				"layoutOptions": { port.side: "NORTH" }
+			} ],
+			"ports": [{
+				"id": "P6",
+				"layoutOptions": { port.side: "NORTH" }
+			} ],
+			"layoutOptions": {
+				nodeSize.constraints: "[PORTS, PORT_LABELS]"
+			},
+			"layoutOptions": { portConstraints: "FIXED_SIDE" }
+		}
+	],
+	"layoutOptions": { spacing.portPort: 5 }
+}

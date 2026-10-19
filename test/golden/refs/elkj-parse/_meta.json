@@ -1,0 +1,376 @@
+{
+  "elkCommit": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "patches": [
+    "0001-graph.json-seedable-JsonExporter-id-collision-random.patch",
+    "0002-graph-seedable-GraphIdentifierGenerator-random.patch"
+  ],
+  "modelsCommit": "ac5af2ba511c0037e4f347e8bd91f013950951c7",
+  "registry": "core",
+  "exportSeed": 1,
+  "identifierSeed": 1,
+  "jdk": "openjdk version \"21.0.1\" 2023-10-17 LTS",
+  "generatedBy": "tools/oracle/regen-elkj-refs.sh",
+  "files": {
+    "json/err-empty": "json/err-empty.json",
+    "json/err-malformed-garbage": "json/err-malformed-garbage.json",
+    "json/err-malformed-trailing-comma": "json/err-malformed-trailing-comma.json",
+    "json/err-shape-unknown-source": "json/err-shape-unknown-source.json",
+    "json/export-ids-missing": "json/export-ids-missing.json",
+    "json/ok-basic": "json/ok-basic.json",
+    "json/ok-duplicate-ids": "json/ok-duplicate-ids.json",
+    "json/ok-edges-extended": "json/ok-edges-extended.json",
+    "json/ok-ids-numeric": "json/ok-ids-numeric.json",
+    "json/ok-labels": "json/ok-labels.json",
+    "json/ok-lenient-syntax": "json/ok-lenient-syntax.json",
+    "json/ok-nan-literal": "json/ok-nan-literal.json",
+    "json/ok-option-values": "json/ok-option-values.json",
+    "json/ok-unknown-options": "json/ok-unknown-options.json",
+    "json/ptolemy_MacReception": "json/ptolemy_MacReception.json",
+    "json/ptolemy_Scrambler": "json/ptolemy_Scrambler.json",
+    "json/ptolemy_Trilateration_largest": "json/ptolemy_Trilateration_largest.json",
+    "json/topdownpacking-hierarchy-small": "json/topdownpacking-hierarchy-small.json",
+    "json/two-sections": "json/two-sections.json",
+    "native/182_minNodeSizeForHierarchicalNodes": "native/182_minNodeSizeForHierarchicalNodes.elkj",
+    "native/273_insideSelfLoopsWithLabels": "native/273_insideSelfLoopsWithLabels.elkj",
+    "native/288_selfLoopsCauseNPE_a": "native/288_selfLoopsCauseNPE_a.elkj",
+    "native/296_undefinedExternalPortSides": "native/296_undefinedExternalPortSides.elkj",
+    "native/546_borderGaps": "native/546_borderGaps.elkj",
+    "native/hlacerti_multidatatypes_producer": "native/hlacerti_multidatatypes_producer.elkj",
+    "native/inside_placement_hierarchicalNode": "native/inside_placement_hierarchicalNode.elkj",
+    "native/lastLayer": "native/lastLayer.elkj",
+    "native/layer_constraints_01": "native/layer_constraints_01.elkj",
+    "native/multiple_comments": "native/multiple_comments.elkj",
+    "native/next_to_port_if_possible_outside": "native/next_to_port_if_possible_outside.elkj",
+    "native/self_loops_label": "native/self_loops_label.elkj",
+    "native/sloppy_curvature": "native/sloppy_curvature.elkj",
+    "native/south_port": "native/south_port.elkj",
+    "native/spacing_labels": "native/spacing_labels.elkj"
+  },
+  "inputSha256": {
+    "json/err-empty": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "json/err-malformed-garbage": "c7f910be18317ad8e932b23bf1e6e4b21212a6817178b05ba21550c17366c5fe",
+    "json/err-malformed-trailing-comma": "7e0c9c674c08b326b5550e445f8a8dce2bd9d303ac38d74918670ae490b0db7c",
+    "json/err-shape-unknown-source": "eab3b2f7379f3c468e62d8838e7852a1d498f0dc43084819f74228f34c130eca",
+    "json/export-ids-missing": "9c01410d38ebca3ad6e0588bcd7631c0357dbe069b01cfbc159c1f70dfffcd3e",
+    "json/ok-basic": "bb146f1c4b317acc309b55683d8ebc4a9d92f94a32e4ac7950b04f5c55870fa0",
+    "json/ok-duplicate-ids": "19f3aa495712481a4caaa637424f681bdc65feb669064f3cd7ea373ce5b9c755",
+    "json/ok-edges-extended": "4e839c5c4cec13ca961bbfcc42cd7f4af4734f12208b3b5d19932b1568a576bb",
+    "json/ok-ids-numeric": "7af0a512d7d931bd2c51b3411af1691870de05dd8ee94d6e057932d85a67d4bd",
+    "json/ok-labels": "bdb71c2933f581ee0d5aeae97e0041f150be72dd305913b27e7e399620aa9bdd",
+    "json/ok-lenient-syntax": "1461ca14482290081992f12ad220ae52673223639356d3ced6c47434ce349aa1",
+    "json/ok-nan-literal": "63e325e3d702c5b0eaa674ed0499c024aba8b843c78f6513853152aa9211e0fb",
+    "json/ok-option-values": "ca1c749cba51509c2c379b17fe994aaf89b8a1e9235300fc49f62daec84de774",
+    "json/ok-unknown-options": "b354041d9d9455bd71a55d6d90001573a9f73eaf7bb74d52f0cbf405acca48cd",
+    "json/ptolemy_MacReception": "94abc7d941602299e2aaab17da2e46fa66c9f1446704fa8e336e94609753e242",
+    "json/ptolemy_Scrambler": "a78212a04054c839dce3f947456062160c5d668370c43a0945e0e395d865c57b",
+    "json/ptolemy_Trilateration_largest": "79f204513c8d8de6fb4a99efa03ccb22da4c964dea8bb86301df4e8a5cbe2d6b",
+    "json/topdownpacking-hierarchy-small": "e70fc0bb1cc4c039e051a59b1f0d7236e4832d0f10fd60b2e7055639d8c862c7",
+    "json/two-sections": "b71af782118be5f192d9b47420ef6541572e99be9e47fd8c5b978f6cfb5bd678",
+    "native/182_minNodeSizeForHierarchicalNodes": "fd48517af3f34824e82b8340d1b3212712ddaa20f0ee52ea76903536988781e0",
+    "native/273_insideSelfLoopsWithLabels": "f0525823b2dab69d70282e4b099ad943d6bc02b2e84c1573dfd3ac6caf000bf9",
+    "native/288_selfLoopsCauseNPE_a": "547b79e59dd99ba63329f79e0e1a830fd0ebeb6044954c5f67662f0392a3771e",
+    "native/296_undefinedExternalPortSides": "f4c2a8cc7ab3cfa7e5715d63900286381d188761be83e6fc696e7b89bcdc3274",
+    "native/546_borderGaps": "455cabe82251c302792a3ea0a5371c005a650750317d3dc0e5d269bd772f259f",
+    "native/hlacerti_multidatatypes_producer": "d6eaae85f627ccd8048d2767dc01f7507fbeab6a0edbdd9519f76a457e9ee82f",
+    "native/inside_placement_hierarchicalNode": "a708758cd4b6b7a8c23a76e66622bd207f59f4b0a9601802ea8a37e27091f0b3",
+    "native/lastLayer": "3c4213dc0817730bf8f0b5acfb156e41098ba73e7bc7a8db41661e3de42b88e8",
+    "native/layer_constraints_01": "5cd0ff9a60f090bf5785957eab39267a97f176ddad558164c5e8a3a0c7c08c5c",
+    "native/multiple_comments": "2f822811dbbc1472f3707bf72d08855ba72c94833bc49e3d5e1476e495e5582e",
+    "native/next_to_port_if_possible_outside": "b2d06199a1f5c199e23e7dd219125cff0e0ec0ab19f74fb551e918f5b0a0a90d",
+    "native/self_loops_label": "2b015f1d56db9966caf9b42f6970e93194038c50b518e79453fa9ba16c84bca6",
+    "native/sloppy_curvature": "ac22a4d42630cdde6e3f82193f79d8e85f9d34edca4a7cfefe5ecdd76e826a65",
+    "native/south_port": "56dd2ad2c75f0de07c6672d4721b85b0516b13421f151e7de177fd8189738321",
+    "native/spacing_labels": "4db1633ac509a9ca7183fa63a6d434f0ebcb9892fe506a7005b8f79926e41be2"
+  },
+  "outcomes": {
+    "json/err-empty": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '<EOF>' expecting '{'"
+      }
+    },
+    "json/err-malformed-garbage": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "missing '{' at 'this'"
+      }
+    },
+    "json/err-malformed-trailing-comma": {
+      "status": "ok"
+    },
+    "json/err-shape-unknown-source": {
+      "status": "throws",
+      "exception": {
+        "class": "java.lang.NullPointerException",
+        "message": null
+      }
+    },
+    "json/export-ids-missing": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '\"x\"' expecting RULE_STRING"
+      }
+    },
+    "json/ok-basic": {
+      "status": "ok"
+    },
+    "json/ok-duplicate-ids": {
+      "status": "ok"
+    },
+    "json/ok-edges-extended": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '\"id\"' expecting '}'"
+      }
+    },
+    "json/ok-ids-numeric": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '3' expecting RULE_STRING"
+      }
+    },
+    "json/ok-labels": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '5' expecting RULE_STRING"
+      }
+    },
+    "json/ok-lenient-syntax": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "no viable alternative at input 'RIGHT'"
+      }
+    },
+    "json/ok-nan-literal": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "Cannot convert empty string to a double value."
+      }
+    },
+    "json/ok-option-values": {
+      "status": "ok"
+    },
+    "json/ok-unknown-options": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "no viable alternative at input '\"x\"'"
+      }
+    },
+    "json/ptolemy_MacReception": {
+      "status": "ok"
+    },
+    "json/ptolemy_Scrambler": {
+      "status": "ok"
+    },
+    "json/ptolemy_Trilateration_largest": {
+      "status": "ok"
+    },
+    "json/topdownpacking-hierarchy-small": {
+      "status": "ok"
+    },
+    "json/two-sections": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '\"id\"' expecting '}'"
+      }
+    },
+    "native/182_minNodeSizeForHierarchicalNodes": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '.' expecting ':'"
+      }
+    },
+    "native/273_insideSelfLoopsWithLabels": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '.' expecting ':'"
+      }
+    },
+    "native/288_selfLoopsCauseNPE_a": {
+      "status": "ok"
+    },
+    "native/296_undefinedExternalPortSides": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '.' expecting ':'"
+      }
+    },
+    "native/546_borderGaps": {
+      "status": "ok"
+    },
+    "native/hlacerti_multidatatypes_producer": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '.' expecting ':'"
+      }
+    },
+    "native/inside_placement_hierarchicalNode": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '.' expecting ':'"
+      }
+    },
+    "native/lastLayer": {
+      "status": "ok"
+    },
+    "native/layer_constraints_01": {
+      "status": "ok"
+    },
+    "native/multiple_comments": {
+      "status": "ok"
+    },
+    "native/next_to_port_if_possible_outside": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '.' expecting ':'"
+      }
+    },
+    "native/self_loops_label": {
+      "status": "ok"
+    },
+    "native/sloppy_curvature": {
+      "status": "ok"
+    },
+    "native/south_port": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '.' expecting ':'"
+      }
+    },
+    "native/spacing_labels": {
+      "status": "throws",
+      "exception": {
+        "class": "ElkTextException",
+        "message": "mismatched input '.' expecting ':'"
+      }
+    }
+  },
+  "uncoveredByCorpus": [
+    "unterminated-string",
+    "string-escape-sequences",
+    "duplicate-property-keys",
+    "reference-to-label-or-edge",
+    "qualified-name-reference",
+    "bom-or-non-lf-line-endings",
+    "invalid-utf8",
+    "lexer-recovery-numbers"
+  ],
+  "optionIds": [
+    "org.eclipse.elk.algorithm",
+    "org.eclipse.elk.alignment",
+    "org.eclipse.elk.animTimeFactor",
+    "org.eclipse.elk.animate",
+    "org.eclipse.elk.aspectRatio",
+    "org.eclipse.elk.bendPoints",
+    "org.eclipse.elk.box.packingMode",
+    "org.eclipse.elk.childAreaHeight",
+    "org.eclipse.elk.childAreaWidth",
+    "org.eclipse.elk.commentBox",
+    "org.eclipse.elk.contentAlignment",
+    "org.eclipse.elk.debugMode",
+    "org.eclipse.elk.direction",
+    "org.eclipse.elk.edge.thickness",
+    "org.eclipse.elk.edge.type",
+    "org.eclipse.elk.edgeLabels.inline",
+    "org.eclipse.elk.edgeLabels.placement",
+    "org.eclipse.elk.edgeRouting",
+    "org.eclipse.elk.expandNodes",
+    "org.eclipse.elk.font.name",
+    "org.eclipse.elk.font.size",
+    "org.eclipse.elk.hierarchyHandling",
+    "org.eclipse.elk.hypernode",
+    "org.eclipse.elk.insideSelfLoops.activate",
+    "org.eclipse.elk.insideSelfLoops.yo",
+    "org.eclipse.elk.interactive",
+    "org.eclipse.elk.interactiveLayout",
+    "org.eclipse.elk.json.edgeCoords",
+    "org.eclipse.elk.json.shapeCoords",
+    "org.eclipse.elk.junctionPoints",
+    "org.eclipse.elk.labelManager",
+    "org.eclipse.elk.layoutAncestors",
+    "org.eclipse.elk.margins",
+    "org.eclipse.elk.maxAnimTime",
+    "org.eclipse.elk.minAnimTime",
+    "org.eclipse.elk.noLayout",
+    "org.eclipse.elk.nodeLabels.padding",
+    "org.eclipse.elk.nodeLabels.placement",
+    "org.eclipse.elk.nodeSize.constraints",
+    "org.eclipse.elk.nodeSize.fixedGraphSize",
+    "org.eclipse.elk.nodeSize.minimum",
+    "org.eclipse.elk.nodeSize.options",
+    "org.eclipse.elk.omitNodeMicroLayout",
+    "org.eclipse.elk.padding",
+    "org.eclipse.elk.partitioning.activate",
+    "org.eclipse.elk.partitioning.partition",
+    "org.eclipse.elk.port.anchor",
+    "org.eclipse.elk.port.borderOffset",
+    "org.eclipse.elk.port.index",
+    "org.eclipse.elk.port.side",
+    "org.eclipse.elk.portAlignment.default",
+    "org.eclipse.elk.portAlignment.east",
+    "org.eclipse.elk.portAlignment.north",
+    "org.eclipse.elk.portAlignment.south",
+    "org.eclipse.elk.portAlignment.west",
+    "org.eclipse.elk.portConstraints",
+    "org.eclipse.elk.portLabels.nextToPortIfPossible",
+    "org.eclipse.elk.portLabels.placement",
+    "org.eclipse.elk.portLabels.treatAsGroup",
+    "org.eclipse.elk.position",
+    "org.eclipse.elk.priority",
+    "org.eclipse.elk.progressBar",
+    "org.eclipse.elk.randomSeed",
+    "org.eclipse.elk.resolvedAlgorithm",
+    "org.eclipse.elk.scaleFactor",
+    "org.eclipse.elk.separateConnectedComponents",
+    "org.eclipse.elk.softwrappingFuzziness",
+    "org.eclipse.elk.spacing.commentComment",
+    "org.eclipse.elk.spacing.commentNode",
+    "org.eclipse.elk.spacing.componentComponent",
+    "org.eclipse.elk.spacing.edgeEdge",
+    "org.eclipse.elk.spacing.edgeLabel",
+    "org.eclipse.elk.spacing.edgeNode",
+    "org.eclipse.elk.spacing.individual",
+    "org.eclipse.elk.spacing.labelLabel",
+    "org.eclipse.elk.spacing.labelNode",
+    "org.eclipse.elk.spacing.labelPortHorizontal",
+    "org.eclipse.elk.spacing.labelPortVertical",
+    "org.eclipse.elk.spacing.nodeNode",
+    "org.eclipse.elk.spacing.nodeSelfLoop",
+    "org.eclipse.elk.spacing.portPort",
+    "org.eclipse.elk.spacing.portsSurrounding",
+    "org.eclipse.elk.topdown.hierarchicalNodeAspectRatio",
+    "org.eclipse.elk.topdown.hierarchicalNodeWidth",
+    "org.eclipse.elk.topdown.nodeType",
+    "org.eclipse.elk.topdown.scaleCap",
+    "org.eclipse.elk.topdown.scaleFactor",
+    "org.eclipse.elk.topdown.sizeApproximator",
+    "org.eclipse.elk.topdown.sizeCategories",
+    "org.eclipse.elk.topdown.sizeCategoriesHierarchicalNodeWeight",
+    "org.eclipse.elk.topdownLayout",
+    "org.eclipse.elk.validateGraph",
+    "org.eclipse.elk.validateOptions",
+    "org.eclipse.elk.zoomToFit"
+  ],
+  "algorithmIds": [
+    "org.eclipse.elk.box",
+    "org.eclipse.elk.fixed",
+    "org.eclipse.elk.random"
+  ]
+}

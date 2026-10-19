@@ -1,0 +1,11 @@
+// @covers invalid option values (enum, double, int, boolean): no LayoutOptionValidator for .elkj, so no issue
+{
+  id: "root",
+  layoutOptions: {
+    "org.eclipse.elk.direction": "bogus",
+    "org.eclipse.elk.spacing.nodeNode": "abc",
+    "org.eclipse.elk.padding": "not a padding",
+    "org.eclipse.elk.interactive": "maybe"
+  },
+  children: [ { id: "a", layoutOptions: { "org.eclipse.elk.priority": "1.5x" } } ]
+}

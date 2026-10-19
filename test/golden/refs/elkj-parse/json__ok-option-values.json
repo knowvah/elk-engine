@@ -1,0 +1,29 @@
+{
+  "id": "r",
+  "layoutOptions": {
+    "nodeSize.constraints": "[PORTS, NODE_LABELS]",
+    "font.size": "12",
+    "position": "(5.0,6.0)",
+    "bendPoints": "(1.0,2.0; 3.0,4.0)",
+    "spacing.edgeEdge": "7.5",
+    "direction": "RIGHT",
+    "contentAlignment": "[V_CENTER, H_CENTER]",
+    "randomSeed": "42",
+    "priority": "3",
+    "edgeRouting": "SPLINES",
+    "margins": "[top=1.0,left=1.0,bottom=1.0,right=1.0]",
+    "elk.padding": "[top=1.0,left=2.0,bottom=3.0,right=4.0]",
+    "nodeSize.minimum": "(30.0,20.0)",
+    "algorithm": "org.eclipse.elk.layered",
+    "font.name": "Fira Sans",
+    "debugMode": "true",
+    "portConstraints": "FIXED_SIDE",
+    "aspectRatio": "1.6",
+    "spacing.nodeNode": "15.0",
+    "expandNodes": "true"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0
+}

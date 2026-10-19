@@ -2,7 +2,7 @@
 /**
  * Fitness function (AD-16a): every exception class in `src/` extends its Java parent, so a handler for a
  * parent class catches the whole family as in Java. JS `Error` stands in for `Throwable`. Parents are those
- * of the Java classes (JDK Javadoc, Gson, EMF, Xtext 2.36.0 and ELK sources at the pinned commits); the two
+ * of the Java classes (JDK Javadoc, Gson, EMF, Xtext 2.36.0 and ELK sources at the pinned commits); the three
  * port-local errors have no Java counterpart and extend `Error`. A new exception class must be added here.
  */
 import { readdirSync, readFileSync } from 'node:fs';
@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { BasicIndexOutOfBoundsException } from '../../src/emf/common/util/BasicIndexOutOfBoundsException.js';
 import { JsonImportException } from '../../src/graph/json/JsonImportException.js';
-import { SyntaxFailure } from '../../src/graph/text/parser/ParseRecords.js';
+import { SyntaxFailure } from '../../src/xtext/parser/SyntaxFailure.js';
+import { ElkGraphJsonSerializationError } from '../../src/graph/json/text/serializer/ElkGraphJsonSerializationError.js';
 import { ElkGraphSerializationError } from '../../src/graph/text/serializer/ElkGraphSerializationError.js';
 import { JsonIOException } from '../../src/gson/JsonIOException.js';
 import { JsonParseException } from '../../src/gson/JsonParseException.js';
@@ -39,6 +40,11 @@ import { RegionTrace } from '../../src/xtext/formatting2/internal/RegionTrace.js
 import { RegionTraceMissingException } from '../../src/xtext/formatting2/internal/RegionTraceMissingException.js';
 import { RegionsOutsideFrameException } from '../../src/xtext/formatting2/internal/RegionsOutsideFrameException.js';
 import { IllegalNodeException } from '../../src/xtext/linking/impl/IllegalNodeException.js';
+import {
+  OperationCanceledError,
+  OperationCanceledException,
+} from '../../src/xtext/linking/lazy/LazyLinkingResourceCancel.js';
+import { CyclicLinkingException } from '../../src/xtext/linking/lazy/LazyLinkingResourceTypes.js';
 import { GuardException } from '../../src/xtext/validation/GuardException.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -85,9 +91,16 @@ const JAVA_PARENTS: ReadonlyMap<ErrorClass, ErrorClass> = new Map<ErrorClass, Er
   [RegionTraceMissingException, RuntimeException],
   [RegionsOutsideFrameException, RuntimeException],
   [RegionTrace, RuntimeException],
+  // LazyLinkingResource.CyclicLinkingException extends AssertionError, OperationCanceledError (Xtext) extends
+  // java.lang.Error: neither AssertionError nor Error is shimmed (D10), so both extend JS Error (= Throwable)
+  [CyclicLinkingException, Error],
+  [OperationCanceledError, Error],
+  // Eclipse runtime: org.eclipse.core.runtime.OperationCanceledException
+  [OperationCanceledException, RuntimeException],
   // port-local, no Java class
   [SyntaxFailure, Error],
   [ElkGraphSerializationError, Error],
+  [ElkGraphJsonSerializationError, Error],
 ]);
 
 function sourceFiles(dir: string): string[] {

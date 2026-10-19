@@ -1,0 +1,1 @@
+{ id: "root", x: 1, y: 2, width: 3, height: 4, children: [ { id: "a" } ], ports: [ { id: "p" } ], labels: [ { id: "l", text: "t" } ], edges: [ { id: "e", sources: ["a"], targets: ["a"] } ], layoutOptions: { } }

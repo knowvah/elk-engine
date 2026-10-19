@@ -1,0 +1,25 @@
+{
+	"id": "G1",
+	"children": [
+		{
+			"id": "outer",
+			"children": [
+				{
+					"id": "inner",
+					"ports": [
+						{ "id": "p1_g8985" }
+					],
+					"ports": [{ "id": "p2_g4588" } ]
+				}
+			],
+			"ports": [
+				{ "id": "p1" }
+			],
+			"ports": [{ "id": "p2" } ],
+			"edges": [
+				{ "sources": [ "p1" ], "targets": [ "p1_g8985" ], "id": "E1" }
+			],
+			"edges": [{ "sources": [ "p2_g4588" ], "targets": [ "p2" ], "id": "E2" } ]
+		}
+	]
+}

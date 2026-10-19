@@ -1,0 +1,7 @@
+// @covers arbitrary JSON members the grammar accepts and ignores
+{
+  id: "root",
+  custom: { nested: [ 1, "two", null, true, { deep: false } ] },
+  "other": "y z",
+  children: [ { id: "a", note: [ ] } ]
+}

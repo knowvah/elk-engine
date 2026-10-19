@@ -1,0 +1,1 @@
+{ "id": "g", "children": [{ "id": "a", "children": [{ "id": "b", "ports": [{ "id": "p", "labels": [{ "text": "t" }] }] }] }] }

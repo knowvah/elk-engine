@@ -1,0 +1,5 @@
+// @covers edges with empty or missing sources and targets lists
+{
+  id: "root",
+  edges: [ { id: "e1", sources: [], targets: [] }, { id: "e2" } ]
+}

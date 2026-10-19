@@ -1,0 +1,11 @@
+// @covers linking diagnostic order across nested containers: root edge, child edge, child's child edge
+{
+  id: "root",
+  edges: [ { id: "e0", sources: [ "r1" ], targets: [ "r2" ] } ],
+  children: [
+    { id: "a",
+      edges: [ { id: "e1", sources: [ "a1" ], targets: [ "a2" ] } ],
+      children: [ { id: "b", edges: [ { id: "e2", sources: [ "b1" ], targets: [ "b2" ] } ] } ] },
+    { id: "c", edges: [ { id: "e3", sources: [ "c1" ], targets: [ "c2" ] } ] }
+  ]
+}

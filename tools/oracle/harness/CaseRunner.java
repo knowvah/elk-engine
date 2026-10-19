@@ -14,6 +14,7 @@ import org.eclipse.elk.graph.json.ElkGraphJson;
 final class CaseRunner {
 
     private static final String OUTPUT_EXTENSION = ".json";
+    private static final String ELKJ_EXTENSION = ".elkj";
     private static final String ID_SEPARATOR = "/";
     private static final String ID_REPLACEMENT = "__";
     private static final long NANOS_PER_MILLI = 1_000_000L;
@@ -32,6 +33,11 @@ final class CaseRunner {
         return id.replace(ID_SEPARATOR, ID_REPLACEMENT) + OUTPUT_EXTENSION;
     }
 
+    /** The {@code convert} output of a case. */
+    Path elkjPath(final String id) {
+        return outDir.resolve(id.replace(ID_SEPARATOR, ID_REPLACEMENT) + ELKJ_EXTENSION);
+    }
+
     Path outputPath(final String id) {
         return outDir.resolve(outputName(id));
     }
@@ -43,6 +49,11 @@ final class CaseRunner {
         Throwable failure = null;
         try {
             ElkNode graph = load(spec);
+            if (CaseSpec.MODE_CONVERT.equals(spec.mode())) {
+                ElkjConverter.save(ElkjConverter.transform(graph), elkjPath(spec.id()));
+                return new CaseResult(spec.id(), status, null, null,
+                        (System.nanoTime() - start) / NANOS_PER_MILLI);
+            }
             overlay.apply(graph, spec.algorithm(), spec.variant());
             if (CaseSpec.MODE_LAYOUT.equals(spec.mode())) {
                 new RecursiveGraphLayoutEngine().layout(graph, new BasicProgressMonitor());
@@ -65,7 +76,11 @@ final class CaseRunner {
 
     private ElkNode load(final CaseSpec spec) throws IOException {
         Path input = Paths.get(spec.input());
-        return CaseSpec.MODE_GENERATE.equals(spec.mode()) ? generator.generate(input) : reader.read(input);
+        return switch (spec.mode()) {
+            case CaseSpec.MODE_GENERATE -> generator.generate(input);
+            case CaseSpec.MODE_PARSE_ELKJ -> reader.readAsElkj(input);
+            default -> reader.read(input);
+        };
     }
 
     static String export(final ElkNode graph) {

@@ -1,0 +1,1 @@
+{ "layoutOptions": { "foo": "'inner'", "bar": "\"inner\"" } }

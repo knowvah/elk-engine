@@ -1,0 +1,10 @@
+graph g
+node a {
+  label top: "top" {
+    label mid: "mid" {
+      label deep: "deep" {
+        label "deepest"
+      }
+    }
+  }
+}

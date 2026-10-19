@@ -1,0 +1,100 @@
+{
+  "id": "root",
+  "labels": [
+    {
+      "text": "Root",
+      "id": "rl",
+      "x": 1.0,
+      "y": 2.0,
+      "width": 30.0,
+      "height": 10.0
+    }
+  ],
+  "ports": [
+    {
+      "id": "rp",
+      "labels": [
+        {
+          "text": "P",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 4.0,
+          "height": 4.0
+        }
+      ],
+      "x": 0.0,
+      "y": 10.0,
+      "width": 5.0,
+      "height": 5.0
+    }
+  ],
+  "children": [
+    {
+      "id": "a",
+      "labels": [
+        {
+          "text": "A",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "ports": [
+        {
+          "id": "ap",
+          "x": 30.0,
+          "y": 5.0,
+          "width": 4.0,
+          "height": 4.0
+        }
+      ],
+      "children": [
+        {
+          "id": "a1",
+          "x": 2.0,
+          "y": 2.0,
+          "width": 5.0,
+          "height": 5.0
+        }
+      ],
+      "x": 10.0,
+      "y": 10.0,
+      "width": 30.0,
+      "height": 20.0
+    },
+    {
+      "id": "b",
+      "x": 60.0,
+      "y": 10.0,
+      "width": 30.0,
+      "height": 20.0
+    }
+  ],
+  "x": 1.0,
+  "y": 2.5,
+  "width": 100.0,
+  "height": 80.25,
+  "edges": [
+    {
+      "id": "e1",
+      "sources": [],
+      "targets": [],
+      "labels": [
+        {
+          "text": "E",
+          "id": "el",
+          "x": 1.0,
+          "y": 1.0,
+          "width": 5.0,
+          "height": 5.0
+        }
+      ]
+    },
+    {
+      "id": "e2",
+      "sources": [],
+      "targets": []
+    }
+  ]
+}

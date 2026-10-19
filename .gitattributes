@@ -2,5 +2,8 @@
 *.jar binary
 # Byte-meaningful vector inputs (CRLF/CR line tests): never normalise.
 tools/vectors/elkt-*-scenarios/*.elkt -text
+# Same for the .elkj vector scenarios (CR/CRLF/BOM/invalid-UTF-8 inputs; lenient .json/.elkt files in the write batch).
+tools/vectors/elkj-*-scenarios/** -text
 # Vendored elk-models inputs: hashed byte-for-byte against the oracle refs.
 test/corpus/elkt-curated/** -text
+test/corpus/elkj-curated/** -text

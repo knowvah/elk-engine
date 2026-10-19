@@ -1,0 +1,6 @@
+// @covers syntax errors: stray token and missing colon (presence only)
+{
+  id: "root",
+  children [ { id: "a" } ],
+  @ bogus
+}

@@ -1,0 +1,34 @@
+{
+	"id": "G1",
+	"children": [
+		{ "id": "n1" }
+	],
+	"children": [{
+		"id": "n3",
+		"ports": [
+			{
+				"id": "p1",
+				"layoutOptions": { port.side: "SOUTH" },
+				"x": 9.3333
+			}
+		],
+		"layoutOptions": { portConstraints: "FIXED_POS" }
+	} ],
+	"children": [{
+		"id": "n4",
+		"ports": [
+			{
+				"id": "p1_g8985",
+				"layoutOptions": { port.side: "NORTH" }
+			}
+		],
+		"layoutOptions": { portConstraints: "FIXED_POS" },
+		"width": 400,
+		"height": 40
+	} ],
+	"edges": [
+		{ "sources": [ "p1" ], "targets": [ "p1_g8985" ], "id": "E1" }
+	],
+	"edges": [{ "sources": [ "n1" ], "targets": [ "n3" ], "id": "E2" } ],
+	"layoutOptions": { "postCompaction.strategy": "LEFT" }
+}

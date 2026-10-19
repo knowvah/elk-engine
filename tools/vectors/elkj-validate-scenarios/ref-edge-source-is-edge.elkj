@@ -1,0 +1,6 @@
+// @covers edge source naming an edge (not a connectable shape)
+{
+  id: "root",
+  children: [ { id: "a" } ],
+  edges: [ { id: "e1", sources: [ "a" ], targets: [ "a" ] }, { id: "e2", sources: [ "e1" ], targets: [ "a" ] } ]
+}

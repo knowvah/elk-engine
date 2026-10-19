@@ -1,0 +1,5 @@
+{
+  "id": "g",
+  "children": [{ "id": "a", }, { "id": "b", },],
+  "layoutOptions": { "org.eclipse.elk.priority": 1, },
+}

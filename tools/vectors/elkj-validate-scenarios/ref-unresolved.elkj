@@ -1,0 +1,10 @@
+// @covers unresolved source and target references (lazy linking diagnostics, with lines and codes)
+{
+  id: "root",
+  children: [ { id: "a" } ],
+  edges: [
+    { id: "e1", sources: [ "nowhere" ], targets: [ "a" ] },
+    { id: "e2", sources: [ "a" ], targets: [ "missing" ] },
+    { id: "e3", sources: [ "x1", "a", "x2" ], targets: [ "y1" ] }
+  ]
+}

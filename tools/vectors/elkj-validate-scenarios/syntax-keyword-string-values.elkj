@@ -1,0 +1,5 @@
+// @covers quoted keyword strings lex as keywords, not STRING: a property value "text" or 'x' is a syntax error (presence only)
+{
+  id: "root",
+  layoutOptions: { "org.example.a": "text", "org.example.b": 'x', "org.example.c": "children" }
+}

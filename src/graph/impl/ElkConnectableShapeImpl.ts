@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { EClass } from '../../emf/ecore/EClass.js';
 import type { InternalEObject } from '../../emf/ecore/InternalEObject.js';
-import { ManyInverse } from '../../emf/ecore/util/EObjectWithInverseEList.js';
+import { ManyInverse } from '../../emf/ecore/util/EObjectWithInverseResolvingEList.js';
 import type { ElkConnectableShape } from '../ElkConnectableShape.js';
 import type { ElkEdge } from '../ElkEdge.js';
 import { ElkGraphPackage, registerImpl } from '../ElkGraphPackage.js';
@@ -9,8 +9,8 @@ import { ElkShapeImpl } from './ElkShapeImpl.js';
 
 /**
  * An implementation of the model object '<em><b>Elk Connectable Shape</b></em>'. The edge lists are
- * `EObjectWithInverseResolvingEList.ManyInverse` in Java; proxy resolution is not ported, leaving
- * `ManyInverse`. Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications.
+ * `EObjectWithInverseResolvingEList.ManyInverse` as in Java (D13): `get` resolves proxy edges.
+ * Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications.
  *
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkConnectableShapeImpl.java
  */

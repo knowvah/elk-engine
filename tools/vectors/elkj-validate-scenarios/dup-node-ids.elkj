@@ -1,0 +1,8 @@
+// @covers duplicate node, port and label identifiers
+{
+  id: "root",
+  children: [
+    { id: "a", ports: [ { id: "p" }, { id: "p" } ], labels: [ { id: "l" }, { id: "l" } ] },
+    { id: "a" }
+  ]
+}

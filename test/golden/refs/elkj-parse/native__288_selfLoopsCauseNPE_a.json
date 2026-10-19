@@ -1,0 +1,56 @@
+{
+  "id": "G1",
+  "children": [
+    {
+      "id": "A1",
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    },
+    {
+      "id": "A2",
+      "children": [
+        {
+          "id": "B1",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 0.0,
+          "height": 0.0
+        }
+      ],
+      "x": 0.0,
+      "y": 0.0,
+      "width": 0.0,
+      "height": 0.0
+    }
+  ],
+  "layoutOptions": {
+    "edgeRouting": "SPLINES",
+    "hierarchyHandling": "INCLUDE_CHILDREN"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 0.0,
+  "height": 0.0,
+  "edges": [
+    {
+      "id": "E1",
+      "sources": [
+        "A2"
+      ],
+      "targets": [
+        "A2"
+      ]
+    },
+    {
+      "id": "E2",
+      "sources": [
+        "A1"
+      ],
+      "targets": [
+        "B1"
+      ]
+    }
+  ]
+}

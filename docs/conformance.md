@@ -19,7 +19,9 @@ this document describes what it implements. Port rules live in
 | 4   | [Seam patches](#4-seam-patches)                   | How do we change the oracle?             |
 | 5   | [Oracle operations](#5-oracle-operations-runbook) | What do I do when it breaks?             |
 | 6   | [Gates](#6-gates)                                 | What must pass before a change lands?    |
-| 7   | [Temporary gaps](#temporary-gaps)                 | What differs from the Java for now?      |
+| 7   | [ELK Text](#elk-text-elkt)                        | How is `.elkt` proven?                   |
+| 8   | [ELK Textual JSON](#elk-textual-json-elkj)        | How is `.elkj` proven?                   |
+| -   | [Temporary gaps](#temporary-gaps)                 | What differs from the Java for now?      |
 
 ## 1. Oracle
 
@@ -406,6 +408,102 @@ skips when the stamp (oracle build, harness and tool sources, models commit, inp
 report. A mismatch outside the deferrals above is a defect to diagnose against the oracle, never a number to
 adjust.
 
+## 8. ELK Textual JSON (`.elkj`) {#elk-textual-json-elkj}
+
+Port: `src/graph/json/text` over `src/xtext` and the EMF proxy subset in `src/emf` (internal entry point
+`ElkGraphJsonText`: `load`, `validate`, `serialize`; design and runbook in
+[elk-json-text.md](architecture/elk-json-text.md)). Evidence is two-tier (D8), as for `.elkt`: the committed JVM
+vectors (lexer 554 rows, parse 439, validate 28, write 126, inverse-state 69 cases) and 34 curated entries (15
+parse refs, inputs vendored in `test/corpus/elkj-curated/`) run in CI; the sweep below measures the corpus
+locally. The pinned elk-models holds no `.elkj`, so the oracle produces them (D2).
+
+**What is compared** (always `ORACLE_REGISTRY=core`, D4; every case in two JVM runs compared byte for byte):
+
+- Tier 1, `tier1-parse-equal` / `tier1-validate-equal`: ELK's own `.elkj` conversion of an elk-models `.elkt` or
+  realworld `.json` (the oracle's `convert` mode, `ConvertGraphHandler` steps, identifier seed 1, D12) read by the
+  `.elkj` language. Parse is compared as ELK JSON at 1e-6; validate as `IResourceValidator` issues, exactly.
+  Where the oracle rejects the file the port must report an error (presence, D6).
+- Tier 2, `tier2-parse-equal`: every realworld `.json` and the repo's ELK JSON read as `.elkj` text.
+- Writer, `writer-byte-exact`: `ElkGraphJsonText.serialize` against `EcoreUtil.copy` plus
+  `serialize(format())`, byte for byte; where the oracle fails the port throws `ElkGraphJsonSerializationError`.
+- `reparse-equal`: the port's own text read again gives what the oracle's reparse of its text gave.
+
+**Size-capped selection** (D2 amendment, user 2026-10-16). The oracle's Xtext serializer needs 30 to 1,100
+CPU-seconds per graph (9-graph sample: 113 to 678 s each, 57 min single-JVM), so converting and writing all
+1,448 graphs twice is days of CPU. Tier 1 and the writer run on every corpus graph of at most 5 KB (345) plus 6
+stratified larger graphs (5 to 37 KB; `--sample 6 --sample-max 40000` instead of the planned ~40, which would not
+fit the budget; the cap is kept, the sample lowered) = 351 graphs; tier 2 runs on all 666 ELK JSON inputs;
+determinism is double-run on 30. A full run is a parameter change (`--cap 100000000`).
+
+**Result** (oracle ELK `8aaa3c1` plus patches `0001`, `0002`, elk-models `ac5af2b`, 2026-10-16; counts equal the
+graph-json-text decision journal, row T17):
+
+| Indicator            | Bar     | Measured | Exact | Presence / both reject                              | Diffs |
+| -------------------- | ------- | -------- | ----- | --------------------------------------------------- | ----- |
+| tier1-parse-equal    | 344/344 | 344/344  | 144   | 200 (syntax errors; oracle cannot reparse own file) | 0     |
+| tier1-validate-equal | 344/344 | 344/344  |       |                                                     | 0     |
+| tier2-parse-equal    | 666/666 | 666/666  | 591   | 75 rejected by both                                 | 0     |
+| writer-byte-exact    | 351/351 | 351/351  | 315   | 36 oracle failures matched                          | 0     |
+| reparse-equal        | 315/315 | 315/315  |       |                                                     | 0     |
+| nondeterministic     | 0       | 0        |       |                                                     |       |
+
+Cost: oracle 2 h 04 min wall on 8 serial-GC JVMs, TS side 4.2 s. 7 of the 351 graphs fail `convert` in the
+oracle (edge sections, a keyword string), hence 344 for tier 1; 29 more fail `write` (missing or duplicate ids:
+that path has no id generator), part of the 36 matched oracle failures. Determinism needed one merge fix:
+Xtext error messages embed the output URI, and `ElkjSweep.java` normalises the directory. Largest curated model
+(712 KB ELK JSON) loads in about 100 ms.
+
+### Accepted divergences {#elkj-divergences}
+
+- **D6, syntax errors, presence only.** The port stops at the first syntax error; ANTLR recovers. The JVM keeps
+  recovered edges in 16 syntax rows, and recovered null-valued entries cause its NPE rows (the 5
+  null-property-value rows); the port never builds them. A recorded conversion diagnostic that comes from ANTLR
+  recovery after a syntax error (`err-syntax-cr-line-number`) is a presence row.
+- **Unresolved-reference export** (extends the unknown-endpoint entry under "Behavioural divergences"). The
+  `.elkj` exporter hits an unresolved proxy and the oracle throws a message-less `NullPointerException`; the port
+  throws a message-less `IllegalArgumentException`, with the single recorded diagnostic left on the resource
+  (30 parse rows, 1 curated entry). Linking diagnostics themselves are exact.
+- **Converter rows not replayed.** 3 type-erasure rows (`Number.toString(int:1)`,
+  `StringValue.toString(float:2.0)` as in `.elkt`, `INT.toString(double:1.5)`) and 45 SIGNED_INT/FLOAT rows that
+  need Xtext's `DefaultTerminalConverter`, which is unported and unreachable from the grammar. Open; porting it
+  needs a task with `src/xtext` in its write-set.
+- **Diagnostic lines versus token lines.** Diagnostics follow Xtext's node model (LF, lone CR, CRLF;
+  `InternalNodeModelUtils.computeLineBreaks`); token rows follow ANTLR (LF only). `.elkj` passes the node-model
+  `LineSource`, `.elkt` keeps `token.line`. Where Java's `charAt(offset)` would throw at a text-final `\r`, the
+  port treats the character as not `\n`.
+- **`EObjectValidator` once.** `.elkj` has no registry default, so the registrar's `validator == null` branch
+  builds a fresh composite holding one `EObjectValidator`, and each EMF constraint is reported once (code
+  `org.eclipse.emf.ecore.14` per map-key collision); `.elkt` reports twice. No `LayoutOptionValidator` runs.
+- **Round-trip lossy classes** (281 loadable inputs: 193 equal, 88 in asserted classes, 0 divergences): 34
+  quoted unknown keys unwritable, 1 keyword string, 1 list value, 14 bare dotted keys, 4 empty elements written
+  `{ "" : }`, 27 unresolved endpoints dropped by the copy (oracle-verified, see below), 1 copy failure, 5 int32 saturation or `-0.0`, 1 bare key that gains
+  quotes. Each class is asserted per case in `test/golden/elkj-roundtrip.test.ts`.
+- **Round-trip oracle vectors (T16b, 2026-10-18).** `test/golden/refs/java/graph-json-text-roundtrip.json` holds
+  281 rows from `tools/vectors/ElkjRoundTripVectors.java` (the oracle's loadable set equals the TS round trip's
+  281: 16 curated + 265 T3 scenarios). Replay: 244/244 written texts byte-equal (226 reparse exact plus export
+  equal, 18 presence), 37/37 error rows (36 serializer `RuntimeException` against
+  `ElkGraphJsonSerializationError` by class, message text not comparable because Xtext embeds the object and
+  URI; 1 copy failure `IndexOutOfBoundsException: targetIndex=1, size=1` with a byte-equal message) and 27/27
+  unresolved-endpoint drops. The claim that the copy drops unresolved endpoints moved from source-derived
+  (EMF `Copier.copyReference`) to oracle-verified; the class count is 27, not 28, because `ElkGraphCopy` now
+  ports the bidirectional many-valued arm and `sources: ["a","a"]` throws like the JVM (the 28th, now
+  `copy-failure`).
+- **Lone-surrogate transport (`.elkj` quirk).** The recorder reloads text via `getBytes(UTF_8)`, which turns a
+  lone surrogate into `?`; for `input-lone-surrogate-escape` only, the replay applies the same transport before
+  its oracle-layer reload. This is a harness artifact, not an `.elkj` behaviour difference.
+- **Oracle conversions mostly do not reparse in the oracle itself.** Its serializer writes bare dotted option
+  keys, `null` values, NaN, `4.9E-324` and unescaped quotes, and fails on edge sections and KVectorChain/List
+  values; hence the 200 presence rows of `tier1-parse-equal`.
+- **`ElkNodeImpl.toString` proxy arm** is not ported (no code or test prints a proxy through `edge.toString()`).
+
+No ELK prose typo was corrected in this mission, so nothing is listed under "upstream typos".
+
+**Regenerate.** `tools/oracle/elkj-sweep.sh [--force] [--cap] [--sample] [--sample-max] [--determinism] [--jobs]`
+writes `$ELK_ORACLE_DIR/sweep/elkj-<elkCommit>-<modelsCommit>/` (never in the repo, AD-5), resumable and skipped
+when its stamp is fresh; then `npx vitest run test/corpus/elkj-sweep.test.ts` logs
+`elkj sweep: <indicator>=<n>/<total> deferred=<d> diffs=<k> nondeterministic=<m>`. A mismatch is a defect to
+diagnose against the oracle, never a number to adjust.
+
 ## Temporary gaps
 
 Known differences from the Java after mission 3 (core metadata), each with the mission that closes
@@ -476,6 +574,8 @@ above.
   and `foreignSource`) record the NPE and are expected to throw the IAE (`UNKNOWN_ENDPOINT_IAE` in
   `ElkGraphJson.test.ts`, `JsonExporter.test.ts`); the `gson.json` rows of `JsonPrimitive` keep the
   2.11 NPE.
+  The same mapping covers the `.elkj` export of an unresolved proxy reference (mission 4c, D13; section 8).
+
 - Gson subset gaps: writer rows with `Long`/`Float`/`Short`/`Byte`/`BigDecimal`/`BigInteger`
   numbers are not modelled (graph.json never builds them); `JsonWriter` writes parsed-number text
   without the validation `JsonPrimitive.toString` applies; `JsonReader` misuse-error texts are

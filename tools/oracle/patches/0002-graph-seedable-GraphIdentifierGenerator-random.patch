@@ -1,0 +1,46 @@
+From b19c4ed196cc2bab3d69317a80f80839d230ada9 Mon Sep 17 00:00:00 2001
+From: elk-engine-oracle <oracle@invalid>
+Date: Thu, 15 Oct 2026 14:15:01 -0500
+Subject: [PATCH] graph: seedable GraphIdentifierGenerator id-collision random
+ (test seam)
+
+GraphIdentifierGenerator resolves id collisions with an unseeded
+java.util.Random, so converted graphs with duplicate ids differ between
+JVMs. The system property org.eclipse.elk.graph.util.identifierSeed
+seeds it; unset keeps ELK's behavior. Only the harness convert mode sets
+it; the TS port parses converted files and needs no paired seam (D12).
+---
+ .../elk/graph/util/GraphIdentifierGenerator.java       | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/plugins/org.eclipse.elk.graph/src/org/eclipse/elk/graph/util/GraphIdentifierGenerator.java b/plugins/org.eclipse.elk.graph/src/org/eclipse/elk/graph/util/GraphIdentifierGenerator.java
+index 767bff33..1bea8639 100644
+--- a/plugins/org.eclipse.elk.graph/src/org/eclipse/elk/graph/util/GraphIdentifierGenerator.java
++++ b/plugins/org.eclipse.elk.graph/src/org/eclipse/elk/graph/util/GraphIdentifierGenerator.java
+@@ -43,6 +43,13 @@ public final class GraphIdentifierGenerator {
+     private boolean generate = false;
+     private boolean unique = false;
+     
++    /**
++     * Test seam (elk-engine oracle): when this system property holds a long, id-collision
++     * suffixes come from a {@link Random} seeded with it, created once per generator, so the
++     * output is repeatable across JVMs. Unset, behavior is unchanged.
++     */
++    public static final String IDENTIFIER_SEED_PROPERTY = "org.eclipse.elk.graph.util.identifierSeed";
++    
+     private Random random = null;
+     
+     /**
+@@ -360,7 +367,8 @@ public final class GraphIdentifierGenerator {
+     
+     private String fourDigitPaddedRandomNumber() {
+         if (random == null) {
+-            random = new Random();
++            Long seed = Long.getLong(IDENTIFIER_SEED_PROPERTY);
++            random = seed == null ? new Random() : new Random(seed);
+         }
+         // SUPPRESS CHECKSTYLE NEXT 2 MagicNumber
+         int rand = random.nextInt(10000);
+-- 
+2.54.0 (Apple Git-157)
+

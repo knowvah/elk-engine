@@ -1,0 +1,9 @@
+graph g
+s.nonascii: "héllo wörld 日本 😀"
+s.apostrophe: "it's"
+s.singlequoted: 'abc'
+s.backslash: "a\\b"
+s.escquote: "a\"b"
+s.dollar: "a$b_c"
+s.dash: "a-b"
+s.digitfirst: "9lives"

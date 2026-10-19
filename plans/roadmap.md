@@ -293,3 +293,45 @@ and add the inheritance fitness test.
 **Update 2026-10-15 (user):** the 4 G3 sweep models are compared with the mission-5 stand-ins (validate-equal
 898/898). Mission 5 deletes `test/helpers/mission5-stand-ins.ts` and the selections that use it (the validator test's
 `mission5` rows, the sweep's `MISSION5_ALGORITHM_VALUE`).
+
+## Revision 2026-10-16 (graph-json-text)
+
+Appended; no earlier line is edited. Source: D1-D13 and the D2 amendment in `plans/graph-json-text/decisions.md`; the
+journal is `plans/graph-json-text/decision-journal.md`. Where this section conflicts with the text above, this section
+wins.
+
+**Mission 4c (`graph.json.text`) status.** The code, vectors and curated refs landed on `feature/graph-json-text`
+(entry point `src/graph/json/text/ElkGraphJsonText.ts`, internal; design and runbook in
+`docs/architecture/elk-json-text.md`). The exit criteria above ("`.elkj` inputs parse equal to the oracle; invalid
+input fails where the oracle fails") are restated as D2 = A', amended by the user on 2026-10-16:
+
+- The pinned elk-models holds no `.elkj`, so the oracle's `convert` mode applies `ConvertGraphHandler`'s steps to
+  the corpus (identifier generator seeded by patch `0002`, D12). Tier 1: those files parse and validate equal.
+  Tier 2: ELK JSON read by the `.elkj` language parses equal. Writer tier: graphs written with
+  `serialize(format())` byte-exact, then reparsed.
+- **Size-capped:** the oracle's serializer needs 30 to 1,100 CPU-seconds per graph, so the sweep covers every graph
+  up to 5 KB (345) plus 6 sampled larger ones (instead of ~40), 666 ELK JSON inputs for tier 2, and a determinism
+  double-run on 30. The cap and sample are parameters of `tools/oracle/elkj-sweep.sh`; the full 1,448 are a
+  days-of-CPU rerun.
+
+**Result** (`docs/conformance.md`, section "ELK Textual JSON (`.elkj`)"): `tier1-parse-equal=344/344` (144 exact,
+200 presence), `tier1-validate-equal=344/344`, `tier2-parse-equal=666/666` (591 exact, 75 both reject),
+`writer-byte-exact=351/351` (315 byte-exact, 36 oracle failures matched), `reparse-equal=315/315`, 0
+nondeterministic; oracle 2 h 04 min on 8 serial-GC JVMs, TS 4.2 s.
+
+**Scope changes against the 4c row above.**
+
+- **D13 (user, 2026-10-16):** linking is lazy like Xtext's `LazyLinker` rather than eager (D11 B): the mission
+  ported `LazyLinker`, `LazyLinkingResource`, `LazyURIEncoder` and an EMF proxy/resource subset, amending mission-2
+  D4. `ElkEdge.sources/targets` and the shapes' edge lists now resolve proxies; `.elkt` keeps its eager linker.
+- The estimate (972 Java LOC / ~5 tasks) became 18 planned tasks, with T12 replaced by T12a-T12f and T12h.
+- The 4b parse runtime moved to `src/xtext/parser/` (D1) and `graph.json.text` joined `XTEXT_CLIENT_BUNDLES`.
+
+**Follow-ups by mission:**
+
+- **Mission 5** and every later algorithm mission: when the TS registry grows, rerun `tools/vectors/elkj-vectors.sh`
+  (about 30 min) and `tools/oracle/regen-elkj-refs.sh` with the `.elkt` ones, and journal the regeneration.
+- **Any time (outside the 4c write-sets):** port Xtext's `DefaultTerminalConverter` (45 SIGNED_INT/FLOAT converter
+  rows, unreachable from the grammar); record a bare-CR diagnostic vector for `.elkt` (the `.elkj` line fix of
+  `fix(T11)` suggests the same deviation); port the `ElkNodeImpl.toString` proxy arm; move the shared copy of the
+  graph (`ElkGraphCopy` duplicates 4b's `copyGraph`) to `src/graph/util`; widen the sweep sample if wanted.

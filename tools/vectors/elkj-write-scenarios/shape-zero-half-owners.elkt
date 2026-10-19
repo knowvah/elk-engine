@@ -1,0 +1,5 @@
+graph g
+node a {
+  port p { layout [ position: 5, 0 size: 0, 7 ] }
+  label "t" { layout [ position: 0, 5 size: 7, 0 ] }
+}

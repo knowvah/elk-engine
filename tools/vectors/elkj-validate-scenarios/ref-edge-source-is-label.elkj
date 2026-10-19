@@ -1,0 +1,9 @@
+// @covers edge source and target naming a label (type mismatch through scoping)
+{
+  id: "root",
+  children: [ { id: "a", labels: [ { id: "lbl", text: "t" } ] }, { id: "b" } ],
+  edges: [
+    { id: "e1", sources: [ "lbl" ], targets: [ "b" ] },
+    { id: "e2", sources: [ "a" ], targets: [ "lbl" ] }
+  ]
+}

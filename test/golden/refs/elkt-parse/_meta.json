@@ -1,7 +1,8 @@
 {
   "elkCommit": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
   "patches": [
-    "0001-graph.json-seedable-JsonExporter-id-collision-random.patch"
+    "0001-graph.json-seedable-JsonExporter-id-collision-random.patch",
+    "0002-graph-seedable-GraphIdentifierGenerator-random.patch"
   ],
   "modelsCommit": "ac5af2ba511c0037e4f347e8bd91f013950951c7",
   "registry": "core",

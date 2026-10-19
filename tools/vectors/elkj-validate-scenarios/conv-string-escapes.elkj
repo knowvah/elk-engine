@@ -1,0 +1,6 @@
+// @covers invalid string escapes and unicode in identifier and text values
+{
+  id: "bad \q escape",
+  children: [ { id: "short \u12 unicode", labels: [ { id: "l", text: "bad \z" } ] } ],
+  layoutOptions: { "org.example.k": "bad \y" }
+}

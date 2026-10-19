@@ -10,6 +10,7 @@
 | [../translation-rules.md](../translation-rules.md) | Java to TypeScript rules                                                |
 | [../conformance.md](../conformance.md)             | Oracle comparison bar and procedure (arrives later in this mission)     |
 | [elk-text.md](elk-text.md)                         | ELK Text (`.elkt`) port, the Xtext subset, runbook and deferrals        |
+| [elk-json-text.md](elk-json-text.md)               | ELK Textual JSON (`.elkj`) port, lazy linking, runbook and deferrals    |
 | [complexity.md](complexity.md)                     | The complexity gate that measures every function (`npm run complexity`) |
 
 ## What elk-engine is
@@ -72,6 +73,11 @@ JSON contract.
 Text adapter (`graph.text`, `ElkGraphText`): `.elkt` text loads into an ElkGraph through a hand-written
 parser, linker and validator built on a small Xtext subset (`src/xtext`), and an ElkGraph serializes back
 to `.elkt`. The entry point is internal; see [elk-text.md](elk-text.md).
+
+Textual JSON adapter (`graph.json.text`, `ElkGraphJsonText`): `.elkj` text loads through the same Xtext subset
+with a hand-written parser, and links lazily like Xtext's `LazyLinker`: edge endpoints are EMF proxies
+(`src/emf`) that resolve when read. An ElkGraph serializes back to `.elkj` through a grammar-specific writer.
+The entry point is internal; see [elk-json-text.md](elk-json-text.md).
 
 ## Tech stack
 

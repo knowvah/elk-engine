@@ -1,7 +1,8 @@
 {
   "elkCommit": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
   "patches": [
-    "0001-graph.json-seedable-JsonExporter-id-collision-random.patch"
+    "0001-graph.json-seedable-JsonExporter-id-collision-random.patch",
+    "0002-graph-seedable-GraphIdentifierGenerator-random.patch"
   ],
   "exportSeed": 1,
   "gsonVersion": "2.11.0",
