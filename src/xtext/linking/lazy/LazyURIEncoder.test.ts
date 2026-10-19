@@ -138,7 +138,7 @@ describe('LazyURIEncoder index form', () => {
   });
 
   it('requires a lazy linking resource', () => {
-    const { encoder } = fixture(true);
+    fixture(true);
     const plain = new ResourceImpl(URI.createURI('file:/p.elkj'));
     const lone = new ResourceNode('lone');
     plain.getContents().add(lone);

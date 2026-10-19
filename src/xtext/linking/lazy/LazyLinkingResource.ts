@@ -33,12 +33,7 @@ import {
   type CancelIndicator,
 } from './LazyLinkingResourceCancel.js';
 import { ExceptionDiagnostic } from './LazyLinkingResourceExceptionDiagnostic.js';
-import {
-  CyclicLinkingException,
-  LazyProxyTriple,
-  tripleEquals,
-  type LazyLinkingResourceMetamodel,
-} from './LazyLinkingResourceTypes.js';
+import { CyclicLinkingException, tripleEquals, type LazyLinkingResourceMetamodel } from './LazyLinkingResourceTypes.js';
 import type { LazyURIEncoder } from './LazyURIEncoder.js';
 
 const DEFAULT_CYCLIC_LINKING_DETECTION_COUNTER_LIMIT = 100;
@@ -71,7 +66,7 @@ export interface LazyLinkingResourceServices {
  * - `XtextResource` subset on `ResourceImpl`: `isValidationDisabled`/`setValidationDisabled` (clearing
  *   errors and warnings) and the proxy-information list, both in `LazyLinkingResourceBase` (a split for the
  *   500-line file limit; the list's
- *   `getParseResultWrapper().toProxyInformation(...)` is `Tuples.create` (a {@link LazyProxyTriple}). The
+ *   `getParseResultWrapper().toProxyInformation(...)` is `Tuples.create` (a `LazyProxyTriple`). The
  *   parse result, serializer, unloader, cache, language name and modification stamp are not ported.
  * - The metamodel reflection (`crossReferences()`, `eGet`/`eSet`, class names) is {@link LazyLinkingResourceMetamodel}.
  * - `EcoreUtil.getAllContents(this, true)` walks the root contents and `eAllContents()`; containment

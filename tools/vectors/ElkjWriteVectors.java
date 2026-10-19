@@ -777,6 +777,10 @@ public class ElkjWriteVectors {
 
         // Pairs of (String key id, value) put on R in argument order, each key a new Property<Object>(id).
         private static ElkNode withProperties(Object... idsAndValues) {
+            if (idsAndValues.length % 2 != 0) {
+                throw new IllegalArgumentException(
+                        "withProperties needs id, value pairs; got " + idsAndValues.length + " arguments");
+            }
             ElkNode root = root();
             for (int i = 0; i < idsAndValues.length; i += 2) {
                 root.getProperties().put(new Property<Object>((String) idsAndValues[i]), idsAndValues[i + 1]);
