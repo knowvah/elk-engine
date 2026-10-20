@@ -38,8 +38,14 @@ const UNREPRESENTABLE_ROWS: ReadonlySet<string> = new Set([
 ]);
 const rowKey = (row: Row): string => `${row.converter}.${row.op}(${row.input ?? 'null'})`;
 const isUnrepresentable = (row: Row): boolean => UNREPRESENTABLE_ROWS.has(rowKey(row));
-/** Converters replayed through the service; the other terminals (DefaultTerminalConverter) are not registered. */
+/** Converters replayed through the service. */
 const REPLAYED: ReadonlySet<string> = new Set([
+  'SIGNED_INT',
+  'FLOAT',
+  'ML_COMMENT',
+  'SL_COMMENT',
+  'ANY_OTHER',
+  'WS',
   'Number',
   'PropertyKey',
   'StringValue',
@@ -170,6 +176,14 @@ describe('ElkGraphValueConverterService vectors', () => {
   it('skips only the two rows a number cannot represent', () => {
     expect(rows.filter(isUnrepresentable).map(rowKey).sort()).toEqual([...UNREPRESENTABLE_ROWS].sort());
     expect(rows.filter((row) => row.error?.cls === CLASS_CAST && !isUnrepresentable(row)).length).toBe(8);
+  });
+
+  it('replays the 33 terminal rows the DefaultTerminalConverter adds', () => {
+    const terminals = new Set(['SIGNED_INT', 'FLOAT', 'ML_COMMENT', 'SL_COMMENT', 'ANY_OTHER', 'WS']);
+    expect(rows.filter((row) => terminals.has(row.converter)).length).toBe(33);
+    for (const name of terminals) {
+      expect(service.getConverter(name).constructor.name, name).toBe('DefaultTerminalConverter');
+    }
   });
 
   it('serves the ELK converters under their rule names, one shared value converter', () => {

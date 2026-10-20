@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { IllegalStateException } from '../../../java/lang/IllegalStateException.js';
+import { Literals } from '../../../emf/ecore/EcorePackage.js';
 import { DefaultTerminalConverters } from '../../common/services/DefaultTerminalConverters.js';
 import type { AbstractRule } from '../../AbstractRule.js';
 import { type IValueConverter, NO_OP_CONVERTER, type RuleSpecific } from '../IValueConverter.js';
@@ -9,6 +10,7 @@ import {
   AbstractDeclarativeValueConverterService,
   type RuleLookup,
 } from './AbstractDeclarativeValueConverterService.js';
+import { DefaultTerminalConverter, Factory } from './DefaultTerminalConverter.js';
 import { IDValueConverter } from './IDValueConverter.js';
 import { INTValueConverter } from './INTValueConverter.js';
 import { STRINGValueConverter } from './STRINGValueConverter.js';
@@ -41,6 +43,8 @@ const LOOKUP: RuleLookup = {
   findRuleForName: (name) => RULES.get(name) ?? null,
   getQualifiedName: (r) => (r === ID || r === INT || r === STRING || r === WS ? TERMINALS : GRAMMAR) + r.getName(),
   getEStringDatatypeRules: () => [QUALIFIED_ID],
+  // only the fragment: the other terminals keep their explicit-converter (or no converter) behaviour
+  getTerminalRules: () => [{ rule: WS, dataType: Literals.ESTRING }],
 };
 
 class RuleRecorder implements IValueConverter<string>, RuleSpecific {
@@ -229,5 +233,64 @@ describe('AbstractDeclarativeValueConverterService', () => {
     const service = new Plain((s) => s.add('QualifiedId', explicit));
     expect(service.getConverter('QualifiedId')).toBe(explicit);
     expect(service.getConverter(GRAMMAR + 'QualifiedId')).toBe(explicit);
+  });
+});
+
+describe('registerEFactoryConverters terminal arm', () => {
+  const SIGNED_INT = rule('SIGNED_INT', true);
+  const FLOAT = rule('FLOAT', true);
+  const terminals = new Map([SIGNED_INT, FLOAT, WS].map((r) => [r.getName(), r] as const));
+  const lookup: RuleLookup = {
+    ...LOOKUP,
+    findRuleForName: (name) => terminals.get(name.replace(GRAMMAR, '')) ?? null,
+    getQualifiedName: (r) => GRAMMAR + r.getName(),
+    getTerminalRules: () => [
+      { rule: SIGNED_INT, dataType: Literals.EINT },
+      { rule: FLOAT, dataType: Literals.EDOUBLE },
+      { rule: WS, dataType: Literals.ESTRING },
+    ],
+  };
+  class Terminals extends AbstractDeclarativeValueConverterService {
+    constructor(configure: (service: Terminals) => void = () => undefined) {
+      super(lookup);
+      configure(this);
+    }
+
+    add(ruleName: string, converter: IValueConverter<unknown>): void {
+      this.register(ruleName, converter);
+    }
+  }
+
+  it('gives non-fragment terminals a DefaultTerminalConverter under simple and qualified names', () => {
+    const service = new Terminals();
+    const converter = service.getConverter('SIGNED_INT');
+    expect(converter).toBeInstanceOf(DefaultTerminalConverter);
+    // Java creates one converter per registered name
+    expect(service.getConverter(GRAMMAR + 'SIGNED_INT')).toBeInstanceOf(DefaultTerminalConverter);
+    expect(service.getConverter(GRAMMAR + 'SIGNED_INT')).not.toBe(converter);
+    expect(service.toValue('-7', 'SIGNED_INT', null)).toBe(-7);
+    expect(service.toValue('1.5', GRAMMAR + 'FLOAT', null)).toBe(1.5);
+    expect(service.toString(7, 'SIGNED_INT')).toBe('7');
+  });
+
+  it('skips fragment terminals', () => {
+    const service = new Terminals();
+    expect(service.getConverter('WS')).toBe(NO_OP_CONVERTER);
+    expect(service.getConverter(GRAMMAR + 'WS')).toBe(NO_OP_CONVERTER);
+  });
+
+  it('keeps an explicit converter for a terminal', () => {
+    const explicit = new RuleRecorder('explicit');
+    const service = new Terminals((s) => s.add('FLOAT', explicit));
+    expect(service.getConverter('FLOAT')).toBe(explicit);
+    expect(service.getConverter(GRAMMAR + 'FLOAT')).toBe(explicit);
+    expect(service.getConverter('SIGNED_INT')).toBeInstanceOf(DefaultTerminalConverter);
+  });
+
+  it('uses the configured factory', () => {
+    const service = new Terminals();
+    const factory = new Factory();
+    service.setDefaultTerminalConverterFactory(factory);
+    expect(service.getDefaultTerminalConverterFactory()).toBe(factory);
   });
 });

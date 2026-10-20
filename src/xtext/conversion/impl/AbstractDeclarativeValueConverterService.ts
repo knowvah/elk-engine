@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import type { EDataType } from '../../../emf/ecore/EDataType.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { IllegalStateException } from '../../../java/lang/IllegalStateException.js';
 import type { AbstractRule } from '../../AbstractRule.js';
@@ -6,6 +7,7 @@ import type { INode } from '../../nodemodel/INode.js';
 import { type IValueConverter, isRuleSpecific, NO_OP_CONVERTER } from '../IValueConverter.js';
 import type { Introspectable } from '../IValueConverterService.js';
 import { AbstractValueConverterService } from './AbstractValueConverterService.js';
+import { Factory as DefaultTerminalConverterFactory } from './DefaultTerminalConverter.js';
 import { EFactoryValueConverter } from './EFactoryValueConverter.js';
 
 /**
@@ -21,6 +23,14 @@ export interface RuleLookup {
    * `isDatatypeRule`), the one case of `registerEFactoryConverters` ELK reaches.
    */
   getEStringDatatypeRules(): readonly AbstractRule[];
+  /** `allTerminalRules(getGrammar())`, each with its `terminalRule.getType().getClassifier()` data type. */
+  getTerminalRules(): readonly TerminalRuleType[];
+}
+
+/** A terminal rule of the grammar paired with its `EDataType`. */
+export interface TerminalRuleType {
+  readonly rule: AbstractRule;
+  readonly dataType: EDataType;
 }
 
 interface Registration {
@@ -39,8 +49,8 @@ const QUALIFIER_SEPARATOR = '.';
  * {@link AbstractDeclarativeValueConverterService.beginClassLevel} before its own registrations so its
  * level outranks its superclass's (first registration of a name wins). The reflection failures logged by
  * `log.error`/`log.trace` have no counterpart; the `IllegalArgumentException` branch (logged and skipped)
- * is kept. The `DefaultTerminalConverter` fallback for terminal rules is not reached by ELK (see
- * `registerEFactoryConverters`) and is not ported.
+ * is kept. Java injects the `DefaultTerminalConverter.Factory`; here it defaults to one without a lexer and
+ * a subclass replaces it through {@link AbstractDeclarativeValueConverterService.setDefaultTerminalConverterFactory}.
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/conversion/impl/AbstractDeclarativeValueConverterService.java
  */
@@ -51,6 +61,7 @@ export abstract class AbstractDeclarativeValueConverterService
   readonly #rules: RuleLookup;
   readonly #registrations: Registration[] = [];
   #level = 0;
+  #defaultTerminalConverterFactory = new DefaultTerminalConverterFactory();
   // Java guards the lazy map with double-checked locking; the port is single-threaded.
   #converters: Map<string, IValueConverter<unknown>> | null = null;
 
@@ -182,15 +193,19 @@ export abstract class AbstractDeclarativeValueConverterService
 
   /**
    * Datatype rules without an explicit converter get an {@link EFactoryValueConverter}; ELK reaches only
-   * `EString` datatypes (`QualifiedId`). Terminal rules without a converter would get a
-   * `DefaultTerminalConverter` in Java: ELK has none (`SIGNED_INT`/`FLOAT` occur only inside the
-   * datatype rules `Number`/`NumberValue`, which have converters; `ANY_OTHER`, `WS` and comments are
-   * hidden or syntax errors), so the lookup falls back to the no-op converter for them.
+   * `EString` datatypes (`QualifiedId`). Every non-fragment terminal rule without a converter gets a
+   * `DefaultTerminalConverter` from the factory.
    */
   protected registerEFactoryConverters(converters: Map<string, IValueConverter<unknown>>): void {
     for (const parserRule of this.#rules.getEStringDatatypeRules()) {
       this.registerEFactoryIfMissing(parserRule.getName(), converters);
       this.registerEFactoryIfMissing(this.#rules.getQualifiedName(parserRule), converters);
+    }
+    for (const { rule, dataType } of this.#rules.getTerminalRules()) {
+      if (rule.isFragment?.() !== true) {
+        this.registerTerminalIfMissing(rule.getName(), rule, dataType, converters);
+        this.registerTerminalIfMissing(this.#rules.getQualifiedName(rule), rule, dataType, converters);
+      }
     }
   }
 
@@ -198,5 +213,24 @@ export abstract class AbstractDeclarativeValueConverterService
     if (!converters.has(name)) {
       converters.set(name, new EFactoryValueConverter());
     }
+  }
+
+  private registerTerminalIfMissing(
+    name: string,
+    terminalRule: AbstractRule,
+    dataType: EDataType,
+    converters: Map<string, IValueConverter<unknown>>,
+  ): void {
+    if (!converters.has(name)) {
+      converters.set(name, this.#defaultTerminalConverterFactory.create(terminalRule, dataType));
+    }
+  }
+
+  setDefaultTerminalConverterFactory(defaultTerminalConverterFactory: DefaultTerminalConverterFactory): void {
+    this.#defaultTerminalConverterFactory = defaultTerminalConverterFactory;
+  }
+
+  getDefaultTerminalConverterFactory(): DefaultTerminalConverterFactory {
+    return this.#defaultTerminalConverterFactory;
   }
 }

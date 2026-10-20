@@ -1,8 +1,13 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { AbstractRule } from '../../../../xtext/AbstractRule.js';
+import { Literals } from '../../../../emf/ecore/EcorePackage.js';
 import { DefaultTerminalConverters } from '../../../../xtext/common/services/DefaultTerminalConverters.js';
-import type { RuleLookup } from '../../../../xtext/conversion/impl/AbstractDeclarativeValueConverterService.js';
+import type {
+  RuleLookup,
+  TerminalRuleType,
+} from '../../../../xtext/conversion/impl/AbstractDeclarativeValueConverterService.js';
 import type { TokenSource } from '../../../../xtext/conversion/impl/AbstractLexerBasedConverter.js';
+import { Factory } from '../../../../xtext/conversion/impl/DefaultTerminalConverter.js';
 import { IDValueConverter } from '../../../../xtext/conversion/impl/IDValueConverter.js';
 import { INTValueConverter } from '../../../../xtext/conversion/impl/INTValueConverter.js';
 import { STRINGValueConverter } from '../../../../xtext/conversion/impl/STRINGValueConverter.js';
@@ -66,6 +71,12 @@ const INHERITED_TERMINALS: readonly AbstractRule[] = [
   ...['INT', 'STRING', 'ML_COMMENT', 'SL_COMMENT', 'WS', 'ANY_OTHER'].map((name) => rule(name, true)),
 ];
 
+/** The `EDataType` of each terminal rule's type: `ecore::EInt` / `ecore::EDouble` / `ecore::EString`. */
+const TERMINAL_TYPES: readonly TerminalRuleType[] = [
+  ...GRAMMAR_TERMINALS.map((r) => ({ rule: r, dataType: r.getName() === 'FLOAT' ? Literals.EDOUBLE : Literals.EINT })),
+  ...INHERITED_TERMINALS.map((r) => ({ rule: r, dataType: r.getName() === 'INT' ? Literals.EINT : Literals.ESTRING })),
+];
+
 function buildRuleTable(): ReadonlyMap<string, AbstractRule> {
   const table = new Map<string, AbstractRule>();
   for (const r of [...CONVERTED_DATATYPE_RULES, ...E_STRING_DATATYPE_RULES, ...GRAMMAR_TERMINALS]) {
@@ -86,6 +97,7 @@ export const ELK_GRAPH_JSON_RULES: RuleLookup = {
   findRuleForName: (name) => RULE_TABLE.get(name) ?? null,
   getQualifiedName: (r) => (INHERITED_TERMINALS.includes(r) ? TERMINALS_PREFIX : GRAMMAR_PREFIX) + r.getName(),
   getEStringDatatypeRules: () => E_STRING_DATATYPE_RULES,
+  getTerminalRules: () => TERMINAL_TYPES,
 };
 
 /**
@@ -103,6 +115,7 @@ export class ElkGraphJsonValueConverterService extends DefaultTerminalConverters
       new INTValueConverter(tokenSource),
       new STRINGValueConverter(tokenSource),
     );
+    this.setDefaultTerminalConverterFactory(new Factory(tokenSource));
     // The subclass level outranks DefaultTerminalConverters, as Java reflects the most derived class first.
     this.beginClassLevel();
     const propertyValue = new PropertyValueValueConverter();
