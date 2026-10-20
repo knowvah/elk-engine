@@ -26,13 +26,9 @@ import type { LazyProxyInformation } from './ILazyLinkingResource.js';
 import { DiagnosticMessageContext } from './LazyLinkingResourceDiagnosticContext.js';
 import { LazyLinkingResourceBase } from './LazyLinkingResourceBase.js';
 import { isMany } from './LazyLinkingMetamodel.js';
-import {
-  checkCanceled,
-  NULL_CANCEL_INDICATOR,
-  propagateAsErrorIfCancelException,
-  type CancelIndicator,
-} from './LazyLinkingResourceCancel.js';
-import { ExceptionDiagnostic } from './LazyLinkingResourceExceptionDiagnostic.js';
+import { ExceptionDiagnostic } from '../../diagnostics/ExceptionDiagnostic.js';
+import { checkCanceled, propagateAsErrorIfCancelException } from '../../service/OperationCanceledManager.js';
+import { NULL_CANCEL_INDICATOR, type CancelIndicator } from '../../util/CancelIndicator.js';
 import { CyclicLinkingException, tripleEquals, type LazyLinkingResourceMetamodel } from './LazyLinkingResourceTypes.js';
 import type { LazyURIEncoder } from './LazyURIEncoder.js';
 
@@ -72,7 +68,7 @@ export interface LazyLinkingResourceServices {
  * - `EcoreUtil.getAllContents(this, true)` walks the root contents and `eAllContents()`; containment
  *   lists resolve no proxies in the port.
  * - `WrappedException` is a `RuntimeException` with the original as cause; `OperationCanceledManager`
- *   is the functions in `LazyLinkingResourceCancel`; `CancelIndicator` likewise.
+ *   is the functions in `service/OperationCanceledManager`.
  * - The list `contains`/`remove` of Java use `equals`; `ResourceImpl`'s plain lists compare identity, so the
  *   diagnostic list operations here search with `Objects.equals`.
  * - Overloads are renamed: `getEObject(String, Triple)` is {@link getEObjectForTriple},

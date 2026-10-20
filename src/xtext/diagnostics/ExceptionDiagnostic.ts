@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: EPL-2.0
-import type { Diagnostic } from '../../diagnostics/Diagnostic.js';
+import type { Diagnostic } from './Diagnostic.js';
 
 const EXCEPTION_LENGTH = 1;
 const EXCEPTION_LINE = 1;
 
 /**
- * The error `LazyLinkingResource.getEObject(String)` adds when resolving a fragment throws. Lives here
- * (not in `xtext/diagnostics`) because T12d's write-set is the lazy-linking directory; it moves unchanged.
- * `getColumn`, `getColumnEnd`, `getLineEnd` and `getLocation` are not ported (no `Diagnostic` member of the
+ * The error `LazyLinkingResource.getEObject(String)` adds when resolving a fragment throws. `getColumn`, `getColumnEnd`, `getLineEnd` and `getLocation` are not ported (no `Diagnostic` member of the
  * port carries them). Java's `getSimpleName()` is the exception's `name`.
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/diagnostics/ExceptionDiagnostic.java

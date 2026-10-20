@@ -10,6 +10,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { BasicIndexOutOfBoundsException } from '../../src/emf/common/util/BasicIndexOutOfBoundsException.js';
+import { OperationCanceledException } from '../../src/equinox/core/runtime/OperationCanceledException.js';
 import { JsonImportException } from '../../src/graph/json/JsonImportException.js';
 import { SyntaxFailure } from '../../src/xtext/parser/SyntaxFailure.js';
 import { ElkGraphJsonSerializationError } from '../../src/graph/json/text/serializer/ElkGraphJsonSerializationError.js';
@@ -40,10 +41,7 @@ import { RegionTrace } from '../../src/xtext/formatting2/internal/RegionTrace.js
 import { RegionTraceMissingException } from '../../src/xtext/formatting2/internal/RegionTraceMissingException.js';
 import { RegionsOutsideFrameException } from '../../src/xtext/formatting2/internal/RegionsOutsideFrameException.js';
 import { IllegalNodeException } from '../../src/xtext/linking/impl/IllegalNodeException.js';
-import {
-  OperationCanceledError,
-  OperationCanceledException,
-} from '../../src/xtext/linking/lazy/LazyLinkingResourceCancel.js';
+import { OperationCanceledError } from '../../src/xtext/service/OperationCanceledError.js';
 import { CyclicLinkingException } from '../../src/xtext/linking/lazy/LazyLinkingResourceTypes.js';
 import { GuardException } from '../../src/xtext/validation/GuardException.js';
 

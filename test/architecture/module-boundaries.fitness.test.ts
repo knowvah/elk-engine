@@ -19,6 +19,7 @@ import {
 const JAVA_DIR = `${TS_ROOT}/java`;
 const GUAVA_DIR = `${TS_ROOT}/guava`;
 const EMF_DIR = `${TS_ROOT}/emf`;
+const EQUINOX_DIR = `${TS_ROOT}/equinox`;
 const GSON_DIR = `${TS_ROOT}/gson`;
 const XTEXT_DIR = `${TS_ROOT}/xtext`;
 const INDEX_FILE = `${TS_ROOT}/index.ts`;
@@ -33,8 +34,9 @@ const JS_SUFFIX = '.js';
  * - org.eclipse.xtext, org.eclipse.xtext.util -> src/xtext
  * - org.eclipse.xtext.xbase.lib, org.eclipse.xtend.lib -> no directory (Xtend library calls become
  *   plain TypeScript at the call site, docs/translation-rules.md section 8)
- * - org.antlr.runtime, org.eclipse.equinox.common -> no directory (G6: lexer/parser are hand-written;
- *   nothing from equinox is reached)
+ * - org.eclipse.equinox.common -> src/equinox (only OperationCanceledException, thrown by Xtext's
+ *   OperationCanceledManager; text-follow-ups D7)
+ * - org.antlr.runtime -> no directory (G6: lexer/parser are hand-written)
  * Only the graph.text and graph.json.text bundles require Xtext; src/index.ts stays exempt.
  */
 const XTEXT_CLIENT_BUNDLES: readonly string[] = ['src/graph/text', 'src/graph/json/text'];
@@ -90,13 +92,19 @@ function violationFor(file: string, target: string, deps: BundleDeps): string | 
       ? undefined
       : `${edge}: src/emf may import only src/emf, src/java and src/guava`;
   }
+  if (isUnder(file, EQUINOX_DIR)) {
+    return isUnder(target, EQUINOX_DIR) || isUnder(target, JAVA_DIR)
+      ? undefined
+      : `${edge}: src/equinox may import only src/equinox and src/java`;
+  }
   if (isUnder(file, XTEXT_DIR)) {
     return isUnder(target, XTEXT_DIR) ||
       isUnder(target, JAVA_DIR) ||
       isUnder(target, EMF_DIR) ||
-      isUnder(target, GUAVA_DIR)
+      isUnder(target, GUAVA_DIR) ||
+      isUnder(target, EQUINOX_DIR)
       ? undefined
-      : `${edge}: src/xtext may import only src/xtext, src/java, src/emf and src/guava`;
+      : `${edge}: src/xtext may import only src/xtext, src/java, src/emf, src/guava and src/equinox`;
   }
   if (
     isUnder(target, JAVA_DIR) ||
@@ -149,6 +157,7 @@ function unmappedFile(file: string, deps: BundleDeps): string | undefined {
     isUnder(file, JAVA_DIR) ||
     isUnder(file, GUAVA_DIR) ||
     isUnder(file, EMF_DIR) ||
+    isUnder(file, EQUINOX_DIR) ||
     isUnder(file, GSON_DIR) ||
     isUnder(file, XTEXT_DIR) ||
     bundleOf(file, deps) !== undefined;
@@ -492,6 +501,52 @@ describe('src/gson boundary (elk-json-adapter J1)', () => {
   });
 });
 
+describe('src/equinox boundary (text-follow-ups D7)', () => {
+  it('lets src/equinox import src/equinox and src/java', () => {
+    const source = [
+      "import { RuntimeException } from '../../../java/lang/RuntimeException.js';",
+      "import { Other } from './Other.js';",
+    ].join('\n');
+    expect(checkFile('src/equinox/core/runtime/OperationCanceledException.ts', source, committed)).toEqual([]);
+  });
+
+  it('forbids src/equinox importing src/xtext, naming both files', () => {
+    expect(
+      checkFile(
+        'src/equinox/core/runtime/OperationCanceledException.ts',
+        "import { X } from '../../../xtext/util/Strings.js';",
+        committed,
+      ),
+    ).toEqual([
+      'src/equinox/core/runtime/OperationCanceledException.ts -> src/xtext/util/Strings.ts: ' +
+        'src/equinox may import only src/equinox and src/java',
+    ]);
+  });
+
+  it('lets src/xtext and src/index.ts import src/equinox', () => {
+    const imp = "import { E } from '../../equinox/core/runtime/OperationCanceledException.js';";
+    expect(checkFile('src/xtext/service/OperationCanceledManager.ts', imp, committed)).toEqual([]);
+    expect(
+      checkFile('src/index.ts', "export * from './equinox/core/runtime/OperationCanceledException.js';", committed),
+    ).toEqual([]);
+  });
+
+  it('forbids bundles, src/java and src/guava importing src/equinox', () => {
+    const imp = "import { E } from '../equinox/core/runtime/OperationCanceledException.js';";
+    expect(checkFile('src/core/X.ts', imp, committed)).toEqual([
+      'src/core/X.ts -> src/equinox/core/runtime/OperationCanceledException.ts: ' +
+        'unmapped directory for src/equinox/core/runtime/OperationCanceledException.ts',
+    ]);
+    expect(checkFile('src/java/util/A.ts', "import { E } from '../../equinox/core/runtime/E.js';", committed)).toEqual([
+      'src/java/util/A.ts -> src/equinox/core/runtime/E.ts: src/java may import only src/java',
+    ]);
+  });
+
+  it('does not treat src/equinox as an unmapped directory', () => {
+    expect(unmappedFile('src/equinox/core/runtime/OperationCanceledException.ts', committed)).toBeUndefined();
+  });
+});
+
 describe('src/xtext boundary (graph-text T6)', () => {
   it('lets src/xtext import src/xtext, src/java, src/emf and src/guava', () => {
     const source = [
@@ -504,7 +559,7 @@ describe('src/xtext boundary (graph-text T6)', () => {
   });
 
   it('forbids src/xtext importing src/graph or src/core', () => {
-    const suffix = 'src/xtext may import only src/xtext, src/java, src/emf and src/guava';
+    const suffix = 'src/xtext may import only src/xtext, src/java, src/emf, src/guava and src/equinox';
     expect(checkFile('src/xtext/X.ts', "import { N } from '../graph/ElkNode.js';", committed)).toEqual([
       `src/xtext/X.ts -> src/graph/ElkNode.ts: ${suffix}`,
     ]);
