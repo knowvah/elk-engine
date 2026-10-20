@@ -264,9 +264,9 @@ function connectionCount(c: RecordedConnection): number {
 const LINK_MESSAGE = /^Couldn't resolve reference to \w+ '(.*)'\.$/s;
 
 describe('ElkGraphParser: replay of the recorded JVM parse cases (without linking)', () => {
-  it('replays 301 recorded cases, 99 of them with syntax errors', () => {
-    expect(cases).toHaveLength(301);
-    expect(syntaxCases).toHaveLength(99);
+  it('replays 305 recorded cases, 101 of them with syntax errors', () => {
+    expect(cases).toHaveLength(305);
+    expect(syntaxCases).toHaveLength(101);
   });
 
   describe.each(exactCases.map((c) => [c.id, c] as const))('%s', (_id, c) => {

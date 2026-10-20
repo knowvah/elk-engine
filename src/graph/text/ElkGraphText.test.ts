@@ -56,9 +56,9 @@ beforeEach(() => {
 });
 
 describe('ElkGraphText.load: replay of the recorded JVM cases', () => {
-  it('covers 301 cases, 99 with syntax errors', () => {
-    expect(cases).toHaveLength(301);
-    expect(syntactic).toHaveLength(99);
+  it('covers 305 cases, 101 with syntax errors', () => {
+    expect(cases).toHaveLength(305);
+    expect(syntactic).toHaveLength(101);
   });
 
   describe.each(exact.map((c) => [c.id, c] as const))('%s', (_id, c) => {
