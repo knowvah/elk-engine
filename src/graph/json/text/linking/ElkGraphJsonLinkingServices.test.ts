@@ -21,6 +21,9 @@ import {
 } from './ElkGraphJsonLinkingServices.js';
 import { ElkGraphJsonLazyLinker } from './ElkGraphJsonLazyLinker.js';
 import { ElkGraphJsonReferences } from './ElkGraphJsonReferences.js';
+import { QualifiedName } from '../../../../xtext/naming/QualifiedName.js';
+import type { EReferenceInfo } from '../../../../xtext/scoping/EReferenceInfo.js';
+import { ElkGraphUtil } from '../../../util/ElkGraphUtil.js';
 import { LazyURIEncoder } from '../../../../xtext/linking/lazy/LazyURIEncoder.js';
 
 const SERVICES = new ElkGraphJsonValueConverterService();
@@ -102,6 +105,7 @@ describe('the diagnostic consumer handed to the linker', () => {
   it('files errors and warnings in the matching resource list', () => {
     let linker: Reporting | undefined;
     const reporting: ElkGraphJsonLinking = {
+      createScoping: LINKING.createScoping,
       createResource: (uri) => LINKING.createResource(uri),
       createLinker: (nodeModel: INodeModel) =>
         (linker = new Reporting(new ElkGraphJsonReferences(), nodeModel, new LazyURIEncoder({} as never, true))),
@@ -110,5 +114,36 @@ describe('the diagnostic consumer handed to the linker', () => {
     const messages = (list: Iterable<ResourceDiagnostic>): (string | null)[] => [...list].map((d) => d.getMessage());
     expect([messages(resource.getErrors()), messages(resource.getWarnings())]).toEqual([['m'], ['m']]);
     expect(linker?.seen).toEqual([false, false, true, true]);
+  });
+});
+
+describe('the scope bindings', () => {
+  const SHAPES = new Set(['ElkNode', 'ElkPort']);
+  const SOURCES: EReferenceInfo = {
+    name: 'sources',
+    referenceType: { name: 'ElkConnectableShape', isAssignableFrom: (n) => SHAPES.has(n) },
+    upperBound: -1,
+    unique: true,
+    containment: false,
+    container: false,
+    derived: false,
+    changeable: true,
+    transient: false,
+  };
+  const ONE_NODE_ONE_EDGE = '{"id":"g","children":[{"id":"a"}],"edges":[{"id":"e","sources":["a"],"targets":["a"]}]}';
+
+  it('keep the cache lifetime of a load: a provider keeps the scope it cached, so each use takes a new one', () => {
+    const root = loadParsedModel(parse(ONE_NODE_ONE_EDGE, SERVICES), LINKING).getContents().get(0) as ElkNode;
+    const edge = root.getContainedEdges().get(0) as ElkEdge;
+    const b = QualifiedName.create('b');
+    const loaded = LINKING.createScoping();
+    expect(loaded.scopeProvider.getScope(edge, SOURCES).getSingleElement(QualifiedName.create('a'))).not.toBeNull();
+    expect(loaded.scopeProvider.getScope(edge, SOURCES).getSingleElement(b)).toBeNull();
+    ElkGraphUtil.createNode(root).setIdentifier('b');
+    // Java's OnChangeEvictingCache would have dropped the scope here; this port's cache never evicts
+    expect(loaded.scopeProvider.getScope(edge, SOURCES).getSingleElement(b)).toBeNull();
+    const serializing = LINKING.createScoping();
+    expect(serializing.scopeProvider).not.toBe(loaded.scopeProvider);
+    expect(serializing.scopeProvider.getScope(edge, SOURCES).getSingleElement(b)?.getName().toString()).toBe('b');
   });
 });
