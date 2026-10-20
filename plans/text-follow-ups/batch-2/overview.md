@@ -6,6 +6,6 @@ After batch 1b (needs T4's `EFactory` contract). One task.
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| [T8](T8-f1b-terminal-converters.md) | F1b: `DefaultTerminalConverter`, terminal registration in `registerEFactoryConverters`, both ELK services, replay of 78 rows | typescript-pro | see task | T4 | [ ] |
+| [T8](T8-f1b-terminal-converters.md) | F1b: `DefaultTerminalConverter`, terminal registration in `registerEFactoryConverters`, both ELK services, replay of 78 rows | typescript-pro | see task | T4 | [x] |
 
 Batch gate: README "Quality gates".
