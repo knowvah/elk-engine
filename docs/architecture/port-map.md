@@ -199,11 +199,12 @@ Not counted in the Summary. `src/guava` and `src/gson` are minimal subsets writt
 vectors only, and a fitness rule limits their imports to themselves and `src/java`. `src/xtext` is
 EPL-2.0 and is written from the Xtext source; its rule is in [elk-text.md](elk-text.md#file-map).
 
-| TS directory | Library                                     | Scope                                                                                                                                   |
-| ------------ | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/guava`  | Guava (`com.google.common`)                 | helpers and collections the ported bundles call; AD-10                                                                                  |
-| `src/gson`   | Gson 2.11.0 (`com.google.gson`)             | what `graph.json` calls (J1); see [elk-json.md](elk-json.md#gson-subset)                                                                |
-| `src/xtext`  | Xtext 2.36.0 (`org.eclipse.xtext`, EPL-2.0) | what `graph.text` and `graph.json.text` call; see [elk-text.md](elk-text.md#file-map) and [elk-json-text.md](elk-json-text.md#file-map) |
+| TS directory  | Library                                       | Scope                                                                                                                                                                                 |
+| ------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/guava`   | Guava (`com.google.common`)                   | helpers and collections the ported bundles call; AD-10                                                                                                                                |
+| `src/gson`    | Gson 2.11.0 (`com.google.gson`)               | what `graph.json` calls (J1); see [elk-json.md](elk-json.md#gson-subset)                                                                                                              |
+| `src/equinox` | Equinox (`org.eclipse.core.runtime`, EPL-2.0) | what Xtext calls: `OperationCanceledException` (`OperationCanceledManager` imports it); imports only `src/equinox` and `src/java`, importable by `src/xtext` (text-follow-ups T5, D7) |
+| `src/xtext`   | Xtext 2.36.0 (`org.eclipse.xtext`, EPL-2.0)   | what `graph.text` and `graph.json.text` call; see [elk-text.md](elk-text.md#file-map) and [elk-json-text.md](elk-json-text.md#file-map)                                               |
 
 ## `graph.text` → `src/graph/text/`
 

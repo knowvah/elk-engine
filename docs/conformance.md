@@ -400,6 +400,16 @@ lossy identically). The largest model (`realworld/ptolemy/hierarchical/de_trilat
 a value such as `say "hi"` is written bare and does not re-parse. The port reproduces this (ELK behaviour kept);
 the T5 vectors and the sweep agree byte for byte.
 
+**Converter rows and diagnostic lines (text-follow-ups T2, T8).** The `.elkt` converter service replays 33 more
+lexer rows (the `SIGNED_INT`, `FLOAT`, `ML_COMMENT`, `SL_COMMENT`, `ANY_OTHER` and `WS` terminals) through
+`DefaultTerminalConverter` and the `EcoreFactoryImpl` EInt/EDouble/EString arms. Diagnostic lines of `.elkt` now
+follow Xtext's node model like `.elkj` (a lone CR counts as a line break): the parser passes
+`nodeModelLineSource(text)` and the reference lines in `ElkGraphParserEdges.ts` use `cursor.lineOf`. Evidence: 4 new
+JVM scenarios (`link-cr-line-numbers`, `link-crlf-line-numbers`, `err-syntax-cr-line-number`,
+`err-syntax-crlf-line-number`); `graph-text-parse.json` 301 to 305 cases (syntax-error cases 99 to 101), linking
+diagnostic cases in `ElkGraphLinker.test.ts` 47 to 51, no existing row changed. Property keys
+(`ElkGraphParser.ts`, `#parsePropertyKey`) still use the ANTLR token line (follow-up F7).
+
 **Regenerate.** `tools/oracle/elkt-sweep.sh [--force]` writes `$ELK_ORACLE_DIR/sweep/elkt-<elkCommit>-<modelsCommit>/`
 (`parse/`, `parse-json/`, `validate/`, `write/`, `results.jsonl`, `summary.json`; never in the repo, AD-5) and
 skips when the stamp (oracle build, harness and tool sources, models commit, input hashes) is fresh. Then
@@ -463,13 +473,16 @@ Xtext error messages embed the output URI, and `ElkjSweep.java` normalises the d
   `.elkj` exporter hits an unresolved proxy and the oracle throws a message-less `NullPointerException`; the port
   throws a message-less `IllegalArgumentException`, with the single recorded diagnostic left on the resource
   (30 parse rows, 1 curated entry). Linking diagnostics themselves are exact.
-- **Converter rows not replayed.** 3 type-erasure rows (`Number.toString(int:1)`,
-  `StringValue.toString(float:2.0)` as in `.elkt`, `INT.toString(double:1.5)`) and 45 SIGNED_INT/FLOAT rows that
-  need Xtext's `DefaultTerminalConverter`, which is unported and unreachable from the grammar. Open; porting it
-  needs a task with `src/xtext` in its write-set.
+- **Converter rows: 5 not replayed.** Closed for the SIGNED_INT/FLOAT/comment/`ANY_OTHER` terminals (follow-up F1,
+  text-follow-ups T4 and T8): `DefaultTerminalConverter` and the `EcoreFactoryImpl` datatype arms are ported
+  (D6), so 43 of the 45 new `.elkj` rows now replay through the services (78 new rows in all: 33 `.elkt`, 45
+  `.elkj`; 76 replay). The skipped set (`UNREPRESENTABLE_ROWS`) is 5 rows, each needing a Java box type a `number`
+  cannot carry: `Number.toString(int:1)`, `StringValue.toString(float:2.0)` as in `.elkt`,
+  `INT.toString(double:1.5)`, and, by user decision in T8, `FLOAT.toString(float:1.5)` (a `Float` is not `equals`
+  the reparsed `Double`) and `FLOAT.toString(int:1)` (an `Integer` prints `1`, which lexes as `SIGNED_INT`).
 - **Diagnostic lines versus token lines.** Diagnostics follow Xtext's node model (LF, lone CR, CRLF;
-  `InternalNodeModelUtils.computeLineBreaks`); token rows follow ANTLR (LF only). `.elkj` passes the node-model
-  `LineSource`, `.elkt` keeps `token.line`. Where Java's `charAt(offset)` would throw at a text-final `\r`, the
+  `InternalNodeModelUtils.computeLineBreaks`); token rows follow ANTLR (LF only). Both languages pass the node-model
+  `LineSource` (`.elkt` since text-follow-ups T2, F2; see section 7). Where Java's `charAt(offset)` would throw at a text-final `\r`, the
   port treats the character as not `\n`.
 - **`EObjectValidator` once.** `.elkj` has no registry default, so the registrar's `validator == null` branch
   builds a fresh composite holding one `EObjectValidator`, and each EMF constraint is reported once (code
@@ -494,7 +507,11 @@ Xtext error messages embed the output URI, and `ElkjSweep.java` normalises the d
 - **Oracle conversions mostly do not reparse in the oracle itself.** Its serializer writes bare dotted option
   keys, `null` values, NaN, `4.9E-324` and unescaped quotes, and fails on edge sections and KVectorChain/List
   values; hence the 200 presence rows of `tier1-parse-equal`.
-- **`ElkNodeImpl.toString` proxy arm** is not ported (no code or test prints a proxy through `edge.toString()`).
+- **Proxy `toString` (text-follow-ups T3, F4; amends elkgraph-model D10).** The generated `toString` arms
+  (`if (eIsProxy()) return super.toString();`, 9 `*Impl` classes including `ElkNodeImpl`) print EMF's
+  ` (eProxyURI: <uri>)` suffix after the hashless class name; Java also prints `@<identityHash>`, which the
+  vector recorder strips (`@<hex>` before `(eProxyURI:`) so the rows compare exactly. Evidence: scenarios
+  `proxy-to-string` and `proxy-to-string-edge-with-proxy-source` in `graph.json` (42 scenarios, 674 steps).
 
 No ELK prose typo was corrected in this mission, so nothing is listed under "upstream typos".
 
