@@ -19,7 +19,8 @@
 // message}) when it threw, then the snapshot taken after the step:
 //   state        -- every element created so far, in creation order: {class (eClass name), container
 //                   (eContainer id | null), per-class scalars, lists (ids), toString (ElkNode, ElkPort,
-//                   ElkEdge, ElkLabel only; null for identity-hashed toString, D10)};
+//                   ElkEdge, ElkLabel, and any proxy; the identity hash "@<hex>" of a proxy's EMF toString,
+//                   also inside an edge's endpoint list, is stripped, D5; null otherwise, D10)};
 //   allContents  -- eAllContents() ids for every node and every other element with contents; property-map
 //                   entries appear as "<holderId>#<propertyId>"; null when the walk revisits an element
 //                   (EList.add into a containment list skips the recursion check, so cycles are possible);
@@ -47,15 +48,18 @@ import org.eclipse.elk.graph.util.ElkGraphUtil;
 import org.eclipse.elk.graph.util.GraphIdentifierGenerator;
 import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.InternalEObject;
 
 public class GraphVectors {
     private static final String JDK = System.getProperty("java.version");
     private static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
     private static final String NULL_TOKEN = "~", ARG_SEP = ",", LIST_SEP = " ", SCENARIO = "scenario ";
     private static final String COMMENT = "#", ENTRY_CLASS = "ElkPropertyToValueMapEntry";
+    private static final String PROXY_HASH = "@[0-9a-f]+(?= \\(eProxyURI: )";
     private static final Object VOID = new Object();
     private static final int FLAT_DEPTH = 6, HEX_RADIX = 16, HEX_WIDTH = 4;
     private static final Map<String, Op> OPS = new HashMap<>();
@@ -64,14 +68,14 @@ public class GraphVectors {
         "ElkLabel", new String[] {"identifier", "text", "x", "y", "width", "height"},
         "ElkEdge", new String[] {"identifier"},
         "ElkEdgeSection", new String[] {"identifier", "startX", "startY", "endX", "endY", "incomingShape", "outgoingShape"},
-        "ElkBendPoint", new String[] {"x", "y"});
+        "ElkBendPoint", new String[] {"x", "y"}, ENTRY_CLASS, new String[] {});
     private static final Map<String, String[]> LISTS = Map.of(
         "ElkNode", new String[] {"labels", "ports", "children", "containedEdges", "outgoingEdges", "incomingEdges"},
         "ElkPort", new String[] {"labels", "outgoingEdges", "incomingEdges"},
         "ElkLabel", new String[] {"labels"},
         "ElkEdge", new String[] {"labels", "sources", "targets", "sections"},
         "ElkEdgeSection", new String[] {"bendPoints", "outgoingSections", "incomingSections"},
-        "ElkBendPoint", new String[] {});
+        "ElkBendPoint", new String[] {}, ENTRY_CLASS, new String[] {});
     private static final Set<String> WITH_TO_STRING = Set.of("ElkNode", "ElkPort", "ElkEdge", "ElkLabel");
     private static final Comparator<ElkNode> BY_IDENTIFIER_DESC = (x, y) -> y.getIdentifier().compareTo(x.getIdentifier());
 
@@ -140,6 +144,8 @@ public class GraphVectors {
             a -> ElkGraphUtil.createHyperedge(a.shapes("sources"), a.shapes("targets")));
         make("createEdgeSection", "id,edge", a -> ElkGraphUtil.createEdgeSection(a.edge("edge")));
         make("createBendPoint", "id,section,x:d?,y:d?", GraphVectors::createBendPoint);
+        make("createPropertyEntry", "id",
+            a -> ElkGraphFactory.eINSTANCE.create(ElkGraphPackage.Literals.ELK_PROPERTY_TO_VALUE_MAP_ENTRY));
     }
 
     private static void setterOps() {
@@ -154,6 +160,7 @@ public class GraphVectors {
         eff("setEndLocation", "section,x:d,y:d", a -> a.section("section").setEndLocation(a.d("x"), a.d("y")));
         eff("setIncomingShape", "section,shape", a -> a.section("section").setIncomingShape(a.shape("shape")));
         eff("setOutgoingShape", "section,shape", a -> a.section("section").setOutgoingShape(a.shape("shape")));
+        eff("setProxyUri", "element,uri:s", a -> ((InternalEObject) a.el("element")).eSetProxyURI(URI.createURI(a.str("uri"))));
     }
 
     private static void listOps() {
@@ -407,7 +414,7 @@ public class GraphVectors {
             lists.put(f, value(ctx, o.eGet(feature(o, f))));
         }
         r.put("lists", lists);
-        r.put("toString", WITH_TO_STRING.contains(cls) ? o.toString() : null);
+        r.put("toString", o.eIsProxy() || WITH_TO_STRING.contains(cls) ? o.toString().replaceAll(PROXY_HASH, "") : null);
         return r;
     }
 

@@ -264,12 +264,14 @@ export abstract class BasicEObjectImpl implements InternalEObject {
   }
 
   /**
-   * EMF appends `'@' + Integer.toHexString(hashCode())` and, for proxies, the proxy URI; the port
-   * has neither (decision D10).
+   * EMF's `getClass().getName() + '@' + Integer.toHexString(hashCode())` followed, for a proxy, by
+   * ` (eProxyURI: <uri>)`. The port has no identity hash (decisions D10, D5), so the class name
+   * stands alone and the proxy suffix is EMF's.
    *
    * @see org.eclipse.emf.ecore.impl.BasicEObjectImpl#toString()
    */
   toString(): string {
-    return this.javaClassName();
+    const uri = this.eProxyURI();
+    return uri === null ? this.javaClassName() : `${this.javaClassName()} (eProxyURI: ${uri.toString()})`;
   }
 }

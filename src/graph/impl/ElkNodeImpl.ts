@@ -16,7 +16,7 @@ import { ElkConnectableShapeImpl } from './ElkConnectableShapeImpl.js';
 /**
  * An implementation of the model object '<em><b>Elk Node</b></em>'.
  * Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications (incl. the `else eNotify`
- * arm of `setParent`), the `eIsProxy()` arm of `toString` (no proxies). The `NotificationChain`
+ * arm of `setParent`), The `NotificationChain`
  * returns are dropped with `src/emf`'s.
  *
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkNodeImpl.java
@@ -185,6 +185,7 @@ export class ElkNodeImpl extends ElkConnectableShapeImpl implements ElkNode {
    * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkNodeImpl.java
    */
   override toString(): string {
+    if (this.eIsProxy()) return super.toString();
     let builder = 'ElkNode';
     const id = this.getIdentifier();
     if (!Strings.isNullOrEmpty(id)) {

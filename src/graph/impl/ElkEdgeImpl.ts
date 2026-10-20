@@ -20,9 +20,7 @@ import { ElkGraphElementImpl } from './ElkGraphElementImpl.js';
  * An implementation of the model object '<em><b>Elk Edge</b></em>'. `sources`/`targets` are
  * `EObjectWithInverseResolvingEList.ManyInverse` as in Java (D13): `get` resolves proxy endpoints.
  * Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications (incl. the `else eNotify` arm
- * of `setContainingNode`). The `eIsProxy()` arm of `toString` is not ported: proxies are always
- * `ElkNode`s (never edges), and under D10 `super.toString()` would only differ from the regular
- * output for the proxy `ElkNode` itself, whose arm belongs to `ElkNodeImpl`.
+ * of `setContainingNode`).
  *
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkEdgeImpl.java
  */
@@ -219,6 +217,7 @@ export class ElkEdgeImpl extends ElkGraphElementImpl implements ElkEdge {
    * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkEdgeImpl.java
    */
   override toString(): string {
+    if (this.eIsProxy()) return super.toString();
     let builder = 'ElkEdge';
     const id = this.getIdentifier();
     if (!Strings.isNullOrEmpty(id)) {

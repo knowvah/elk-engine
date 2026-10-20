@@ -20,8 +20,7 @@ function stringValueOf(o: unknown): string {
 
 /**
  * An implementation of the model object '<em><b>Elk Property To Value Map Entry</b></em>'.
- * Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications, the `eIsProxy()` arm of
- * `toString` (no proxies).
+ * Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications.
  *
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkPropertyToValueMapEntryImpl.java
  */
@@ -88,6 +87,7 @@ export class ElkPropertyToValueMapEntryImpl
 
   /** @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkPropertyToValueMapEntryImpl.java */
   override toString(): string {
+    if (this.eIsProxy()) return super.toString();
     return `${this.key !== null ? this.key.getId() : 'null'} -> ${stringValueOf(this.value)}`;
   }
 

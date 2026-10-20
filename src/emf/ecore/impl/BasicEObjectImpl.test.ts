@@ -190,6 +190,14 @@ describe('BasicEObjectImpl toString', () => {
     expect(new Node('n').toString()).toBe('org.eclipse.elk.graph.impl.ElkNodeImpl');
     expect(String(new Port('p'))).toBe('org.eclipse.elk.graph.impl.ElkPortImpl');
   });
+
+  it('appends the proxy URI for a proxy (D5) and drops it when the proxy URI is cleared', () => {
+    const node = new Node('n');
+    node.eSetProxyURI(URI.createURI('file:/a.elkj#|0'));
+    expect(node.toString()).toBe('org.eclipse.elk.graph.impl.ElkNodeImpl (eProxyURI: file:/a.elkj#|0)');
+    node.eSetProxyURI(null);
+    expect(node.toString()).toBe('org.eclipse.elk.graph.impl.ElkNodeImpl');
+  });
 });
 
 describe('BasicEObjectImpl proxies', () => {

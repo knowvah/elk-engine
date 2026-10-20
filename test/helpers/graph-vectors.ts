@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { ECollections } from '../../src/emf/common/util/ECollections.js';
 import type { EList } from '../../src/emf/common/util/EList.js';
+import { URI } from '../../src/emf/common/util/URI.js';
 import type { InternalEObject } from '../../src/emf/ecore/InternalEObject.js';
 import { BasicEObjectImpl } from '../../src/emf/ecore/impl/BasicEObjectImpl.js';
 import { type EMapPropertyHolder, isEMapPropertyHolder } from '../../src/graph/EMapPropertyHolder.js';
@@ -211,6 +212,7 @@ const SCALARS: Readonly<Record<string, readonly string[]>> = {
   ElkEdge: ['identifier'],
   ElkEdgeSection: ['identifier', 'startX', 'startY', 'endX', 'endY', 'incomingShape', 'outgoingShape'],
   ElkBendPoint: ['x', 'y'],
+  ElkPropertyToValueMapEntry: [],
 };
 const LISTS: Readonly<Record<string, readonly string[]>> = {
   ElkNode: ['labels', 'ports', 'children', 'containedEdges', 'outgoingEdges', 'incomingEdges'],
@@ -219,6 +221,7 @@ const LISTS: Readonly<Record<string, readonly string[]>> = {
   ElkEdge: ['labels', 'sources', 'targets', 'sections'],
   ElkEdgeSection: ['bendPoints', 'outgoingSections', 'incomingSections'],
   ElkBendPoint: [],
+  ElkPropertyToValueMapEntry: [],
 };
 const WITH_TO_STRING: ReadonlySet<string> = new Set(['ElkNode', 'ElkPort', 'ElkEdge', 'ElkLabel']);
 
@@ -315,6 +318,7 @@ const CREATION_OPS: OpTable = {
       ? ElkGraphUtil.createBendPoint(a.section('section'), a.num('x'), a.num('y'))
       : ElkGraphUtil.createBendPoint(a.section('section')),
   ),
+  createPropertyEntry: make(() => new ElkPropertyToValueMapEntryImpl()),
 };
 
 const SETTER_OPS: OpTable = {
@@ -328,6 +332,7 @@ const SETTER_OPS: OpTable = {
   setEndLocation: eff((a) => a.section('section').setEndLocation(a.num('x'), a.num('y'))),
   setIncomingShape: eff((a) => a.section('section').setIncomingShape(a.shape('shape'))),
   setOutgoingShape: eff((a) => a.section('section').setOutgoingShape(a.shape('shape'))),
+  setProxyUri: eff((a) => a.el('element').eSetProxyURI(URI.createURI(a.str('uri')))),
 };
 
 const LIST_OPS: OpTable = {
@@ -419,7 +424,7 @@ function record(ctx: ReplayContext, o: InternalEObject): Record<string, unknown>
       .map((x) => ctx.id(x));
   }
   r['lists'] = lists;
-  r['toString'] = WITH_TO_STRING.has(cls) ? o.toString() : null;
+  r['toString'] = o.eIsProxy() || WITH_TO_STRING.has(cls) ? o.toString() : null;
   return r;
 }
 

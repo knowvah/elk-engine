@@ -15,7 +15,7 @@ const NO_CONTAINMENTS: ReadonlyArray<EList<InternalEObject>> = [];
  * An implementation of the model object '<em><b>Elk Bend Point</b></em>'. Java extends
  * `MinimalEObjectImpl.Container`. A section contains its bend points without an opposite, so the
  * base `eInverseAdd`/`eInverseRemove` handle containment. Not ported (D4): `eGet`, `eSet`,
- * `eUnset`, `eIsSet`, notifications, the `eIsProxy()` arm of `toString` (no proxies).
+ * `eUnset`, `eIsSet`, notifications.
  *
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkBendPointImpl.java
  */
@@ -76,6 +76,7 @@ export class ElkBendPointImpl extends BasicEObjectImpl implements ElkBendPoint {
 
   /** @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkBendPointImpl.java */
   override toString(): string {
+    if (this.eIsProxy()) return super.toString();
     return `${super.toString()} (x: ${doubleToString(this.x)}, y: ${doubleToString(this.y)})`;
   }
 

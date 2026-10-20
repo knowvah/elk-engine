@@ -12,7 +12,7 @@ import { ElkShapeImpl } from './ElkShapeImpl.js';
 /**
  * An implementation of the model object '<em><b>Elk Label</b></em>'.
  * Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications (incl. the `else eNotify`
- * arm of `setParent`), the `eIsProxy()` arm of `toString` (no proxies). The `NotificationChain`
+ * arm of `setParent`), The `NotificationChain`
  * returns are dropped with `src/emf`'s.
  *
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkLabelImpl.java
@@ -116,6 +116,7 @@ export class ElkLabelImpl extends ElkShapeImpl implements ElkLabel {
    * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkLabelImpl.java
    */
   override toString(): string {
+    if (this.eIsProxy()) return super.toString();
     let builder = 'ElkLabel';
     // Label text
     if (!(this.text === null || this.text === '')) {
