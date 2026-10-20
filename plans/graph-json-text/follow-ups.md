@@ -24,6 +24,7 @@ date here when one does; never delete a row).
 | F4 | `ElkNodeImpl.toString` proxy arm (Java prints a proxy via `super.toString()`); only observable through `edge.toString()` over a proxy endpoint | journal T12e | open |
 | F5 | Fuller `.elkj` sweep: sample 6 larger graphs instead of ~40 (D2 amendment); `tools/oracle/elkj-sweep.sh --sample N --sample-max BYTES` as an overnight job | journal T17 | open |
 | F6 | Optional: make `ElkjRoundTripVectors` reload from the `String` (not `getBytes(UTF_8)`) so lone surrogates are not turned into `?`, re-record, drop the test-side transport | journal T16b2 | open |
+| F7 | `.elkt` property-key line: `ElkGraphParser.#parsePropertyKey` (`src/graph/text/parser/ElkGraphParser.ts:231`) still returns the raw ANTLR `first.line` (LF only) where the other reference sites now use `cursor.lineOf` (text-follow-ups T2). Record a JVM vector with a lone CR before a diagnostic on a property key first (AD-13), then route it through the cursor | text-follow-ups journal T2 (STOP 1, user decision 2026-10-20: left out of T2) | open |
 
 ## After landing — cleanups and tooling
 
