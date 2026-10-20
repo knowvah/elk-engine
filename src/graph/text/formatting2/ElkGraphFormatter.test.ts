@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: EPL-2.0
 // Replays test/golden/refs/java/graph-text-write.json (T5): the serializer's token stream, rendered through
-// ElkGraphFormatter, must equal the recorded `formatted` and `unformatted` text byte for byte.
+// ElkGraphFormatter, must equal the recorded `formatted` and `unformatted` text byte for byte. As the recorder, the
+// input is `EcoreUtil.copy`'d first; error rows throw the class recorded (the repeated-reference rows fail in the copy,
+// F3).
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { buildWriteInput, JAVA_SCENARIOS } from '../../../../test/helpers/elkt-write-cases.js';
+import { buildWriteInput, JAVA_SCENARIOS, recordedErrorClass } from '../../../../test/helpers/elkt-write-cases.js';
 import '../../impl/ElkGraphFactoryImpl.js';
 import type { ElkNode } from '../../ElkNode.js';
-import { ElkGraphSerializationError } from '../serializer/ElkGraphSerializationError.js';
+import { copyGraph } from '../../util/ElkGraphCopy.js';
 import { ElkGraphSerializer } from '../serializer/ElkGraphSerializer.js';
 
 const REF = fileURLToPath(new URL('../../../../test/golden/refs/java/graph-text-write.json', import.meta.url));
@@ -24,8 +26,9 @@ interface RecordedCase {
 
 const cases = (JSON.parse(readFileSync(REF, 'utf8')) as { cases: RecordedCase[] }).cases;
 
+/** The recorder's input: `EcoreUtil.copy(root)` of the scenario graph (ElktWriteVectors.serialize). */
 function build(c: RecordedCase): ElkNode {
-  return buildWriteInput(c.source, c.id);
+  return copyGraph(buildWriteInput(c.source, c.id));
 }
 
 import { ExceptionAcceptor } from '../../../xtext/formatting2/ExceptionAcceptor.js';
@@ -56,8 +59,8 @@ describe('ElkGraphFormatter against the recorded writer vectors', () => {
     expect(recorded.every((id) => id.startsWith(JAVA_PREFIX))).toBe(true);
   });
 
-  it('replays 113 recorded cases, 106 written and 7 failing', () => {
-    expect([cases.length, written.length, failing.length]).toEqual([113, 106, 7]);
+  it('replays 116 recorded cases, 106 written and 10 failing', () => {
+    expect([cases.length, written.length, failing.length]).toEqual([116, 106, 10]);
   });
 
   it.each(written.map((c) => [c.id, c] as const))('%s: formatted text is byte-exact', (_id, c) => {
@@ -72,7 +75,8 @@ describe('ElkGraphFormatter against the recorded writer vectors', () => {
   );
 
   it.each(failing.map((c) => [c.id, c] as const))('%s: serialisation fails', (_id, c) => {
-    expect(() => serializeFormatted(build(c))).toThrow(ElkGraphSerializationError);
+    const cls = (c.formatted as Exclude<RecordedText, string>).error.cls;
+    expect(() => serializeFormatted(build(c))).toThrow(recordedErrorClass(cls));
   });
 });
 

@@ -44,6 +44,13 @@
 //   java-property-null-value           R > node n; n.getProperties().put(new Property<Object>("my.custom"), null).
 //   java-property-proxy-resolvable     R > node n; n.getProperties().put(CoreOptions.PRIORITY, new LayoutOptionProxy("5")).
 //   java-property-key-keyword         R > node n; n.getProperties().put(new Property<Object>("my.node.k"), "v").
+//   java-edge-repeated-source          R > node a, node b, edge e (createEdge(R)): ((InternalEList) e.getSources())
+//                                      .addUnique(a) twice, targets b. The .elkt linker rejects a repeated reference
+//                                      ("Too many matches"); a lazily linked .elkj load produces one (F3).
+//   java-edge-repeated-target          as above with sources a and ((InternalEList) e.getTargets()).addUnique(b) twice.
+//   java-section-repeated-outgoing     R > node a, node b, edge e (sources a, targets b), sections s1 and s2 via
+//                                      createEdgeSection(e); ((InternalEList) s1.getOutgoingSections()).addUnique(s2)
+//                                      twice.
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -66,6 +73,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.resource.SaveOptions;
@@ -234,6 +242,9 @@ public class ElktWriteVectors {
             t.put(JAVA_PREFIX + "property-proxy-resolvable",
                     () -> withProperty(CoreOptions.PRIORITY, new LayoutOptionProxy("5")));
             t.put(JAVA_PREFIX + "property-key-keyword", () -> withProperty(new Property<Object>("my.node.k"), "v"));
+            t.put(JAVA_PREFIX + "edge-repeated-source", () -> repeatedEndpoint(true));
+            t.put(JAVA_PREFIX + "edge-repeated-target", () -> repeatedEndpoint(false));
+            t.put(JAVA_PREFIX + "section-repeated-outgoing", JavaScenarios::repeatedOutgoingSection);
             return t;
         }
 
@@ -295,6 +306,49 @@ public class ElktWriteVectors {
         private static ElkNode edgeWithoutEndpoints() {
             ElkNode root = root();
             ElkGraphUtil.createEdge(root).setIdentifier("e");
+            return root;
+        }
+
+        private static ElkNode named(ElkNode parent, String id) {
+            ElkNode node = ElkGraphUtil.createNode(parent);
+            node.setIdentifier(id);
+            return node;
+        }
+
+        @SuppressWarnings("unchecked")
+        private static <T> void addTwice(java.util.List<T> list, T element) {
+            ((InternalEList<T>) list).addUnique(element);
+            ((InternalEList<T>) list).addUnique(element);
+        }
+
+        private static ElkNode repeatedEndpoint(boolean source) {
+            ElkNode root = root();
+            ElkNode a = named(root, "a");
+            ElkNode b = named(root, "b");
+            ElkEdge edge = ElkGraphUtil.createEdge(root);
+            edge.setIdentifier("e");
+            if (source) {
+                addTwice(edge.getSources(), (ElkConnectableShape) a);
+                edge.getTargets().add(b);
+            } else {
+                edge.getSources().add(a);
+                addTwice(edge.getTargets(), (ElkConnectableShape) b);
+            }
+            return root;
+        }
+
+        private static ElkNode repeatedOutgoingSection() {
+            ElkNode root = root();
+            ElkNode a = named(root, "a");
+            ElkEdge edge = ElkGraphUtil.createEdge(root);
+            edge.setIdentifier("e");
+            edge.getSources().add(a);
+            edge.getTargets().add(named(root, "b"));
+            ElkEdgeSection s1 = ElkGraphUtil.createEdgeSection(edge);
+            s1.setIdentifier("s1");
+            ElkEdgeSection s2 = ElkGraphUtil.createEdgeSection(edge);
+            s2.setIdentifier("s2");
+            addTwice(s1.getOutgoingSections(), s2);
             return root;
         }
 

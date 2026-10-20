@@ -137,3 +137,16 @@
   `edgesBefore` flags all endpoints as proxies (lazy linking).
 - **Impact**: use the `[cacheDir [idsFile]]` args for partial reruns; a lone-surrogate mismatch is transport, not port.
 - **Confidence**: High
+
+## Observation: `.elkt` cannot carry a repeated reference; the writer tests skipped the copy
+
+- **Context**: follow-ups F3 + C2 (shared `src/graph/util/ElkGraphCopy.ts`), 2026-10-19
+- **Finding**: the JVM `.elkt` reader rejects `edge a, a -> b` at link time ("Too many matches for reference to 'a'.
+  Feature sources can only hold -1 references but found 1 candidate"), so `ElktWriteVectors` scenario files cannot
+  record a repeated endpoint; the java scenarios use `((InternalEList) list).addUnique(x)` twice instead. Before this
+  change, `ElkGraphSerializer.test.ts` and `ElkGraphFormatter.test.ts` serialized without the recorder's
+  `EcoreUtil.copy`, so copy-stage failures were invisible to them.
+- **Impact**: a writer vector whose JVM error comes from the copy needs `recordedErrorClass` (test helper) and a copied
+  input. Separate, unfixed: `ElktWriteVectors.sectionWithoutIdentifier` builds its first node as `n` (via `node(root)`)
+  while its header and the TS rebuild say `a`; it is an error row (class only), so no output differs.
+- **Confidence**: High

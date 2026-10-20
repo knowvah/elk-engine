@@ -1,18 +1,17 @@
 // SPDX-License-Identifier: EPL-2.0
-import type { EList } from '../../../../emf/common/util/EList.js';
-import type { ElkEdge } from '../../../ElkEdge.js';
-import type { ElkEdgeSection } from '../../../ElkEdgeSection.js';
-import type { ElkGraphElement } from '../../../ElkGraphElement.js';
-import type { ElkNode } from '../../../ElkNode.js';
-import { ElkGraphFactory } from '../../../ElkGraphFactory.js';
-import { isEMapPropertyHolder } from '../../../EMapPropertyHolder.js';
-import type { EMapPropertyHolder } from '../../../EMapPropertyHolder.js';
-import { ElkPropertyToValueMapEntryImpl } from '../../../impl/ElkPropertyToValueMapEntryImpl.js';
-import { ElkGraphUtil } from '../../../util/ElkGraphUtil.js';
+import type { EList } from '../../emf/common/util/EList.js';
+import type { ElkEdge } from '../ElkEdge.js';
+import type { ElkEdgeSection } from '../ElkEdgeSection.js';
+import type { ElkGraphElement } from '../ElkGraphElement.js';
+import type { ElkNode } from '../ElkNode.js';
+import { ElkGraphFactory } from '../ElkGraphFactory.js';
+import { isEMapPropertyHolder } from '../EMapPropertyHolder.js';
+import type { EMapPropertyHolder } from '../EMapPropertyHolder.js';
+import { ElkPropertyToValueMapEntryImpl } from '../impl/ElkPropertyToValueMapEntryImpl.js';
+import { ElkGraphUtil } from './ElkGraphUtil.js';
 
-// The `EcoreUtil.copy(root)` the writer applies before serializing (T5 recorder, D3). Same algorithm as the `.elkt`
-// writer's copy (`src/graph/text/ElkGraphText.ts`, which this bundle may not import): `src/graph/json/text` imports
-// only core, graph, xtext, emf, java and guava.
+// The `EcoreUtil.copy(root)` the `.elkt` and `.elkj` writers apply before serializing (their T5 recorders). One port in
+// the graph bundle, which both text bundles may import (AD-8); it was two copies until follow-up C2 (F3).
 
 /** A set double: the `eIsSet` of an attribute whose default is `0.0` (`-0.0 == 0.0`, `NaN != 0.0`). */
 const isSetDouble = (v: number): boolean => v !== 0;

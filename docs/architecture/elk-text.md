@@ -143,15 +143,20 @@ E --> Caller : .elkt text, or throws SerializationException
 `src/graph/text/ElkGraphText.ts` is internal (G4, AD-14): nothing is exported from `src/index.ts`.
 The three functions mirror the Xtext services the oracle harness calls.
 
-| Function                                                             | Mirrors                                                              | Failure mode                                              |
-| -------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------- |
-| `load(text): { root: ElkNode \| null; errors: ElkTextDiagnostic[] }` | `XtextResource.load` + `getErrors()`: parser, converters, linker     | never throws on bad input; `errors` is parser then linker |
-| `validate(root): ElkTextIssue[]`                                     | `IResourceValidator.validate`: `ElkGraphValidator` + EMF constraints | issues in emission order; non-loaded graphs get line 0    |
-| `serialize(root): string`                                            | `ISerializer.serialize` with `SaveOptions.format()`                  | throws `SerializationException` like Xtext                |
+| Function                                                             | Mirrors                                                              | Failure mode                                                                            |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `load(text): { root: ElkNode \| null; errors: ElkTextDiagnostic[] }` | `XtextResource.load` + `getErrors()`: parser, converters, linker     | never throws on bad input; `errors` is parser then linker                               |
+| `validate(root): ElkTextIssue[]`                                     | `IResourceValidator.validate`: `ElkGraphValidator` + EMF constraints | issues in emission order; non-loaded graphs get line 0                                  |
+| `serialize(root): string`                                            | `ISerializer.serialize` with `SaveOptions.format()`                  | throws `SerializationException` like Xtext; the copy throws `IndexOutOfBoundsException` |
 
 `ElkTextDiagnostic` is `{ kind: 'syntax' | 'linking' | 'conversion'; severity; message; line }`;
 `ElkTextIssue` is `{ severity; message; line; code }`. `serialize` copies the graph first (Xtext
-serialization resolves proxies in place; outside references are dropped as `EcoreUtil.Copier` does).
+serialization resolves proxies in place; outside references are dropped as `EcoreUtil.Copier` does). The copy
+is `src/graph/util/ElkGraphCopy.ts`, shared with the `.elkj` writer: property entries are copied one by one (a
+repeated key is not merged), and a repeated reference in `sources`, `targets` or `outgoingSections` throws
+`IndexOutOfBoundsException: targetIndex=1, size=1` as `Copier.copyReference` does. The `.elkt` linker rejects
+such a reference ("Too many matches"), so only a graph built elsewhere (a lazily linked `.elkj` load) carries
+one; the `java-*-repeated-*` writer rows record it.
 `load` records node positions in a module `WeakMap` that `validate` reads for line numbers; the
 returned result is unchanged. The Xtend `dispatch`, `@Check` and `@Inject` rules the port follows
 are in [translation-rules section 10](../translation-rules.md#xtend-xtext).
