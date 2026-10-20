@@ -296,7 +296,9 @@ describe('extension points', () => {
   });
 });
 
-const LOOKUP_BUDGET_MS = 300;
+// About 85 ms on a performance core; macOS may run a vitest worker on an efficiency core instead (230-330 ms alone,
+// 363-450 ms under suite load). 450 ms plus 25%, rounded up (follow-up C5); quadratic lookups would take seconds.
+const LOOKUP_BUDGET_MS = 600;
 // V8 coverage instrumentation slows tight loops about threefold; the looser bound still catches quadratic behaviour.
 const INSTRUMENTED_LOOKUP_BUDGET_MS = 1000;
 const TIMED_RUNS = 3;

@@ -150,3 +150,13 @@
   input. Separate, unfixed: `ElktWriteVectors.sectionWithoutIdentifier` builds its first node as `n` (via `node(root)`)
   while its header and the TS rebuild say `a`; it is an error row (class only), so no output differs.
 - **Confidence**: High
+
+## Observation: timing tests flake on efficiency cores, not on load
+
+- **Context**: follow-up C5 (`ImportedNamespaceAwareLocalScopeProvider.test.ts` lookup budget)
+- **Finding**: on this 12-core Mac (8 performance + 4 efficiency) the lookup loop takes ~85 ms on a performance core
+  and 230–330 ms on an efficiency core (`taskpolicy -b <cmd>` reproduces it on demand); a vitest worker placed on an
+  efficiency core failed the old 300 ms budget at load ≈ 8 while a separate probe stayed at 85 ms. Budget now 600 ms.
+- **Impact**: size any wall-clock assertion for an efficiency core (~3–4x a performance core), and use
+  `taskpolicy -b` to measure it rather than relying on load.
+- **Confidence**: High
