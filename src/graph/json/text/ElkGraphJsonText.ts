@@ -231,6 +231,8 @@ export const ElkGraphJsonText = {
    * @returns the `.elkj` text
    * @throws ElkGraphJsonSerializationError when the graph cannot be written: an edge with sections, a property without
    *   key or with a list value, a reference that is not in scope, or a value no converter can print
+   * @throws IndexOutOfBoundsException from the copy when an edge repeats an endpoint or a section repeats an outgoing
+   *   section (`EcoreUtil.copy`, T16b)
    */
   serialize(root: ElkNode): string {
     return writeFormatted(root);

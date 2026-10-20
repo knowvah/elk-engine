@@ -2,7 +2,7 @@
 // T22: ElkGraph -> .elkt through the entry point (`ElkGraphText.serialize`), the round trip and the D3 check.
 //
 // a. every T5 writer row (test/golden/refs/java/graph-text-write.json): `serialize(source graph)` equals the
-//    recorded `formatted` text byte for byte; rows with an `error` throw.
+//    recorded `formatted` text byte for byte; rows with an `error` throw the class recorded.
 // b. round trip: `load(serialize(g))` has no errors and `canonNode` of its root equals `canonGraph(g)`, for every
 //    T5 success row and every curated model (test/corpus/elkt-curated.json, from $ELK_MODELS_DIR when present).
 // c. D3 (plans/conformance-corpus/decisions.md#d3--model-id-and-source): for every realworld model that has both
@@ -32,10 +32,10 @@ import { ElkGraphUtil } from '../../src/graph/util/ElkGraphUtil.js';
 import { CoreOptions } from '../../src/core/options/CoreOptions.js';
 import { PortConstraints } from '../../src/core/options/PortConstraints.js';
 import { PortSide } from '../../src/core/options/PortSide.js';
-import { ElkGraphText, SerializationException } from '../../src/graph/text/ElkGraphText.js';
+import { ElkGraphText } from '../../src/graph/text/ElkGraphText.js';
 import { repoRoot, resolveModelsDir } from '../corpus/corpus.js';
 import { isCoverageRun } from '../helpers/coverage-run.js';
-import { buildWriteInput, type WriteSource } from '../helpers/elkt-write-cases.js';
+import { buildWriteInput, recordedErrorClass, type WriteSource } from '../helpers/elkt-write-cases.js';
 import { canonGraph, canonGraphWithoutPortPositions, portsWithLayoutRelevantPosition } from '../helpers/elkt-canon.js';
 
 const WRITE_REF = path.join(repoRoot(), 'test', 'golden', 'refs', 'java', 'graph-text-write.json');
@@ -74,8 +74,8 @@ function loaded(text: string): ElkNode {
 }
 
 describe('ElkGraphText.serialize against the recorded writer rows', () => {
-  it('covers 113 rows, 106 written and 7 failing', () => {
-    expect([rows.length, written.length, failing.length]).toEqual([113, 106, 7]);
+  it('covers 116 rows, 106 written and 10 failing', () => {
+    expect([rows.length, written.length, failing.length]).toEqual([116, 106, 10]);
   });
 
   it.each(written.map((r) => [r.id, r] as const))('%s: byte-exact', (_id, row) => {
@@ -83,7 +83,8 @@ describe('ElkGraphText.serialize against the recorded writer rows', () => {
   });
 
   it.each(failing.map((r) => [r.id, r] as const))('%s: throws', (_id, row) => {
-    expect(() => ElkGraphText.serialize(buildWriteInput(row.source, row.id))).toThrow(SerializationException);
+    const cls = (row.formatted as { readonly error: { readonly cls: string } }).error.cls;
+    expect(() => ElkGraphText.serialize(buildWriteInput(row.source, row.id))).toThrow(recordedErrorClass(cls));
   });
 });
 

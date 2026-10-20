@@ -50,16 +50,16 @@ construction in `ElkGraphJsonText.ts` and `ElkGraphJsonTextServices.ts` (no DI f
 
 `src/graph/json/text/` (13 Xtend files and 1 Java file upstream, 908 hand-written lines; tests colocated):
 
-| Directory / file                            | Upstream                                              | Notes                                                                                                    |
-| ------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `ElkGraphJsonText.ts`, `...TextServices.ts` | `ElkGraphJsonRuntimeModule`, `...StandaloneSetup`     | port-local entry point (section 6) and the scoping/linking wiring `load` and `serialize` share           |
-| `parser/`                                   | `ElkGraphJson.xtext`, `src-gen/.../InternalElkGraph*` | `ElkGraphJsonLexer`, `ElkGraphJsonParser` (+ `Elements`), `ElkGraphJsonRecords`, `ElkGraphJsonTokenType` |
-| `conversion/`                               | `conversion/*.xtend`                                  | service, `NumberValueConverter`, `PropertyKeyValueConverter`, `PropertyValueValueConverter`              |
-| `naming/`, `scoping/`                       | `naming/*.xtend`, `scoping/*.xtend`                   | flat names (D4 registry), `ElkGraphJsonScopeProvider`                                                    |
-| `linking/`                                  | `ElkGraphJsonRuntimeModule` bindings (`LazyLinker`)   | `ElkGraphJsonLazyLinker`, `ElkGraphJsonReferences` (both metamodels), `createElkGraphJsonLinking`        |
-| `validation/`                               | `validation/ElkGraphJsonValidator.xtend`              | empty validator; `ElkGraphJsonMapEntryFeatures` is a local copy of the `.elkt` provider (AD-8)           |
-| `serializer/`                               | `serializer/*` and the generated sequencer            | grammar-specific writer (D3); `ElkGraphJsonGrammarAccess`/`RuleIds` carry port-local grammar ids         |
-| `formatting2/`                              | `formatting2/ElkGraphJsonFormatter.xtend`             | line by line over `src/xtext/formatting2`; `ElkGraphCopy` is the `EcoreUtil.copy` before writing         |
+| Directory / file                            | Upstream                                              | Notes                                                                                                           |
+| ------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `ElkGraphJsonText.ts`, `...TextServices.ts` | `ElkGraphJsonRuntimeModule`, `...StandaloneSetup`     | port-local entry point (section 6) and the scoping/linking wiring `load` and `serialize` share                  |
+| `parser/`                                   | `ElkGraphJson.xtext`, `src-gen/.../InternalElkGraph*` | `ElkGraphJsonLexer`, `ElkGraphJsonParser` (+ `Elements`), `ElkGraphJsonRecords`, `ElkGraphJsonTokenType`        |
+| `conversion/`                               | `conversion/*.xtend`                                  | service, `NumberValueConverter`, `PropertyKeyValueConverter`, `PropertyValueValueConverter`                     |
+| `naming/`, `scoping/`                       | `naming/*.xtend`, `scoping/*.xtend`                   | flat names (D4 registry), `ElkGraphJsonScopeProvider`                                                           |
+| `linking/`                                  | `ElkGraphJsonRuntimeModule` bindings (`LazyLinker`)   | `ElkGraphJsonLazyLinker`, `ElkGraphJsonReferences` (both metamodels), `createElkGraphJsonLinking`               |
+| `validation/`                               | `validation/ElkGraphJsonValidator.xtend`              | empty validator; `ElkGraphJsonMapEntryFeatures` is a local copy of the `.elkt` provider (AD-8)                  |
+| `serializer/`                               | `serializer/*` and the generated sequencer            | grammar-specific writer (D3); `ElkGraphJsonGrammarAccess`/`RuleIds` carry port-local grammar ids                |
+| `formatting2/`                              | `formatting2/ElkGraphJsonFormatter.xtend`             | line by line over `src/xtext/formatting2`; `src/graph/util/ElkGraphCopy` is the `EcoreUtil.copy` before writing |
 
 What mission 4c added outside `src/graph/json/text/`:
 
@@ -212,7 +212,7 @@ diagnostic left on the resource ([conformance.md](../conformance.md#elkj-diverge
 | `serialize(root): string`                           | `ISerializer.serialize` with `SaveOptions.format()`          | throws `ElkGraphJsonSerializationError`                                              |
 
 `validate` keeps a root-keyed `WeakMap` of what `load` produced (falling back to `root.eResource()`) and builds a
-fresh `ResourceValidatorImpl` per call. `serialize` first copies the graph (`ElkGraphCopy`, `EcoreUtil.Copier`
+fresh `ResourceValidatorImpl` per call. `serialize` first copies the graph (`src/graph/util/ElkGraphCopy.ts`, shared with the `.elkt` writer; `EcoreUtil.Copier`
 semantics, one EMap entry at a time so repeated `.elkj` keys are not merged); a loaded graph with an unresolved
 endpoint serializes without that endpoint.
 

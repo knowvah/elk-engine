@@ -3,7 +3,7 @@ import type { ExceptionHandler } from '../../../../xtext/formatting2/ExceptionAc
 import { FormatterRequest } from '../../../../xtext/formatting2/FormatterRequest.js';
 import type { ElkNode } from '../../../ElkNode.js';
 import { ElkGraphJsonSerializer } from '../serializer/ElkGraphJsonSerializer.js';
-import { copyGraph } from './ElkGraphCopy.js';
+import { copyGraph } from '../../../util/ElkGraphCopy.js';
 import { ElkGraphJsonFormatter } from './ElkGraphJsonFormatter.js';
 
 /**
