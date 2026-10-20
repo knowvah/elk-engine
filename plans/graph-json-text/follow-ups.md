@@ -33,7 +33,7 @@ date here when one does; never delete a row).
 | C2 | `ElkGraphCopy` (`.elkj`) and 4b's `copyGraph` are two EcoreUtil.copy ports (AD-8 forbids sharing across text bundles); a single home in `src/graph/util` would serve both (fixes F3 at the same time) | journal T16 | closed 2026-10-19 (journal C2 + F3; `src/graph/util/ElkGraphCopy.ts`) |
 | C3 | Move `ExceptionDiagnostic` and the cancellation stand-ins (`CancelIndicator`, `OperationCanceledException`, `OperationCanceledError`) from `src/xtext/linking/lazy/` to their Xtext packages (`diagnostics`, `util`/`service`) | journal T12d | open |
 | C4 | `elkj-vectors.sh` now takes hours (the round-trip recorder's 712 KB model); decide: keep, give the recorder a cache/skip-large option for gates, or move that row to the sweep | journal T16b1 | open |
-| C5 | Pre-existing timing flake `src/xtext/scoping/impl/ImportedNamespaceAwareLocalScopeProvider.test.ts` (300 ms budget fails at load ≳ 25); needs a user decision on a load-tolerant budget (AD-13) | journal batch 3, 5b | open |
+| C5 | Pre-existing timing flake `src/xtext/scoping/impl/ImportedNamespaceAwareLocalScopeProvider.test.ts` (300 ms budget fails at load ≳ 25); needs a user decision on a load-tolerant budget (AD-13) | journal batch 3, 5b | closed 2026-10-20 (journal C5; budget 600 ms, efficiency-core mechanism) |
 | C6 | `docs/architecture/port-map.md` has no `graph.json.text` section; `docs/architecture/inventory.md`'s `graph.json.text` row predates the port | README final gates | open |
 
 ## Out of this mission, still pending from earlier ones
