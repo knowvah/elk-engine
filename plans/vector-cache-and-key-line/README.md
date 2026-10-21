@@ -110,9 +110,26 @@ git show --name-only --format= HEAD                               # ⊆ the task
 | [2](batch-2/overview.md) | Shared `vector-cache.sh` in both scripts | T3 | T2 | [x] |
 | [3](batch-3/overview.md) | C4 proof: cold, warm, evicted rows | T4 | T3 | [x] |
 | [4](batch-4/overview.md) | Docs and follow-ups closure | T5 | T1, T4 | [x] |
-| Final | Full gates, `elkj-vectors.sh` warm; stop 11 | — | 4 | [ ] |
+| Final | Full gates, `elkj-vectors.sh` warm; stop 11 | — | 4 | [x] |
 
 ## Documents
 
 [decisions.md](decisions.md) · [decision-journal.md](decision-journal.md) ·
 [diagrams/data-flow.md](diagrams/data-flow.md) · [diagrams/component-map.md](diagrams/component-map.md)
+
+## Mission summary (2026-10-21)
+
+- **F7 closed (T1).** Two new `.elkt` validate scenarios, `checkPropertyKey-line-lone-cr` and
+  `checkPropertyKey-line-crlf`, were recorded first (`graph-text-validate.json` 76 → 78 cases, no existing row
+  changed). The lone-CR row was red before the fix (port 2/2, oracle 3/5); `#parsePropertyKey` now returns
+  `cursor.lineOf(first)`.
+- **C4 closed (T2–T4).** `tools/vectors/vector-cache.sh` caches each program's results under
+  `$ELK_ORACLE_DIR/vector-cache/<lang>/<Program>/<salt>/`: whole-program entries by input hash, per-row entries in
+  the round-trip and write recorders. Measured `.elkj` cost: cold 3 h 58 min, warm 5 s, one evicted row per recorder
+  21 s; every run `cmp`-identical to the refs. `fix(T3)` keeps the JVM's `Picked up JAVA_TOOL_OPTIONS` banner out of
+  the salt.
+- **Docs (T5).** Runbooks, conformance, translation rules and the 4c follow-up list updated.
+- **Gates.** All green at the final gate (journal row "Final"). No stop besides 11; one false stall alarm on the
+  2 h 47 min row was diagnosed as a long row (JVM at 99 % CPU) and journalled.
+- **Landing.** Unsigned commits on `feature/vector-cache-and-key-line`; the user signs, pushes, opens the PR and
+  merges with a merge commit (D7).
