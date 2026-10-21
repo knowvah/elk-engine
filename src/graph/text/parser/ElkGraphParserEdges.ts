@@ -48,7 +48,7 @@ export function readQualifiedId(cursor: TokenCursor): QualifiedText {
     spaced += `${separator}${segment.text}`;
     joined += `.${segment.text}`;
   }
-  return { joined, spaced, line: first.line };
+  return { joined, spaced, line: cursor.lineOf(first) };
 }
 
 /** One numeric feature of a section and its setter. */
@@ -145,7 +145,7 @@ export class ElkEdgeRules {
       index,
       ruleName: RuleName.ID,
       text: token.text,
-      line: token.line,
+      line: this.#session.cursor.lineOf(token),
     });
   }
 

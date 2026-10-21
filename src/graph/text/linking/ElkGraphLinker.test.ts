@@ -140,8 +140,8 @@ function actualValue(obj: EObject, key: string, paths: Map<EObject, string>): un
 }
 
 describe('ElkGraphLinker: replay of the recorded JVM cases', () => {
-  it('replays the cases without syntax errors, 47 of the 301 with linking diagnostics', () => {
-    expect(cases.filter((c) => c.diagnostics.some((d) => d.kind === LINKING))).toHaveLength(47);
+  it('replays the cases without syntax errors, 51 of the 305 with linking diagnostics', () => {
+    expect(cases.filter((c) => c.diagnostics.some((d) => d.kind === LINKING))).toHaveLength(51);
     expect(linkable.length).toBeGreaterThan(150);
   });
 

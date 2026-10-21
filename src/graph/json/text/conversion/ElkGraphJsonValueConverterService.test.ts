@@ -35,17 +35,27 @@ const CLASS_VCE_WITH_VALUE = 'org.eclipse.xtext.conversion.ValueConverterWithVal
 /**
  * Rows whose Java box type a `number` cannot carry, as `converter.toString(input)`: a `Float` prints `2.0` where a whole `Double` prints `2` (`StringValue` `double:1.0`), an `Integer` fails the `Double`
  * cast of `Number` where a whole `Double` converts (`Number` `double:1.0`), and a `Double` fails the `Integer` cast
- * of `INT` where a whole `Integer` converts (`INT` `int:1`); one TypeScript value would need both outcomes.
+ * of `INT` where a whole `Integer` converts (`INT` `int:1`); one TypeScript value would need both outcomes. The
+ * `FLOAT` terminal fails its re-check where a `Double` passes: a `Float` is not `equals` the reparsed `Double`
+ * (`FLOAT` `float:1.5`), and an `Integer` prints `1`, which lexes as `SIGNED_INT` (`FLOAT` `int:1`); both
+ * added by text-follow-ups T8 (user decision, 2026-10-20).
  */
 const UNREPRESENTABLE_ROWS: ReadonlySet<string> = new Set([
   'INT.toString(double:1.5)',
   'StringValue.toString(float:2.0)',
   'Number.toString(int:1)',
+  'FLOAT.toString(float:1.5)',
+  'FLOAT.toString(int:1)',
 ]);
 const rowKey = (row: Row): string => `${row.converter}.${row.op}(${row.input ?? 'null'})`;
 const isUnrepresentable = (row: Row): boolean => UNREPRESENTABLE_ROWS.has(rowKey(row));
-/** Converters replayed through the service; the other terminals (DefaultTerminalConverter) are not registered. */
+/** Converters replayed through the service. */
 const REPLAYED: ReadonlySet<string> = new Set([
+  'SIGNED_INT',
+  'FLOAT',
+  'ML_COMMENT',
+  'SL_COMMENT',
+  'ANY_OTHER',
   'Number',
   'PropertyKey',
   'StringValue',
@@ -172,9 +182,17 @@ describe('ElkGraphJsonValueConverterService vectors', () => {
     expect(replayed).toBeGreaterThan(400);
   });
 
-  it('skips only the three rows a number cannot represent', () => {
+  it('skips only the five rows a number cannot represent', () => {
     expect(rows.filter(isUnrepresentable).map(rowKey).sort()).toEqual([...UNREPRESENTABLE_ROWS].sort());
     expect(rows.filter((row) => row.error?.cls === CLASS_CAST && !isUnrepresentable(row)).length).toBe(11);
+  });
+
+  it('replays the 45 terminal rows the DefaultTerminalConverter adds', () => {
+    const terminals = new Set(['SIGNED_INT', 'FLOAT', 'ML_COMMENT', 'SL_COMMENT', 'ANY_OTHER']);
+    expect(rows.filter((row) => terminals.has(row.converter)).length).toBe(45);
+    for (const name of terminals) {
+      expect(service.getConverter(name).constructor.name, name).toBe('DefaultTerminalConverter');
+    }
   });
 
   it('serves the ELK converters under their rule names, one shared value converter', () => {

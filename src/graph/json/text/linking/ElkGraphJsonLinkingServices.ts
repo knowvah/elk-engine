@@ -12,7 +12,9 @@ import { LazyURIEncoder } from '../../../../xtext/linking/lazy/LazyURIEncoder.js
 import { DefaultLinkingService } from '../../../../xtext/linking/impl/DefaultLinkingService.js';
 import { LinkingDiagnosticMessageProvider } from '../../../../xtext/linking/impl/LinkingDiagnosticMessageProvider.js';
 import { LinkingHelper } from '../../../../xtext/linking/impl/LinkingHelper.js';
+import type { IQualifiedNameConverter } from '../../../../xtext/naming/IQualifiedNameConverter.js';
 import type { INodeModel } from '../../../../xtext/nodemodel/INodeModel.js';
+import type { IScopeProvider } from '../../../../xtext/scoping/IScopeProvider.js';
 import { CaseInsensitivityHelper } from '../../../../xtext/scoping/impl/CaseInsensitivityHelper.js';
 import { ImportedNamespaceAwareLocalScopeProvider } from '../../../../xtext/scoping/impl/ImportedNamespaceAwareLocalScopeProvider.js';
 import { SingleResourceGlobalScopeProvider } from '../../../../xtext/scoping/impl/SingleResourceGlobalScopeProvider.js';
@@ -44,12 +46,27 @@ export class ParseResourceDiagnostic implements ResourceDiagnostic {
   }
 }
 
+/** The scope bindings of `.elkj`: the `IScopeProvider` binding and the name converter its names go through. */
+export interface ElkGraphJsonScoping {
+  /** `IScopeProvider` bound to `ElkGraphJsonScopeProvider` over the imported-namespace-aware local scope. */
+  readonly scopeProvider: IScopeProvider;
+  /** `IQualifiedNameConverter` bound to the default converter, shared with the name provider of the scope. */
+  readonly nameConverter: IQualifiedNameConverter;
+}
+
 /** The bindings the lazy `.elkj` load needs, constructed by {@link createElkGraphJsonLinking}. */
 export interface ElkGraphJsonLinking {
   /** `ILinker` bound to `LazyLinker`: installs the proxies of a model whose node model is `nodeModel`. */
   createLinker(nodeModel: INodeModel): ElkGraphJsonLazyLinker;
   /** A `LazyLinkingResource` (the `XtextResource` binding) under `uri`, not yet in a resource set. */
   createResource(uri: URI): LazyLinkingResource;
+  /**
+   * A new scope provider with its own resource scope cache. A factory and not one shared instance: Java's singleton
+   * `OnChangeEvictingCache` drops a resource's names and scopes when its model changes, this port's
+   * {@link ResourceScopeCache} never evicts, so a provider that outlived the load would serve the pre-edit scope to a
+   * later serialize of an edited graph. One cache per load and one per serialize keeps the lifetime the port had.
+   */
+  createScoping(): ElkGraphJsonScoping;
 }
 
 /** The encoder never reads its metamodel in index form (`USE_INDEXED_FRAGMENTS_BINDING` is true). */
@@ -58,6 +75,28 @@ const INDEX_FORM_ONLY: ConstructorParameters<typeof LazyURIEncoder>[0] = new Pro
     throw new IllegalStateException(`LazyURIEncoder long form (${String(property)}) is unreachable in index form`);
   },
 });
+
+/**
+ * The `IScopeProvider` binding of the generated module (`ElkGraphJsonScopeProvider`, delegating to
+ * `ImportedNamespaceAwareLocalScopeProvider` over the single-resource global scope, case-sensitive) with the default
+ * qualified name converter and the flat name provider. The load and the serializer's cross reference serializer both
+ * take their scope from here (Java injects the one binding into both). Each call has its own scope cache.
+ *
+ * @see org.eclipse.elk.graph.json.text/src-gen/org/eclipse/elk/graph/json/text/AbstractElkGraphJsonRuntimeModule.java:166-173
+ * @see org.eclipse.xtext.util/src/org/eclipse/xtext/util/OnChangeEvictingCache.java (`@Singleton`)
+ */
+export function createScoping(): ElkGraphJsonScoping {
+  const nameConverter = new DefaultQualifiedNameConverter();
+  const cache = new ResourceScopeCache();
+  const local = new ImportedNamespaceAwareLocalScopeProvider(
+    new SingleResourceGlobalScopeProvider(),
+    new ElkGraphJsonQualifiedNameProvider(nameConverter, cache),
+    nameConverter,
+    new CaseInsensitivityHelper(),
+    cache,
+  );
+  return { scopeProvider: new ElkGraphJsonScopeProvider(local), nameConverter };
+}
 
 /**
  * Plain construction of the bindings of `ElkGraphJsonRuntimeModule` and the generated
@@ -72,21 +111,14 @@ const INDEX_FORM_ONLY: ConstructorParameters<typeof LazyURIEncoder>[0] = new Pro
  * @see org.eclipse.xtext/src/org/eclipse/xtext/DefaultRuntimeModule.java:174-175,198-199,247-248
  */
 export function createElkGraphJsonLinking(valueConverters: IValueConverterService): ElkGraphJsonLinking {
-  const nameConverter = new DefaultQualifiedNameConverter();
-  const cache = new ResourceScopeCache();
-  const local = new ImportedNamespaceAwareLocalScopeProvider(
-    new SingleResourceGlobalScopeProvider(),
-    new ElkGraphJsonQualifiedNameProvider(nameConverter, cache),
-    nameConverter,
-    new CaseInsensitivityHelper(),
-    cache,
-  );
+  const scoping = createScoping();
   const helper = new LinkingHelper(valueConverters);
-  const linkingService = new DefaultLinkingService(new ElkGraphJsonScopeProvider(local), helper, nameConverter);
+  const linkingService = new DefaultLinkingService(scoping.scopeProvider, helper, scoping.nameConverter);
   const references = new ElkGraphJsonReferences();
   const encoder = new LazyURIEncoder(INDEX_FORM_ONLY, true);
   const messages = new LinkingDiagnosticMessageProvider();
   return {
+    createScoping,
     createLinker: (nodeModel) => new ElkGraphJsonLazyLinker(references, nodeModel, encoder),
     createResource: (uri) =>
       new LazyLinkingResource(uri, references, {

@@ -188,7 +188,10 @@ iterator whenever an edge has more than one section.
   generated `StringBuffer` bodies only. `ElkEdgeImpl.toString` joins the lazily created
   `sources`/`targets` fields directly and only the preceding `isHyperedge()` call initializes them,
   so statement order must stay. Map entries print `String(value)`, so a JS number prints `1` where
-  Java prints `1.0`.
+  Java prints `1.0`. **Proxies (D5 of text-follow-ups, amends D10):** the nine generated arms
+  `if (eIsProxy()) return super.toString();` reach `BasicEObjectImpl.toString`, which prints the hashless class
+  name plus EMF's ` (eProxyURI: <uri>)`; the `graph.json` scenarios `proxy-to-string` and
+  `proxy-to-string-edge-with-proxy-source` record the JVM text with `@<hex>` stripped (T3).
 - `ElkNodeImpl.isHierarchical` is `getChildren().size() > 0` in the Java (the brief had said it calls
   `ElkGraphUtil`).
 

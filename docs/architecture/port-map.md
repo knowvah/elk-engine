@@ -199,11 +199,12 @@ Not counted in the Summary. `src/guava` and `src/gson` are minimal subsets writt
 vectors only, and a fitness rule limits their imports to themselves and `src/java`. `src/xtext` is
 EPL-2.0 and is written from the Xtext source; its rule is in [elk-text.md](elk-text.md#file-map).
 
-| TS directory | Library                                     | Scope                                                                    |
-| ------------ | ------------------------------------------- | ------------------------------------------------------------------------ |
-| `src/guava`  | Guava (`com.google.common`)                 | helpers and collections the ported bundles call; AD-10                   |
-| `src/gson`   | Gson 2.11.0 (`com.google.gson`)             | what `graph.json` calls (J1); see [elk-json.md](elk-json.md#gson-subset) |
-| `src/xtext`  | Xtext 2.36.0 (`org.eclipse.xtext`, EPL-2.0) | what `graph.text` calls; see [elk-text.md](elk-text.md#file-map)         |
+| TS directory  | Library                                       | Scope                                                                                                                                                                                 |
+| ------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/guava`   | Guava (`com.google.common`)                   | helpers and collections the ported bundles call; AD-10                                                                                                                                |
+| `src/gson`    | Gson 2.11.0 (`com.google.gson`)               | what `graph.json` calls (J1); see [elk-json.md](elk-json.md#gson-subset)                                                                                                              |
+| `src/equinox` | Equinox (`org.eclipse.core.runtime`, EPL-2.0) | what Xtext calls: `OperationCanceledException` (`OperationCanceledManager` imports it); imports only `src/equinox` and `src/java`, importable by `src/xtext` (text-follow-ups T5, D7) |
+| `src/xtext`   | Xtext 2.36.0 (`org.eclipse.xtext`, EPL-2.0)   | what `graph.text` and `graph.json.text` call; see [elk-text.md](elk-text.md#file-map) and [elk-json-text.md](elk-json-text.md#file-map)                                               |
 
 ## `graph.text` → `src/graph/text/`
 
@@ -228,8 +229,35 @@ JUnit plugin for `graph.text`; the evidence is JVM vectors, curated refs and a l
 ([elk-text.md](elk-text.md#evidence)).
 
 Third-party subset (not an ELK bundle, see the table above): `src/xtext` holds the Xtext 2.36.0 (EPL-2.0)
-classes graph.text calls, written from the Xtext source; only `src/graph/text` may import it
-([elk-text.md](elk-text.md#file-map)).
+classes graph.text and graph.json.text call, written from the Xtext source; only `src/graph/text` and
+`src/graph/json/text` may import it ([elk-text.md](elk-text.md#file-map),
+[elk-json-text.md](elk-json-text.md#file-map)).
+
+## `graph.json.text` → `src/graph/json/text/`
+
+8 package directories, 13 Xtend + 1 Java files + 1 `.xtext` grammar, 801 + 171 LOC
+(`plugins/org.eclipse.elk.graph.json.text/src`). Not in the Summary totals: added by D0 (see [Grammar
+bundles](#grammar-bundles-added-by-d0-not-in-the-summary-totals-above)).
+
+| Java package (`org.eclipse.elk.` omitted) | TS directory                      | Files | Strategy                                                                                                                         |
+| ----------------------------------------- | --------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------- |
+| `graph.json.text`                         | `src/graph/json/text`             |     2 | Xtend → hand port; runtime module and standalone setup → plain construction in `ElkGraphJsonText` and `ElkGraphJsonTextServices` |
+| `graph.json.text` (`ElkGraphJson.xtext`)  | `src/graph/json/text/parser`      |     1 | `.xtext` → hand-written lexer and recursive-descent parser (D7); `src-gen` not ported                                            |
+| `graph.json.text.conversion`              | `src/graph/json/text/conversion`  |     4 | Xtend → hand port                                                                                                                |
+| `graph.json.text.formatting2`             | `src/graph/json/text/formatting2` |     1 | Xtend → hand port over the `src/xtext/formatting2` subset                                                                        |
+| `graph.json.text` (`LazyLinker` bindings) | `src/graph/json/text/linking`     |     0 | `ElkGraphJsonRuntimeModule` bindings → lazy linker and references over the `src/xtext` lazy-linking runtime (D13)                |
+| `graph.json.text.generator`               | none                              |     1 | not ported: `ElkGraphJsonGenerator.java` is the Xtext wizard stub (`doGenerate` has an empty body)                               |
+| `graph.json.text.naming`                  | `src/graph/json/text/naming`      |     1 | Xtend → hand port                                                                                                                |
+| `graph.json.text.scoping`                 | `src/graph/json/text/scoping`     |     1 | Xtend → hand port                                                                                                                |
+| `graph.json.text.serializer`              | `src/graph/json/text/serializer`  |     3 | Xtend → hand port; generated sequencer replaced by a grammar-specific one (D3)                                                   |
+| `graph.json.text.validation`              | `src/graph/json/text/validation`  |     1 | Xtend → hand port (empty validator)                                                                                              |
+
+Status: ported (mission 4c); design, runbook and deferrals in [elk-json-text.md](elk-json-text.md). There is
+no JUnit plugin for `graph.json.text`; the evidence is JVM vectors, curated refs and a local sweep
+([elk-json-text.md](elk-json-text.md#evidence)).
+
+Third-party subset: the `src/xtext` row above; the lazy-linking runtime `.elkj` needs is described in
+[elk-json-text.md](elk-json-text.md#lazy-linking).
 
 ## `alg.common` → `src/alg/common/`
 

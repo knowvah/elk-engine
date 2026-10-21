@@ -34,7 +34,8 @@
 // Run with -XX:+UseSerialGC -Xmn3g -Xmx16g. One injector per worker thread (Xtext caches are not thread safe); inputs are loaded
 // sequentially on the main thread; rows are keyed by id, so the output does not depend on the schedule.
 // Encoding: strings are JSON; an unpaired UTF-16 surrogate is written as a JSON u-escape (it has no UTF-8 form). The written
-// text is passed to the reparse as its UTF-8 bytes, where Java replaces an unpaired surrogate by '?'.
+// text is passed to the reparse as the String itself (a LazyStringInputStream, which XtextResource.createReader reads through a
+// StringReader), so an unpaired surrogate reaches the reparse unchanged.
 // Optional resumable mode (for hours-long runs; default off, then everything is recorded in-process):
 //   <cacheDir>  each finished case is written to <cacheDir>/<sha256(id NUL text)>.json and a case already there is not
 //               recomputed; a restarted run completes the missing ones.
@@ -66,6 +67,7 @@ import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.xtext.resource.SaveOptions;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.serializer.ISerializer;
+import org.eclipse.xtext.util.LazyStringInputStream;
 
 public class ElkjRoundTripVectors {
     private static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
@@ -253,8 +255,8 @@ public class ElkjRoundTripVectors {
 
     private String reparse(String text) {
         Resource resource = freshResource(REPARSE);
-        try {
-            resource.load(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), Collections.emptyMap());
+        try (LazyStringInputStream in = new LazyStringInputStream(text, StandardCharsets.UTF_8.name())) {
+            resource.load(in, Collections.emptyMap());
             EcoreUtil.resolveAll(resource);
             int errors = resource.getErrors().size();
             boolean exportable = errors == 0 && !resource.getContents().isEmpty();

@@ -776,3 +776,31 @@ createEdge e1,g
 createLabel l7,e1,el
 createPort p1,n1
 createLabel l8,p1,pl
+
+# D5 (text-follow-ups F4): a proxy of each instantiable type prints EMF's toString (class name + eProxyURI; the
+# identity hash is stripped by the recorder). The generated arm "if (eIsProxy()) return super.toString()" is reached
+# through ElkNode/ElkPort/ElkLabel (ElkShape, ElkGraphElement arms), ElkEdge, ElkEdgeSection, ElkBendPoint and the entry.
+scenario proxy-to-string
+createGraph g
+createNode n1,g
+createPort p1,n1
+createLabel l1,n1,text
+createEdge e1,g
+createEdgeSection s1,e1
+createBendPoint b1,s1,1.5,2.5
+createPropertyEntry en1
+setProxyUri n1,file:/doc.elkj#|n1
+setProxyUri p1,file:/doc.elkj#|p1
+setProxyUri l1,file:/doc.elkj#|l1
+setProxyUri e1,file:/doc.elkj#|e1
+setProxyUri s1,file:/doc.elkj#|s1
+setProxyUri b1,file:/doc.elkj#|b1
+setProxyUri en1,file:/doc.elkj#|en1
+
+# An edge whose source is a proxy node: the edge's own toString joins the endpoints, so the proxy prints its EMF form
+scenario proxy-to-string-edge-with-proxy-source
+createGraph g
+createNode n1,g
+createNode n2,g
+createSimpleEdge e1,n1,n2
+setProxyUri n1,file:/doc.elkj#|n1

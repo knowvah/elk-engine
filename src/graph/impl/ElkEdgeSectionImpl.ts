@@ -18,8 +18,7 @@ import { EMapPropertyHolderImpl } from './EMapPropertyHolderImpl.js';
  * An implementation of the model object '<em><b>Elk Edge Section</b></em>'. The section lists are
  * `EObjectWithInverseResolvingEList.ManyInverse` in Java; proxy resolution is not ported, leaving
  * `ManyInverse`, and the shape getters skip their `eIsProxy()` resolution arm. Not ported (D4):
- * `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications (incl. the `else eNotify` arm of `setParent`),
- * the `eIsProxy()` arm of `toString`.
+ * `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications (incl. the `else eNotify` arm of `setParent`).
  *
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkEdgeSectionImpl.java
  */
@@ -287,6 +286,7 @@ export class ElkEdgeSectionImpl extends EMapPropertyHolderImpl implements ElkEdg
    * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkEdgeSectionImpl.java
    */
   override toString(): string {
+    if (this.eIsProxy()) return super.toString();
     return (
       `${super.toString()} (startX: ${doubleToString(this.startX)}, startY: ${doubleToString(this.startY)}, ` +
       `endX: ${doubleToString(this.endX)}, endY: ${doubleToString(this.endY)}, identifier: ${this.identifier})`

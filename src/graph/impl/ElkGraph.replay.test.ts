@@ -30,8 +30,8 @@ const vectors = loadGraphVectors();
 const FOREIGN_FEATURE = 99;
 
 /** Recorded counts of `graph.json` (D9): frozen with the file. */
-const SCENARIO_COUNT = 40;
-const STEP_COUNT = 654;
+const SCENARIO_COUNT = 42;
+const STEP_COUNT = 674;
 
 /** Scenarios that use `generateIdentifiers` (`GraphIdentifierGenerator`, T10); replayed by T10's test. */
 const DEFERRED_SCENARIOS = ['generate-identifiers', 'generate-identifiers-root-and-subgraph'];
@@ -58,7 +58,7 @@ describe('graph.json replay (D9)', () => {
     }
   });
 
-  it('replays the other 38 scenarios, every step compared', () => {
+  it('replays the other 40 scenarios, every step compared', () => {
     const deferredSteps = deferred.reduce((n, s) => n + s.steps.length, 0);
     const compared = replayable.reduce((n, s) => n + replayScenario(s).length, 0);
     expect(replayable).toHaveLength(SCENARIO_COUNT - DEFERRED_SCENARIOS.length);

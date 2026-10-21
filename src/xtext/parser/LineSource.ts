@@ -13,18 +13,6 @@ export interface LineSource {
   endLine(token: Token): number;
 }
 
-/** The lexer's own lines (the ANTLR token lines, LF only): `token.line`, plus one per LF inside the token. */
-export const TOKEN_LINE_SOURCE: LineSource = {
-  startLine: (token) => token.line,
-  endLine(token) {
-    let line = token.line;
-    for (let i = token.text.indexOf('\n'); i !== -1; i = token.text.indexOf('\n', i + 1)) {
-      line++;
-    }
-    return line;
-  },
-};
-
 /**
  * The lines of Xtext's node model (`AbstractNode.getStartLine`): derived from the token offset over the full
  * text, where `\r`, `\n` and `\r\n` each end a line.

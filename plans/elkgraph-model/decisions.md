@@ -127,3 +127,8 @@ any model code; append-only afterwards.
 **Amendment (2026-10-15, user decision):** D10's NPE → `TypeError` stands and is the model for JVM-raised
 exceptions nothing catches (AD-16b, `plans/elk-engine-skeleton/decisions.md`); the M5 classes it amends now
 sit under `RuntimeException` (AD-16a).
+
+**Amendment (2026-10-20, user decision, text-follow-ups D5):** D10's hashless `toString` stands, but a proxy now
+appends EMF's ` (eProxyURI: <uri>)` after the class name, as `BasicEObjectImpl.toString` does; the nine generated
+`if (eIsProxy()) return super.toString();` arms reach it. The vector recorder strips `@<hex>` so the rows compare
+exactly.

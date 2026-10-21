@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-import { TOKEN_LINE_SOURCE, type LineSource } from './LineSource.js';
+import type { LineSource } from './LineSource.js';
 import { SyntaxFailure } from './SyntaxFailure.js';
 import type { Token } from './Token.js';
 
@@ -18,8 +18,8 @@ export class TokenCursor<T extends Token = Token> {
   readonly #lines: LineSource;
   #pos = 0;
 
-  /** @param lines how a token's line is derived; the lexer's own lines by default */
-  constructor(all: readonly T[], lines: LineSource = TOKEN_LINE_SOURCE) {
+  /** @param lines how a token's line is derived */
+  constructor(all: readonly T[], lines: LineSource) {
     this.#lines = lines;
     this.#tokens = all.filter((t) => !t.hidden);
     const last = all[all.length - 1];

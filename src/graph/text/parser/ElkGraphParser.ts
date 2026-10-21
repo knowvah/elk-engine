@@ -12,6 +12,7 @@ import { ElkPropertyToValueMapEntryImpl } from '../../impl/ElkPropertyToValueMap
 import type { IProperty } from '../../properties/IProperty.js';
 import { tokenizeWithDiagnostics } from './ElkGraphLexer.js';
 import { ElkEdgeRules, readQualifiedId } from './ElkGraphParserEdges.js';
+import { nodeModelLineSource } from '../../../xtext/parser/LineSource.js';
 import { ParseSession } from '../../../xtext/parser/ParseSession.js';
 import type { GroupMember } from '../../../xtext/parser/GroupMember.js';
 import type { Span } from '../../../xtext/parser/Span.js';
@@ -265,7 +266,7 @@ export class ElkGraphParser {
  */
 export function parse(text: string, services: IValueConverterService): ParseResult {
   const lexed = tokenizeWithDiagnostics(text);
-  const session = new ParseSession(lexed.tokens, services, ELK_GRAPH_VOCABULARY);
+  const session = new ParseSession(lexed.tokens, services, ELK_GRAPH_VOCABULARY, nodeModelLineSource(text));
   const parser = new ElkGraphParser(session);
   try {
     parser.parseRootNode();
@@ -277,7 +278,11 @@ export function parse(text: string, services: IValueConverterService): ParseResu
   }
   if (lexed.lexError && !session.diagnostics.some((d) => d.kind === 'syntax')) {
     const invalid = lexed.tokens.find((t) => t.type === Tok.INVALID);
-    session.diagnostics.push({ kind: 'syntax', message: LEXER_ERROR_MESSAGE, line: invalid?.line ?? 1 });
+    session.diagnostics.push({
+      kind: 'syntax',
+      message: LEXER_ERROR_MESSAGE,
+      line: invalid === undefined ? 1 : session.cursor.lineOf(invalid),
+    });
   }
   return {
     root: parser.root,

@@ -24,8 +24,9 @@ import { LinkingDiagnosticMessageProvider } from '../impl/LinkingDiagnosticMessa
 import { LinkingHelper } from '../impl/LinkingHelper.js';
 import type { LazyProxyInformation } from './ILazyLinkingResource.js';
 import { LazyLinkingResource } from './LazyLinkingResource.js';
-import { OperationCanceledError, OperationCanceledException } from './LazyLinkingResourceCancel.js';
-import { ExceptionDiagnostic } from './LazyLinkingResourceExceptionDiagnostic.js';
+import { OperationCanceledException } from '../../../equinox/core/runtime/OperationCanceledException.js';
+import { ExceptionDiagnostic } from '../../diagnostics/ExceptionDiagnostic.js';
+import { OperationCanceledError } from '../../service/OperationCanceledError.js';
 import {
   CyclicLinkingException,
   LazyProxyTriple,

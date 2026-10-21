@@ -1,14 +1,8 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { StringBasedRegionAccess } from '../../../../xtext/formatting2/regionaccess/internal/StringBasedRegionAccess.js';
-import { CaseInsensitivityHelper } from '../../../../xtext/scoping/impl/CaseInsensitivityHelper.js';
-import { ImportedNamespaceAwareLocalScopeProvider } from '../../../../xtext/scoping/impl/ImportedNamespaceAwareLocalScopeProvider.js';
-import { SingleResourceGlobalScopeProvider } from '../../../../xtext/scoping/impl/SingleResourceGlobalScopeProvider.js';
-import { ResourceScopeCache } from '../../../../xtext/util/ResourceScopeCache.js';
 import type { ElkNode } from '../../../ElkNode.js';
 import { ElkGraphJsonValueConverterService } from '../conversion/ElkGraphJsonValueConverterService.js';
-import { DefaultQualifiedNameConverter } from '../linking/DefaultQualifiedNameConverter.js';
-import { ElkGraphJsonQualifiedNameProvider } from '../naming/ElkGraphJsonQualifiedNameProvider.js';
-import { ElkGraphJsonScopeProvider } from '../scoping/ElkGraphJsonScopeProvider.js';
+import { createScoping } from '../linking/ElkGraphJsonLinkingServices.js';
 import { ElkGraphJsonCrossReferenceSerializer } from './ElkGraphJsonCrossReferenceSerializer.js';
 import { ElkGraphJsonSemanticSequencer } from './ElkGraphJsonSemanticSequencer.js';
 import { ElkGraphJsonSyntacticSequencer, type SequenceStream } from './ElkGraphJsonSyntacticSequencer.js';
@@ -18,27 +12,20 @@ import { ElkGraphJsonTransientValueService } from './ElkGraphJsonTransientValueS
 /**
  * Plain construction of the serializer bindings of `ElkGraphJsonRuntimeModule` and the generated
  * `AbstractElkGraphJsonRuntimeModule`: the value converter service, the qualified name converter, the
- * `ElkGraphJsonScopeProvider` over the imported-namespace-aware local scope provider as the scope of the
- * cross reference serializer (`@SerializerScopeProviderBinding` has no binding of its own, so the default
+ * language's `IScopeProvider` from the linking bindings ({@link createScoping}) as the scope of the cross
+ * reference serializer (`@SerializerScopeProviderBinding` has no binding of its own, so the default
  * `IScopeProvider` applies), and `ElkGraphJsonTransientValueService`. The scope cache holds names and scopes for the
  * life of one resource, so every call builds its own.
  *
  * @see org.eclipse.elk.graph.json.text/src/org/eclipse/elk/graph/json/text/ElkGraphJsonRuntimeModule.xtend
+ * @see org.eclipse.elk.graph.json.text/src-gen/org/eclipse/elk/graph/json/text/AbstractElkGraphJsonRuntimeModule.java:166-173
  */
 function createSemanticSequencer(out: ElkGraphJsonSyntacticSequencer): ElkGraphJsonSemanticSequencer {
-  const nameConverter = new DefaultQualifiedNameConverter();
-  const cache = new ResourceScopeCache();
-  const local = new ImportedNamespaceAwareLocalScopeProvider(
-    new SingleResourceGlobalScopeProvider(),
-    new ElkGraphJsonQualifiedNameProvider(nameConverter, cache),
-    nameConverter,
-    new CaseInsensitivityHelper(),
-    cache,
-  );
+  const scoping = createScoping();
   const valueConverters = new ElkGraphJsonValueConverterService();
   const crossReferences = new ElkGraphJsonCrossReferenceSerializer(
-    new ElkGraphJsonScopeProvider(local),
-    nameConverter,
+    scoping.scopeProvider,
+    scoping.nameConverter,
     valueConverters,
   );
   return new ElkGraphJsonSemanticSequencer(

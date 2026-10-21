@@ -15849,6 +15849,403 @@
           "properties": {}
         }
       ]
+    },
+    {
+      "name": "proxy-to-string",
+      "steps": [
+        {
+          "op": "createGraph",
+          "id": "g",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"}
+          },
+          "allContents": {
+            "g": []
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "createNode",
+          "id": "n1",
+          "parent": "g",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"}
+          },
+          "allContents": {
+            "g": ["n1"],
+            "n1": []
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "createPort",
+          "id": "p1",
+          "parent": "n1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkPort (0.0,0.0 | 0.0,0.0)"}
+          },
+          "allContents": {
+            "g": ["n1", "p1"],
+            "n1": ["p1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "createLabel",
+          "id": "l1",
+          "parent": "n1",
+          "text": "text",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkPort (0.0,0.0 | 0.0,0.0)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "ElkLabel \"text\" (0.0,0.0 | 0.0,0.0)"}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1"],
+            "n1": ["l1", "p1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "createEdge",
+          "id": "e1",
+          "containingNode": "g",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkPort (0.0,0.0 | 0.0,0.0)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "ElkLabel \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": []}, "toString": "ElkEdge  -> "}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1"],
+            "n1": ["l1", "p1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "createEdgeSection",
+          "id": "s1",
+          "edge": "e1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkPort (0.0,0.0 | 0.0,0.0)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "ElkLabel \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": ["s1"]}, "toString": "ElkEdge  -> "},
+            "s1": {"class": "ElkEdgeSection", "container": "e1", "identifier": null, "startX": 0.0, "startY": 0.0, "endX": 0.0, "endY": 0.0, "incomingShape": null, "outgoingShape": null, "lists": {"bendPoints": [], "outgoingSections": [], "incomingSections": []}, "toString": null}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1", "s1"],
+            "n1": ["l1", "p1"],
+            "e1": ["s1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "createBendPoint",
+          "id": "b1",
+          "section": "s1",
+          "x": 1.5,
+          "y": 2.5,
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkPort (0.0,0.0 | 0.0,0.0)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "ElkLabel \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": ["s1"]}, "toString": "ElkEdge  -> "},
+            "s1": {"class": "ElkEdgeSection", "container": "e1", "identifier": null, "startX": 0.0, "startY": 0.0, "endX": 0.0, "endY": 0.0, "incomingShape": null, "outgoingShape": null, "lists": {"bendPoints": ["b1"], "outgoingSections": [], "incomingSections": []}, "toString": null},
+            "b1": {"class": "ElkBendPoint", "container": "s1", "x": 1.5, "y": 2.5, "lists": {}, "toString": null}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1", "s1", "b1"],
+            "n1": ["l1", "p1"],
+            "e1": ["s1", "b1"],
+            "s1": ["b1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "createPropertyEntry",
+          "id": "en1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkPort (0.0,0.0 | 0.0,0.0)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "ElkLabel \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": ["s1"]}, "toString": "ElkEdge  -> "},
+            "s1": {"class": "ElkEdgeSection", "container": "e1", "identifier": null, "startX": 0.0, "startY": 0.0, "endX": 0.0, "endY": 0.0, "incomingShape": null, "outgoingShape": null, "lists": {"bendPoints": ["b1"], "outgoingSections": [], "incomingSections": []}, "toString": null},
+            "b1": {"class": "ElkBendPoint", "container": "s1", "x": 1.5, "y": 2.5, "lists": {}, "toString": null},
+            "en1": {"class": "ElkPropertyToValueMapEntry", "container": null, "lists": {}, "toString": null}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1", "s1", "b1"],
+            "n1": ["l1", "p1"],
+            "e1": ["s1", "b1"],
+            "s1": ["b1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "setProxyUri",
+          "element": "n1",
+          "uri": "file:/doc.elkj#|n1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkNodeImpl (eProxyURI: file:/doc.elkj#|n1)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkPort (0.0,0.0 | 0.0,0.0)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "ElkLabel \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": ["s1"]}, "toString": "ElkEdge  -> "},
+            "s1": {"class": "ElkEdgeSection", "container": "e1", "identifier": null, "startX": 0.0, "startY": 0.0, "endX": 0.0, "endY": 0.0, "incomingShape": null, "outgoingShape": null, "lists": {"bendPoints": ["b1"], "outgoingSections": [], "incomingSections": []}, "toString": null},
+            "b1": {"class": "ElkBendPoint", "container": "s1", "x": 1.5, "y": 2.5, "lists": {}, "toString": null},
+            "en1": {"class": "ElkPropertyToValueMapEntry", "container": null, "lists": {}, "toString": null}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1", "s1", "b1"],
+            "n1": ["l1", "p1"],
+            "e1": ["s1", "b1"],
+            "s1": ["b1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "setProxyUri",
+          "element": "p1",
+          "uri": "file:/doc.elkj#|p1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkNodeImpl (eProxyURI: file:/doc.elkj#|n1)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkPortImpl (eProxyURI: file:/doc.elkj#|p1)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "ElkLabel \"text\" (0.0,0.0 | 0.0,0.0)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": ["s1"]}, "toString": "ElkEdge  -> "},
+            "s1": {"class": "ElkEdgeSection", "container": "e1", "identifier": null, "startX": 0.0, "startY": 0.0, "endX": 0.0, "endY": 0.0, "incomingShape": null, "outgoingShape": null, "lists": {"bendPoints": ["b1"], "outgoingSections": [], "incomingSections": []}, "toString": null},
+            "b1": {"class": "ElkBendPoint", "container": "s1", "x": 1.5, "y": 2.5, "lists": {}, "toString": null},
+            "en1": {"class": "ElkPropertyToValueMapEntry", "container": null, "lists": {}, "toString": null}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1", "s1", "b1"],
+            "n1": ["l1", "p1"],
+            "e1": ["s1", "b1"],
+            "s1": ["b1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "setProxyUri",
+          "element": "l1",
+          "uri": "file:/doc.elkj#|l1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkNodeImpl (eProxyURI: file:/doc.elkj#|n1)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkPortImpl (eProxyURI: file:/doc.elkj#|p1)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "org.eclipse.elk.graph.impl.ElkLabelImpl (eProxyURI: file:/doc.elkj#|l1)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": ["s1"]}, "toString": "ElkEdge  -> "},
+            "s1": {"class": "ElkEdgeSection", "container": "e1", "identifier": null, "startX": 0.0, "startY": 0.0, "endX": 0.0, "endY": 0.0, "incomingShape": null, "outgoingShape": null, "lists": {"bendPoints": ["b1"], "outgoingSections": [], "incomingSections": []}, "toString": null},
+            "b1": {"class": "ElkBendPoint", "container": "s1", "x": 1.5, "y": 2.5, "lists": {}, "toString": null},
+            "en1": {"class": "ElkPropertyToValueMapEntry", "container": null, "lists": {}, "toString": null}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1", "s1", "b1"],
+            "n1": ["l1", "p1"],
+            "e1": ["s1", "b1"],
+            "s1": ["b1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "setProxyUri",
+          "element": "e1",
+          "uri": "file:/doc.elkj#|e1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkNodeImpl (eProxyURI: file:/doc.elkj#|n1)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkPortImpl (eProxyURI: file:/doc.elkj#|p1)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "org.eclipse.elk.graph.impl.ElkLabelImpl (eProxyURI: file:/doc.elkj#|l1)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": ["s1"]}, "toString": "org.eclipse.elk.graph.impl.ElkEdgeImpl (eProxyURI: file:/doc.elkj#|e1)"},
+            "s1": {"class": "ElkEdgeSection", "container": "e1", "identifier": null, "startX": 0.0, "startY": 0.0, "endX": 0.0, "endY": 0.0, "incomingShape": null, "outgoingShape": null, "lists": {"bendPoints": ["b1"], "outgoingSections": [], "incomingSections": []}, "toString": null},
+            "b1": {"class": "ElkBendPoint", "container": "s1", "x": 1.5, "y": 2.5, "lists": {}, "toString": null},
+            "en1": {"class": "ElkPropertyToValueMapEntry", "container": null, "lists": {}, "toString": null}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1", "s1", "b1"],
+            "n1": ["l1", "p1"],
+            "e1": ["s1", "b1"],
+            "s1": ["b1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "setProxyUri",
+          "element": "s1",
+          "uri": "file:/doc.elkj#|s1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkNodeImpl (eProxyURI: file:/doc.elkj#|n1)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkPortImpl (eProxyURI: file:/doc.elkj#|p1)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "org.eclipse.elk.graph.impl.ElkLabelImpl (eProxyURI: file:/doc.elkj#|l1)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": ["s1"]}, "toString": "org.eclipse.elk.graph.impl.ElkEdgeImpl (eProxyURI: file:/doc.elkj#|e1)"},
+            "s1": {"class": "ElkEdgeSection", "container": "e1", "identifier": null, "startX": 0.0, "startY": 0.0, "endX": 0.0, "endY": 0.0, "incomingShape": null, "outgoingShape": null, "lists": {"bendPoints": ["b1"], "outgoingSections": [], "incomingSections": []}, "toString": "org.eclipse.elk.graph.impl.ElkEdgeSectionImpl (eProxyURI: file:/doc.elkj#|s1)"},
+            "b1": {"class": "ElkBendPoint", "container": "s1", "x": 1.5, "y": 2.5, "lists": {}, "toString": null},
+            "en1": {"class": "ElkPropertyToValueMapEntry", "container": null, "lists": {}, "toString": null}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1", "s1", "b1"],
+            "n1": ["l1", "p1"],
+            "e1": ["s1", "b1"],
+            "s1": ["b1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "setProxyUri",
+          "element": "b1",
+          "uri": "file:/doc.elkj#|b1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkNodeImpl (eProxyURI: file:/doc.elkj#|n1)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkPortImpl (eProxyURI: file:/doc.elkj#|p1)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "org.eclipse.elk.graph.impl.ElkLabelImpl (eProxyURI: file:/doc.elkj#|l1)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": ["s1"]}, "toString": "org.eclipse.elk.graph.impl.ElkEdgeImpl (eProxyURI: file:/doc.elkj#|e1)"},
+            "s1": {"class": "ElkEdgeSection", "container": "e1", "identifier": null, "startX": 0.0, "startY": 0.0, "endX": 0.0, "endY": 0.0, "incomingShape": null, "outgoingShape": null, "lists": {"bendPoints": ["b1"], "outgoingSections": [], "incomingSections": []}, "toString": "org.eclipse.elk.graph.impl.ElkEdgeSectionImpl (eProxyURI: file:/doc.elkj#|s1)"},
+            "b1": {"class": "ElkBendPoint", "container": "s1", "x": 1.5, "y": 2.5, "lists": {}, "toString": "org.eclipse.elk.graph.impl.ElkBendPointImpl (eProxyURI: file:/doc.elkj#|b1)"},
+            "en1": {"class": "ElkPropertyToValueMapEntry", "container": null, "lists": {}, "toString": null}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1", "s1", "b1"],
+            "n1": ["l1", "p1"],
+            "e1": ["s1", "b1"],
+            "s1": ["b1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "setProxyUri",
+          "element": "en1",
+          "uri": "file:/doc.elkj#|en1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": ["l1"], "ports": ["p1"], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkNodeImpl (eProxyURI: file:/doc.elkj#|n1)"},
+            "p1": {"class": "ElkPort", "container": "n1", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkPortImpl (eProxyURI: file:/doc.elkj#|p1)"},
+            "l1": {"class": "ElkLabel", "container": "n1", "identifier": null, "text": "text", "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": []}, "toString": "org.eclipse.elk.graph.impl.ElkLabelImpl (eProxyURI: file:/doc.elkj#|l1)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": [], "targets": [], "sections": ["s1"]}, "toString": "org.eclipse.elk.graph.impl.ElkEdgeImpl (eProxyURI: file:/doc.elkj#|e1)"},
+            "s1": {"class": "ElkEdgeSection", "container": "e1", "identifier": null, "startX": 0.0, "startY": 0.0, "endX": 0.0, "endY": 0.0, "incomingShape": null, "outgoingShape": null, "lists": {"bendPoints": ["b1"], "outgoingSections": [], "incomingSections": []}, "toString": "org.eclipse.elk.graph.impl.ElkEdgeSectionImpl (eProxyURI: file:/doc.elkj#|s1)"},
+            "b1": {"class": "ElkBendPoint", "container": "s1", "x": 1.5, "y": 2.5, "lists": {}, "toString": "org.eclipse.elk.graph.impl.ElkBendPointImpl (eProxyURI: file:/doc.elkj#|b1)"},
+            "en1": {"class": "ElkPropertyToValueMapEntry", "container": null, "lists": {}, "toString": "org.eclipse.elk.graph.impl.ElkPropertyToValueMapEntryImpl (eProxyURI: file:/doc.elkj#|en1)"}
+          },
+          "allContents": {
+            "g": ["n1", "l1", "p1", "e1", "s1", "b1"],
+            "n1": ["l1", "p1"],
+            "e1": ["s1", "b1"],
+            "s1": ["b1"]
+          },
+          "propertyKeys": {},
+          "properties": {}
+        }
+      ]
+    },
+    {
+      "name": "proxy-to-string-edge-with-proxy-source",
+      "steps": [
+        {
+          "op": "createGraph",
+          "id": "g",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"}
+          },
+          "allContents": {
+            "g": []
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "createNode",
+          "id": "n1",
+          "parent": "g",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1"], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"}
+          },
+          "allContents": {
+            "g": ["n1"],
+            "n1": []
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "createNode",
+          "id": "n2",
+          "parent": "g",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1", "n2"], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n2": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"}
+          },
+          "allContents": {
+            "g": ["n1", "n2"],
+            "n1": [],
+            "n2": []
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "createSimpleEdge",
+          "id": "e1",
+          "source": "n1",
+          "target": "n2",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1", "n2"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": [], "containedEdges": [], "outgoingEdges": ["e1"], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n2": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": ["e1"]}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": ["n1"], "targets": ["n2"], "sections": []}, "toString": "ElkEdge ElkNode (0.0,0.0 | 0.0,0.0) -> ElkNode (0.0,0.0 | 0.0,0.0)"}
+          },
+          "allContents": {
+            "g": ["n1", "n2", "e1"],
+            "n1": [],
+            "n2": []
+          },
+          "propertyKeys": {},
+          "properties": {}
+        },
+        {
+          "op": "setProxyUri",
+          "element": "n1",
+          "uri": "file:/doc.elkj#|n1",
+          "state": {
+            "g": {"class": "ElkNode", "container": null, "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": ["n1", "n2"], "containedEdges": ["e1"], "outgoingEdges": [], "incomingEdges": []}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "n1": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": [], "containedEdges": [], "outgoingEdges": ["e1"], "incomingEdges": []}, "toString": "org.eclipse.elk.graph.impl.ElkNodeImpl (eProxyURI: file:/doc.elkj#|n1)"},
+            "n2": {"class": "ElkNode", "container": "g", "identifier": null, "x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0, "lists": {"labels": [], "ports": [], "children": [], "containedEdges": [], "outgoingEdges": [], "incomingEdges": ["e1"]}, "toString": "ElkNode (0.0,0.0 | 0.0,0.0)"},
+            "e1": {"class": "ElkEdge", "container": "g", "identifier": null, "lists": {"labels": [], "sources": ["n1"], "targets": ["n2"], "sections": []}, "toString": "ElkEdge org.eclipse.elk.graph.impl.ElkNodeImpl (eProxyURI: file:/doc.elkj#|n1) -> ElkNode (0.0,0.0 | 0.0,0.0)"}
+          },
+          "allContents": {
+            "g": ["n1", "n2", "e1"],
+            "n1": [],
+            "n2": []
+          },
+          "propertyKeys": {},
+          "properties": {}
+        }
+      ]
     }
   ]
 }

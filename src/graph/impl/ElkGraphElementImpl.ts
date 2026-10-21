@@ -10,8 +10,7 @@ import { EMapPropertyHolderImpl } from './EMapPropertyHolderImpl.js';
 
 /**
  * An implementation of the model object '<em><b>Elk Graph Element</b></em>'.
- * Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications, the `eIsProxy()` arm of
- * `toString` (no proxies).
+ * Not ported (D4): `eGet`, `eSet`, `eUnset`, `eIsSet`, notifications.
  *
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkGraphElementImpl.java
  */
@@ -97,6 +96,7 @@ export abstract class ElkGraphElementImpl extends EMapPropertyHolderImpl impleme
    * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/impl/ElkGraphElementImpl.java
    */
   override toString(): string {
+    if (this.eIsProxy()) return super.toString();
     return `${super.toString()} (identifier: ${this.identifier})`;
   }
 

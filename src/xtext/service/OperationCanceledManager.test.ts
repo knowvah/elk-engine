@@ -1,12 +1,9 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
-import {
-  checkCanceled,
-  NULL_CANCEL_INDICATOR,
-  OperationCanceledError,
-  OperationCanceledException,
-  propagateAsErrorIfCancelException,
-} from './LazyLinkingResourceCancel.js';
+import { OperationCanceledException } from '../../equinox/core/runtime/OperationCanceledException.js';
+import { NULL_CANCEL_INDICATOR } from '../util/CancelIndicator.js';
+import { OperationCanceledError } from './OperationCanceledError.js';
+import { checkCanceled, propagateAsErrorIfCancelException } from './OperationCanceledManager.js';
 
 describe('cancellation helpers', () => {
   it('never cancels with the null indicator and cancels with a canceled one', () => {

@@ -18,23 +18,24 @@ date here when one does; never delete a row).
 
 | # | Item | Evidence / mechanism | Status |
 |---|------|----------------------|--------|
-| F1 | Port Xtext's `DefaultTerminalConverter` (`registerEFactoryConverters`, `EInt`/`EDouble` EFactory conversions) to replay the 45 SIGNED_INT/FLOAT converter rows; 3 type-erasure rows (`Number.toString(int:1)`, `StringValue.toString(float:2.0)`, `INT.toString(double:1.5)`) stay unreproducible (TS `number`) | journal T9; same gap as 4b T13 | open |
-| F2 | `.elkt` bare-CR diagnostic lines: record a 4b JVM vector with a lone-CR input first (AD-13), then give the `.elkt` parser the node-model `LineSource` as `.elkj` has | journal fix(T11); 4b uses `TOKEN_LINE_SOURCE` | open |
+| F1 | Port Xtext's `DefaultTerminalConverter` (`registerEFactoryConverters`, `EInt`/`EDouble` EFactory conversions) to replay the 45 SIGNED_INT/FLOAT converter rows; 3 type-erasure rows (`Number.toString(int:1)`, `StringValue.toString(float:2.0)`, `INT.toString(double:1.5)`) stay unreproducible (TS `number`) | journal T9; same gap as 4b T13 | closed 2026-10-20 (text-follow-ups T4+T8) |
+| F2 | `.elkt` bare-CR diagnostic lines: record a 4b JVM vector with a lone-CR input first (AD-13), then give the `.elkt` parser the node-model `LineSource` as `.elkj` has | journal fix(T11); 4b uses `TOKEN_LINE_SOURCE` | closed 2026-10-20 (text-follow-ups T2) |
 | F3 | `.elkt` writer: 4b's `copyGraph` (`src/graph/text/ElkGraphText.ts:279-298`) lacks EMF `Copier.copyReference`'s bidirectional `indexOf`/`move` branch, so a repeated endpoint (`a, a`) likely serializes where the JVM throws `IndexOutOfBoundsException` — record a 4b vector, then port the branch (see `ElkGraphCopy.copyBidirectionalMany`) | journal T16b1/T16b2 | closed 2026-10-19 (journal F3, C2 + F3; branch fix/shared-ecore-copy) |
-| F4 | `ElkNodeImpl.toString` proxy arm (Java prints a proxy via `super.toString()`); only observable through `edge.toString()` over a proxy endpoint | journal T12e | open |
-| F5 | Fuller `.elkj` sweep: sample 6 larger graphs instead of ~40 (D2 amendment); `tools/oracle/elkj-sweep.sh --sample N --sample-max BYTES` as an overnight job | journal T17 | open |
-| F6 | Optional: make `ElkjRoundTripVectors` reload from the `String` (not `getBytes(UTF_8)`) so lone surrogates are not turned into `?`, re-record, drop the test-side transport | journal T16b2 | open |
+| F4 | `ElkNodeImpl.toString` proxy arm (Java prints a proxy via `super.toString()`); only observable through `edge.toString()` over a proxy endpoint | journal T12e | closed 2026-10-20 (text-follow-ups T3) |
+| F5 | Fuller `.elkj` sweep: sample 6 larger graphs instead of ~40 (D2 amendment); `tools/oracle/elkj-sweep.sh --sample N --sample-max BYTES` as an overnight job | journal T17 | done (text-follow-ups T11: 345 + 40 sampled, every indicator 0 diffs) |
+| F6 | Optional: make `ElkjRoundTripVectors` reload from the `String` (not `getBytes(UTF_8)`) so lone surrogates are not turned into `?`, re-record, drop the test-side transport | journal T16b2 | done (text-follow-ups T1, T10) |
+| F7 | `.elkt` property-key line: `ElkGraphParser.#parsePropertyKey` (`src/graph/text/parser/ElkGraphParser.ts:231`) still returns the raw ANTLR `first.line` (LF only) where the other reference sites now use `cursor.lineOf` (text-follow-ups T2). Record a JVM vector with a lone CR before a diagnostic on a property key first (AD-13), then route it through the cursor | text-follow-ups journal T2 (STOP 1, user decision 2026-10-20: left out of T2) | open |
 
 ## After landing — cleanups and tooling
 
 | # | Item | Evidence | Status |
 |---|------|----------|--------|
-| C1 | The `.elkj` serializer duplicates the scope wiring of `createElkGraphJsonLinking` (expose the scope provider from the linking services) | journal T15 | open |
+| C1 | The `.elkj` serializer duplicates the scope wiring of `createElkGraphJsonLinking` (expose the scope provider from the linking services) | journal T15 | closed 2026-10-20 (text-follow-ups T6) |
 | C2 | `ElkGraphCopy` (`.elkj`) and 4b's `copyGraph` are two EcoreUtil.copy ports (AD-8 forbids sharing across text bundles); a single home in `src/graph/util` would serve both (fixes F3 at the same time) | journal T16 | closed 2026-10-19 (journal C2 + F3; `src/graph/util/ElkGraphCopy.ts`) |
-| C3 | Move `ExceptionDiagnostic` and the cancellation stand-ins (`CancelIndicator`, `OperationCanceledException`, `OperationCanceledError`) from `src/xtext/linking/lazy/` to their Xtext packages (`diagnostics`, `util`/`service`) | journal T12d | open |
+| C3 | Move `ExceptionDiagnostic` and the cancellation stand-ins (`CancelIndicator`, `OperationCanceledException`, `OperationCanceledError`) from `src/xtext/linking/lazy/` to their Xtext packages (`diagnostics`, `util`/`service`) | journal T12d | closed 2026-10-20 (text-follow-ups T5) |
 | C4 | `elkj-vectors.sh` now takes hours (the round-trip recorder's 712 KB model); decide: keep, give the recorder a cache/skip-large option for gates, or move that row to the sweep | journal T16b1 | open |
 | C5 | Pre-existing timing flake `src/xtext/scoping/impl/ImportedNamespaceAwareLocalScopeProvider.test.ts` (300 ms budget fails at load ≳ 25); needs a user decision on a load-tolerant budget (AD-13) | journal batch 3, 5b | closed 2026-10-20 (journal C5; budget 600 ms, efficiency-core mechanism) |
-| C6 | `docs/architecture/port-map.md` has no `graph.json.text` section; `docs/architecture/inventory.md`'s `graph.json.text` row predates the port | README final gates | open |
+| C6 | `docs/architecture/port-map.md` has no `graph.json.text` section; `docs/architecture/inventory.md`'s `graph.json.text` row predates the port | README final gates | closed 2026-10-20 (text-follow-ups T7) |
 
 ## Out of this mission, still pending from earlier ones
 
