@@ -440,28 +440,34 @@ locally. The pinned elk-models holds no `.elkj`, so the oracle produces them (D2
 
 **Size-capped selection** (D2 amendment, user 2026-10-16). The oracle's Xtext serializer needs 30 to 1,100
 CPU-seconds per graph (9-graph sample: 113 to 678 s each, 57 min single-JVM), so converting and writing all
-1,448 graphs twice is days of CPU. Tier 1 and the writer run on every corpus graph of at most 5 KB (345) plus 6
-stratified larger graphs (5 to 37 KB; `--sample 6 --sample-max 40000` instead of the planned ~40, which would not
-fit the budget; the cap is kept, the sample lowered) = 351 graphs; tier 2 runs on all 666 ELK JSON inputs;
-determinism is double-run on 30. A full run is a parameter change (`--cap 100000000`).
+1,448 graphs twice is days of CPU. Tier 1 and the writer run on every corpus graph of at most 5 KB (345) plus 40
+graphs sampled from the 1,103 larger ones in five size bands that double from the cap (11/16/7/4/2 graphs in
+[5, 10), [10, 20), [20, 40), [40, 80) and [80, ∞) KB; 6.1 to 207 KB) = 385 graphs; tier 2 runs on all 666 ELK JSON
+inputs; determinism is double-run on 30. The first run (graph-json-text T17) sampled only 6 graphs of 5 to 37 KB
+(`--sample 6 --sample-max 40000`); the fuller sweep (text-follow-ups T11, follow-up F5) runs `--sample 40` with no
+size limit. A full run is a parameter change (`--cap 100000000`).
 
-**Result** (oracle ELK `8aaa3c1` plus patches `0001`, `0002`, elk-models `ac5af2b`, 2026-10-16; counts equal the
-graph-json-text decision journal, row T17):
+**Result** (oracle ELK `8aaa3c1` plus patches `0001`, `0002`, elk-models `ac5af2b`; counts equal the
+text-follow-ups decision journal, row T11, and the graph-json-text one, row T17):
 
-| Indicator            | Bar     | Measured | Exact | Presence / both reject                              | Diffs |
-| -------------------- | ------- | -------- | ----- | --------------------------------------------------- | ----- |
-| tier1-parse-equal    | 344/344 | 344/344  | 144   | 200 (syntax errors; oracle cannot reparse own file) | 0     |
-| tier1-validate-equal | 344/344 | 344/344  |       |                                                     | 0     |
-| tier2-parse-equal    | 666/666 | 666/666  | 591   | 75 rejected by both                                 | 0     |
-| writer-byte-exact    | 351/351 | 351/351  | 315   | 36 oracle failures matched                          | 0     |
-| reparse-equal        | 315/315 | 315/315  |       |                                                     | 0     |
-| nondeterministic     | 0       | 0        |       |                                                     |       |
+| Indicator            | Bar     | 40 sampled (2026-10-20) | Exact | Presence / both reject                              | 6 sampled (2026-10-16) | Diffs |
+| -------------------- | ------- | ----------------------- | ----- | --------------------------------------------------- | ---------------------- | ----- |
+| tier1-parse-equal    | 378/378 | 378/378                 | 144   | 234 (syntax errors; oracle cannot reparse own file) | 344/344 (200 presence) | 0     |
+| tier1-validate-equal | 378/378 | 378/378                 | 144   | 234                                                 | 344/344                | 0     |
+| tier2-parse-equal    | 666/666 | 666/666                 | 591   | 75 rejected by both                                 | 666/666                | 0     |
+| writer-byte-exact    | 385/385 | 385/385                 | 349   | 36 oracle failures matched                          | 351/351 (315 exact)    | 0     |
+| reparse-equal        | 349/349 | 349/349                 | 139   | 210                                                 | 315/315                | 0     |
+| nondeterministic     | 0       | 0 of 1,482 double runs  |       |                                                     | 0                      |       |
 
-Cost: oracle 2 h 04 min wall on 8 serial-GC JVMs, TS side 4.2 s. 7 of the 351 graphs fail `convert` in the
-oracle (edge sections, a keyword string), hence 344 for tier 1; 29 more fail `write` (missing or duplicate ids:
-that path has no id generator), part of the 36 matched oracle failures. Determinism needed one merge fix:
-Xtext error messages embed the output URI, and `ElkjSweep.java` normalises the directory. Largest curated model
-(712 KB ELK JSON) loads in about 100 ms.
+Cost of the fuller sweep: oracle 7 h 34 min wall on 6 serial-GC JVMs at `nice 10` (the convert, write and
+tier-2 parse queue; parse 27 s, validate 9 s), with 21.9 h of summed per-graph `convert` time and 21.6 h of
+`write` time; the largest sampled graph (207 KB) alone takes 4.5 h to convert and 4.3 h to write. The TS side
+runs in 5.7 s. The first run took 2 h 04 min on 8 JVMs, TS side 4.2 s. 7 graphs, all at most 5 KB, fail `convert` in
+the oracle (edge sections, a value the grammar cannot convert; the first run also counted 7), hence 7 fewer for
+tier 1; 29 more fail `write` (missing or duplicate ids: that path has no id generator), part of the 36 matched
+oracle failures. None of the 40 sampled graphs fails. Determinism needed one merge fix: Xtext error messages embed the
+output URI, and `ElkjSweep.java` normalises the directory. Largest curated model (712 KB ELK JSON) loads in about
+100 ms.
 
 ### Accepted divergences {#elkj-divergences}
 
