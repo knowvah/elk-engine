@@ -36,7 +36,7 @@ export class ParseSession<T extends Token = Token> {
     tokens: readonly T[],
     services: IValueConverterService,
     vocabulary: SessionVocabulary,
-    lines?: LineSource,
+    lines: LineSource,
   ) {
     this.cursor = new TokenCursor<T>(tokens, lines);
     this.#services = services;
