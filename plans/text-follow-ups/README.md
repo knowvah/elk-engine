@@ -111,7 +111,7 @@ A gate flake while a JVM job runs is rerun alone once (PF5).
 | [1b](batch-1b/overview.md) | EMF factory, C3 moves, C1 scope provider, C6 docs | T4–T7 | — (parallel with 1a) | [x] |
 | [2](batch-2/overview.md) | F1 terminal converters | T8 | T4 | [x] |
 | [3](batch-3/overview.md) | Docs closure for batches 1–2 | T9 | 1a, 1b, 2 | [x] |
-| [4](batch-4/overview.md) | F6 ingest (after the re-record) | T10 | T1, T9 | [ ] |
+| [4](batch-4/overview.md) | F6 ingest (after the re-record) | T10 | T1, T9 | [x] |
 | [5](batch-5/overview.md) | F5 ingest (after the sweep) | T11 (+T11b) | sweep, T10 | [ ] |
 | Final | Full gates incl. `elkj-vectors.sh`; stop 11 | — | 5 | [ ] |
 
