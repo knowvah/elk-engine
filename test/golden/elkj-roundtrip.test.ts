@@ -275,20 +275,6 @@ function endpointCounts(root: ElkNode): { raw: number; unresolved: number } {
   return { raw, unresolved };
 }
 
-/** An unpaired UTF-16 surrogate (matched as a code point only when it is not part of a pair). */
-const LONE_SURROGATE = /\p{Surrogate}/gu;
-
-/**
- * The reload the recorder saw: it feeds the written text as `text.getBytes(UTF_8)` (ElkjRoundTripVectors.java, `reparse`),
- * and `String.getBytes` encodes an unpaired surrogate as the replacement byte `?` (scenario `input-lone-surrogate-escape`,
- * `{ "id": "\ud800" }`: recorded id `?`, here the surrogate itself). Every other text is reloaded as written.
- */
-function reloadedAsRecorded(r: Run): NonNullable<Run['reloaded']> {
-  const written = r.written as string;
-  const transported = written.replace(LONE_SURROGATE, '?');
-  return transported === written ? (r.reloaded as NonNullable<Run['reloaded']>) : ElkGraphJsonText.load(transported);
-}
-
 /** The recorded row of a case compared with the run: written text, failure, reload errors and export, dropped endpoints. */
 function expectRecorded(row: RecordedRow, root: ElkNode, r: Run): void {
   expect(row.loadErrors).toBe(0);
@@ -299,7 +285,7 @@ function expectRecorded(row: RecordedRow, root: ElkNode, r: Run): void {
   expect(r.failure).toBeNull();
   expect(r.written).toBe(row.formatted);
   const reparse = row.reparse as NonNullable<RecordedRow['reparse']>;
-  const reloaded = reloadedAsRecorded(r);
+  const reloaded = r.reloaded as NonNullable<Run['reloaded']>;
   if (reparse.errors === 0) {
     expect(reloaded.errors).toHaveLength(0);
     expect(exportLikeOracle(reloaded.root as ElkNode)).toBe(reparse.json);
