@@ -6,6 +6,8 @@
 # they equal the oracle).
 #   salt   = sha256 over the program source, the calling script, this file, $ELK_ORACLE_DIR/oracle-build.json, the
 #            classpath string and `java -version` output: a recorder edit, oracle rebuild or JDK change starts afresh.
+#            The JVM's "Picked up JAVA_TOOL_OPTIONS: ..." banners are left out: heap and GC flags (the round-trip
+#            recorder needs a large heap) do not change what is recorded, and must not turn a warm run cold.
 #   inputs = sha256 over every file under tools/vectors/, test/corpus/elkt-curated/ and test/corpus/elkj-curated/
 #            (sorted relative paths and bytes).
 # Layout under $ELK_ORACLE_DIR/vector-cache/<elkt|elkj>/<Program>/<salt>/:
@@ -77,7 +79,7 @@ vc_init() { # vc_init <lang>; once per script run, before the first vc_run
   vc_enabled || return 0
   VC_ROOT="$ELK_ORACLE_DIR/vector-cache/$1"
   VC_INPUTS="$(vc_inputs_digest)"
-  VC_JAVA_VERSION="$(java -version 2>&1)"
+  VC_JAVA_VERSION="$(java -version 2>&1 | grep -v '^Picked up ')"
 }
 
 vc_salt() { # vc_salt <callingScript> <classpath> <program>
