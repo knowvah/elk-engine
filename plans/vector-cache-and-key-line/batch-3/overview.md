@@ -7,7 +7,7 @@ start time and pid. No agent; no code change.
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| [T4](T4-cache-proof.md) | Cold `elkj-vectors.sh` (fills the cache), warm rerun, then two evicted rows; all `cmp`-identical to the refs | orchestrator | `plans/vector-cache-and-key-line/decision-journal.md` | T3 | [ ] |
+| [T4](T4-cache-proof.md) | Cold `elkj-vectors.sh` (fills the cache), warm rerun, then two evicted rows; all `cmp`-identical to the refs | orchestrator | `plans/vector-cache-and-key-line/decision-journal.md` | T3 | [x] |
 
 Batch gate: README "Quality gates" (no `src/` change since batch 2, so typecheck, complexity and coverage carry over;
 journal that).

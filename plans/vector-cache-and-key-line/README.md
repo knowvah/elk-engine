@@ -108,7 +108,7 @@ git show --name-only --format= HEAD                               # ⊆ the task
 |-------|------|-------|------------|--------|
 | [1](batch-1/overview.md) | F7 vectors + fix; write-recorder row cache | T1, T2 | — | [x] |
 | [2](batch-2/overview.md) | Shared `vector-cache.sh` in both scripts | T3 | T2 | [x] |
-| [3](batch-3/overview.md) | C4 proof: cold, warm, evicted rows | T4 | T3 | [ ] |
+| [3](batch-3/overview.md) | C4 proof: cold, warm, evicted rows | T4 | T3 | [x] |
 | [4](batch-4/overview.md) | Docs and follow-ups closure | T5 | T1, T4 | [ ] |
 | Final | Full gates, `elkj-vectors.sh` warm; stop 11 | — | 4 | [ ] |
 
