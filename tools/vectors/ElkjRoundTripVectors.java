@@ -255,8 +255,8 @@ public class ElkjRoundTripVectors {
 
     private String reparse(String text) {
         Resource resource = freshResource(REPARSE);
-        try {
-            resource.load(new LazyStringInputStream(text, StandardCharsets.UTF_8.name()), Collections.emptyMap());
+        try (LazyStringInputStream in = new LazyStringInputStream(text, StandardCharsets.UTF_8.name())) {
+            resource.load(in, Collections.emptyMap());
             EcoreUtil.resolveAll(resource);
             int errors = resource.getErrors().size();
             boolean exportable = errors == 0 && !resource.getContents().isEmpty();
