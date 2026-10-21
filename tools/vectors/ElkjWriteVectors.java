@@ -4,7 +4,12 @@
 // ElkGraphJsonSemanticSequencer, ElkGraphJsonTransientValueService, ElkGraphJsonSyntacticSequencer,
 // ElkGraphJsonFormatter, the value converters, naming). This program only CALLS the serializer and the parser/exporter;
 // it embeds no ELK or Xtext implementation.
-// Run: tools/vectors/elkj-vectors.sh <outDir>  (java -cp ... ElkjWriteVectors.java <outDir> <tools/vectors dir>)
+// Run: tools/vectors/elkj-vectors.sh <outDir>  (java -cp ... ElkjWriteVectors.java <outDir> <tools/vectors dir> [<cacheDir>])
+// Optional row cache (default off, then everything is recorded in-process):
+//   <cacheDir>  each finished row is written to <cacheDir>/<sha256(id NUL text)>.json (text = the scenario file's bytes
+//               decoded as UTF-8; "" for java-* rows) via a .tmp file moved atomically, and a row already there is read
+//               back instead of recomputed ("cached <id>" on stderr). The caller salts the directory with everything the
+//               row depends on besides its input (this program, the oracle jars, the JDK).
 // Registry: first statement is LayoutMetaDataService.getInstance(new ClassLoader(null) { }) (CoreOptions only).
 // Inputs, all under <vectorsDir>/elkj-write-scenarios/ (the file base name is the row id) plus the java scenarios below:
 //   <family>-<what>.elkt  read like the oracle's ElkModelReader (ElkGraphStandaloneSetup + ResourceSetImpl).
@@ -125,6 +130,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -190,12 +197,13 @@ public class ElkjWriteVectors {
         ElkGraphStandaloneSetup.doSetup();
         ElkjWriteVectors reader = new ElkjWriteVectors(injector);
         Map<String, Supplier<Input>> inputs = new TreeMap<>();
+        Map<String, String> texts = new TreeMap<>();
         boolean failed = false;
         Path dir = Path.of(args[1]).resolve(SCENARIOS);
         try (var files = Files.list(dir)) {
             for (Path file : files.sorted().toList()) {
                 try {
-                    reader.addFile(inputs, file);
+                    reader.addFile(inputs, texts, file);
                 } catch (IOException | RuntimeException e) {
                     System.err.println("scenario failed: " + file.getFileName() + ": " + e.getMessage());
                     failed = true;
@@ -206,7 +214,8 @@ public class ElkjWriteVectors {
         if (failed) {
             throw new IOException("unreadable scenarios (see stderr)");
         }
-        Map<String, String> cases = recordAll(inputs);
+        Path cacheDir = args.length > 2 ? Path.of(args[2]) : null;
+        Map<String, String> cases = recordAll(inputs, texts, cacheDir);
         Files.writeString(Path.of(args[0]).resolve(OUT_NAME), document(cases), StandardCharsets.UTF_8);
     }
 
@@ -214,7 +223,12 @@ public class ElkjWriteVectors {
 
     // Serialising is slow (Xtext's stack-pruning PDA search per token) and its caches are not thread safe, so each
     // worker thread owns an injector; rows are keyed by id, so the output does not depend on the schedule.
-    private static Map<String, String> recordAll(Map<String, Supplier<Input>> inputs) throws Exception {
+    // texts holds the scenario-file rows' input text (the cache key); java-* rows have none and key on "".
+    private static Map<String, String> recordAll(Map<String, Supplier<Input>> inputs, Map<String, String> texts,
+            Path cacheDir) throws Exception {
+        if (cacheDir != null) {
+            Files.createDirectories(cacheDir);
+        }
         int threads = Math.max(1, Math.min(WORKERS, Runtime.getRuntime().availableProcessors()));
         ThreadLocal<ElkjWriteVectors> perThread = ThreadLocal.withInitial(
                 () -> new ElkjWriteVectors(new ElkGraphJsonStandaloneSetup().createInjector()));
@@ -222,10 +236,21 @@ public class ElkjWriteVectors {
         try {
             Map<String, Future<String>> futures = new TreeMap<>();
             inputs.forEach((id, input) -> futures.put(id, pool.submit(() -> {
+                String key = sha256(id + "\0" + texts.getOrDefault(id, ""));
+                Path cached = cacheDir == null ? null : cacheDir.resolve(key + ".json");
+                if (cached != null && Files.exists(cached)) {
+                    System.err.println("cached " + id);
+                    return Files.readString(cached, StandardCharsets.UTF_8);
+                }
                 long start = System.nanoTime(), cpuStart = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime();
                 Input in = input.get();
                 String row = perThread.get().record(id, in.source, in.root);
                 long cpu = ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime() - cpuStart;
+                if (cached != null) {
+                    Path tmp = cacheDir.resolve(key + ".tmp");
+                    Files.writeString(tmp, row, StandardCharsets.UTF_8);
+                    Files.move(tmp, cached, StandardCopyOption.ATOMIC_MOVE);
+                }
                 System.err.println("done " + id + " " + (System.nanoTime() - start) / NANOS_PER_MS + " ms wall, "
                         + cpu / NANOS_PER_MS + " ms cpu");
                 return row;
@@ -249,7 +274,7 @@ public class ElkjWriteVectors {
         return out.toString();
     }
 
-    private void addFile(Map<String, Supplier<Input>> inputs, Path file) throws IOException {
+    private void addFile(Map<String, Supplier<Input>> inputs, Map<String, String> texts, Path file) throws IOException {
         String name = file.getFileName().toString();
         String ext = name.endsWith(ELKT) ? ELKT : name.endsWith(JSON) ? JSON : name.endsWith(ELKJ) ? ELKJ : null;
         if (ext == null) {
@@ -262,6 +287,19 @@ public class ElkjWriteVectors {
             default -> readElkj(file);
         };
         inputs.put(id, () -> new Input(ext.substring(1), root));
+        texts.put(id, new String(Files.readAllBytes(file), StandardCharsets.UTF_8));
+    }
+
+    private static String sha256(String s) {
+        try {
+            StringBuilder hex = new StringBuilder();
+            for (byte b : MessageDigest.getInstance("SHA-256").digest(s.getBytes(StandardCharsets.UTF_8))) {
+                hex.append(String.format("%02x", b));
+            }
+            return hex.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     // Mirrors tools/oracle/harness/ElkModelReader.readElkt.
