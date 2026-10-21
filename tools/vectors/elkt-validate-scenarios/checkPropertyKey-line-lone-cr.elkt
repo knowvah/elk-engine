@@ -1,0 +1,2 @@
+// @covers 52-58 (unknown key after lone CR breaks: the issue line counts CR like the node model)
+node a {  unknown.one: 1  unknown.two: 2}
