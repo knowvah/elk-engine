@@ -8,6 +8,9 @@
 # Usage: elkt-vectors.sh <outDir>
 # Honours ELK_ORACLE_DIR (default <repo>/../elk-oracle) and P2_BUNDLES. ELKT_VECTORS_LIST=1 prints the
 # programs that would run (sorted) and exits without running them.
+# Results are cached by salted input hash under $ELK_ORACLE_DIR/vector-cache/elkt/ (vector-cache.sh): a program
+# whose inputs are byte-identical to an earlier run's is not run again, and each program prints one "cache: ..."
+# line. ELK_VECTORS_CACHE=off runs every program cold and touches no cache.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -28,6 +31,9 @@ die() {
   echo "error: $1" >&2
   exit 1
 }
+
+# shellcheck source=tools/vectors/vector-cache.sh
+. "$VECTORS_DIR/vector-cache.sh"
 
 oracle_field() { # oracle_field <commit|jars>; jars = every oracle jar, one per line
   node -e '
@@ -93,11 +99,12 @@ main() {
   check_xtext_version
   cp="$(build_classpath)"
   mkdir -p "$1"
+  vc_init elkt
   while IFS= read -r program; do
     [ -n "$program" ] || continue
     echo "running $(basename "$program")" >&2
     rc=0
-    java -cp "$cp" "$program" "$1" "$VECTORS_DIR" || rc=$?
+    vc_run "$VECTORS_DIR/elkt-vectors.sh" "$cp" "$program" "$1" || rc=$?
     [ "$rc" -eq 0 ] || die "$(basename "$program") failed (exit $rc)"
   done < <(programs)
 }

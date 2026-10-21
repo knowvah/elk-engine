@@ -38,7 +38,9 @@
 // StringReader), so an unpaired surrogate reaches the reparse unchanged.
 // Optional resumable mode (for hours-long runs; default off, then everything is recorded in-process):
 //   <cacheDir>  each finished case is written to <cacheDir>/<sha256(id NUL text)>.json and a case already there is not
-//               recomputed; a restarted run completes the missing ones.
+//               recomputed; a restarted run completes the missing ones. elkj-vectors.sh passes
+//               $ELK_ORACLE_DIR/vector-cache/elkj/ElkjRoundTripVectors/<salt>/rows, the salt covering this program, the
+//               scripts, the oracle jars and the JDK (vector-cache.sh), so the key itself stays code-independent.
 //   <idsFile>   only the ids listed (one per line) are recorded, and only they are written to the output (staged runs).
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
