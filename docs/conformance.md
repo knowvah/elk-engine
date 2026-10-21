@@ -408,7 +408,9 @@ follow Xtext's node model like `.elkj` (a lone CR counts as a line break): the p
 JVM scenarios (`link-cr-line-numbers`, `link-crlf-line-numbers`, `err-syntax-cr-line-number`,
 `err-syntax-crlf-line-number`); `graph-text-parse.json` 301 to 305 cases (syntax-error cases 99 to 101), linking
 diagnostic cases in `ElkGraphLinker.test.ts` 47 to 51, no existing row changed. Property keys
-(`ElkGraphParser.ts`, `#parsePropertyKey`) still use the ANTLR token line (follow-up F7).
+(`ElkGraphParser.ts`, `#parsePropertyKey`) followed in vector-cache-and-key-line T1 (F7): two JVM validate scenarios
+(`checkPropertyKey-line-lone-cr`, `checkPropertyKey-line-crlf`), `graph-text-validate.json` 76 to 78 cases, no
+existing row changed; before the fix the lone-CR row reported both key issues on line 2, the oracle on lines 3 and 5.
 
 **Regenerate.** `tools/oracle/elkt-sweep.sh [--force]` writes `$ELK_ORACLE_DIR/sweep/elkt-<elkCommit>-<modelsCommit>/`
 (`parse/`, `parse-json/`, `validate/`, `write/`, `results.jsonl`, `summary.json`; never in the repo, AD-5) and
@@ -488,7 +490,7 @@ output URI, and `ElkjSweep.java` normalises the directory. Largest curated model
   the reparsed `Double`) and `FLOAT.toString(int:1)` (an `Integer` prints `1`, which lexes as `SIGNED_INT`).
 - **Diagnostic lines versus token lines.** Diagnostics follow Xtext's node model (LF, lone CR, CRLF;
   `InternalNodeModelUtils.computeLineBreaks`); token rows follow ANTLR (LF only). Both languages pass the node-model
-  `LineSource` (`.elkt` since text-follow-ups T2, F2; see section 7). Where Java's `charAt(offset)` would throw at a text-final `\r`, the
+  `LineSource` (`.elkt` since text-follow-ups T2, F2, and its property-key lines since vector-cache-and-key-line T1, F7; see section 7). Where Java's `charAt(offset)` would throw at a text-final `\r`, the
   port treats the character as not `\n`.
 - **`EObjectValidator` once.** `.elkj` has no registry default, so the registrar's `validator == null` branch
   builds a fresh composite holding one `EObjectValidator`, and each EMF constraint is reported once (code
