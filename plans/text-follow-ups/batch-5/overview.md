@@ -6,8 +6,8 @@ Starts when the F5 oracle sweep has finished (`summary.json` written, the proces
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| [T11](T11-f5-ingest.md) | Run the TS sweep test against the fuller sweep; record indicators; D4 triage | orchestrator | see task | sweep, T10 | [ ] |
-| T11b | D4 in-mission fix, only if T11 finds a qualifying divergence (spec written into the journal by T11) | per fix | the fix's files (must already be in some task's write-set) | T11 | [ ] |
+| [T11](T11-f5-ingest.md) | Run the TS sweep test against the fuller sweep; record indicators; D4 triage | orchestrator | see task | sweep, T10 | [x] |
+| T11b | D4 in-mission fix, only if T11 finds a qualifying divergence (spec written into the journal by T11) | per fix | the fix's files (must already be in some task's write-set) | T11 | [x] not needed (no divergence; journal T11) |
 
 ## Launch
 
