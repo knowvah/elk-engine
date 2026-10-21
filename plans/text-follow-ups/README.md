@@ -113,9 +113,24 @@ A gate flake while a JVM job runs is rerun alone once (PF5).
 | [3](batch-3/overview.md) | Docs closure for batches 1–2 | T9 | 1a, 1b, 2 | [x] |
 | [4](batch-4/overview.md) | F6 ingest (after the re-record) | T10 | T1, T9 | [x] |
 | [5](batch-5/overview.md) | F5 ingest (after the sweep) | T11 (+T11b) | sweep, T10 | [x] |
-| Final | Full gates incl. `elkj-vectors.sh`; stop 11 | — | 5 | [ ] |
+| Final | Full gates incl. `elkj-vectors.sh`; stop 11 | — | 5 | [x] |
 
 ## Documents
 
 [decisions.md](decisions.md) · [decision-journal.md](decision-journal.md) ·
 [diagrams/data-flow.md](diagrams/data-flow.md) · [diagrams/component-map.md](diagrams/component-map.md)
+
+## Session summary (2026-10-21)
+
+- **Tasks:** 11 of 11 planned done (T1–T11); T11b not needed (the F5 sweep showed no divergence). F1, F2, F4, F5,
+  F6, C1, C3, C6 closed; C4 stays open; F7 (`.elkt` property-key line, `ElkGraphParser.ts:231`) added.
+- **Decisions:** 38 journal rows. Three stops reached the user: stop 6 at start (C5 not yet on `main`, resolved by
+  PR #14), stop 1 in T2 (write-set extended by `ElkGraphParserEdges.ts`, `:231` deferred as F7), stop 4 in T8 (two
+  `FLOAT.toString` rows added to `UNREPRESENTABLE_ROWS`, 3 → 5). One deviation: T1's 20-id scratch check was folded
+  into the full re-record.
+- **Quality gates:** final gate green on the branch head: format, typecheck, complexity, coverage 99.34 / 97.95 /
+  99.33 / 99.37, `elkt-vectors.sh` and all six `elkj-vectors.sh` files `cmp`-identical to the refs, regenerated refs
+  unchanged, docs build. F5 sweep: 385 graphs (345 + 40 sampled), every indicator 0 diffs, 0 of 1,482 double runs
+  nondeterministic.
+- **Known issues / follow-ups:** C4 (`elkj-vectors.sh` takes hours: 3 h 46 min here), F7. One batch 1–2 coverage
+  run flaked on a timing budget under JVM load (PF5; green alone and in every later run).
