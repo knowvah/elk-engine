@@ -142,3 +142,43 @@
 - **Impact**: the generator port must not rely on the `isMW`/`isMD`/`isPF` flags for behaviour; they are
   validator-only.
 - **Confidence**: High
+
+## Observation: validator issue positions and recovery semantics reproduced without the EObject pipeline
+
+- **Context**: T9 (`GRandomValidator`, `GRandomText.validate`, parser positions)
+- **Finding**: the recorded check issues sit on the flag keyword token (`maxWidth` 8, `maxDegree` 9,
+  `partitionFraction` 17) with node-model lines; recording only those three positions in the parser reproduces all
+  23 rows. The recorder sorted issues by (line, offset, severity, code, message), so Xtext's emission order is not
+  recorded. Xtext keeps a configuration whose body fails after `generate N form` and still runs the validator on it
+  (`syntax-error-with-validator-error`, `duplicate-member-validator-error-recovery`); a parser that drops the partial
+  configuration cannot match those rows. No recorded row has a conversion issue after a syntax error.
+- **Impact**: a port of a `@Check` method needs only the positions of the features it reports on; the sort must be
+  applied to both sides when comparing with the recorder.
+- **Confidence**: High
+
+## Observation: `RandomGraphGenerator` ports mode is largely broken in the Java (kept verbatim)
+
+- **Context**: T11 port of `moveSource`/`moveTarget`/`split`/`connect` with tests derived from the Java
+- **Finding**: with ports enabled, `moveSource`/`moveTarget` given a node shape execute
+  `newNode = (ElkNode) oldConnectShape` (the OLD shape) and `retrievePort(newNode, true)` even for targets: an old
+  node gets a fresh port of the old node as the new end; an old port throws `ClassCastException` after the old port
+  was already removed from the edge (and from its node when it had 0 outgoing and 1 incoming edge); a new port shape
+  leaves `newNode` null and `isHypernode(null)` throws NPE (`TypeError` here). `split` therefore always throws with
+  ports enabled (`getTargets().get(0)` is a port). `moveSource`/`moveTarget` remove from the end list while
+  iterating: removing a non-last element ends the loop and skips the next element (same in TS); removing the last
+  element throws `ConcurrentModificationException` in Java but an index exception in TS (`BasicEList` has no
+  modCount). `connect` with a hypernode end still creates the port but does not attach it; two hypernode ends make
+  `updateContainment` throw `IllegalArgumentException`. An edge to a node's own child is contained in that node.
+- **Impact**: any seeded scenario that reaches these paths would record a JVM exception; none of the recorded
+  scenarios does. Do not "fix" them.
+- **Confidence**: High
+
+## Observation: `float` arithmetic sites in the generator elements
+
+- **Context**: T11 `createPort`/`distributePorts`
+- **Finding**: `PORT_SEPARATION` is a `float` 7.0; `(count + 1) * (portWidth + PORT_SEPARATION)` is
+  `fround(fround(size + SEP) * (count + 1))` (with size 0.1: width 14.199999809265137, height 7.099999904632568;
+  double arithmetic differs). `reusePortsChance` comes from `floatVal`; port deltas/positions are doubles.
+  `BlindTextGenerator.generate` ends with `trim()`, so lengths are 38–49.
+- **Impact**: byte-exact sizes depend on these `fround` sites.
+- **Confidence**: High
