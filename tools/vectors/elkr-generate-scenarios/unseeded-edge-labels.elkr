@@ -1,0 +1,7 @@
+generate 1 graphs {
+    nodes = 6
+    edges total = 8 {
+        labels
+    }
+    seed = 101
+}

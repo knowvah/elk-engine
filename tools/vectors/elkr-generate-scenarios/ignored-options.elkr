@@ -1,0 +1,10 @@
+generate 1 graphs {
+    nodes = 8
+    edges total = 10
+    maxWidth = 2
+    maxDegree = 2
+    partitionFraction = 0.2
+    format = elkt
+    filename = "ignored.elkt"
+    seed = 65
+}

@@ -1,0 +1,9 @@
+generate 1 trees {
+    nodes = 8
+    seed = 83
+}
+generate 2 bipartite graphs {
+    nodes = 9
+    edges total = 10
+    seed = 83
+}

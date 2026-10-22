@@ -1,0 +1,6 @@
+generate 1 bipartite graphs {
+    nodes = 12
+    edges total = 14
+    partitionFraction = 0.3
+    seed = 64
+}

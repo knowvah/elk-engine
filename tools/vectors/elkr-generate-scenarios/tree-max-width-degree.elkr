@@ -1,0 +1,6 @@
+generate 1 trees {
+    nodes = 20
+    maxWidth = 3
+    maxDegree = 2
+    seed = 61
+}

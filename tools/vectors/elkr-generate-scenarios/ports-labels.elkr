@@ -1,0 +1,9 @@
+generate 1 graphs {
+    nodes = 5 {
+        ports {
+            labels
+        }
+    }
+    edges total = 7
+    seed = 38
+}

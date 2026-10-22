@@ -1,0 +1,11 @@
+generate 1 graphs {
+    nodes = 6 {
+        ports {
+            incoming west = 10 to 30
+            outgoing south = 40 +/- 5
+            outgoing east = 70
+        }
+    }
+    edges total = 10
+    seed = 35
+}

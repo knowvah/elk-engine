@@ -1,0 +1,7 @@
+generate 1 graphs {
+    nodes = 8
+    edges outgoing = 2 {
+        self loops
+    }
+    seed = 26
+}

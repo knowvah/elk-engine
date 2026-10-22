@@ -1,0 +1,9 @@
+generate 1 graphs {
+    nodes = 6 {
+        ports {
+            constraint = position
+        }
+    }
+    edges total = 8
+    seed = 33
+}

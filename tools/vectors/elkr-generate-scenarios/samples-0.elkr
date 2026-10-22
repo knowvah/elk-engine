@@ -1,0 +1,5 @@
+generate 0 graphs {
+    nodes = 7
+    edges total = 9
+    seed = 82
+}
