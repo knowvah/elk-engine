@@ -80,3 +80,21 @@ describe('shuffle', () => {
     expect(used.nextLong()).toBe(new Random(3n).nextLong());
   });
 });
+
+describe('shuffle (one-argument form)', () => {
+  it('permutes in place, preserving the multiset', () => {
+    const input = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const list = [...input];
+    shuffle(list);
+    expect([...list].sort((a, b) => a - b)).toEqual(input);
+  });
+
+  it('is not the identity on every call (unseeded source)', () => {
+    const input = Array.from({ length: 20 }, (_v, i) => i);
+    const a = [...input];
+    const b = [...input];
+    shuffle(a);
+    shuffle(b);
+    expect(a.every((v, i) => v === input[i]) && b.every((v, i) => v === input[i])).toBe(false);
+  });
+});
