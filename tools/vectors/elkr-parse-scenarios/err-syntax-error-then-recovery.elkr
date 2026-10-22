@@ -1,0 +1,2 @@
+generate 1 graphs { zzz }
+generate 2 trees { seed = 3 }

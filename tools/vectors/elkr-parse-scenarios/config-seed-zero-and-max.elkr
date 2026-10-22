@@ -1,0 +1,2 @@
+generate 1 graphs { seed = 0 }
+generate 1 graphs { seed = 2147483647 }

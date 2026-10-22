@@ -1,0 +1,6 @@
+generate 2 trees
+generate 5 graphs { nodes = 4 }
+generate 1 acyclic graphs {
+    seed = 7
+    format = elkg
+}

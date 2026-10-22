@@ -1,0 +1,2 @@
+// größe 日本語
+generate 1 /* é */ graphs { /* 😀 */ maxDegree /* x */ = 3 }

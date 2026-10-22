@@ -1,0 +1,6 @@
+generate 1 graphs { nodes = 1 { ports {
+    size { }
+    outgoing west = 4
+    outgoing west = 5
+    constraint = free
+} } }

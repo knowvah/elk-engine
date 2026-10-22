@@ -1,0 +1,2 @@
+generate 1 graphs { nodes = 007.500 }
+generate 1 graphs { nodes = 0.0 }

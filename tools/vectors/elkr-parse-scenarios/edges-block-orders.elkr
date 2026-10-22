@@ -1,0 +1,5 @@
+generate 1 graphs { edges total = 1 { } }
+generate 1 graphs { edges total = 1 { labels } }
+generate 1 graphs { edges total = 1 { self loops } }
+generate 1 graphs { edges total = 1 { labels self loops } }
+generate 1 graphs { edges total = 1 { self loops labels } }

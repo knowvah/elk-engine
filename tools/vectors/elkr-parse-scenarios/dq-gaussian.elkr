@@ -1,0 +1,3 @@
+generate 1 graphs { nodes = 5 +/- 1 }
+generate 1 graphs { nodes = 5.5 +/- 0.25 }
+generate 1 graphs { nodes = 5+/-1 }

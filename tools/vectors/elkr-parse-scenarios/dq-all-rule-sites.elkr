@@ -1,0 +1,18 @@
+generate 1 bipartite graphs {
+    nodes = 1 {
+        ports {
+            re-use = 2 to 3
+            size { height = 4 width = 5 +/- 6 }
+            incoming north = 1
+        }
+        size { height = 7.5 }
+    }
+    edges density = 8 to 9
+    partitionFraction = 10 +/- 11
+    hierarchy {
+        levels = 1
+        cross-hierarchy edges = 2 to 3
+        compound nodes = 4 +/- 5
+        cross-hierarchy relative edges = 6.5
+    }
+}

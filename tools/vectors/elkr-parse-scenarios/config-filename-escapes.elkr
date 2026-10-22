@@ -1,0 +1,3 @@
+generate 1 graphs { filename = "a\tb\nc\rd\\e\"f\'g\bh\fi" }
+generate 1 graphs { filename = 'single \'quoted\' "x"' }
+generate 1 graphs { filename = "dir/sub dir/file.elkt" }

@@ -1,0 +1,4 @@
+generate 1 graphs { edges density = 0.5 }
+generate 1 graphs { edges total = 20 }
+generate 1 graphs { edges relative = 1.5 }
+generate 1 graphs { edges outgoing = 2 }

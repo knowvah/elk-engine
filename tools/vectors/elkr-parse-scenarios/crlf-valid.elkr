@@ -1,0 +1,4 @@
+generate 1 graphs
+// comment
+{ nodes = 2 +/- 1
+  edges total = 3 }

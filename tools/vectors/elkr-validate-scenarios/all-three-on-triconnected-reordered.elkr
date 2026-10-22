@@ -1,0 +1,5 @@
+generate 1 triconnected graphs {
+    partitionFraction = 5 +/- 1
+    maxDegree = 4
+    maxWidth = 3
+}

@@ -1,0 +1,8 @@
+generate 1 graphs { nodes = 3 { ports labels size remove isolated } }
+generate 1 graphs { nodes = 3 { remove isolated size labels ports } }
+generate 1 graphs { nodes = 3 { labels remove isolated ports size } }
+generate 1 graphs { nodes = 3 { size ports } }
+generate 1 graphs { nodes = 3 { labels } }
+generate 1 graphs { nodes = 3 { remove isolated } }
+generate 1 graphs { nodes = 3 { ports } }
+generate 1 graphs { nodes = 3 { size } }

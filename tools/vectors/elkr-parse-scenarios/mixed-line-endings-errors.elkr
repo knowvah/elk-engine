@@ -1,0 +1,4 @@
+generate 1 graphs
+{
+  seed = 1  nodes 2
+}

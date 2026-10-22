@@ -1,0 +1,11 @@
+generate 1 trees {
+    seed = 1
+    hierarchy { }
+    nodes = 3 { remove isolated }
+    maxWidth = 2
+    edges outgoing = 1
+    filename = ""
+    maxDegree = 2
+    partitionFraction = 3
+    format = elkt
+}

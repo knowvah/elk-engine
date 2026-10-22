@@ -1,0 +1,9 @@
+generate 1 trees { nodes = 1 }
+generate 1 trees { edges total = 1 }
+generate 1 trees { maxWidth = 1 }
+generate 1 trees { maxDegree = 1 }
+generate 1 trees { partitionFraction = 1 }
+generate 1 trees { hierarchy }
+generate 1 trees { seed = 1 }
+generate 1 trees { format = elkt }
+generate 1 trees { filename = "f" }

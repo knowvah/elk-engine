@@ -1,0 +1,2 @@
+generate 1 graphs { hierarchy { compound
+nodes = 1 } }

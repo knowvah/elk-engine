@@ -1,0 +1,6 @@
+generate 1 graphs { nodes = 1 { ports {
+    incoming north = 1
+    incoming north = 2
+    outgoing north = 3
+    incoming north = 4
+} } }

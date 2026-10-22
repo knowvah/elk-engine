@@ -1,0 +1,3 @@
+generate 1 graphs { edges total = 2  nodes = 2 }
+generate 1 graphs { format = elkg  seed = 2 }
+generate 1 graphs { filename = "x"  hierarchy  maxDegree = 9 }
