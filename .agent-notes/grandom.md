@@ -182,3 +182,48 @@
   `BlindTextGenerator.generate` ends with `trim()`, so lengths are 38–49.
 - **Impact**: byte-exact sizes depend on these `fround` sites.
 - **Confidence**: High
+
+## Observation: `generateAnyGraph`'s hierarchy recursion binds the wrong Java overload (kept verbatim)
+
+- **Context**: T12 port of `generateAnyGraph(ElkNode, int, int)` (the outgoing-edges form)
+- **Finding**: the recursive call `generateAnyGraph(node, cn, hierarchyLevel + 1, maxHierarchyLevel)` has four int
+  arguments, so Java binds the `(parent, n, m, hierarchyLevel)` overload with `m = hierarchyLevel + 1` and
+  `hierarchyLevel = maxHierarchyLevel`: each compound child gets one edge attempt and the recursion stops one level
+  down. `nodeLabelCounter` is incremented per node even without labels. `findNodeWithDFS` walks node-level outgoing
+  edges only, so in ports mode a DFS from a node finds nothing. `addHierarchicalNodes` appends the hierarchical nodes
+  after `atomicNodes` was copied, so the parent has more children than the first atomic list.
+  `new RandomGraphGenerator(null)` (the harness) needs `null as unknown as Random` in TS; `generate(Configuration)`
+  replaces the field before any draw.
+- **Impact**: byte-exact replay depends on reproducing the overload binding, not the apparent intent.
+- **Confidence**: High
+
+## Observation: `float` and index quirks in the tree, bipartite and connected generators
+
+- **Context**: T13 port of `generateBipartite`/`generateTree`/`generateBiconnectedGraph`/`generateTriconnectedGraph`
+- **Finding**: all four hierarchy blocks have identical Java text (`cn = randomInt(1, (int)(hierarchyNodesFactor * n))`,
+  a float product → `d2i(fround(f * n))`). Bipartite `cm = roundFloat(fround(fround(cn / n) * m))`. Biconnected
+  `cm = (int) density * cn * cn` casts only `density` (`fround(fround(m) / fround(n*n))`), so `cm` is 0 for density
+  < 1; its hierarchy uses the original `n`/`m`, not `realN`/`realM`. Triconnected `p1 + p2` is a float sum; the
+  double `x` is compared against the widened floats. The tree out-degree check `size + 1 == maxDeg` removes the node
+  from `possible` before it gets its child, so the final out-degree reaches `maxDeg`; a removal does
+  `possible[x] = possible[max--]` and the width case `continue`s without advancing `i`. `generateBipartite` with
+  `cn = 1` under hierarchy gives `n1 = 0` and `nextInt(0)` throws (`IllegalArgumentException` in Java, `RangeError` in
+  TS); `generateTree` with `n = 0` throws `ArrayIndexOutOfBoundsException` in Java only (TS arrays grow) — no recorded
+  row reaches either.
+- **Impact**: byte-exact replay depends on these casts and the removal order; the exception-type differences are
+  outside every recorded scenario.
+- **Confidence**: High
+
+## Observation: `generateANTEGraph`'s virtual-node machinery is dead in practice (kept verbatim)
+
+- **Context**: T14 port of `generateANTEGraph`, `HierarchyEdge`, the comparators
+- **Finding**: `vrt[]` is only ever 0, so the virtual-node chain (`while (vrt[next] != 0)`) never runs, `edgeIn`/
+  `edgeOut` stay empty and the planar `Collections.sort` calls are no-ops; each start edge connects `nnr[tail]` to
+  `nnr[head]` directly; `nnr` is allocated `3*n` but only `n` slots are used; `edgeOut[act].remove(0)` would throw
+  on the empty list but is unreachable. One `nextFloat` is drawn per child of `parent` while assigning layers (the
+  loop iterates `parent.getChildren()`, not only the `n` created nodes) and again per `n1` iteration of the edge
+  loop. `m` is a `float` (`x1 = m`); `(int) density * cn * cn` casts density first, so every compound child gets
+  `m = 0`. Only the `form-acyclic` vector row reaches ANTE; the other branches are proven by source-derived unit
+  tests only.
+- **Impact**: a future vector widening for ANTE (planar, single source, hierarchy) would pin the unit-tested branches.
+- **Confidence**: High
