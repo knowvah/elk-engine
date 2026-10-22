@@ -132,9 +132,34 @@ commits per task. `npm run docs:build` green before T15 is marked done.
 | [3](batch-3/overview.md) | GeneratorOptions; parser | T7–T8 | 2 | [x] |
 | [4](batch-4/overview.md) | Validator + facade; ConfigurationParser | T9–T10 | 3 | [x] |
 | [5](batch-5/overview.md) | RandomGraphGenerator (sequential) | T11–T14 | 4 | [x] |
-| [6](batch-6/overview.md) | Docs, runbook, roadmap | T15 | 5 | [ ] |
+| [6](batch-6/overview.md) | Docs, runbook, roadmap | T15 | 5 | [x] |
 
 ## Documents
 
 [decisions.md](decisions.md) · [decision-journal.md](decision-journal.md) ·
 [diagrams/data-flow.md](diagrams/data-flow.md) · [diagrams/component-map.md](diagrams/component-map.md)
+
+## Mission summary (2026-10-22)
+
+- **Tasks:** 15 of 15 complete (T1–T15), six batches, one unsigned commit per task plus one `docs(plans)` commit per
+  batch; 23 commits over `main` at `9f081f0`. Nothing pushed, signed or merged (D9).
+- **Exit (D1):** all nine `test/corpus/generated/*.elkr` regenerate their `.json` byte for byte
+  (`src/core/debug/grandom/GRandomCorpus.test.ts`); every vector row replays: 433 lexer rows exact, 142 parse rows
+  (77 exact model dumps, 65 syntax by presence, 9 conversion rows exact), 23 validate rows (20 exact, 3 presence-only
+  for the parser syntax issue), 58 seeded generate rows (62 graphs) byte-exact, 6 unseeded rows (7 graphs) by
+  invariants, 12 randval rows exact.
+- **Decisions:** 30 journal rows. Flagged for review: option A (user-approved amendment of D2 and T9's write-set: plain
+  model, no `EObject`; parser and validator use `src/xtext` primitives but not `ParseSession`/`Diagnostician`;
+  positions recorded by the parser); the batch-2 coverage gate accepted after two timing-flake failures under
+  external load (mechanism named, test passes in isolation, no `src/xtext` change); complexity-only helper splits
+  inside Java methods (draw order unchanged); T12's scaffolding tests removed by the orchestrator in T13; the brief's
+  `BlindTextGenerator` bound corrected to the Java's 38–49.
+- **Gates (final):** format, typecheck, complexity, coverage (99.33/97.41/99.31/99.35), `npm test` green; refs and
+  corpus unchanged; all four grandom vector files re-record byte-identical; no placeholder; `docs:build` green.
+  Stop 12 could not be measured at the baseline's load (external load ≥ 100 all afternoon); the like-for-like
+  coverage run (124 s vs 155 s) shows no regression.
+- **Follow-ups:** ANTE branches beyond `form-acyclic` are proven by source-derived unit tests only (widen the generate
+  vectors to pin planar / single-source / hierarchy); `cross-hierarchy relativex` and `self loopsx` lexer inputs are
+  rule-derived, not vector-pinned; no shared `devAssert` helper exists (Java `assert`s omitted with comments);
+  `Connect` and `Elements` import each other (function-body use; no cycle fitness test); the `.ide` bundle stays
+  deferred.
