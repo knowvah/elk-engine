@@ -66,7 +66,7 @@
   `ISyntaxErrorMessageProvider` (message untouched). `Integer` conversion messages are JDK `NumberFormatException`
   text (`For input string: "2.5"`; `2.0` is an error too); the diagnostic spans the whole `INT '.' INT` text, and
   `1 . 5` converts the text `1 . 5` (spaces included). Bad string escapes: `Invalid escape sequence (valid ones are
-  \b  \t  \n  \f  \r  \"  \'  \\ )` (double spaces) and `Invalid unicode`. Double overflow is not an error
+\b  \t  \n  \f  \r  \"  \'  \\ )` (double spaces) and `Invalid unicode`. Double overflow is not an error
   (`Infinity`, `1.0E10`). An unset `format` reads `elkt`; other unset enums are `null`. A UTF-8 BOM is not skipped
   (`missing EOF at '<BOM>'`). `missing X at 'tok'` diagnostics have length 1. Diagnostic lines count lone CR and
   CRLF as one break each (node model). Flows must be contiguous inside the `ports` group. Validator issues sit on
@@ -89,4 +89,56 @@
   `cross-hierarchy edges = 0` never reaches the unseeded shuffle, so it is seeded. `PARTITION_FRAC` default
   `exact(0.4f)` widens to `0.4000000059604645`.
 - **Impact**: the TS `ConfigurationParser`/generator ports must preserve this draw order and these defaults.
+- **Confidence**: High
+
+## Observation: `GeneratorOptions` float defaults and `RandVal` facts
+
+- **Context**: T7 port of `GeneratorOptions.java`
+- **Finding**: `HIERARCHY_CHANCE = fround(0.05)` (stored `0.05000000074505806`), `HIERARCHY_NODES_FACTOR = fround(0.5)`,
+  `HYPERNODE_CHANCE = fround(0)`; `PARTITION_FRAC = exact(fround(0.4))` = `0.4000000059604645`;
+  `USE_EXISTING_PORTS_CHANCE = exact(0.3)` is a double; `PORT_WIDTH`/`PORT_HEIGHT` are `exact(4d)`;
+  `EXACT_RELATIVE_HIER` defaults to `null`; `PORT_CONSTRAINTS` defaults to `UNDEFINED` (a parsed `ports` block sets
+  `FREE`). `RandVal.intVal`/`defaultInt` are `l2i(roundToLong(x))` (Java `(int) Math.round(double)`), `floatVal` is
+  `fround(val(r))`; `setMin`/`setMax` take Java `int`s. Vector `Float.toString` text round-trips through
+  `Math.fround(Number(text))`; `Double.toString` text round-trips through `Number(text)`.
+- **Impact**: any TS consumer comparing recorded float text must `fround` after parsing.
+- **Confidence**: High
+
+## Observation: the `src/xtext` parser and validation runtime is `EObject`-typed; the grandom model is not
+
+- **Context**: T8 (parser) and the batch-4 pre-flight for T9 (validator)
+- **Finding**: `ParseSession.assign/number/contain/identifier`, `ParseRecords`/`IssueLocator` (positions keyed by
+  `EObject` and feature name), `Diagnostician` (`eClass().getName()`, `eAllContents()`),
+  `AbstractDeclarativeValidator.rootOf` (`eContainer()`) and `resolveMessageArgs` all need `EObject`s. Mission 2's
+  ElkGraph classes extend `BasicEObjectImpl`; the T5 grandom classes (D3 "plain classes") have no EObject base, so T8
+  bypassed `ParseSession` with local helpers and carries no positions. `EFactoryValueConverter.ts` converts EString
+  only; Integer/Double conversion for `.elkr` lives in `GRandomParserElements.ts`.
+- **Impact**: a validator wired through `ResourceValidatorImpl`/`Diagnostician` needs the grandom classes to be
+  `EObject`s (or a bypass); issue positions (flag keyword offset/length) need the parser to record them.
+- **Confidence**: High
+
+## Observation: `.elkr` parser conversion details
+
+- **Context**: T8 replay
+- **Finding**: the conversion diagnostic spans from the first `INT` to the last `INT` of a `Double`/`Integer` value
+  including hidden text (`1 . 5` → text `"1 . 5"`); the message is the cause's message when non-empty
+  (`AbstractInternalAntlrParser.java:477-485`). `DoubleQuantity`'s alternative is chosen by the token after the first
+  number (`to`, `+/-`, else `quant`), and assignments run in source order. For `maxWidth`/`maxDegree`/
+  `partitionFraction` the boolean flag is set before the value, so a failed `Integer` leaves the flag `true` and the
+  value `null`. An unterminated `/* …` lexes as one `<invalid>` over the whole remaining text.
+- **Impact**: the validator sees `isMW()` true even when `getMaxWidth()` is null after a conversion error.
+- **Confidence**: High
+
+## Observation: `ConfigurationParser` reads values, not flags; compiled-Xtend null guards
+
+- **Context**: T10 port against `xtend-gen/.../ConfigurationParser.java`
+- **Finding**: `parse` never reads `isMW()`/`isMD()`/`isPF()`; it tests `getMaxWidth()`/`getMaxDegree()`/`getFraction()`
+  for null, so a value that failed conversion is simply not set. `edges` checks `total`, then `density`, then
+  `relative`, else `OUTGOING` (`isOutbound()` is never read). The compiled switches carry `if (x != null)` guards and
+  `default: break`, so a null enum sets nothing and a null `ConstraintType` yields `UNDEFINED` (unreachable from the
+  parser, whose enum defaults are `TREES`/`INCOMING`/`NORTH`/`FREE`). `SMALL_HIERARCHY` is set to
+  `numHierarchNodes == null` whenever a `hierarchy` block exists; `ports` always sets `SET_PORT_SIZE` true. In
+  `edges`, the `DENSITY` branch sets the quantity before `EDGE_DETERMINATION`, the others after (insertion order only).
+- **Impact**: the generator port must not rely on the `isMW`/`isMD`/`isPF` flags for behaviour; they are
+  validator-only.
 - **Confidence**: High

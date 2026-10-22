@@ -129,7 +129,7 @@ commits per task. `npm run docs:build` green before T15 is marked done.
 |-------|------|-------|------------|--------|
 | [1](batch-1/overview.md) | Vector script and lexer vectors | T1 | — | [x] |
 | [2](batch-2/overview.md) | Remaining vectors; shims; model; lexer | T2–T6 | 1 | [x] |
-| [3](batch-3/overview.md) | GeneratorOptions; parser | T7–T8 | 2 | [ ] |
+| [3](batch-3/overview.md) | GeneratorOptions; parser | T7–T8 | 2 | [x] |
 | [4](batch-4/overview.md) | Validator + facade; ConfigurationParser | T9–T10 | 3 | [ ] |
 | [5](batch-5/overview.md) | RandomGraphGenerator (sequential) | T11–T14 | 4 | [ ] |
 | [6](batch-6/overview.md) | Docs, runbook, roadmap | T15 | 5 | [ ] |
