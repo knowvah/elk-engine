@@ -9,7 +9,18 @@ import { CoreOptions } from '../../../options/CoreOptions.js';
 import { GeneratorOptions } from './GeneratorOptions.js';
 import { RandVal } from './RandVal.js';
 import { createNode } from './RandomGraphGeneratorElements.js';
-import { addEdgeLabel, connect, retrievePort } from './RandomGraphGeneratorConnect.js';
+import {
+  addEdgeLabel,
+  connect,
+  connected,
+  connectConditional,
+  connectRandomlyAndConditional,
+  determineOutgoingEdges,
+  type EdgeCondition,
+  findNodeWithDFS,
+  removeIsolatedNodes,
+  retrievePort,
+} from './RandomGraphGeneratorConnect.js';
 import { RandomGraphGenerator } from './RandomGraphGenerator.js';
 
 const SEED = 42n;
@@ -256,5 +267,159 @@ describe('retrievePort', () => {
 
     expect(port).toBe([first, second][index]);
     expect(b.getPorts().size()).toBe(2);
+  });
+});
+
+const ALWAYS: EdgeCondition = { evaluate: () => true };
+const NEVER: EdgeCondition = { evaluate: () => false };
+
+function nodeList(gen: RandomGraphGenerator, count: number): [ElkNode, ElkNode[]] {
+  const parent = ElkGraphUtil.createGraph();
+  return [parent, Array.from({ length: count }, () => createNode(gen, parent))];
+}
+
+describe('connectConditional', () => {
+  it('connects and reports true when the condition holds', () => {
+    const gen = makeGenerator();
+    const [, [a, b]] = nodeList(gen, 2) as [ElkNode, [ElkNode, ElkNode]];
+    expect(connectConditional(gen, a, b, ALWAYS)).toBe(true);
+    expect(a.getOutgoingEdges().size()).toBe(1);
+  });
+
+  it('does nothing and reports false when the condition fails', () => {
+    const gen = makeGenerator();
+    const [, [a, b]] = nodeList(gen, 2) as [ElkNode, [ElkNode, ElkNode]];
+    expect(connectConditional(gen, a, b, NEVER)).toBe(false);
+    expect(a.getOutgoingEdges().size()).toBe(0);
+  });
+});
+
+describe('connectRandomlyAndConditional', () => {
+  it('node form: a failing condition drains the buffer, one draw per rejected target', () => {
+    const gen = makeGenerator();
+    const [, nodes] = nodeList(gen, 3);
+    const parallel = new Random(SEED);
+    // createNode drew nothing here (no hypernodes, no labels), so the generator shares the parallel stream
+    const before = new Random(SEED);
+    expect(connectRandomlyAndConditional(gen, nodes[0]!, nodes, 5, NEVER)).toBe(0);
+    // draws: randomInt(0,2), randomInt(0,1), randomInt(0,0)
+    before.nextInt(3);
+    before.nextInt(2);
+    before.nextInt(1);
+    expect(gen.random.nextInt()).toBe(before.nextInt());
+    expect(parallel).toBeDefined();
+  });
+
+  it('node form: stops after the requested number of edges', () => {
+    const gen = makeGenerator();
+    const [, nodes] = nodeList(gen, 3);
+    expect(connectRandomlyAndConditional(gen, nodes[0]!, nodes, 2, ALWAYS)).toBe(2);
+    expect(nodes[0]!.getOutgoingEdges().size()).toBe(2);
+  });
+
+  it('node form: stops when the condition accepts only some targets', () => {
+    const gen = makeGenerator();
+    const [, nodes] = nodeList(gen, 4);
+    const onlyLast: EdgeCondition = { evaluate: (_source, target) => target === nodes[3] };
+    expect(connectRandomlyAndConditional(gen, nodes[0]!, nodes, 3, onlyLast)).toBe(3);
+    const targets = nodes[0]!
+      .getOutgoingEdges()
+      .toArray()
+      .map((edge) => edge.getTargets().get(0));
+    expect(targets).toEqual([nodes[3], nodes[3], nodes[3]]);
+  });
+
+  it('list form: connects every node as often as its entry says and sums the edges', () => {
+    const gen = makeGenerator();
+    const [, nodes] = nodeList(gen, 3);
+    expect(connectRandomlyAndConditional(gen, nodes, [1, 0, 2], ALWAYS)).toBe(3);
+    expect(nodes.map((node) => node.getOutgoingEdges().size())).toEqual([1, 0, 2]);
+  });
+});
+
+describe('determineOutgoingEdges', () => {
+  it('count form: distributes m edges with one randomInt draw each', () => {
+    const gen = makeGenerator();
+    const [, nodes] = nodeList(gen, 3);
+    const parallel = new Random(SEED);
+    const expected = [0, 0, 0];
+    for (let c = 0; c < 7; c++) {
+      expected[parallel.nextInt(3)]!++;
+    }
+    expect(determineOutgoingEdges(gen, nodes, 7)).toEqual(expected);
+  });
+
+  it('count form: m = 0 draws nothing', () => {
+    const gen = makeGenerator();
+    const [, nodes] = nodeList(gen, 2);
+    expect(determineOutgoingEdges(gen, nodes, 0)).toEqual([0, 0]);
+    expect(gen.random.nextInt()).toBe(new Random(SEED).nextInt());
+  });
+
+  it('value form: one intVal per node', () => {
+    const gen = makeGenerator();
+    const [, nodes] = nodeList(gen, 3);
+    expect(determineOutgoingEdges(gen, nodes, RandVal.exact(2))).toEqual([2, 2, 2]);
+  });
+});
+
+describe('removeIsolatedNodes', () => {
+  it('removes isolated leaves recursively and keeps connected nodes and nodes with children', () => {
+    const gen = makeGenerator();
+    const root = ElkGraphUtil.createGraph();
+    const [a, b, lonely, holder] = [0, 1, 2, 3].map(() => createNode(gen, root)) as [
+      ElkNode,
+      ElkNode,
+      ElkNode,
+      ElkNode,
+    ];
+    const nestedLonely = createNode(gen, holder);
+    const nestedLinked = createNode(gen, holder);
+    const edge = connect(gen, a, b);
+    connect(gen, nestedLinked, nestedLinked);
+
+    removeIsolatedNodes(root);
+
+    expect(root.getChildren().toArray()).toEqual([a, b, holder]);
+    expect(holder.getChildren().toArray()).toEqual([nestedLinked]);
+    expect(lonely.getParent()).toBeNull();
+    expect(nestedLonely.getParent()).toBeNull();
+    expect(edge.getContainingNode()).toBe(root);
+  });
+});
+
+describe('findNodeWithDFS and connected', () => {
+  it('follows a port target to the port parent node', () => {
+    const gen = makeGenerator();
+    const [, [a, b, c]] = nodeList(gen, 3) as [ElkNode, [ElkNode, ElkNode, ElkNode]];
+    const port = ElkGraphUtil.createPort(b);
+    const edge = ElkGraphUtil.createEdge(null);
+    edge.getSources().add(a);
+    edge.getTargets().add(port);
+    ElkGraphUtil.updateContainment(edge);
+    connect(gen, b, c);
+    expect(findNodeWithDFS(a, b)).toBe(true);
+    expect(findNodeWithDFS(a, c)).toBe(true);
+    expect(findNodeWithDFS(a, a)).toBe(true);
+    expect(findNodeWithDFS(c, a)).toBe(false);
+  });
+
+  it('follows node targets of edges built without ports', () => {
+    const gen = makeGenerator();
+    const [, [a, b, c]] = nodeList(gen, 3) as [ElkNode, [ElkNode, ElkNode, ElkNode]];
+    connect(gen, a, b);
+    connect(gen, b, c);
+    expect(findNodeWithDFS(a, c)).toBe(true);
+    expect(findNodeWithDFS(c, b)).toBe(false);
+  });
+
+  it('connected is symmetric over outgoing edges', () => {
+    const gen = makeGenerator();
+    const [, [a, b, c]] = nodeList(gen, 3) as [ElkNode, [ElkNode, ElkNode, ElkNode]];
+    connect(gen, a, b);
+    expect(connected(a, b)).toBe(true);
+    expect(connected(b, a)).toBe(true);
+    expect(connected(a, c)).toBe(false);
+    expect(connected(c, a)).toBe(false);
   });
 });
