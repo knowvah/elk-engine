@@ -267,18 +267,39 @@ Prerequisites: a built oracle (`tools/oracle/build.sh`, JDK 21, Maven 3.9; set `
 pinned ELK commit and the Xtext version.
 
 1. **Vectors**: `tools/vectors/elkj-vectors.sh <outDir>` runs every `tools/vectors/Elkj*Vectors.java` in sorted
-   order and writes `graph-json-text-{lexer,parse,validate,write,inverse,roundtrip}.json`. Before the round-trip
-   recorder it took about 30 minutes (the write recorder runs Xtext's slow stack-pruning serializer); the full run now takes hours. Batch gates rerun it only when `tools/vectors/Elkj*`,
-   `tools/vectors/elkj-*`, `tools/oracle/patches/` or the oracle build changed; the mission-end gate runs it in
-   full. `ELKJ_VECTORS_LIST=1` lists the programs.
-   `tools/vectors/ElkjRoundTripVectors.java` (T16b1) records all 281 loadable inputs, costs about 2.8 CPU-hours
-   (mostly the 712 KB `ptolemy_Trilateration_largest`, 3.7 hours wall alone) and runs with serial GC. Optional
-   arguments `[cacheDir [idsFile]]` cache per-row results and restrict the run to listed ids; the stage-1 double run
-   (49 cases) was byte-identical. It reloads each written text from the `String` (text-follow-ups T1, F6); the
-   full re-record of 2026-10-20 (T10) took 5 h 46 min wall and 2.72 CPU-hours at `nice 10` beside the F5 sweep
-   (`ptolemy_Trilateration_largest` 4.6 h wall, 2.1 CPU-hours) and changed only `input-lone-surrogate-escape`.
-   The replay in `test/golden/elkj-roundtrip.test.ts` takes about 2 seconds; the recorder's cost stays open
-   follow-up C4.
+   order and writes `graph-json-text-{lexer,parse,validate,write,inverse,roundtrip}.json`. `ELKJ_VECTORS_LIST=1`
+   lists the programs.
+
+   **Cache** (vector-cache-and-key-line T3; `tools/vectors/vector-cache.sh`, shared with `elkt-vectors.sh`):
+   entries live under `$ELK_ORACLE_DIR/vector-cache/elkj/<Program>/<salt>/`, outside the repo and never pruned;
+   `rm -rf "$ELK_ORACLE_DIR/vector-cache"` clears them. The salt is a sha256 over the program source, the calling
+   script, `vector-cache.sh`, `oracle-build.json`, the classpath and the `java -version` output (without the JVM's
+   `Picked up JAVA_TOOL_OPTIONS` banner, so heap flags do not turn a run cold): a recorder edit, an oracle rebuild or
+   a JDK change starts afresh. The whole-program recorders (inverse, lexer, parse, validate) are keyed by the salt
+   plus a hash of every file under `tools/vectors/`, `test/corpus/elkt-curated/` and `test/corpus/elkj-curated/`.
+   The per-row recorders (`ElkjRoundTripVectors`, `ElkjWriteVectors`) get `<salt>/rows` as their `<cacheDir>` and
+   key each row by `sha256(id NUL text)`, so a new scenario records one row. Each program prints one stderr line:
+   `cache: <Program> hit`, `cache: <Program> recorded` or `cache: <Program> rows <hit>/<recorded>`.
+   `ELK_VECTORS_CACHE=off` reads and writes no cache. Evidence rule (D3): a warm run proves the refs equal the cached
+   outputs; a cold run or a miss proves they equal the oracle, so a mission that changes `tools/vectors/` or the
+   oracle relies on a cold run made after its last such change.
+
+   **Cost** (vector-cache-and-key-line T4, 2026-10-21, `nice 10`,
+   `JAVA_TOOL_OPTIONS="-XX:+UseSerialGC -Xmn3g -Xmx16g"`): a cold run took 3 h 58 min wall (14,285 s;
+   `ptolemy_Trilateration_largest` 2 h 47 min of it), the warm rerun 5 s, and a rerun with one row evicted from each
+   per-row recorder 21 s; all three were `cmp`-identical to the refs. Before the round-trip recorder a cold run took
+   about 30 minutes (the write recorder runs Xtext's slow stack-pruning serializer). Batch gates rerun the script
+   when `tools/vectors/Elkj*`, `tools/vectors/elkj-*`, `tools/oracle/patches/` or the oracle build changed; with
+   nothing changed it is a warm run.
+
+   `tools/vectors/ElkjRoundTripVectors.java` (T16b1) records all 281 loadable inputs and runs with serial GC; cold it
+   costs about 2.8 CPU-hours (mostly the 712 KB `ptolemy_Trilateration_largest`), warm it reuses every row in
+   seconds. Its optional arguments `[cacheDir [idsFile]]` cache per-row results (the script passes the cache's
+   `rows/` directory) and restrict the run to listed ids; the stage-1 double run (49 cases) was byte-identical. It
+   reloads each written text from the `String` (text-follow-ups T1, F6); the cold full re-record of 2026-10-20 (T10)
+   took 5 h 46 min wall and 2.72 CPU-hours beside the F5 sweep, against 5 s for the warm run above, and changed only
+   `input-lone-surrogate-escape`. The replay in `test/golden/elkj-roundtrip.test.ts` takes about 2 seconds.
+
 2. **Curated refs**: `tools/oracle/regen-elkj-refs.sh` (no arguments, about 6-12 minutes): `convert` for tier 1,
    `parse`/`parse-elkj` for the refs, vendoring of the inputs, `_meta.json` with the patch ids.
 3. **Sweep**: `tools/oracle/elkj-sweep.sh [--force] [--cap BYTES] [--sample N] [--sample-max BYTES]
@@ -325,12 +346,12 @@ http://www.eclipse.org/elk/ElkGraph#//ElkNode`.
 
 ## 10. Maintenance failure modes {#maintenance}
 
-| Trigger                               | Response                                                                                                                                                                  |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| elk-models pin moves                  | The curated and sweep tests fail on a changed model. Diagnose against the oracle first; then `regen-elkj-refs.sh` and a sweep, journaled. Never loosen a tolerance        |
-| TS registry grows (missions 5 and 7)  | Core-only refs and vectors go stale: rerun `elkj-vectors.sh` and `regen-elkj-refs.sh` with the `.elkt` ones, journal the regeneration                                     |
-| ELK or Xtext pin changes              | Regenerate vectors by script (AD-13), diff, port the Java diff; rebuild the oracle with patches `0001` and `0002`                                                         |
-| Sweep rerun differs                   | `nondeterministic` is a generator defect. Xtext error messages embed the output URI, so `ElkjSweep.java` normalises the directory; look for the same class of leak        |
-| Boundary test fails on `src/xtext`    | `src/xtext` imported ELK code, or a bundle outside `XTEXT_CLIENT_BUNDLES` imported `src/xtext`; fix the import                                                            |
-| Full test run fails once under load   | `src/xtext/scoping/impl/ImportedNamespaceAwareLocalScopeProvider.test.ts` has a 300 ms budget (4b); it passes in isolation. Timing-budget tests are the known flake class |
-| Round trip of a large model times out | `elkj-roundtrip` cases carry an explicit 60 s timeout (the 712 KB curated model took 5.4 s at load 26)                                                                    |
+| Trigger                               | Response                                                                                                                                                                                           |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| elk-models pin moves                  | The curated and sweep tests fail on a changed model. Diagnose against the oracle first; then `regen-elkj-refs.sh` and a sweep, journaled. Never loosen a tolerance                                 |
+| TS registry grows (missions 5 and 7)  | Core-only refs and vectors go stale: rerun `elkj-vectors.sh` (a changed recorder misses its cache entry and records cold) and `regen-elkj-refs.sh` with the `.elkt` ones, journal the regeneration |
+| ELK or Xtext pin changes              | Regenerate vectors by script (AD-13), diff, port the Java diff; rebuild the oracle with patches `0001` and `0002`                                                                                  |
+| Sweep rerun differs                   | `nondeterministic` is a generator defect. Xtext error messages embed the output URI, so `ElkjSweep.java` normalises the directory; look for the same class of leak                                 |
+| Boundary test fails on `src/xtext`    | `src/xtext` imported ELK code, or a bundle outside `XTEXT_CLIENT_BUNDLES` imported `src/xtext`; fix the import                                                                                     |
+| Full test run fails once under load   | `src/xtext/scoping/impl/ImportedNamespaceAwareLocalScopeProvider.test.ts` has a 300 ms budget (4b); it passes in isolation. Timing-budget tests are the known flake class                          |
+| Round trip of a large model times out | `elkj-roundtrip` cases carry an explicit 60 s timeout (the 712 KB curated model took 5.4 s at load 26)                                                                                             |

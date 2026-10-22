@@ -228,7 +228,7 @@ export class ElkGraphParser {
       cursor.next();
       text += `.${cursor.next().text}`;
     }
-    return { text, line: first.line };
+    return { text, line: cursor.lineOf(first) };
   }
 
   /** `value=StringValue | QualifiedIdValue | NumberValue | BooleanValue | 'null'`, chosen by token type. */

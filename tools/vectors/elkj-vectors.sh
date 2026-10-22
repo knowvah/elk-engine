@@ -3,11 +3,14 @@
 # Records the JVM behaviour of the .elkj language (graph-json-text mission, AD-13): runs every
 # tools/vectors/Elkj*Vectors.java (sorted) as a single-file source program against the source-built
 # oracle jars (AD-3) plus the Xtext standalone third-party bundles. Each program is invoked as
-#   java -cp <classpath> <program> <outDir> <tools/vectors dir>
-# and writes <outDir>/graph-json-text-<x>.json itself (ElkjLexerVectors -> graph-json-text-lexer.json, ...).
+#   java -cp <classpath> <program> <outDir> <tools/vectors dir> [<cacheDir>]
+# (<cacheDir> only for the per-row recorders, see vector-cache.sh) and writes <outDir>/graph-json-text-<x>.json itself (ElkjLexerVectors -> graph-json-text-lexer.json, ...).
 # Usage: elkj-vectors.sh <outDir>
 # Honours ELK_ORACLE_DIR (default <repo>/../elk-oracle) and P2_BUNDLES. ELKJ_VECTORS_LIST=1 prints the
 # programs that would run (sorted) and exits without running them.
+# Results are cached by salted input hash under $ELK_ORACLE_DIR/vector-cache/elkj/ (vector-cache.sh): a program
+# whose inputs are byte-identical to an earlier run's is not run again, and each program prints one "cache: ..."
+# line. ELK_VECTORS_CACHE=off runs every program cold and touches no cache.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -28,6 +31,9 @@ die() {
   echo "error: $1" >&2
   exit 1
 }
+
+# shellcheck source=tools/vectors/vector-cache.sh
+. "$VECTORS_DIR/vector-cache.sh"
 
 oracle_field() { # oracle_field <commit|jars>; jars = every oracle jar, one per line
   node -e '
@@ -93,11 +99,12 @@ main() {
   check_xtext_version
   cp="$(build_classpath)"
   mkdir -p "$1"
+  vc_init elkj
   while IFS= read -r program; do
     [ -n "$program" ] || continue
     echo "running $(basename "$program")" >&2
     rc=0
-    java -cp "$cp" "$program" "$1" "$VECTORS_DIR" || rc=$?
+    vc_run "$VECTORS_DIR/elkj-vectors.sh" "$cp" "$program" "$1" || rc=$?
     [ "$rc" -eq 0 ] || die "$(basename "$program") failed (exit $rc)"
   done < <(programs)
 }

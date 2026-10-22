@@ -1,0 +1,6 @@
+// @covers 52-58 (unknown key after CRLF breaks: the issue line counts CRLF once)
+node a {
+  unknown.one: 1
+
+  unknown.two: 2
+}
