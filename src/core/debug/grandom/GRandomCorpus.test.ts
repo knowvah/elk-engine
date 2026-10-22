@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -10,7 +10,7 @@ import { GRandomText } from './GRandomText.js';
 import { RandomGraphGenerator } from './generators/RandomGraphGenerator.js';
 
 const CORPUS_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../test/corpus/generated');
-/** The corpus files of the ported forms (`graphs` and the three tree files); T14 extends this list. */
+/** The corpus files: every generated `.elkr` input. */
 const CORPUS_FILES: readonly string[] = [
   'disco-components-small',
   'force-graph-small',
@@ -57,8 +57,13 @@ function regenerate(elkr: string): string {
 }
 
 describe('generated corpus regenerates byte for byte', () => {
-  it('lists the nine corpus files of the ported forms', () => {
+  it('lists the nine corpus files, equal to the directory listing of *.elkr', () => {
+    const listed = readdirSync(CORPUS_DIR)
+      .filter((file) => file.endsWith('.elkr'))
+      .map((file) => file.slice(0, -'.elkr'.length))
+      .sort();
     expect(CORPUS_FILES).toHaveLength(9);
+    expect([...CORPUS_FILES].sort()).toEqual(listed);
   });
 
   for (const name of CORPUS_FILES) {

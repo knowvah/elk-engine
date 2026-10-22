@@ -4,7 +4,6 @@ import { ElkGraphUtil } from '../../../../graph/util/ElkGraphUtil.js';
 import { Random } from '../../../../java/util/Random.js';
 import { GeneratorOptions } from './GeneratorOptions.js';
 import { RandVal } from './RandVal.js';
-import { generateANTEGraph } from './RandomGraphGeneratorAnte.js';
 import { generateAnyGraph } from './RandomGraphGeneratorTypes.js';
 import { RandomGraphGenerator } from './RandomGraphGenerator.js';
 
@@ -54,15 +53,5 @@ describe('generateAnyGraph', () => {
     const nodes = generateAnyGraph(gen, parent, 1, 3, 0);
     expect(nodes).toHaveLength(1);
     expect(nodes[0]!.getOutgoingEdges().size()).toBe(0);
-  });
-});
-
-describe('placeholders', () => {
-  it('generateANTEGraph throws the GRANDOM_PLACEHOLDER error naming the Java method', () => {
-    const gen = makeGenerator();
-    const parent = ElkGraphUtil.createGraph();
-    expect(() =>
-      generateANTEGraph(gen, parent, { n: 1, m: 1, planar: false, singleSource: false, hierarchyLevel: 0 }),
-    ).toThrow(new Error('GRANDOM_PLACEHOLDER: generateANTEGraph is not ported yet'));
   });
 });

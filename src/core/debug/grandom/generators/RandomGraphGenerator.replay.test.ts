@@ -7,11 +7,24 @@ import { ElkGraphJson } from '../../../../graph/json/ElkGraphJson.js';
 import type { ElkNode } from '../../../../graph/ElkNode.js';
 import type { Random } from '../../../../java/util/Random.js';
 import { isCoverageRun } from '../../../../../test/helpers/coverage-run.js';
-import { Form } from '../gRandom/Form.js';
 import { GRandomText } from '../GRandomText.js';
 import { RandomGraphGenerator } from './RandomGraphGenerator.js';
 
+/** The invariants of one generated graph, as recorded by `ElkrGenerateVectors.invariants`. */
+interface Invariant {
+  readonly config: number;
+  readonly graph: number;
+  readonly rootChildren: number;
+  readonly nodesPerLevel: readonly number[];
+  readonly edges: number;
+  readonly ports: number;
+  readonly nodeLabels: number;
+  readonly portLabels: number;
+  readonly edgeLabels: number;
+}
+
 interface GenerateRow {
+  readonly invariants?: readonly Invariant[];
   readonly id: string;
   readonly input: string;
   readonly kind: string;
@@ -23,8 +36,6 @@ const VECTORS_PATH = resolve(
   '../../../../../test/golden/refs/java/grandom-generate.json',
 );
 
-/** The forms whose generators are ported; T14 adds `acyclic graphs`. */
-const ACCEPTED_FORMS: readonly Form[] = [Form.CUSTOM, Form.TREES, Form.BIPARTITE, Form.BICONNECTED, Form.TRICONNECTED];
 /** Mission stop 12: the 200-node stress row must replay within this wall-clock budget. */
 const STRESS_ROW_ID = 'stress-200';
 const STRESS_BUDGET_MS = 1000;
@@ -71,11 +82,47 @@ function generateExports(text: string): string[][] {
   );
 }
 
+/** The totals over the containment tree (label text is never compared). */
+function invariantOf(config: number, graph: number, root: ElkNode): Invariant {
+  const nodesPerLevel: number[] = [];
+  const totals = { edges: 0, ports: 0, nodeLabels: 0, portLabels: 0, edgeLabels: 0 };
+  const add = (node: ElkNode): void => {
+    const contained = node.getContainedEdges();
+    totals.edges += contained.size();
+    for (const edge of contained) {
+      totals.edgeLabels += edge.getLabels().size();
+    }
+    totals.ports += node.getPorts().size();
+    totals.nodeLabels += node.getLabels().size();
+    for (const port of node.getPorts()) {
+      totals.portLabels += port.getLabels().size();
+    }
+  };
+  add(root);
+  let level: ElkNode[] = [...root.getChildren()];
+  while (level.length > 0) {
+    nodesPerLevel.push(level.length);
+    const next: ElkNode[] = [];
+    for (const node of level) {
+      add(node);
+      next.push(...node.getChildren());
+    }
+    level = next;
+  }
+  return { config, graph, rootChildren: root.getChildren().size(), nodesPerLevel, ...totals };
+}
+
+/** The invariants of every graph of every configuration, in file order. */
+function generateInvariants(text: string): Invariant[] {
+  const model = GRandomText.parse(text).model;
+  return (model?.getConfigs() ?? []).flatMap((config, c) =>
+    new RandomGraphGenerator(null as unknown as Random).generate(config).map((root, g) => invariantOf(c, g, root)),
+  );
+}
+
 const allRows = (JSON.parse(readFileSync(VECTORS_PATH, 'utf8')) as { rows: GenerateRow[] }).rows;
 const seededRows = allRows.filter((row) => row.kind === 'seeded');
-const replayedRows = seededRows.filter((row) =>
-  (GRandomText.parse(row.input).model?.getConfigs() ?? []).every((config) => ACCEPTED_FORMS.includes(config.getForm())),
-);
+const unseededRows = allRows.filter((row) => row.kind === 'unseeded');
 
 describe('describeMismatch', () => {
   it('reports identical strings', () => {
@@ -96,14 +143,12 @@ describe('describeMismatch', () => {
 });
 
 describe('RandomGraphGenerator replay of the JVM vectors', () => {
-  it('replays the accepted-form rows: 58 seeded rows, the accepted forms are selected', () => {
+  it('replays all 58 seeded rows', () => {
     expect(seededRows).toHaveLength(58);
-    expect(replayedRows.length).toBeGreaterThan(0);
-    expect(replayedRows.length).toBeLessThan(seededRows.length);
-    expect(replayedRows.some((row) => row.id === STRESS_ROW_ID)).toBe(true);
+    expect(seededRows.some((row) => row.id === STRESS_ROW_ID)).toBe(true);
   });
 
-  for (const row of replayedRows) {
+  for (const row of seededRows) {
     it(`${row.id}: every generated graph export equals the recorded export`, () => {
       const actual = generateExports(row.input);
       const recorded = (row.configs ?? []).map((config) => config.graphs);
@@ -120,7 +165,7 @@ describe('RandomGraphGenerator replay of the JVM vectors', () => {
   }
 
   it(`${STRESS_ROW_ID} replays within the wall-clock budget`, () => {
-    const row = replayedRows.find((r) => r.id === STRESS_ROW_ID)!;
+    const row = seededRows.find((r) => r.id === STRESS_ROW_ID)!;
     let best = Number.POSITIVE_INFINITY;
     for (let run = 0; run < STRESS_RUNS; run++) {
       const start = performance.now();
@@ -129,4 +174,17 @@ describe('RandomGraphGenerator replay of the JVM vectors', () => {
     }
     expect(best).toBeLessThan(isCoverageRun() ? STRESS_BUDGET_COVERAGE_MS : STRESS_BUDGET_MS);
   });
+});
+
+describe('RandomGraphGenerator unseeded invariants of the JVM vectors', () => {
+  it('has 6 unseeded rows with 7 graphs', () => {
+    expect(unseededRows).toHaveLength(6);
+    expect(unseededRows.reduce((sum, row) => sum + (row.invariants?.length ?? 0), 0)).toBe(7);
+  });
+
+  for (const row of unseededRows) {
+    it(`${row.id}: the invariants equal the recorded ones`, () => {
+      expect(generateInvariants(row.input)).toEqual(row.invariants);
+    });
+  }
 });
