@@ -8,7 +8,7 @@ three recorders only add `Elkr*Vectors.java` files and scenario dirs. It also cl
 
 | ID | Description | Agent | Writes | Depends On | Done |
 |----|-------------|-------|--------|------------|------|
-| T1 | `elkr-vectors.sh` + `ElkrLexerVectors` + lexer cases → `grandom-lexer.json` | java-architect | tools/vectors/{elkr-vectors.sh,ElkrLexerVectors.java,elkr-lexer-cases.txt}, test/golden/refs/java/grandom-lexer.json, .prettierignore, .gitattributes | — | [ ] |
+| T1 | `elkr-vectors.sh` + `ElkrLexerVectors` + lexer cases → `grandom-lexer.json` | java-architect | tools/vectors/{elkr-vectors.sh,ElkrLexerVectors.java,elkr-lexer-cases.txt}, test/golden/refs/java/grandom-lexer.json, .prettierignore, .gitattributes | — | [x] |
 
 Batch done when T1's acceptance criteria pass and the README gates are green (including the new `elkr-vectors.sh`
 cmp line for the lexer file).
