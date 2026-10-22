@@ -111,7 +111,8 @@
   `EObject` and feature name), `Diagnostician` (`eClass().getName()`, `eAllContents()`),
   `AbstractDeclarativeValidator.rootOf` (`eContainer()`) and `resolveMessageArgs` all need `EObject`s. Mission 2's
   ElkGraph classes extend `BasicEObjectImpl`; the T5 grandom classes (D3 "plain classes") have no EObject base, so T8
-  bypassed `ParseSession` with local helpers and carries no positions. `EFactoryValueConverter.ts` converts EString
+  bypassed `ParseSession` with local helpers and carried no positions (T9 later added the three validator positions
+  to the parser, option A). `EFactoryValueConverter.ts` converts EString
   only; Integer/Double conversion for `.elkr` lives in `GRandomParserElements.ts`.
 - **Impact**: a validator wired through `ResourceValidatorImpl`/`Diagnostician` needs the grandom classes to be
   `EObject`s (or a bypass); issue positions (flag keyword offset/length) need the parser to record them.

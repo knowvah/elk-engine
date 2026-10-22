@@ -250,10 +250,16 @@ Inventory, commands, per-site tables and container rows:
   (`random.setSeed(randomSeed)` `LayerSweepCrossingMinimizer.java:188`, which also clears the cached
   Gaussian; `random-setseed.json`). Used: `nextInt(bound)`
   (`alg.layered/src/.../p1cycles/GreedyCycleBreaker.java:232`), `nextDouble`, `nextFloat`,
-  `nextBoolean`, `nextLong`; `nextGaussian`: 0 sites.
-- **`Collections.shuffle`: 0 uses in scope** (`G 'Collections\.shuffle'`; the two textual hits are
-  comments, `alg.layered/src/.../options/InternalProperties.java:439`). `Collections.shuffle` in
-  `src/java/util/Collections.ts` (Javadoc algorithm) is vector-proven but has no caller.
+  `nextBoolean`, `nextLong`; `nextGaussian` is used by `RandVal` (core.debug.grandom, seeded paths proven by the
+  `grandom-generate.json` `RandVal` rows).
+- **`Collections.shuffle`: one in-scope caller.** The algorithm bundles have none (`G 'Collections\.shuffle'`;
+  the two textual hits are comments, `alg.layered/src/.../options/InternalProperties.java:439`), but
+  `RandomGraphGenerator.sample()` (core.debug.grandom) calls the one-argument `Collections.shuffle(list)`. Both
+  overloads live in `src/java/util/Collections.ts` (Javadoc algorithm, vector-proven); the one-argument form uses a
+  lazily created unseeded `Random` and is unseeded by contract, so only invariants are asserted (grandom D7).
+- **Unseeded `new Random()` in grandom**: `BlindTextGenerator` (a fresh `Random` per call), the default source of
+  the one-argument shuffle, and a configuration without `seed`. These are unseeded by contract and never compared
+  exactly.
 - Non-seedable randomness stays nondeterministic: `Math.random()` (4 sites): debug folder names
   `BasicProgressMonitor.java:541`; a discarded call `alg.layered/src/.../p3order/MedianHeuristic.java:40`;
   jitter when two spore vertices coincide `alg.spore/src/.../ElkGraphImporter.java:169`; JSON id
@@ -501,8 +507,9 @@ exceptions (with the additions in 6.7), Guava, EMF. Corrections or additions:
   `Int32.div/rem` that throw on zero and normalize `-0` (1.2).
 - **Hash row**: enum keys are identity-hashed (collections 2.0); KVector-derived keys (`TEdge`,
   `TTriangle`) are value-hashed and need `JavaHashMap` (`NaiveMinST`).
-- **Hazards line**: `Collections.shuffle` has no in-scope caller (shim in `Collections.ts`);
-  `Random` draws (`nextInt`, `nextDouble`, `nextFloat`, `nextBoolean`, `nextLong`, `setSeed`) do.
+- **Hazards line**: `Collections.shuffle(list)` has one in-scope caller (`RandomGraphGenerator.sample`, unseeded;
+  shim in `Collections.ts`); `Random` draws (`nextInt`, `nextDouble`, `nextFloat`, `nextBoolean`, `nextLong`,
+  `nextGaussian`, `setSeed`) do.
 
 Vector gaps, all closed (frozen files in `test/golden/refs/java/`; AD-9, AD-13): `l2i` ->
 `numeric.json` `l2i` -> `JavaMath.l2i`; `fround` arithmetic -> `numeric.json` `f32`, `d2f` ->

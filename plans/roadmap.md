@@ -335,3 +335,33 @@ nondeterministic; oracle 2 h 04 min on 8 serial-GC JVMs, TS 4.2 s.
   rows, unreachable from the grammar); record a bare-CR diagnostic vector for `.elkt` (the `.elkj` line fix of
   `fix(T11)` suggests the same deviation); port the `ElkNodeImpl.toString` proxy arm; move the shared copy of the
   graph (`ElkGraphCopy` duplicates 4b's `copyGraph`) to `src/graph/util`; widen the sweep sample if wanted.
+
+## Revision 2026-10-22 (grandom)
+
+Appended; no earlier line is edited. Source: D1-D9 in `plans/grandom/decisions.md`; the journal is
+`plans/grandom/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+
+**Row 4d (`core.debug.grandom`) is done as mission 4f; the exit is met.** The code, vectors and corpus replay
+landed on `feature/grandom` (internal facade `src/core/debug/grandom/GRandomText.ts`; design, evidence and runbook
+in `docs/architecture/grandom.md`). The exit criterion of row 4d ("reproduces `test/corpus/generated/*.json` byte
+for byte", D7) is met: 9/9 corpus files regenerate byte for byte, and every JVM vector row replays (lexer 433,
+parse 142, validate 23, generate 58 seeded + 6 unseeded + 12 `RandVal`). `BlindTextGenerator` stays unseeded and
+out of goldens.
+
+**Scope changes against the 4d row above.**
+
+- Option A (user, batch 4): the grandom model stays plain classes (D3); the parser and validator use `src/xtext`
+  primitives but not `ParseSession`, `Diagnostician` or `AbstractDeclarativeValidator`, and the parser records the
+  three validator positions (amends D2).
+- `src/core/debug/grandom` joined `XTEXT_CLIENT_BUNDLES`; `src/core/math/ElkMath.ts` (`boundi` only) and the
+  one-argument `Collections.shuffle(list)` were added (D5, D7).
+
+**Follow-ups by mission:**
+
+- **Any time (outside the 4f write-sets):** the `generateANTEGraph` branches beyond `form-acyclic` (planar,
+  single source, hierarchy) are unit-tested from the Java source only; widen the generate vectors to pin them.
+- **Any time:** the lexer inputs `cross-hierarchy relativex` and `self loopsx` are derived from the rule, not
+  pinned by a vector; add lexer cases if needed.
+- **Any time:** a shared `devAssert` helper does not exist; the Java `assert` statements in the grandom port are
+  omitted with comments (`KVector.ts` precedent).
+- **Deferred:** the `core.debug.grandom.ide` bundle (content assist) needs a browser-editor host decision.

@@ -531,6 +531,41 @@ when its stamp is fresh; then `npx vitest run test/corpus/elkj-sweep.test.ts` lo
 `elkj sweep: <indicator>=<n>/<total> deferred=<d> diffs=<k> nondeterministic=<m>`. A mismatch is a defect to
 diagnose against the oracle, never a number to adjust.
 
+## 9. grandom (`.elkr`) {#grandom-elkr}
+
+Port: `src/core/debug/grandom` over a hand-written lexer and parser on `src/xtext` primitives (internal facade
+`GRandomText`: `parse`, `validate`; generation through `RandomGraphGenerator`; design and runbook in
+[grandom.md](architecture/grandom.md)). Evidence is the committed JVM vectors plus the nine generated corpus files;
+there is no sweep (the inputs are small and fully enumerated).
+
+**What is compared.** Vectors are recorded by `tools/vectors/elkr-vectors.sh` into
+`test/golden/refs/java/grandom-*.json` (AD-13):
+
+- `grandom-lexer.json`: 433 token rows, all exact.
+- `grandom-parse.json`: 142 rows: 77 error-free rows compare the full model dump exactly, 65 syntax-error rows by
+  presence (D8 #1); 9 rows carry conversion errors, compared exactly (message, offset, length).
+- `grandom-validate.json`: 23 rows: 20 exact, 3 presence-only for the parser syntax issue (their check issues are
+  still exact).
+- `grandom-generate.json`: 58 seeded rows holding 62 graphs, each compared byte for byte as the JSON export of
+  `CaseRunner.export` (`omitLayout(false)`, `omitZeroDimension(false)`, `omitZeroPositions(false)`,
+  `omitUnknownLayoutOptions(true)`, `prettyPrint(true)`) plus a trailing newline; 6 unseeded rows holding 7 graphs,
+  compared by count invariants only; 12 `RandVal` rows (20 draws each of `val`, `intVal`, `floatVal`), exact.
+
+**Exit (D1).** All nine `test/corpus/generated/*.elkr` regenerate their sibling `.json` byte for byte
+(`src/core/debug/grandom/GRandomCorpus.test.ts`), and every vector row above replays. This is the gate D7 of the
+conformance corpus set for the generated tier; algorithm goldens never depend on it.
+
+**Unseeded by contract (never compared exactly).** `BlindTextGenerator` edge-label text (a fresh `new Random()` per
+call; masked, the 38 to 49 character length bound asserted), `RandomGraphGenerator.sample()` through the
+one-argument `Collections.shuffle(list)` (cross-hierarchy edges), and a configuration without `seed`.
+
+**Upstream typos.** None found in the grandom bundle's human-readable text, so nothing is listed under "upstream
+typos".
+
+**Regenerate.** `tools/vectors/elkr-vectors.sh <outDir>` (`ELK_VECTORS_CACHE=off` for a cold run) and
+`tools/oracle/regen-generated.sh` for the corpus; a differing rerun is a defect to diagnose against the oracle,
+never a ref to accept.
+
 ## Temporary gaps
 
 Known differences from the Java after mission 3 (core metadata), each with the mission that closes

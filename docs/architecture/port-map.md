@@ -259,6 +259,28 @@ no JUnit plugin for `graph.json.text`; the evidence is JVM vectors, curated refs
 Third-party subset: the `src/xtext` row above; the lazy-linking runtime `.elkj` needs is described in
 [elk-json-text.md](elk-json-text.md#lazy-linking).
 
+## `core.debug.grandom` → `src/core/debug/grandom/`
+
+4 package directories upstream (root, `generators`, `scoping`, `validation`; plus `src-gen`), 3 Java + 5 Xtend
+files + 1 `.xtext` grammar, 2,543 + 153 LOC (`plugins/org.eclipse.elk.core.debug.grandom/src`). Not in the Summary
+totals: added by D0 (see [Grammar bundles](#grammar-bundles-added-by-d0-not-in-the-summary-totals-above)).
+`src/core/debug/grandom` is an Xtext client bundle: it is listed in `XTEXT_CLIENT_BUNDLES` in
+`test/architecture/module-boundaries.fitness.test.ts` and may import `src/core`, `src/graph` and `src/xtext`.
+The mission brief is labelled 4f; the roadmap row is 4d.
+
+| Java package (`org.eclipse.elk.core.debug.grandom` omitted) | TS directory     | Strategy                                                                                                                             |
+| ----------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| (root) `GRandom.xtext`                                      | `parser`         | `.xtext` → hand-written lexer and recursive-descent parser (D2); `src-gen` not ported                                                |
+| (root) `GRandomRuntimeModule`, `GRandomStandaloneSetup`     | `GRandomText.ts` | not ported as such; plain construction in the internal facade (D6)                                                                   |
+| `gRandom` (`src-gen`)                                       | `gRandom`        | EMF-generated model → plain classes with the generated accessor names (D3); factory, package, switch, adapter not ported             |
+| `generators`                                                | `generators`     | Java and Xtend → hand port; `RandomGraphGenerator` split into seven files at method boundaries (D4); nested types one class per file |
+| `scoping`                                                   | none             | not ported: `GRandomScopeProvider` is empty                                                                                          |
+| `validation`                                                | `validation`     | Xtend → hand port without the `EObject` pipeline (option A)                                                                          |
+
+Status: ported (mission 4f); design, evidence and runbook in [grandom.md](grandom.md). There is no JUnit plugin;
+the evidence is JVM vectors and the nine generated corpus files ([grandom.md](grandom.md#evidence)). The `.ide`
+bundle is deferred and the `.ui` bundle is out of scope.
+
 ## `alg.common` → `src/alg/common/`
 
 14 package directories, 82 Java + 0 Xtend files, 14,677 LOC
@@ -572,12 +594,14 @@ Java + Xtend. Approach: one hand-written parse method per Xtext rule (D8); no Xt
 | `graph.json.text`           | `src/graph/json/text/`    | 15 (1 Java + 13 Xtend + 1 xtext) |            801 |          171 |       972 |
 | `core.debug.grandom`        | `src/core/debug/grandom/` |   9 (3 Java + 5 Xtend + 1 xtext) |          2,543 |          153 |     2,696 |
 
-Status: `graph.text` is ported (mission 4b, [section above](#graphtext--srcgraphtext)); the other two are
-not started.
+Status: `graph.text` is ported (mission 4b, [section above](#graphtext--srcgraphtext)); `graph.json.text` is
+ported (mission 4c, [section above](#graphjsontext--srcgraphjsontext)); `core.debug.grandom` is ported (mission 4f,
+[section below](#coredebuggrandom--srccoredebuggrandom)).
 
 Mission mapping: `graph.text` is roadmap 4b, `graph.json.text` 4c, `core.debug.grandom` 4d
-(`plans/roadmap.md`, Revision 2026-10-11). TS roots are proposed except `graph.text`; `bundle-deps.json` gained `graph.text` in
-mission 4b and gains the other two when their missions start.
+(`plans/roadmap.md`, Revision 2026-10-11); the grandom mission brief is labelled 4f
+(`plans/grandom/`). `bundle-deps.json` gained `graph.text` in mission 4b, `graph.json.text` in 4c and
+`core.debug.grandom` in 4f.
 
 ## Out of scope or deferred (not rows above)
 
