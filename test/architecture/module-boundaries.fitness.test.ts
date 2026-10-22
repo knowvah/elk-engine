@@ -37,9 +37,9 @@ const JS_SUFFIX = '.js';
  * - org.eclipse.equinox.common -> src/equinox (only OperationCanceledException, thrown by Xtext's
  *   OperationCanceledManager; text-follow-ups D7)
  * - org.antlr.runtime -> no directory (G6: lexer/parser are hand-written)
- * Only the graph.text and graph.json.text bundles require Xtext; src/index.ts stays exempt.
+ * Only the graph.text, graph.json.text and core.debug.grandom bundles require Xtext; src/index.ts stays exempt.
  */
-const XTEXT_CLIENT_BUNDLES: readonly string[] = ['src/graph/text', 'src/graph/json/text'];
+const XTEXT_CLIENT_BUNDLES: readonly string[] = ['src/graph/text', 'src/graph/json/text', 'src/core/debug/grandom'];
 
 const committed: BundleDeps = JSON.parse(readFileSync(join(REPO_ROOT, COMMITTED_JSON_RELATIVE), 'utf8')) as BundleDeps;
 
