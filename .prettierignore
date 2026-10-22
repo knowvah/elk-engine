@@ -19,6 +19,11 @@ tools/vectors/elkj-parse-scenarios/
 tools/vectors/elkj-validate-scenarios/
 tools/vectors/elkj-write-scenarios/
 tools/vectors/elkj-lexer-cases.txt
+# Random graph text (.elkr) vector inputs: byte-meaningful (CR/CRLF, junk characters)
+tools/vectors/elkr-parse-scenarios/
+tools/vectors/elkr-validate-scenarios/
+tools/vectors/elkr-generate-scenarios/
+tools/vectors/elkr-lexer-cases.txt
 # Written by tools/bundle-deps.ts; the fitness test compares it byte-for-byte
 test/architecture/bundle-deps.json
 
