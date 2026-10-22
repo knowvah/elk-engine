@@ -40,3 +40,9 @@ order. Precedent: `src/graph/json/text/validation/` and `ElkGraphJsonText.valida
 
 ## Observability / Rollback
 N/A — no new observable operations. Reversible: revert the commit.
+
+## Amendment (2026-10-22, option A, see decision-journal)
+
+Write-set extended with `src/core/debug/grandom/parser/{GRandomParser,GRandomParserElements}.ts` (+ tests) for
+recording positions. The validator is a plain class (no `AbstractDeclarativeValidator`); `validate` reproduces the
+`ResourceValidatorImpl` order itself.
