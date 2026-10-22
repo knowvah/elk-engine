@@ -2,12 +2,17 @@
 
 import { describe, expect, it } from 'vitest';
 import { Form } from '../gRandom/Form.js';
-import { parse } from './GRandomParser.js';
+import { GRandomPositions, parse } from './GRandomParser.js';
 
 describe('GRandomParser', () => {
   it('gives no model and no diagnostics for an empty or comments-only file', () => {
     for (const text of ['', '  \n', '// only a comment\n/* and another */']) {
-      expect(parse(text)).toEqual({ model: null, syntaxErrors: [], conversionErrors: [] });
+      expect(parse(text)).toEqual({
+        model: null,
+        syntaxErrors: [],
+        conversionErrors: [],
+        positions: expect.any(GRandomPositions),
+      });
     }
   });
 
@@ -48,5 +53,20 @@ describe('GRandomParser', () => {
     expect(parse('generate 1 trees { seed = 1 format = elkg }').syntaxErrors).toEqual([]);
     expect(parse('generate 1 trees { format = elkg seed = 1 }').syntaxErrors).toEqual([]);
     expect(parse('generate 1 trees { seed = 1 seed = 2 }').syntaxErrors).toHaveLength(1);
+  });
+
+  it('records the keyword token of each restricted flag per configuration', () => {
+    const result = parse('generate 1 graphs {\r\n  maxWidth = 3\r\n  maxDegree = 4 partitionFraction = 1 }');
+    const config = result.model?.getConfigs()[0] as object;
+    expect(result.positions.featurePosition(config, 'mW')).toEqual({ line: 2, offset: 23, length: 8 });
+    expect(result.positions.featurePosition(config, 'mD')).toEqual({ line: 3, offset: 39, length: 9 });
+    expect(result.positions.featurePosition(config, 'pF')).toEqual({ line: 3, offset: 53, length: 17 });
+    expect(result.positions.featurePosition(config, 'seed')).toBeNull();
+  });
+
+  it('keeps a configuration with a syntax error in its body, partial, in the model', () => {
+    const result = parse('generate 1 graphs { maxDegree = 3 nodes 3 }');
+    const config = result.model?.getConfigs()[0];
+    expect([result.syntaxErrors.length, config?.isMD(), config?.getMaxDegree()]).toEqual([1, true, 3]);
   });
 });

@@ -19,6 +19,7 @@ import { Size } from '../gRandom/Size.js';
 import { tokenizeWithDiagnostics } from './GRandomLexer.js';
 import {
   type GRandomDiagnostic,
+  type GRandomPositions,
   GRandomValueRules,
   type GroupMember,
   Tok,
@@ -26,7 +27,8 @@ import {
 } from './GRandomParserElements.js';
 import { GRandomTokenType } from './GRandomTokenType.js';
 
-export type { GRandomDiagnostic } from './GRandomParserElements.js';
+export { GRandomPositions } from './GRandomParserElements.js';
+export type { GRandomDiagnostic, GRandomPosition } from './GRandomParserElements.js';
 
 const LEXER_ERROR_MESSAGE = 'The lexer could not tokenize the input.';
 
@@ -38,6 +40,8 @@ export interface GRandomParseResult {
   readonly syntaxErrors: readonly GRandomDiagnostic[];
   /** Value-converter failures in source order; the failed feature stays unset. */
   readonly conversionErrors: readonly GRandomDiagnostic[];
+  /** The source position of each recorded (object, feature) assignment; see {@link GRandomPositions}. */
+  readonly positions: GRandomPositions;
 }
 
 /**
@@ -58,17 +62,22 @@ export class GRandomParser {
   /** `RandGraph: (configs+=Configuration)*`, followed by the end of the file. */
   parseRandGraph(graph: RandGraph): void {
     while (this.#cursor.type() === Tok.GENERATE) {
-      graph.getConfigs().push(this.parseConfiguration());
+      this.parseConfiguration(graph);
     }
     this.#cursor.expect(Tok.EOF);
   }
 
-  /** `Configuration: 'generate' samples=INT form=Form ('{' (...unordered...) '}')?`. */
-  parseConfiguration(): Configuration {
+  /**
+   * `Configuration: 'generate' samples=INT form=Form ('{' (...unordered...) '}')?`. The configuration joins `graph`
+   * once its header is parsed, so a syntax error in the body leaves it, partial, in the model (as Xtext's
+   * recovered model does).
+   */
+  parseConfiguration(graph: RandGraph): Configuration {
     const config = new Configuration();
     this.#cursor.expect(Tok.GENERATE);
     this.#values.intTerminal((v) => config.setSamples(v));
     config.setForm(this.#values.enumLiteral((l) => Form.get(l), 'RULE_FORM'));
+    graph.getConfigs().push(config);
     if (this.#cursor.accept(Tok.LBRACE) !== null) {
       unorderedGroup(this.#cursor, this.#configurationMembers(config));
       this.#cursor.expect(Tok.RBRACE);
@@ -80,15 +89,15 @@ export class GRandomParser {
     return [
       this.#rule(Tok.NODES, () => config.setNodes(this.parseNodes())),
       this.#rule(Tok.EDGES, () => config.setEdges(this.parseEdges())),
-      this.#member(Tok.MAX_WIDTH, () => {
+      this.#flag(Tok.MAX_WIDTH, config, 'mW', () => {
         config.setMW(true);
         this.#assigned(() => this.#values.integer((v) => config.setMaxWidth(v)));
       }),
-      this.#member(Tok.MAX_DEGREE, () => {
+      this.#flag(Tok.MAX_DEGREE, config, 'mD', () => {
         config.setMD(true);
         this.#assigned(() => this.#values.integer((v) => config.setMaxDegree(v)));
       }),
-      this.#member(Tok.PARTITION_FRACTION, () => {
+      this.#flag(Tok.PARTITION_FRACTION, config, 'pF', () => {
         config.setPF(true);
         this.#assigned(() => config.setFraction(this.#values.doubleQuantity()));
       }),
@@ -235,6 +244,17 @@ export class GRandomParser {
     };
   }
 
+  /** A group member like {@link #member} whose keyword token is the position of `feature` in `owner`. */
+  #flag(start: string, owner: object, feature: string, parse: () => void): GroupMember {
+    return {
+      starts: [start],
+      parse: () => {
+        this.#values.mark(owner, feature, this.#cursor.next());
+        parse();
+      },
+    };
+  }
+
   /** A group member that is a rule call: the rule consumes its own start token. */
   #rule(start: string, parse: () => void): GroupMember {
     return { starts: [start], parse };
@@ -285,5 +305,10 @@ export function parse(text: string): GRandomParseResult {
     syntaxErrors.push(lexerDiagnostic(lexed.tokens, lines));
   }
   const hasTokens = lexed.tokens.some((t) => !t.hidden);
-  return { model: hasTokens ? graph : null, syntaxErrors, conversionErrors: values.conversionErrors };
+  return {
+    model: hasTokens ? graph : null,
+    syntaxErrors,
+    conversionErrors: values.conversionErrors,
+    positions: values.positions,
+  };
 }

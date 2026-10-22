@@ -20,6 +20,32 @@ export interface GRandomDiagnostic {
   readonly length: number;
 }
 
+/** Where an assignment sits in the source: its first token (the keyword of a boolean assignment). */
+export interface GRandomPosition {
+  readonly line: number;
+  readonly offset: number;
+  readonly length: number;
+}
+
+/**
+ * The positions the parser recorded per (object, feature): the stand-in for the node-model lookup that
+ * `AbstractDeclarativeValidator.error(message, feature)` makes through `NodeModelUtils.findNodesForFeature`.
+ */
+export class GRandomPositions {
+  readonly #byObject = new WeakMap<object, Map<string, GRandomPosition>>();
+
+  record(owner: object, feature: string, position: GRandomPosition): void {
+    const features = this.#byObject.get(owner) ?? new Map<string, GRandomPosition>();
+    features.set(feature, position);
+    this.#byObject.set(owner, features);
+  }
+
+  /** The position of `feature` of `owner`, `null` if the parser did not record it. */
+  featurePosition(owner: object, feature: string): GRandomPosition | null {
+    return this.#byObject.get(owner)?.get(feature) ?? null;
+  }
+}
+
 /** Token types of the grammar's keywords and terminals, under the names of their literals. */
 export const Tok = {
   INT: GRandomTokenType.RULE_INT,
@@ -127,11 +153,21 @@ export class GRandomValueRules {
   readonly #cursor: TokenCursor;
   readonly #lines: LineSource;
   readonly conversionErrors: GRandomDiagnostic[] = [];
+  readonly positions = new GRandomPositions();
 
   constructor(text: string, cursor: TokenCursor, lines: LineSource) {
     this.#text = text;
     this.#cursor = cursor;
     this.#lines = lines;
+  }
+
+  /** Records `token` as the position of the assignment of `feature` in `owner`. */
+  mark(owner: object, feature: string, token: Token): void {
+    this.positions.record(owner, feature, {
+      line: this.#lines.startLine(token),
+      offset: token.offset,
+      length: token.text.length,
+    });
   }
 
   /** `feature=INT`. */
