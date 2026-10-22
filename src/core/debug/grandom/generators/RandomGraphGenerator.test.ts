@@ -179,25 +179,6 @@ describe('generate(GeneratorOptions) and makeGraph', () => {
     );
   });
 
-  it.each([
-    [GraphType.BIPARTITE, 'generateBipartite'],
-    [GraphType.TREE, 'generateTree'],
-    [GraphType.BICONNECTED, 'generateBiconnectedGraph'],
-    [GraphType.TRICONNECTED, 'generateTriconnectedGraph'],
-    [GraphType.ACYCLIC_NO_TRANSITIVE_EDGES, 'generateANTEGraph'],
-  ])('a graph type that is not ported (%s) throws the placeholder error naming %s', (type, method) => {
-    const gen = generatorWith(setting(GeneratorOptions.GRAPH_TYPE, type));
-    expect(() => gen.makeGraph(ElkGraphUtil.createGraph())).toThrow(`GRANDOM_PLACEHOLDER: ${method} is not ported yet`);
-  });
-
-  it('the triconnected case draws p1 before the placeholder throws', () => {
-    const gen = generatorWith(setting(GeneratorOptions.GRAPH_TYPE, GraphType.TRICONNECTED));
-    const parallel = new Random(SEED);
-    expect(() => gen.makeGraph(ElkGraphUtil.createGraph())).toThrow(/GRANDOM_PLACEHOLDER/);
-    parallel.nextFloat();
-    expect(gen.random.nextInt()).toBe(parallel.nextInt());
-  });
-
   it('removes isolated nodes when asked to', () => {
     const gen = generatorWith(
       setting(GeneratorOptions.NUMBER_OF_NODES, RandVal.exact(8)),

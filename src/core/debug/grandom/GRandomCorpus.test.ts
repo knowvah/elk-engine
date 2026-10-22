@@ -10,14 +10,17 @@ import { GRandomText } from './GRandomText.js';
 import { RandomGraphGenerator } from './generators/RandomGraphGenerator.js';
 
 const CORPUS_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../test/corpus/generated');
-/** The corpus files of the ported forms (`graphs`); T13 and T14 extend this list. */
+/** The corpus files of the ported forms (`graphs` and the three tree files); T14 extends this list. */
 const CORPUS_FILES: readonly string[] = [
   'disco-components-small',
   'force-graph-small',
+  'mrtree-tree-small',
+  'radial-tree-small',
   'random-graph-small',
   'sporeCompaction-graph-small',
   'sporeOverlap-graph-small',
   'topdownpacking-hierarchy-small',
+  'vertiflex-tree-small',
 ];
 const ROOT_IDENTIFIER = 'root';
 const CONTEXT_CHARS = 40;
@@ -54,8 +57,8 @@ function regenerate(elkr: string): string {
 }
 
 describe('generated corpus regenerates byte for byte', () => {
-  it('lists the six graphs-form corpus files', () => {
-    expect(CORPUS_FILES).toHaveLength(6);
+  it('lists the nine corpus files of the ported forms', () => {
+    expect(CORPUS_FILES).toHaveLength(9);
   });
 
   for (const name of CORPUS_FILES) {

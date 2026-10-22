@@ -23,8 +23,8 @@ const VECTORS_PATH = resolve(
   '../../../../../test/golden/refs/java/grandom-generate.json',
 );
 
-/** The forms whose generators are ported; T13 and T14 widen this list. */
-const ACCEPTED_FORMS: readonly Form[] = [Form.CUSTOM];
+/** The forms whose generators are ported; T14 adds `acyclic graphs`. */
+const ACCEPTED_FORMS: readonly Form[] = [Form.CUSTOM, Form.TREES, Form.BIPARTITE, Form.BICONNECTED, Form.TRICONNECTED];
 /** Mission stop 12: the 200-node stress row must replay within this wall-clock budget. */
 const STRESS_ROW_ID = 'stress-200';
 const STRESS_BUDGET_MS = 1000;
@@ -96,7 +96,7 @@ describe('describeMismatch', () => {
 });
 
 describe('RandomGraphGenerator replay of the JVM vectors', () => {
-  it('replays the graphs-form rows: 58 seeded rows, the accepted forms are selected', () => {
+  it('replays the accepted-form rows: 58 seeded rows, the accepted forms are selected', () => {
     expect(seededRows).toHaveLength(58);
     expect(replayedRows.length).toBeGreaterThan(0);
     expect(replayedRows.length).toBeLessThan(seededRows.length);

@@ -9,30 +9,12 @@ import { generateANTEGraph } from './RandomGraphGeneratorAnte.js';
 import { connectRandomlyAndConditional, determineOutgoingEdges } from './RandomGraphGeneratorConnect.js';
 import { createIndependentSet } from './RandomGraphGeneratorElements.js';
 import { RandomGraphGenerator } from './RandomGraphGenerator.js';
-
-/** The scalar arguments of Java `generateTree` (five Java parameters; grouped to respect the 5-parameter limit). */
-export interface TreeArgs {
-  /** the number of nodes */
-  readonly n: number;
-  /** the maximal degree */
-  readonly maxDeg: number;
-  /** the maximal width */
-  readonly maxWidth: number;
-  /** the current hierarchy level */
-  readonly hierarchyLevel: number;
-}
-
-/** The scalar arguments of Java `generateTriconnectedGraph` (five Java parameters; grouped likewise). */
-export interface TriconnectedArgs {
-  /** the number of nodes */
-  readonly n: number;
-  /** the first probability (a Java `float`) */
-  readonly p1: number;
-  /** the second probability (a Java `float`) */
-  readonly p2: number;
-  /** the current hierarchy level */
-  readonly hierarchyLevel: number;
-}
+import {
+  generateBiconnectedGraph,
+  generateBipartite,
+  generateTree,
+  generateTriconnectedGraph,
+} from './RandomGraphGeneratorTypesStructured.js';
 
 /**
  * The shared tail of both `generateAnyGraph` overloads: recursively creates the hierarchy if
@@ -172,74 +154,6 @@ function generateAnyGraphOutgoing(
     return generateAnyGraphEdges(gen, node, cn, hierarchyLevel + 1, gen.maxHierarchyLevel);
   });
   return nodes;
-}
-
-/**
- * PLACEHOLDER for Java `generateBipartite`. A later mission task replaces the body.
- *
- * @param gen the generator
- * @param parent the parent node
- * @param n the number of nodes
- * @param m the number of edges
- * @param hierarchyLevel the current hierarchy level
- * @internal
- * @see org.eclipse.elk.core.debug.grandom/src/org/eclipse/elk/core/debug/grandom/generators/RandomGraphGenerator.java
- */
-export function generateBipartite(
-  gen: RandomGraphGenerator,
-  parent: ElkNode,
-  n: number,
-  m: number,
-  hierarchyLevel: number,
-): void {
-  throw new Error('GRANDOM_PLACEHOLDER: generateBipartite is not ported yet');
-}
-
-/**
- * PLACEHOLDER for Java `generateTree`. A later mission task replaces the body.
- *
- * @param gen the generator
- * @param parent the parent node
- * @param args the scalar arguments
- * @internal
- * @see org.eclipse.elk.core.debug.grandom/src/org/eclipse/elk/core/debug/grandom/generators/RandomGraphGenerator.java
- */
-export function generateTree(gen: RandomGraphGenerator, parent: ElkNode, args: TreeArgs): void {
-  throw new Error('GRANDOM_PLACEHOLDER: generateTree is not ported yet');
-}
-
-/**
- * PLACEHOLDER for Java `generateBiconnectedGraph`. A later mission task replaces the body.
- *
- * @param gen the generator
- * @param parent the parent node
- * @param n the number of nodes
- * @param m the number of edges
- * @param hierarchyLevel the current hierarchy level
- * @internal
- * @see org.eclipse.elk.core.debug.grandom/src/org/eclipse/elk/core/debug/grandom/generators/RandomGraphGenerator.java
- */
-export function generateBiconnectedGraph(
-  gen: RandomGraphGenerator,
-  parent: ElkNode,
-  n: number,
-  m: number,
-  hierarchyLevel: number,
-): void {
-  throw new Error('GRANDOM_PLACEHOLDER: generateBiconnectedGraph is not ported yet');
-}
-
-/**
- * PLACEHOLDER for Java `generateTriconnectedGraph`. A later mission task replaces the body.
- *
- * @param gen the generator
- * @param parent the parent node
- * @param args the scalar arguments
- * @internal
- * @see org.eclipse.elk.core.debug.grandom/src/org/eclipse/elk/core/debug/grandom/generators/RandomGraphGenerator.java
- */
-export function generateTriconnectedGraph(gen: RandomGraphGenerator, parent: ElkNode, args: TriconnectedArgs): void {
-  throw new Error('GRANDOM_PLACEHOLDER: generateTriconnectedGraph is not ported yet');
 }
 
 /**

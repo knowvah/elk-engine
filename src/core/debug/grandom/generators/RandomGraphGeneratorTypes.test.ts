@@ -5,13 +5,7 @@ import { Random } from '../../../../java/util/Random.js';
 import { GeneratorOptions } from './GeneratorOptions.js';
 import { RandVal } from './RandVal.js';
 import { generateANTEGraph } from './RandomGraphGeneratorAnte.js';
-import {
-  generateAnyGraph,
-  generateBiconnectedGraph,
-  generateBipartite,
-  generateTree,
-  generateTriconnectedGraph,
-} from './RandomGraphGeneratorTypes.js';
+import { generateAnyGraph } from './RandomGraphGeneratorTypes.js';
 import { RandomGraphGenerator } from './RandomGraphGenerator.js';
 
 const SEED = 42n;
@@ -64,22 +58,11 @@ describe('generateAnyGraph', () => {
 });
 
 describe('placeholders', () => {
-  const gen = makeGenerator();
-  const parent = ElkGraphUtil.createGraph();
-
-  it.each([
-    ['generateBipartite', () => generateBipartite(gen, parent, 1, 1, 0)],
-    ['generateTree', () => generateTree(gen, parent, { n: 1, maxDeg: 0, maxWidth: 0, hierarchyLevel: 0 })],
-    ['generateBiconnectedGraph', () => generateBiconnectedGraph(gen, parent, 1, 1, 0)],
-    [
-      'generateTriconnectedGraph',
-      () => generateTriconnectedGraph(gen, parent, { n: 1, p1: 0.5, p2: 0.5, hierarchyLevel: 0 }),
-    ],
-    [
-      'generateANTEGraph',
-      () => generateANTEGraph(gen, parent, { n: 1, m: 1, planar: false, singleSource: false, hierarchyLevel: 0 }),
-    ],
-  ])('%s throws the GRANDOM_PLACEHOLDER error naming the Java method', (name, call) => {
-    expect(call).toThrow(new Error(`GRANDOM_PLACEHOLDER: ${name} is not ported yet`));
+  it('generateANTEGraph throws the GRANDOM_PLACEHOLDER error naming the Java method', () => {
+    const gen = makeGenerator();
+    const parent = ElkGraphUtil.createGraph();
+    expect(() =>
+      generateANTEGraph(gen, parent, { n: 1, m: 1, planar: false, singleSource: false, hierarchyLevel: 0 }),
+    ).toThrow(new Error('GRANDOM_PLACEHOLDER: generateANTEGraph is not ported yet'));
   });
 });
