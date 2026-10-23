@@ -10,6 +10,9 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { BasicIndexOutOfBoundsException } from '../../src/emf/common/util/BasicIndexOutOfBoundsException.js';
+import { UnsupportedConfigurationException } from '../../src/core/UnsupportedConfigurationException.js';
+import { UnsupportedGraphException } from '../../src/core/UnsupportedGraphException.js';
+import { GraphValidationException } from '../../src/core/validation/GraphValidationException.js';
 import { OperationCanceledException } from '../../src/equinox/core/runtime/OperationCanceledException.js';
 import { JsonImportException } from '../../src/graph/json/JsonImportException.js';
 import { SyntaxFailure } from '../../src/xtext/parser/SyntaxFailure.js';
@@ -79,6 +82,9 @@ const JAVA_PARENTS: ReadonlyMap<ErrorClass, ErrorClass> = new Map<ErrorClass, Er
   [BasicIndexOutOfBoundsException, IndexOutOfBoundsException],
   // ELK
   [JsonImportException, RuntimeException],
+  [UnsupportedConfigurationException, RuntimeException],
+  [UnsupportedGraphException, RuntimeException],
+  [GraphValidationException, RuntimeException],
   // Xtext 2.36.0
   [ValueConverterException, RuntimeException],
   [ValueConverterWithValueException, ValueConverterException],

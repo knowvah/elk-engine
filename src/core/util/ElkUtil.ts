@@ -1,94 +1,93 @@
 // SPDX-License-Identifier: EPL-2.0
-import type { ElkGraphElement } from '../../graph/ElkGraphElement.js';
-import { isElkGraphElement } from '../../graph/ElkGraphElement.js';
-import { isElkEdge } from '../../graph/ElkEdge.js';
-import type { ElkEdge } from '../../graph/ElkEdge.js';
-import { isElkLabel } from '../../graph/ElkLabel.js';
-import { isNullOrEmpty } from '../../guava/Strings.js';
-import type { StringBuilder } from '../../java/lang/StringBuilder.js';
+import { calcPortOffset, calcPortSide } from './ElkUtilPorts.js';
+import {
+  DEFAULT_MIN_HEIGHT,
+  DEFAULT_MIN_WIDTH,
+  applyConfiguredNodeScaling,
+  computeChildAreaDimensions,
+  effectiveMinSizeConstraintFor,
+  resizeNode,
+} from './ElkUtilSizing.js';
+import { determineJunctionPoints } from './ElkUtilJunctions.js';
+import { computeInsidePart, getLabelsBounds } from './ElkUtilLabels.js';
+import {
+  absolutePosition,
+  applyVectorChain,
+  createVectorChain,
+  toAbsolute,
+  toRelative,
+  translate,
+} from './ElkUtilCoordinates.js';
+import { configureDefaultsRecursively, configureWithDefaultValues } from './ElkUtilDefaults.js';
+import {
+  applyVisitors,
+  applyVisitorsWithValidation,
+  createIdentifier,
+  debugFolderPath,
+  printElementPath,
+} from './ElkUtilVisitors.js';
 
-const SPACE = 0x20;
-const ROOT_PREFIX = 'Root ';
-const CONTAINER_SEPARATOR = ' > ';
-const CLASS_PREFIX = 'Elk';
-const ITEM_SEPARATOR = ', ';
-
-/** Appends `' ' + text` when the text is non-empty and reports whether it did. */
-function appendText(text: string | null, builder: StringBuilder): boolean {
-  if (text === null || isNullOrEmpty(text)) {
-    return false;
-  }
-  builder.appendChar(SPACE).append(text);
-  return true;
-}
-
-/** Appends the identifier, the element's own label text, or the first non-empty label text. */
-function appendNaming(element: ElkGraphElement, builder: StringBuilder): boolean {
-  if (appendText(element.getIdentifier(), builder)) {
-    return true;
-  }
-  if (isElkLabel(element) && appendText(element.getText(), builder)) {
-    return true;
-  }
-  for (const label of element.getLabels()) {
-    if (appendText(label.getText(), builder)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/** Appends the paths of the shapes, separated by commas. */
-function appendPaths(shapes: Iterable<ElkGraphElement>, builder: StringBuilder): void {
-  let first = true;
-  for (const shape of shapes) {
-    if (!first) {
-      builder.append(ITEM_SEPARATOR);
-    }
-    first = false;
-    printElementPath(shape, builder);
-  }
-}
-
-/** Appends the ` (sources -> targets)` form of a connected edge. */
-function appendEdgeEnds(edge: ElkEdge, builder: StringBuilder): void {
-  if (edge.isConnected()) {
-    builder.append(' (');
-    appendPaths(edge.getSources(), builder);
-    builder.append(' -> ');
-    appendPaths(edge.getTargets(), builder);
-    builder.append(')');
-  }
-}
+// The sections of Java's `ElkUtil` live in `ElkUtil*.ts` modules (M10), composed into `ElkUtil` below. To add a
+// section module: import its functions here, add them to the `ElkUtil` object in Java order, and add a named
+// re-export. `printElementPath` lives in `ElkUtilVisitors.ts` (no import cycle with `applyVisitorsWithValidation`).
+export { DEFAULT_MIN_WIDTH, DEFAULT_MIN_HEIGHT } from './ElkUtilSizing.js';
+export { calcPortSide, calcPortOffset } from './ElkUtilPorts.js';
+export {
+  resizeNode,
+  effectiveMinSizeConstraintFor,
+  applyConfiguredNodeScaling,
+  computeChildAreaDimensions,
+} from './ElkUtilSizing.js';
+export { determineJunctionPoints } from './ElkUtilJunctions.js';
+export { getLabelsBounds, computeInsidePart } from './ElkUtilLabels.js';
+export {
+  translate,
+  absolutePosition,
+  toAbsolute,
+  toRelative,
+  createVectorChain,
+  applyVectorChain,
+} from './ElkUtilCoordinates.js';
+export { configureDefaultsRecursively, configureWithDefaultValues } from './ElkUtilDefaults.js';
+export {
+  applyVisitors,
+  applyVisitorsWithValidation,
+  printElementPath,
+  debugFolderPath,
+  createIdentifier,
+} from './ElkUtilVisitors.js';
 
 /**
- * Print information on the given graph element to the given string builder.
+ * The public statics of Java's `ElkUtil`, in Java order; complete except the `elkjs-exclude` blocks (M2):
+ * `toSafePathName` is not ported and `debugFolderPath` returns `null`. The Java overloads of `translate`,
+ * `resizeNode`, `determineJunctionPoints`, `computeInsidePart` and `configureWithDefaultValues` are merged into
+ * one function each, dispatching on the argument types.
  *
  * @see org.eclipse.elk.core/src/org/eclipse/elk/core/util/ElkUtil.java
  */
-function printElementPath(element: ElkGraphElement, builder: StringBuilder): void {
-  // Print the containing element
-  const container = element.eContainer();
-  if (isElkGraphElement(container)) {
-    printElementPath(container, builder);
-    builder.append(CONTAINER_SEPARATOR);
-  } else {
-    builder.append(ROOT_PREFIX);
-  }
-
-  // Print the class name
-  const className = element.eClass().getName();
-  builder.append(className.startsWith(CLASS_PREFIX) ? className.substring(CLASS_PREFIX.length) : className);
-
-  // Print the identifier or label if present; otherwise, for an edge, source and target
-  if (!appendNaming(element, builder) && isElkEdge(element)) {
-    appendEdgeEnds(element, builder);
-  }
-}
-
-/**
- * The public statics of Java's `ElkUtil` ported so far (C2: mission 3 ports `printElementPath` only).
- *
- * @see org.eclipse.elk.core/src/org/eclipse/elk/core/util/ElkUtil.java
- */
-export const ElkUtil = { printElementPath } as const;
+export const ElkUtil = {
+  DEFAULT_MIN_WIDTH,
+  DEFAULT_MIN_HEIGHT,
+  calcPortSide,
+  calcPortOffset,
+  resizeNode,
+  effectiveMinSizeConstraintFor,
+  applyConfiguredNodeScaling,
+  computeChildAreaDimensions,
+  determineJunctionPoints,
+  getLabelsBounds,
+  computeInsidePart,
+  translate,
+  absolutePosition,
+  toAbsolute,
+  toRelative,
+  createVectorChain,
+  applyVectorChain,
+  configureDefaultsRecursively,
+  configureWithDefaultValues,
+  applyVisitors,
+  applyVisitorsWithValidation,
+  printElementPath,
+  debugFolderPath,
+  createIdentifier,
+} as const;
