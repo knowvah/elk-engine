@@ -19,12 +19,14 @@ import { ExclusiveBounds } from '../util/ExclusiveBounds.js';
 import { IndividualSpacings } from '../util/IndividualSpacings.js';
 import { PackingMode } from '../util/PackingMode.js';
 import { Alignment } from './Alignment.js';
+import { BoxLayouterOptions } from './BoxLayouterOptions.js';
 import { ContentAlignment } from './ContentAlignment.js';
 import { Direction } from './Direction.js';
 import { EdgeCoords } from './EdgeCoords.js';
 import { EdgeLabelPlacement } from './EdgeLabelPlacement.js';
 import { EdgeRouting } from './EdgeRouting.js';
 import { EdgeType } from './EdgeType.js';
+import { FixedLayouterOptions } from './FixedLayouterOptions.js';
 import { HierarchyHandling } from './HierarchyHandling.js';
 import { ITopdownSizeApproximator } from './ITopdownSizeApproximator.js';
 import { NodeLabelPlacement } from './NodeLabelPlacement.js';
@@ -32,10 +34,12 @@ import { PortAlignment } from './PortAlignment.js';
 import { PortConstraints } from './PortConstraints.js';
 import { PortLabelPlacement } from './PortLabelPlacement.js';
 import { PortSide } from './PortSide.js';
+import { RandomLayouterOptions } from './RandomLayouterOptions.js';
 import { ShapeCoords } from './ShapeCoords.js';
 import { SizeConstraint } from './SizeConstraint.js';
 import { SizeOptions } from './SizeOptions.js';
 import { TopdownNodeTypes } from './TopdownNodeTypes.js';
+import { TopdownSizeApproximator } from './TopdownSizeApproximator.js';
 
 /**
  * @see org.eclipse.elk.core/src-gen/org/eclipse/elk/core/options/CoreOptions.java
@@ -1489,28 +1493,51 @@ export class CoreOptions implements ILayoutMetaDataProvider {
     null,
   );
 
+  static #PARTITIONING_PARTITION_DEP_PARTITIONING_ACTIVATE_0: boolean | undefined;
+
   /**
    * Required value for dependency between {@link PARTITIONING_PARTITION} and {@link PARTITIONING_ACTIVATE}.
    */
-  private static readonly PARTITIONING_PARTITION_DEP_PARTITIONING_ACTIVATE_0: boolean = true;
+  private static get PARTITIONING_PARTITION_DEP_PARTITIONING_ACTIVATE_0(): boolean {
+    return (CoreOptions.#PARTITIONING_PARTITION_DEP_PARTITIONING_ACTIVATE_0 ??= true);
+  }
+
+  static #TOPDOWN_SIZE_CATEGORIES_DEP_TOPDOWN_SIZE_APPROXIMATOR_0: ITopdownSizeApproximator | undefined;
+
+  /**
+   * Required value for dependency between {@link TOPDOWN_SIZE_CATEGORIES} and {@link TOPDOWN_SIZE_APPROXIMATOR}.
+   */
+  private static get TOPDOWN_SIZE_CATEGORIES_DEP_TOPDOWN_SIZE_APPROXIMATOR_0(): ITopdownSizeApproximator {
+    return (CoreOptions.#TOPDOWN_SIZE_CATEGORIES_DEP_TOPDOWN_SIZE_APPROXIMATOR_0 ??=
+      TopdownSizeApproximator.FIXED_INTEGER_RATIO_BOXES);
+  }
+
+  static #TOPDOWN_SCALE_FACTOR_DEP_TOPDOWN_NODE_TYPE_0: TopdownNodeTypes | undefined;
 
   /**
    * Required value for dependency between {@link TOPDOWN_SCALE_FACTOR} and {@link TOPDOWN_NODE_TYPE}.
    */
-  private static readonly TOPDOWN_SCALE_FACTOR_DEP_TOPDOWN_NODE_TYPE_0: TopdownNodeTypes =
-    TopdownNodeTypes.HIERARCHICAL_NODE;
+  private static get TOPDOWN_SCALE_FACTOR_DEP_TOPDOWN_NODE_TYPE_0(): TopdownNodeTypes {
+    return (CoreOptions.#TOPDOWN_SCALE_FACTOR_DEP_TOPDOWN_NODE_TYPE_0 ??= TopdownNodeTypes.HIERARCHICAL_NODE);
+  }
+
+  static #TOPDOWN_SIZE_APPROXIMATOR_DEP_TOPDOWN_NODE_TYPE_0: TopdownNodeTypes | undefined;
 
   /**
    * Required value for dependency between {@link TOPDOWN_SIZE_APPROXIMATOR} and {@link TOPDOWN_NODE_TYPE}.
    */
-  private static readonly TOPDOWN_SIZE_APPROXIMATOR_DEP_TOPDOWN_NODE_TYPE_0: TopdownNodeTypes =
-    TopdownNodeTypes.HIERARCHICAL_NODE;
+  private static get TOPDOWN_SIZE_APPROXIMATOR_DEP_TOPDOWN_NODE_TYPE_0(): TopdownNodeTypes {
+    return (CoreOptions.#TOPDOWN_SIZE_APPROXIMATOR_DEP_TOPDOWN_NODE_TYPE_0 ??= TopdownNodeTypes.HIERARCHICAL_NODE);
+  }
+
+  static #TOPDOWN_SCALE_CAP_DEP_TOPDOWN_NODE_TYPE_0: TopdownNodeTypes | undefined;
 
   /**
    * Required value for dependency between {@link TOPDOWN_SCALE_CAP} and {@link TOPDOWN_NODE_TYPE}.
    */
-  private static readonly TOPDOWN_SCALE_CAP_DEP_TOPDOWN_NODE_TYPE_0: TopdownNodeTypes =
-    TopdownNodeTypes.HIERARCHICAL_NODE;
+  private static get TOPDOWN_SCALE_CAP_DEP_TOPDOWN_NODE_TYPE_0(): TopdownNodeTypes {
+    return (CoreOptions.#TOPDOWN_SCALE_CAP_DEP_TOPDOWN_NODE_TYPE_0 ??= TopdownNodeTypes.HIERARCHICAL_NODE);
+  }
 
   apply(registry: ILayoutMetaDataProvider.Registry): void {
     registry.register(
@@ -2704,7 +2731,11 @@ export class CoreOptions implements ILayoutMetaDataProvider {
         .visibility(LayoutOptionData.Visibility.ADVANCED)
         .create(),
     );
-    // Held back (dependency org.eclipse.elk.topdown.sizeCategories -> org.eclipse.elk.topdown.sizeApproximator): expression references pending type org.eclipse.elk.core.options.TopdownSizeApproximator.
+    registry.addDependency(
+      'org.eclipse.elk.topdown.sizeCategories',
+      'org.eclipse.elk.topdown.sizeApproximator',
+      CoreOptions.TOPDOWN_SIZE_CATEGORIES_DEP_TOPDOWN_SIZE_APPROXIMATOR_0,
+    );
     registry.register(
       new LayoutOptionData.Builder()
         .id('org.eclipse.elk.topdown.sizeCategoriesHierarchicalNodeWeight')
@@ -2958,8 +2989,8 @@ export class CoreOptions implements ILayoutMetaDataProvider {
         .description('Radial layout algorithms usually position the nodes of the graph on concentric circles.')
         .create(),
     );
-    // Held back (algorithm org.eclipse.elk.fixed): the layout provider is pending type org.eclipse.elk.core.util.FixedLayoutProvider.
-    // Held back (algorithm org.eclipse.elk.box): the layout provider is pending type org.eclipse.elk.core.util.BoxLayoutProvider.
-    // Held back (algorithm org.eclipse.elk.random): the layout provider is pending type org.eclipse.elk.core.util.RandomLayoutProvider.
+    new FixedLayouterOptions().apply(registry);
+    new BoxLayouterOptions().apply(registry);
+    new RandomLayouterOptions().apply(registry);
   }
 }

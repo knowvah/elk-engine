@@ -210,14 +210,15 @@ function dependencyConstant(source: ResolvedOption, dependency: ResolvedDependen
     imports: context.imports,
   };
   return [
-    constantDeclaration(
+    lazyConstant(
       [
         `Required value for dependency between {@link ${source.entry.constantName}} and {@link ${dependency.target.constantName}}.`,
       ],
-      'private static readonly',
       dependency.constantName,
       type,
       emitExpression(dependency.expression, own),
+      context.className,
+      'private ',
     ),
   ];
 }
@@ -372,14 +373,37 @@ function supportConstants(algorithm: ResolvedAlgorithm, support: ResolvedSupport
             emitExpression(support.expression, context),
           ),
         ];
-  const constant = constantDeclaration(
+  const constant = lazyConstant(
     descriptionLines(support.option.entry.option.description),
-    'static readonly',
     support.constantName,
     `${iProperty}<${type}>`,
     supportInitializer(support, context),
+    context.className,
   );
   return [...defaults, constant];
+}
+
+/**
+ * M12: an option constant of an algorithm class reads another module's binding (`CoreOptions.X`), and
+ * `CoreOptions.apply` imports the algorithm classes, so a `static readonly` initializer would hit a temporal dead zone
+ * whenever `CoreOptions` is the entry module. Every such constant is therefore a cached static getter, emulating the
+ * JVM's lazy class initialization: created on first access, once (identity stable). The private `*_DEFAULT` constants
+ * stay eager: their expressions only reference leaf value classes (math, enums, `EnumSet`), never an option class.
+ *
+ * M16: the `*_DEP_*` constants of every option file use the same form (private), because a dependency's required value
+ * may be a constant of a non-leaf enum (`TopdownSizeApproximator` imports `CoreOptions`), and entering through that enum
+ * would otherwise read it in its temporal dead zone.
+ */
+function lazyConstant(
+  doc: readonly string[],
+  name: string,
+  type: string,
+  initializer: string,
+  owner: string,
+  modifier = '',
+): string {
+  const comment = doc.length === 0 ? '' : `${docComment(doc)}\n`;
+  return `static #${name}: ${type} | undefined;\n\n${comment}${modifier}static get ${name}(): ${type} {\nreturn (${owner}.#${name} ??= ${initializer});\n}`;
 }
 
 function algorithmRegistration(algorithm: ResolvedAlgorithm, context: FileContext): string {

@@ -46,7 +46,6 @@ import {
   registerAfterLoad,
   snapshotEntries,
 } from '../../../../test/helpers/elkt-validate-mutations.js';
-import { MISSION5_ALGORITHMS, registerMission5StandIns } from '../../../../test/helpers/mission5-stand-ins.js';
 
 const VALIDATE_REF = fileURLToPath(
   new URL('../../../../test/golden/refs/java/graph-text-validate.json', import.meta.url),
@@ -54,7 +53,6 @@ const VALIDATE_REF = fileURLToPath(
 const CODE_SYNTAX = 'org.eclipse.xtext.diagnostics.Diagnostic.Syntax';
 const CODE_RANGE = 'org.eclipse.xtext.diagnostics.Diagnostic.Syntax.Range';
 const CODE_LINKING = 'org.eclipse.xtext.diagnostics.Diagnostic.Linking';
-const DEFERRED_TO_MISSION5 = 'mission5';
 
 interface IssueRow {
   readonly severity: string;
@@ -73,8 +71,7 @@ interface RecordedCase {
 }
 
 const cases = (JSON.parse(readFileSync(VALIDATE_REF, 'utf8')) as { cases: RecordedCase[] }).cases;
-const deferred = cases.filter((c) => c.deferred === DEFERRED_TO_MISSION5);
-const replayed = cases.filter((c) => c.deferred !== DEFERRED_TO_MISSION5);
+const formerlyDeferred = cases.filter((c) => c.deferred !== undefined);
 
 /** The bindings `ElkGraphText.load` constructs (its factory is private), needed here for the node positions. */
 function linkerFor(
@@ -184,7 +181,7 @@ afterEach(() => {
 });
 
 describe('ElkGraphValidator replay of graph-text-validate.json', () => {
-  it.each(replayed.map((c) => [c.id, c] as const))('%s', (_id, recorded) => {
+  it.each(cases.map((c) => [c.id, c] as const))('%s', (_id, recorded) => {
     const {
       issues,
       logged,
@@ -200,17 +197,8 @@ describe('ElkGraphValidator replay of graph-text-validate.json', () => {
     }
   });
 
-  it('skips exactly the rows tagged mission5 and keeps the others', () => {
-    expect(deferred).toHaveLength(11);
-    expect(replayed).toHaveLength(cases.length - deferred.length);
-  });
-
-  it.each(MISSION5_ALGORITHMS)('MISSION5_ALGORITHMS filter is still needed: %s is not registered', (suffix) => {
-    expect(
-      LayoutMetaDataService.getInstance().getAlgorithmDataBySuffix(suffix),
-      `Mission 5 registered '${suffix}': drop the MISSION5_ALGORITHMS filter and the mission5 skip, ` +
-        'and regenerate the graph-text-validate.json refs',
-    ).toBeNull();
+  it('replays the 11 rows formerly deferred through the same path', () => {
+    expect(formerlyDeferred).toHaveLength(11);
   });
 });
 
@@ -263,14 +251,5 @@ describe('ElkGraphValidator', () => {
     expect(features?.indexOfKey(CoreOptions.DIRECTION)).toBe(0);
     expect(features?.indexOfKey(CoreOptions.ALGORITHM)).toBe(-1);
     expect(elkGraphMapEntryFeatures(new BasicEList<EObject>() as unknown as EObject)).toEqual([]);
-  });
-});
-
-describe('ElkGraphValidator on the rows deferred to mission 5, with stand-in algorithms', () => {
-  it.each(deferred.map((c) => [c.id, c] as const))('%s', (_id, recorded) => {
-    registerMission5StandIns();
-    const { issues, logged } = validateText(recorded.input);
-    expect(logged).toEqual([]);
-    expect(issues).toEqual(recorded.issues);
   });
 });

@@ -4,15 +4,10 @@ import { join } from 'node:path';
 
 /**
  * Types whose classes are not ported yet (decision C1). A registration whose expression or provider references one of
- * them is held back from the generated registry until the class exists; mission 5 empties the list. Fully qualified;
+ * them is held back from the generated registry until the class exists; emptied in mission 5 (T14). Fully qualified;
  * the nested `BoxLayoutProvider.PackingMode` is a different name and is not pending.
  */
-export const PENDING_TYPES: readonly string[] = [
-  'org.eclipse.elk.core.util.FixedLayoutProvider',
-  'org.eclipse.elk.core.util.BoxLayoutProvider',
-  'org.eclipse.elk.core.util.RandomLayoutProvider',
-  'org.eclipse.elk.core.options.TopdownSizeApproximator',
-];
+export const PENDING_TYPES: readonly string[] = [];
 
 /** Where the vendored sources and their manifest live. */
 export const SOURCES_DIRECTORY = join(import.meta.dirname, 'sources');

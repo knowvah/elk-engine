@@ -2,9 +2,8 @@
 /*
  * Port of org.elk.core.test LayoutDataContentAssistTest (`Enclosed`: `LayoutOptionsPrefixes` and `Other`).
  *
- * NOT PORTED (decision C10, deferred to mission 5 unchanged): `Other.testAlgorithmSpecificKnown` and
- * `Other.testAlgorithmSpecificUnknown`. They set the algorithm to `BoxLayouterOptions.ALGORITHM_ID` and
- * `FixedLayouterOptions.ALGORITHM_ID`, whose algorithms are held back by C1.
+ * All JUnit cases are ported (C10 closed): `Other.testAlgorithmSpecificKnown` and `testAlgorithmSpecificUnknown`
+ * use the registered `box` and `fixed` algorithms.
  *
  * The tests below the ported ones cover the Java branches the JUnit test does not reach.
  *
@@ -22,8 +21,10 @@ import { ElkGraphUtil } from '../../graph/util/ElkGraphUtil.js';
 import { ElkReflect } from '../../graph/util/ElkReflect.js';
 import { JavaClass, javaInterface, type JavaClassRef } from '../../java/lang/JavaClass.js';
 import { KVector } from '../math/KVector.js';
+import { BoxLayouterOptions } from '../options/BoxLayouterOptions.js';
 import { CoreOptions } from '../options/CoreOptions.js';
 import { Direction } from '../options/Direction.js';
+import { FixedLayouterOptions } from '../options/FixedLayouterOptions.js';
 import { SizeConstraint } from '../options/SizeConstraint.js';
 import type { AbstractLayoutProvider } from '../AbstractLayoutProvider.js';
 import type { IFactory } from '../util/IFactory.js';
@@ -38,6 +39,9 @@ const { Type, Visibility } = LayoutOptionData;
 
 const LAYERED_ID = 'test.alg.layered';
 const TREE_ID = 'test.alg.tree';
+
+/** Core algorithms registered by `LayoutMetaDataService.getInstance()` (M13: excluded from stub-registry assertions). */
+const isCoreAlgorithm = (id: string | undefined): boolean => id?.startsWith('org.eclipse.elk.') ?? false;
 const HIDDEN_OPTION_ID = 'test.hidden';
 const NULL_GROUP_OPTION_ID = 'test.nullGroup';
 
@@ -144,6 +148,24 @@ describe('Other', () => {
 
     const childPs = LayoutDataContentAssist.getLayoutOptionProposals(child, CoreOptions.ALGORITHM.getId());
     expect(containsOption(childPs, CoreOptions.ALGORITHM)).toBe(false);
+  });
+
+  it('testAlgorithmSpecificKnown', () => {
+    const root = ElkGraphUtil.createGraph();
+    ElkGraphUtil.createNode(root);
+    root.setProperty(CoreOptions.ALGORITHM, BoxLayouterOptions.ALGORITHM_ID);
+
+    const parentPs = LayoutDataContentAssist.getLayoutOptionProposals(root, CoreOptions.EXPAND_NODES.getId());
+    expect(containsOption(parentPs, CoreOptions.EXPAND_NODES)).toBe(true);
+  });
+
+  it('testAlgorithmSpecificUnknown', () => {
+    const root = ElkGraphUtil.createGraph();
+    ElkGraphUtil.createNode(root);
+    root.setProperty(CoreOptions.ALGORITHM, FixedLayouterOptions.ALGORITHM_ID);
+
+    const parentPs = LayoutDataContentAssist.getLayoutOptionProposals(root, CoreOptions.EXPAND_NODES.getId());
+    expect(containsOption(parentPs, CoreOptions.EXPAND_NODES)).toBe(false);
   });
 
   it('testOptionGroupIsAdded', () => {
@@ -313,7 +335,8 @@ describe('getLayoutAlgorithmProposals', () => {
   });
 
   it('proposes every algorithm for an empty prefix, shortest unique suffix first', () => {
-    const ps = LayoutDataContentAssist.getLayoutAlgorithmProposals('');
+    // Registry-independent (M13): drop the core algorithms `getInstance()` registers (`org.eclipse.elk.*`).
+    const ps = LayoutDataContentAssist.getLayoutAlgorithmProposals('').filter((p) => !isCoreAlgorithm(p.data?.getId()));
     expect(ps.map((p) => p.proposal)).toEqual(['layered', 'tree']);
     expect(ps.map((p) => p.data?.getId())).toEqual([LAYERED_ID, TREE_ID]);
   });

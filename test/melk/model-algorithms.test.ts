@@ -107,16 +107,19 @@ describe('algorithm model against the JVM dump (no pending types)', () => {
   });
 });
 
-describe('pending types (C1)', () => {
-  const bundles = resolveVendoredWith(PENDING_TYPES);
+/** The four types held back in mission 3; the C1 mechanism tests keep exercising them (M9: T8 un-held Fixed, T10 Random, T12 Box). */
+const MISSION3_PENDING_TYPES: readonly string[] = [
+  'org.eclipse.elk.core.util.FixedLayoutProvider',
+  'org.eclipse.elk.core.util.BoxLayoutProvider',
+  'org.eclipse.elk.core.util.RandomLayoutProvider',
+  'org.eclipse.elk.core.options.TopdownSizeApproximator',
+];
 
-  it('lists the four mission-3 types', () => {
-    expect(PENDING_TYPES).toEqual([
-      'org.eclipse.elk.core.util.FixedLayoutProvider',
-      'org.eclipse.elk.core.util.BoxLayoutProvider',
-      'org.eclipse.elk.core.util.RandomLayoutProvider',
-      'org.eclipse.elk.core.options.TopdownSizeApproximator',
-    ]);
+describe('pending types (C1)', () => {
+  const bundles = resolveVendoredWith(MISSION3_PENDING_TYPES);
+
+  it('lists no pending type (Fixed left the list in T8, Random in T10, Box in T12, TopdownSizeApproximator in T14)', () => {
+    expect(PENDING_TYPES).toEqual([]);
   });
 
   it('holds back exactly the three Core algorithms and the topdown.sizeCategories dependency', () => {

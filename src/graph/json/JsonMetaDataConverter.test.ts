@@ -28,21 +28,6 @@ interface ConverterRow {
   readonly throws?: { readonly class: string; readonly message: string };
 }
 
-/**
- * Deferred to mission 5: the providers of these are held back (CoreOptions.ts:2961-2963; docs/conformance.md:334-340),
- * so the TS service lacks them. The id-set test asserts their absence and fails once mission 5 registers them,
- * prompting removal of this filter.
- */
-const MISSION5_PROVIDERS = {
-  [KIND_ALGORITHM]: ['org.eclipse.elk.fixed', 'org.eclipse.elk.box', 'org.eclipse.elk.random'],
-  [KIND_CATEGORY]: [''],
-} as const;
-
-function isDeferred(row: ConverterRow): boolean {
-  const deferred: readonly (string | null)[] = MISSION5_PROVIDERS[row.kind as keyof typeof MISSION5_PROVIDERS] ?? [];
-  return deferred.includes(row.id);
-}
-
 const rows = (JSON.parse(readFileSync(VECTORS_URL, 'utf8')) as { converter: ConverterRow[] }).converter;
 
 /** The recording's anonymous ILayoutMetaData: none of the three handled types, `toString` is "CustomMetaData". */
@@ -82,43 +67,38 @@ describe('JsonMetaDataConverter', () => {
     expect(rows.filter((r) => r.kind === KIND_OPTION)).toHaveLength(94);
   });
 
-  it('registers the recorded ids except the mission 5 providers, which are absent', () => {
+  it('registers the recorded ids', () => {
     const service = LayoutMetaDataService.getInstance();
-    const recorded = (kind: string): string[] =>
-      rows.filter((r) => r.kind === kind && !isDeferred(r)).map((r) => r.id as string);
+    const recorded = (kind: string): string[] => rows.filter((r) => r.kind === kind).map((r) => r.id as string);
+    const recordedCategories = rows.filter((r) => r.kind === KIND_CATEGORY).map((r) => r.id as string);
     const options = service.getOptionData().map((o) => o.getId());
     const categories = service.getCategoryData().map((c) => c.getId());
     const algorithms = service.getAlgorithmData().map((a) => a.getId());
     expect(options).toEqual(recorded(KIND_OPTION));
-    expect(categories).toEqual(recorded(KIND_CATEGORY));
+    expect(categories).toEqual(recordedCategories);
     expect(algorithms).toEqual(recorded(KIND_ALGORITHM));
-    expect(rows.filter(isDeferred)).toHaveLength(4);
-    expect(categories).not.toContain('');
-    for (const id of MISSION5_PROVIDERS[KIND_ALGORITHM]) expect(algorithms).not.toContain(id);
+    expect(categories).toContain('');
   });
 
-  describe.each(rows.filter((r) => !isDeferred(r)).map((r) => [`${r.kind} ${r.id}`, r] as const))(
-    '%s',
-    (_label, row) => {
-      it('matches the recorded outcome', () => {
-        const data = dataFor(row);
-        if (row.throws !== undefined) {
-          expect(row.throws.class).toBe('java.lang.IllegalArgumentException');
-          let caught: unknown;
-          try {
-            JsonMetaDataConverter.toJson(data as ILayoutMetaData);
-          } catch (e) {
-            caught = e;
-          }
-          expect(caught).toBeInstanceOf(IllegalArgumentException);
-          expect((caught as Error).message).toBe(row.throws.message);
-        } else {
-          expect(data).not.toBeNull();
-          expect(JsonMetaDataConverter.toJson(data as ILayoutMetaData).toString()).toBe(row.text);
+  describe.each(rows.map((r) => [`${r.kind} ${r.id}`, r] as const))('%s', (_label, row) => {
+    it('matches the recorded outcome', () => {
+      const data = dataFor(row);
+      if (row.throws !== undefined) {
+        expect(row.throws.class).toBe('java.lang.IllegalArgumentException');
+        let caught: unknown;
+        try {
+          JsonMetaDataConverter.toJson(data as ILayoutMetaData);
+        } catch (e) {
+          caught = e;
         }
-      });
-    },
-  );
+        expect(caught).toBeInstanceOf(IllegalArgumentException);
+        expect((caught as Error).message).toBe(row.throws.message);
+      } else {
+        expect(data).not.toBeNull();
+        expect(JsonMetaDataConverter.toJson(data as ILayoutMetaData).toString()).toBe(row.text);
+      }
+    });
+  });
 });
 
 describe('branches no CoreOptions-only row reaches (expected text from JsonMetaDataConverter.xtend)', () => {
