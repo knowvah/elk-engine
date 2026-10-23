@@ -21,6 +21,7 @@ this document describes what it implements. Port rules live in
 | 6   | [Gates](#6-gates)                                 | What must pass before a change lands?    |
 | 7   | [ELK Text](#elk-text-elkt)                        | How is `.elkt` proven?                   |
 | 8   | [ELK Textual JSON](#elk-textual-json-elkj)        | How is `.elkj` proven?                   |
+| -   | [Core layouts](#core-layouts-fixed-box-random)    | How are `fixed`, `box`, `random` proven? |
 | -   | [Temporary gaps](#temporary-gaps)                 | What differs from the Java for now?      |
 
 ## 1. Oracle
@@ -565,6 +566,99 @@ typos".
 **Regenerate.** `tools/vectors/elkr-vectors.sh <outDir>` (`ELK_VECTORS_CACHE=off` for a cold run) and
 `tools/oracle/regen-generated.sh` for the corpus; a differing rerun is a defect to diagnose against the oracle,
 never a ref to accept.
+
+## Core layouts (fixed, box, random)
+
+The three core algorithms are proven against the oracle over the corpus retargeted to each of them
+(`tools/corpus/ts-layout-compare.ts`; the overlay and export flags are those of `layout-goldens.test.ts`:
+`applyOverlay`, `RecursiveGraphLayoutEngine`, `omitLayout(false)`, `omitZeroDimension(false)`,
+`omitZeroPositions(false)`, `omitUnknownLayoutOptions(true)`, `prettyPrint(true)`). Nothing from the sweep is
+committed (AD-5): the oracle outputs stay under `$ELK_ORACLE_DIR/sweep/`, the summary under a path of your choice.
+
+**Result** (oracle commit `8aaa3c1`, models `ac5af2b`; run A outputs; `random` has 7 extra generated-tier cases):
+
+| Algorithm | Planned | ok  | mismatch | both-throw | ts-only-throw | oracle-only-throw | excluded |
+| --------- | ------- | --- | -------- | ---------- | ------------- | ----------------- | -------- |
+| `fixed`   | 898     | 687 | 175      | 29         | 7             | 0                 | 0        |
+| `box`     | 898     | 710 | 181      | 0          | 7             | 0                 | 0        |
+| `random`  | 905     | 388 | 141      | 0          | 4             | 0                 | 372      |
+
+Every one of the 497 `mismatch` cases differs only in `layoutOptions` entries: no coordinate, size, section, bend
+point or label differs (NaN included). So the port matches the oracle's geometry on all 2,282 cases that both sides lay
+out (`ok` plus `mismatch`); the other 18 throw on the TS side only. Both groups are explained under "Known divergences
+found" below and close when the layered bundle and the other algorithm bundles are registered (mission 7h). The 29
+`both-throw` cases of `fixed` are the oracle's `IllegalArgumentException` "The edge needs to have exactly one edge
+section. Found: 0"; the port throws the same class.
+
+**Wall time** (sum over the cases; one local run on a loaded machine, indicative only). The oracle figure is the
+harness's per-case time in a warm JVM (JVM start-up and the second determinism run excluded); the TS figure covers
+import, overlay, layout and export of a case (file reads excluded):
+
+| Algorithm | TS (ms) | Oracle (ms) |
+| --------- | ------- | ----------- |
+| `fixed`   | 4,836   | 4,839       |
+| `box`     | 5,447   | 6,077       |
+| `random`  | 3,469   | 5,064       |
+
+**Excluded (372 `random` cases).** `random` with the default `randomSeed` (0) is unseeded: the algorithm draws from a
+fresh `new Random()`. The retarget overlay seeds only the root (`randomSeed = 1`), so every nested composite stays
+unseeded, and the oracle's two JVM runs disagree (`nondeterministic` in the sweep). Those cases cannot be compared and
+are not run on the TS side. The 526 settled retarget cases and the 7 generated `random` cases compare normally.
+
+**Reproduce.**
+
+- `tools/oracle/sweep.sh` — the oracle sweep (all algorithms, about 2 minutes, needs the oracle build).
+- `npx tsx tools/corpus/ts-layout-compare.ts --out /tmp/core-layouts.json` — the comparison.
+- `npx tsx tools/corpus/ts-layout-compare.ts --algorithms box --filter examples/ --out /tmp/box-examples.json` — a
+  subset.
+
+The tool reads `$ELK_MODELS_DIR` and the sweep under `$ELK_ORACLE_DIR` (`--sweep-dir` overrides it), prints the counts
+and the wall times, writes the per-case findings (first differences) to `--out`, and exits `1` while findings exist.
+`optionsOnlyMismatches` in the summary counts the mismatches whose differences are all `layoutOptions` entries.
+
+**Known divergences found.** None is a port defect; the first two are properties of the registry, not of a layout.
+
+- **Short option key `direction` (295 entries, all three algorithms; 62 cases differ in nothing else).** The oracle exports `elk.direction`, the port
+  `direction`. `JsonExporter.getShortOptionKey` (`JsonExporter.xtend:451-479`) shortens an id only while the suffix
+  resolves to one option; layered's `priority.direction` (`Layered.melk:732`) makes the suffix `direction` ambiguous
+  in the oracle's registry (`LayoutMetaDataService.getOptionDataBySuffix` returns `null` for a non-unique suffix,
+  `:326-344`), so it writes `elk.direction`. The CoreOptions-only registry has one match. Every difference is the pair
+  "missing `elk.direction`, extra `direction`" at the same node (295 pairs, none unpaired). Closes with layered (7h);
+  same mechanism as the J10 note under "Temporary gaps".
+- **Layout options of unported bundles (435 mismatches, 1,122 entries).** Options the model sets that belong to
+  layered, force, mrtree, rectpacking and similar bundles (for example `layering.layerConstraint`,
+  `crossingMinimization.strategy`, `edgeLabels.sideSelection`, `nodePlacement.strategy`, `spacing.nodeNodeBetweenLayers`,
+  `desiredEdgeLength`) are written by the oracle and omitted by the port: `omitUnknownLayoutOptions(true)` drops options
+  absent from the registry. All 43 distinct missing keys other than `elk.direction` resolve to no option in the port's
+  registry (`getOptionDataBySuffix` returns `null`); no `value` or `type` difference exists. Closes as the bundles are
+  registered.
+- **TS-only throws (18 cases: 7 `fixed`, 7 `box`, 4 `random`).** All are
+  `UnsupportedConfigurationException: Unable to load default layout algorithm org.eclipse.elk.layered for unconfigured
+node ...` on the models `examples/edges/insideSelfLoops`, `tickets/core/562_insideSelfLoopAlgorithmResolving`,
+  `tickets/layered/273_insideSelfLoopsWithLabels` and `tickets/layered/548_NPEWithInsideSelfLoops`. A childless node
+  with inside self loops enters the algorithm resolver (`RecursiveGraphLayoutEngine.java:148-151`, ported at
+  `RecursiveGraphLayoutEngine.ts:140-144`); the retarget overlay sets the algorithm only on nodes with children, so that
+  node resolves to the default `layered`, which the oracle has and the port does not yet. Closes with layered (7h).
+- **Bare `NaN` in `fixed` outputs.** 261 `fixed` oracle outputs (and 5 `box`/`random`) contain bare `NaN`, not valid JSON
+  (Gson is lenient); the tool reads them with a `NaN`/`Infinity` tolerant parser and the port produces the same values.
+  Mechanism: `ElkUtil.resizeNode` (`ElkUtil.java:257-306`) computes `heightRatio = newSize.y / oldSize.y`; the
+  retargeted hierarchical models have a parent of size 0 x 0, the ratio is `Infinity` or `NaN`, and a west or east port
+  without fixed port constraints gets `y = y * ratio`, so `0 * Infinity = NaN`. The port reproduces it
+  (`ElkUtilSizing.ts:98-119,193`).
+- **Last-ulp `Math.*` differences.** None found in these cases (every coordinate is within 1e-6).
+
+**Upstream quirks of `core` kept (mission 5).** Each is read from the Java and reproduced; all are "kept: upstream
+behaviour". Detail: [core-engine.md](architecture/core-engine.md).
+
+- `TestController.removeLayoutExecutionListener` adds the listener instead of removing it
+  (`TestController.java:180-182`).
+- `FixedLayoutProvider` and `RandomLayoutProvider` call `sections.remove()` without `next()`, so an edge with more than
+  one section throws `IllegalStateException`.
+- `RandomLayoutProvider` reads the edge target from `getSources().get(0)` (`:167`), so every edge is treated as a
+  self-edge; it adds the port parent's x twice (`:159-160`, `:175-176`) and offsets y by `padding.getLeft()` (`:113`).
+- `ElkUtil.determineJunctionPoints` checks the main edge's section count inside the loop over the other edges
+  (`ElkUtil.java:537-541`), so an other edge without sections throws `IndexOutOfBoundsException`, never the
+  documented `IllegalArgumentException`.
 
 ## Temporary gaps
 

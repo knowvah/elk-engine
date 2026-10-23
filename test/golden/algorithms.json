@@ -1,0 +1,76 @@
+{
+  "golden": [
+    {
+      "id": "fixed-de-compositeqm-checkexecutiontimeconstraints",
+      "path": "realworld/ptolemy/hierarchical/de_compositeqm_CheckExecutionTimeConstraints.json",
+      "algorithm": "org.eclipse.elk.fixed",
+      "variant": "default",
+      "retarget": "org.eclipse.elk.fixed",
+      "note": "18 nodes, 41 ports, 18 labels, 16 edges, depth 2 (hierarchical). fixed."
+    },
+    {
+      "id": "fixed-gt-sinewaveoptimization-sinewaveoptimization",
+      "path": "realworld/ptolemy/hierarchical/gt_sinewaveoptimization_SinewaveOptimization.json",
+      "algorithm": "org.eclipse.elk.fixed",
+      "variant": "default",
+      "retarget": "org.eclipse.elk.fixed",
+      "note": "12 nodes, 16 ports, 12 labels, 11 edges, depth 2 (hierarchical). fixed."
+    },
+    {
+      "id": "fixed-hlacerti-multidatatypes-producer",
+      "path": "realworld/ptolemy/flattened/hlacerti_multidatatypes_producer.json",
+      "algorithm": "org.eclipse.elk.fixed",
+      "variant": "default",
+      "retarget": "org.eclipse.elk.fixed",
+      "note": "11 nodes, 14 ports, 11 labels, 7 edges, depth 1 (flat). fixed."
+    },
+    {
+      "id": "box-hoc-threadedcomposite-multicoreexecution",
+      "path": "realworld/ptolemy/hierarchical/hoc_threadedcomposite_MulticoreExecution.json",
+      "algorithm": "org.eclipse.elk.box",
+      "variant": "default",
+      "retarget": "org.eclipse.elk.box",
+      "note": "11 nodes, 18 ports, 11 labels, 8 edges, depth 3 (hierarchical). box."
+    },
+    {
+      "id": "box-sdf-htvq-htvq4",
+      "path": "realworld/ptolemy/hierarchical/sdf_htvq_HTVQ4.json",
+      "algorithm": "org.eclipse.elk.box",
+      "variant": "default",
+      "retarget": "org.eclipse.elk.box",
+      "note": "11 nodes, 21 ports, 11 labels, 12 edges, depth 2 (hierarchical). box."
+    },
+    {
+      "id": "box-de-router-router",
+      "path": "realworld/ptolemy/flattened/de_router_Router.json",
+      "algorithm": "org.eclipse.elk.box",
+      "variant": "default",
+      "retarget": "org.eclipse.elk.box",
+      "note": "11 nodes, 28 ports, 11 labels, 13 edges, depth 1 (flat). box."
+    },
+    {
+      "id": "random-ddf-randomwalk-randomwalk",
+      "path": "realworld/ptolemy/flattened/ddf_randomwalk_RandomWalk.json",
+      "algorithm": "org.eclipse.elk.random",
+      "variant": "random-seed-1",
+      "retarget": "org.eclipse.elk.random",
+      "note": "11 nodes, 30 ports, 11 labels, 11 edges, depth 1 (flat). random seeded via random-seed-1."
+    },
+    {
+      "id": "random-continuous-levelcrossingdetector-levelcrossingdetector",
+      "path": "realworld/ptolemy/flattened/continuous_levelcrossingdetector_LevelCrossingDetector.json",
+      "algorithm": "org.eclipse.elk.random",
+      "variant": "random-seed-1",
+      "retarget": "org.eclipse.elk.random",
+      "note": "11 nodes, 28 ports, 11 labels, 12 edges, depth 1 (flat). random seeded via random-seed-1."
+    },
+    {
+      "id": "random-pthales-dynamic-thalesdynamicmodalmodelpn",
+      "path": "realworld/ptolemy/flattened/pthales_dynamic_ThalesDynamicModalModelPN.json",
+      "algorithm": "org.eclipse.elk.random",
+      "variant": "random-seed-1",
+      "retarget": "org.eclipse.elk.random",
+      "note": "11 nodes, 15 ports, 11 labels, 10 edges, depth 1 (flat). random seeded via random-seed-1."
+    }
+  ]
+}

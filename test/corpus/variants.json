@@ -5,5 +5,6 @@
   "direction-down": { "org.eclipse.elk.direction": "DOWN" },
   "direction-up": { "org.eclipse.elk.direction": "UP" },
   "hierarchy-separate": { "org.eclipse.elk.hierarchyHandling": "SEPARATE_CHILDREN" },
-  "hierarchy-include": { "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN" }
+  "hierarchy-include": { "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN" },
+  "random-seed-1": { "org.eclipse.elk.randomSeed": 1 }
 }
