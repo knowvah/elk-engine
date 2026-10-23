@@ -1,0 +1,462 @@
+# SPDX-License-Identifier: EPL-2.0
+# Cases for ElkrLexerVectors.java (format: see that file's header). Each row: lex <id> <escaped text>.
+# Escapes: \n \r \t \\ \uXXXX. The id is the explicit second column and keys the row in grandom-lexer.json.
+#
+# Families: kw (keywords, near misses, prefixes), num (INT/signs/dots), str (STRING), cmt (comments), ws (whitespace,
+# CR/CRLF), junk (unmatched characters), id (ID vs keyword), mix (small sentences), corpus (test/corpus/generated/*.elkr)
+
+
+# ---- every keyword, one row each ----
+lex kw-001 generate
+lex kw-002 {
+lex kw-003 }
+lex kw-004 format
+lex kw-005 filename
+lex kw-006 hierarchy
+lex kw-007 levels
+lex kw-008 cross-hierarchy edges
+lex kw-009 compound nodes
+lex kw-010 cross-hierarchy relative edges
+lex kw-011 density
+lex kw-012 edges
+lex kw-013 total
+lex kw-014 relative
+lex kw-015 outgoing
+lex kw-016 labels
+lex kw-017 self loops
+lex kw-018 nodes
+lex kw-019 remove isolated
+lex kw-020 size
+lex kw-021 height
+lex kw-022 width
+lex kw-023 ports
+lex kw-024 re-use
+lex kw-025 constraint
+lex kw-026 to
+lex kw-027 +/-
+lex kw-028 =
+lex kw-029 .
+lex kw-030 maxWidth
+lex kw-031 maxDegree
+lex kw-032 partitionFraction
+lex kw-033 seed
+lex kw-034 graphs
+lex kw-035 trees
+lex kw-036 bipartite graphs
+lex kw-037 biconnected graphs
+lex kw-038 triconnected graphs
+lex kw-039 acyclic graphs
+lex kw-040 elkt
+lex kw-041 elkg
+lex kw-042 incoming
+lex kw-043 position
+lex kw-044 side
+lex kw-045 east
+lex kw-046 north
+lex kw-047 south
+lex kw-048 west
+lex kw-049 free
+lex kw-050 order
+lex kw-051 ratio
+
+# ---- prefixes and near misses of multi-word keywords ----
+lex kwp-001 cross-hierarchy
+lex kwp-002 cross
+lex kwp-003 cross-
+lex kwp-004 cross-hierarchy relative
+lex kwp-005 cross-hierarchy relative edge
+lex kwp-006 cross-hierarchyedges
+lex kwp-007 cross-hierarchy  edges
+lex kwp-008 cross-hierarchy\tedges
+lex kwp-009 cross-hierarchy\nedges
+lex kwp-010 self
+lex kwp-011 self loop
+lex kwp-012 selfloops
+lex kwp-013 self  loops
+lex kwp-014 bipartite
+lex kwp-015 bipartite graph
+lex kwp-016 bipartitegraphs
+lex kwp-017 biconnected
+lex kwp-018 triconnected
+lex kwp-019 acyclic
+lex kwp-020 acyclic graph
+lex kwp-021 remove
+lex kwp-022 remove isolate
+lex kwp-023 removeisolated
+lex kwp-024 compound
+lex kwp-025 compound node
+lex kwp-026 re
+lex kwp-027 re-
+lex kwp-028 reuse
+lex kwp-029 re-use1
+lex kwp-030 hierarchy1
+lex kwp-031 level
+lex kwp-032 tree
+lex kwp-033 trees
+lex kwp-034 treesx
+lex kwp-035 xtrees
+lex kwp-036 trees1
+lex kwp-037 trees_
+lex kwp-038 tre
+lex kwp-039 Trees
+lex kwp-040 GENERATE
+lex kwp-041 generate1
+lex kwp-042 generates
+lex kwp-043 generate_
+lex kwp-044 graph
+lex kwp-045 nodes1
+lex kwp-046 edges2
+lex kwp-047 maxwidth
+lex kwp-048 maxWidth1
+lex kwp-049 partition
+lex kwp-050 partitionfraction
+lex kwp-051 1graphs
+lex kwp-052 graphs5
+
+# ---- keywords in sentences ----
+lex kwc-001 generate format filename hierarchy levels cross-hierarchy edges compound nodes cross-hierarchy relative edges density edges total relative outgoing labels self loops nodes remove isolated size height width ports re-use constraint to maxWidth maxDegree partitionFraction seed graphs trees bipartite graphs biconnected graphs triconnected graphs acyclic graphs elkt elkg incoming position side east north south west free order ratio
+lex kwc-002 generate 1 graphs { nodes = 3 }
+lex kwc-003 +/-+/-
+lex kwc-004 +/ -
+lex kwc-005 + /-
+lex kwc-006 +/
+lex kwc-007 /-
+lex kwc-008 +
+lex kwc-009 -
+lex kwc-010 +/-5
+lex kwc-011 5+/-2
+lex kwc-012 1.5+/-0.5
+lex kwc-013 {}=.
+lex kwc-014 {}={}
+
+# ---- INT, INT.INT and dots ----
+lex num-001 0
+lex num-002 1
+lex num-003 42
+lex num-004 007
+lex num-005 1234567890
+lex num-006 99999999999999999999
+lex num-007 1.5
+lex num-008 1.
+lex num-009 1..
+lex num-010 1.2.3
+lex num-011 1.2.
+lex num-012 1.2.3.4
+lex num-013 .5
+lex num-014 ..5
+lex num-015 .
+lex num-016 .1.
+lex num-017 . 5
+lex num-018 1 . 5
+lex num-019 1 .5
+lex num-020 1. 5
+lex num-021 0.0
+lex num-022 10.01
+lex num-023 1e5
+lex num-024 1E5
+lex num-025 1.5e3
+lex num-026 0x10
+lex num-027 1_000
+lex num-028 1a
+lex num-029 a1
+lex num-030 12ab
+lex num-031 -1
+lex num-032 - 1
+lex num-033 -1.5
+lex num-034 --1
+lex num-035 +1
+lex num-036 +1.5
+lex num-037 -
+lex num-038 1-2
+lex num-039 1-
+lex num-040 3.14159
+lex num-041 1,5
+lex num-042 5.5.5
+lex num-043 0.
+lex num-044 1.x
+lex num-045 x.1
+lex num-046 1.5.
+lex num-047 1.5e
+lex num-048 1.f
+
+# ---- STRING literals ----
+lex str-001 "abc"
+lex str-002 'abc'
+lex str-003 ""
+lex str-004 ''
+lex str-005 "a b"
+lex str-006 'a b'
+lex str-007 "a\\"b"
+lex str-008 'a\\'b'
+lex str-009 "a\\\\"
+lex str-010 "a\\nb"
+lex str-011 'a\\tb'
+lex str-012 "\\u0041"
+lex str-013 "\\x"
+lex str-014 "a'b"
+lex str-015 'a"b'
+lex str-016 "a
+lex str-017 'a
+lex str-018 "a\\"
+lex str-019 "a\nb"
+lex str-020 'a\nb'
+lex str-021 "a\rb"
+lex str-022 "a\\\nb"
+lex str-023 "abc" "def"
+lex str-024 "abc""def"
+lex str-025 "\u00e9"
+lex str-026 "#"
+lex str-027 "//x"
+lex str-028 "/* x */"
+lex str-029 filename = "out.elkt"
+lex str-030 filename='x'
+lex str-031 "
+lex str-032 '
+lex str-033 "\\"
+lex str-034 "\\\\\\"
+
+# ---- ML_COMMENT and SL_COMMENT ----
+lex cmt-001 /* x */
+lex cmt-002 /**/
+lex cmt-003 /***/
+lex cmt-004 /* a * b */
+lex cmt-005 /* a\nb */
+lex cmt-006 /* a\r\nb */
+lex cmt-007 /* /* nested */ */
+lex cmt-008 /* unterminated
+lex cmt-009 /*
+lex cmt-010 /* *
+lex cmt-011 /* */ */
+lex cmt-012 / * x */
+lex cmt-013 /
+lex cmt-014 //
+lex cmt-015 // x
+lex cmt-016 //x\nnext
+lex cmt-017 // x\r\nnext
+lex cmt-018 // x\rnext
+lex cmt-019 // x\\
+lex cmt-020 //\n
+lex cmt-021 //\n\n
+lex cmt-022 // /* x */
+lex cmt-023 /* // x */\ny
+lex cmt-024 nodes// c\n= 3
+lex cmt-025 nodes/* c */=3
+lex cmt-026 1/* c */2
+lex cmt-027 a//b
+lex cmt-028 "a//b"
+lex cmt-029 // \u00e9
+lex cmt-030 /* \u00e9 */
+
+# ---- ID versus keyword ----
+lex id-001 a
+lex id-002 abc
+lex id-003 _
+lex id-004 _a
+lex id-005 a_
+lex id-006 a1
+lex id-007 a-b
+lex id-008 a.b
+lex id-009 a b
+lex id-010 A
+lex id-011 ID
+lex id-012 ^a
+lex id-013 ^trees
+lex id-014 ^
+lex id-015 1a
+lex id-016 $a
+lex id-017 a$
+lex id-018 \u00e9
+lex id-019 a\u00e9
+lex id-020 \u00e9a
+lex id-021 trees
+lex id-022 treesx
+lex id-023 trees x
+lex id-024 trees_x
+lex id-025 trees-x
+lex id-026 trees1
+lex id-027 order
+lex id-028 orderx
+lex id-029 xorder
+lex id-030 to
+lex id-031 total
+lex id-032 tot
+lex id-033 toto
+lex id-034 to_
+lex id-035 totalx
+lex id-036 size
+lex id-037 sizes
+lex id-038 sizex
+lex id-039 ports
+lex id-040 portsx
+lex id-041 port
+lex id-042 free
+lex id-043 freed
+lex id-044 east
+lex id-045 easts
+lex id-046 north
+lex id-047 South
+lex id-048 side
+lex id-049 sides
+lex id-050 ratio
+lex id-051 ratios
+lex id-052 position
+lex id-053 positions
+lex id-054 incoming
+lex id-055 incomingx
+lex id-056 outgoing
+lex id-057 outgoings
+lex id-058 elkt
+lex id-059 elktx
+lex id-060 elkg
+lex id-061 elkg1
+lex id-062 format
+lex id-063 formats
+lex id-064 labels
+lex id-065 label
+lex id-066 density
+lex id-067 densityx
+lex id-068 edges
+lex id-069 edge
+lex id-070 nodes
+lex id-071 node
+lex id-072 seed
+lex id-073 seeds
+lex id-074 width
+lex id-075 widths
+lex id-076 height
+lex id-077 heights
+lex id-078 levels
+lex id-079 level
+lex id-080 relative
+lex id-081 relativex
+lex id-082 constraint
+lex id-083 constraints
+
+# ---- whitespace, tabs, CR and CRLF ----
+lex ws-001  
+lex ws-002   
+lex ws-003 \t
+lex ws-004 \n
+lex ws-005 \r
+lex ws-006 \r\n
+lex ws-007 \n\r
+lex ws-008 \r\r
+lex ws-009 \n\n
+lex ws-010 \r\n\r\n
+lex ws-011 a\nb
+lex ws-012 a\rb
+lex ws-013 a\r\nb
+lex ws-014 a\tb
+lex ws-015 a \t b
+lex ws-016 \ta
+lex ws-017 a\t
+lex ws-018 \n\na
+lex ws-019 a\n\nb
+lex ws-020 a\r\n\r\nb
+lex ws-021 a\r\rb
+lex ws-022 a\n\rb
+lex ws-023 \u000b
+lex ws-024 \u000c
+lex ws-025 \u00a0
+lex ws-026 \ufeff
+lex ws-027 a\u00a0b
+lex ws-028 \u2028
+lex ws-029 \u0085
+lex ws-030 \u0000
+lex ws-031 \u0001
+lex ws-032 \u007f
+lex ws-033 
+
+# ---- unmatched characters ----
+lex junk-001 #
+lex junk-002 @
+lex junk-003 !
+lex junk-004 ?
+lex junk-005 %
+lex junk-006 &
+lex junk-007 *
+lex junk-008 (
+lex junk-009 )
+lex junk-010 [
+lex junk-011 ]
+lex junk-012 <
+lex junk-013 >
+lex junk-014 ;
+lex junk-015 :
+lex junk-016 ,
+lex junk-017 |
+lex junk-018 ~
+lex junk-019 `
+lex junk-020 \\
+lex junk-021 ^
+lex junk-022 $
+lex junk-023 a#b
+lex junk-024 a@b
+lex junk-025 1#2
+lex junk-026 # x
+lex junk-027 #!
+lex junk-028 \u00e9
+lex junk-029 \u00fc
+lex junk-030 \u4e2d\u6587
+lex junk-031 \u20ac
+lex junk-032 \ud83d\ude00
+lex junk-033 \ud83d
+lex junk-034 \ude00
+lex junk-035 a\u00e9b
+lex junk-036 nodes\u00e9
+lex junk-037 \u00e9nodes
+lex junk-038 1\u00e9
+lex junk-039 {@}
+lex junk-040 =#=
+lex junk-041 ..
+lex junk-042 ...
+lex junk-043 a..b
+lex junk-044 -.
+lex junk-045 +.
+lex junk-046 +-
+lex junk-047 ==
+lex junk-048  = = 
+lex junk-049 {{
+lex junk-050 }}
+lex junk-051 { }
+lex junk-052 {\n}
+
+# ---- small sentences ----
+lex mix-001 generate 1 graphs
+lex mix-002 generate 1 graphs {}
+lex mix-003 generate 10 trees { nodes = 5 }
+lex mix-004 generate 2 bipartite graphs { seed = 3 format = elkg }
+lex mix-005 nodes = 5 +/- 2
+lex mix-006 nodes = 3 to 8
+lex mix-007 edges outgoing = 1.5
+lex mix-008 edges density = 0.5 { labels self loops }
+lex mix-009 nodes = 5 { remove isolated }
+lex mix-010 size { height = 10 width = 20 }
+lex mix-011 ports { re-use = 0.5 constraint = free }
+lex mix-012 ports { north = 1 }
+lex mix-013 hierarchy { levels = 2 cross-hierarchy edges = 3 }
+lex mix-014 partitionFraction = 0.25
+lex mix-015 filename = "a.elkt"
+lex mix-016 format = elkt
+lex mix-017 generate\n1\ngraphs
+lex mix-018 generate\r\n1\r\ngraphs
+lex mix-019   generate  1  graphs  
+lex mix-020 generate 1 graphs // c\n{ nodes = 1 }
+lex mix-021 /* c */ generate 1 graphs
+lex mix-022 1.5
+lex mix-023 1.5 +/- 0.5
+lex mix-024 nodes=5
+lex mix-025 nodes=5.5
+lex mix-026 nodes =-5
+lex mix-027 nodes = -5
+
+# ---- the nine test/corpus/generated .elkr texts ----
+lex corpus-disco-components-small generate 1 graphs {\n    nodes = 20\n    edges total = 10\n    seed = 6\n}\n
+lex corpus-force-graph-small generate 1 graphs {\n    nodes = 12\n    edges total = 18\n    seed = 4\n}\n
+lex corpus-mrtree-tree-small generate 1 trees {\n    nodes = 15\n    seed = 1\n}\n
+lex corpus-radial-tree-small generate 1 trees {\n    nodes = 15\n    seed = 2\n}\n
+lex corpus-random-graph-small generate 1 graphs {\n    nodes = 12\n    edges total = 16\n    seed = 5\n}\n
+lex corpus-sporeCompaction-graph-small generate 1 graphs {\n    nodes = 12\n    edges total = 14\n    seed = 8\n}\n
+lex corpus-sporeOverlap-graph-small generate 1 graphs {\n    nodes = 12\n    edges total = 14\n    seed = 7\n}\n
+lex corpus-topdownpacking-hierarchy-small generate 1 graphs {\n    nodes = 8\n    edges total = 8\n    hierarchy {\n        levels = 2\n        compound nodes = 2\n    }\n    seed = 9\n}\n
+lex corpus-vertiflex-tree-small generate 1 trees {\n    nodes = 15\n    seed = 3\n}\n

@@ -1,0 +1,6 @@
+generate 1 graphs {
+    maxDegree = 3
+}
+generate 2 trees {
+    partitionFraction = 1
+}

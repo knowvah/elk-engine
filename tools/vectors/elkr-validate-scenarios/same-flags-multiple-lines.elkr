@@ -1,0 +1,6 @@
+generate 1 graphs {
+    maxDegree = 3
+
+    maxWidth = 4
+    partitionFraction = 1
+}

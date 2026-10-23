@@ -1,0 +1,2 @@
+generate 1 trees { maxDegree = 3.5 }
+generate 1 graphs { maxWidth = 3 seed = 1.5 }

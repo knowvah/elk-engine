@@ -1,0 +1,9 @@
+generate 1 graphs {
+    nodes = 6 {
+        size {
+            width = 70
+        }
+    }
+    edges total = 6
+    seed = 42
+}

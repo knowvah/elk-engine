@@ -1,0 +1,2 @@
+generate 1 graphs { edges total = 1 { self
+loops } }

@@ -93,7 +93,9 @@ Full list: [`docs/translation-rules.md`](docs/translation-rules.md). Core rows:
 Hazards: Java `int` arithmetic wraps at 32 bits; field defaults are zero/null/
 false, not `undefined`; `Random` draws (`nextInt`, `nextDouble`, `nextFloat`,
 `nextBoolean`, `nextLong`, `setSeed`) must match the JVM sequence exactly.
-`Collections.shuffle` has no in-scope caller; its shim stays vector-proven.
+The one-argument `Collections.shuffle` has one in-scope caller
+(`RandomGraphGenerator.sample`, unseeded, invariants only); the two-argument
+form stays vector-proven.
 
 **Never read or copy OpenJDK source (AD-9).** OpenJDK is GPLv2+CE; reading or
 copying it into an EPL-2.0 codebase is forbidden. Implement `src/java/` shims

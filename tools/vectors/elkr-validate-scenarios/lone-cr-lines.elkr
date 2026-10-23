@@ -1,0 +1,1 @@
+generate 1 graphs {    maxWidth = 3}generate 2 trees {    partitionFraction = 1}

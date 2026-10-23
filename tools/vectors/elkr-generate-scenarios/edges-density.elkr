@@ -1,0 +1,5 @@
+generate 1 graphs {
+    nodes = 9
+    edges density = 0.4
+    seed = 21
+}

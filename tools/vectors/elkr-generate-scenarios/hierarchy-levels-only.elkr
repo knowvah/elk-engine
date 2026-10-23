@@ -1,0 +1,8 @@
+generate 1 graphs {
+    nodes = 6
+    edges total = 7
+    hierarchy {
+        levels = 3
+    }
+    seed = 73
+}

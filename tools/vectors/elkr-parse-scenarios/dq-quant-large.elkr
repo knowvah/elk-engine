@@ -1,0 +1,2 @@
+generate 1 graphs { nodes = 10000000000 }
+generate 1 graphs { nodes = 12345678901234567890.5 }

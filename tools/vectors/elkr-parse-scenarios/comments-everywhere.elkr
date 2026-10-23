@@ -1,0 +1,12 @@
+// leading
+/* before generate */ generate /* after generate */ 2 // samples
+graphs /* form */ { // open
+    /* before nodes */ nodes /* a */ = /* b */ 3 /* c */ { // open nodes
+        ports /* p */ { /* in */ incoming /* t */ north /* s */ = /* e */ 1 /* x */ } // done
+        // labels
+    } /* end nodes */
+    edges total = 2 /* x */ to /* y */ 4 // trailing
+    seed = /* s */ 5
+    hierarchy /* h */ { levels = 1 +/- /* pm */ 2 }
+} // end
+// trailing eof

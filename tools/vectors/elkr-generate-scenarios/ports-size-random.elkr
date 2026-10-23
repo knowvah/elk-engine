@@ -1,0 +1,12 @@
+generate 1 graphs {
+    nodes = 6 {
+        ports {
+            size {
+                height = 4 to 10
+                width = 7 +/- 2
+            }
+        }
+    }
+    edges total = 8
+    seed = 37
+}

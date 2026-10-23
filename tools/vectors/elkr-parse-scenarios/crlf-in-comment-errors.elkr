@@ -1,0 +1,5 @@
+generate 1 graphs {
+  /* multi
+ line comment */
+  nodes 2
+}

@@ -1,0 +1,4 @@
+generate 4 graphs {
+    nodes = 10
+    edges total = 15
+}

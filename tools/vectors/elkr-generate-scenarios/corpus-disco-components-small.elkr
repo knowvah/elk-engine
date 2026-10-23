@@ -1,0 +1,5 @@
+generate 1 graphs {
+    nodes = 20
+    edges total = 10
+    seed = 6
+}

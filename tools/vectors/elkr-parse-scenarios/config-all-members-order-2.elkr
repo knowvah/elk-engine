@@ -1,0 +1,11 @@
+generate 1 bipartite graphs {
+    filename = "out"
+    format = elkg
+    seed = 42
+    hierarchy
+    partitionFraction = 1 to 2
+    maxDegree = 4
+    maxWidth = 3
+    edges relative = 2 +/- 0.5
+    nodes = 10
+}

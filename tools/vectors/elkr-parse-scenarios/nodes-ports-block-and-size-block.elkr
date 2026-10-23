@@ -1,0 +1,6 @@
+generate 1 graphs {
+    nodes = 3 {
+        size { width = 10 height = 20 }
+        ports { size { } constraint = free }
+    }
+}

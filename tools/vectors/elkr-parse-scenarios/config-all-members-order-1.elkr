@@ -1,0 +1,11 @@
+generate 1 bipartite graphs {
+    nodes = 10 { labels }
+    edges density = 0.5 { labels self loops }
+    maxWidth = 3
+    maxDegree = 4
+    partitionFraction = 0.25
+    hierarchy { levels = 2 }
+    seed = 42
+    format = elkt
+    filename = "out"
+}

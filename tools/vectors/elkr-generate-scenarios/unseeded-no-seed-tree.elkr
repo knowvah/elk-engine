@@ -1,0 +1,3 @@
+generate 1 trees {
+    nodes = 12
+}

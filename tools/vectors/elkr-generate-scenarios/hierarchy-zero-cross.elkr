@@ -1,0 +1,11 @@
+generate 1 graphs {
+    nodes = 4
+    edges total = 5
+    hierarchy {
+        levels = 2
+        compound nodes = 2
+        cross-hierarchy edges = 0
+        cross-hierarchy relative edges = 0
+    }
+    seed = 75
+}

@@ -1,0 +1,7 @@
+generate 1 graphs {
+    nodes = 14 {
+        remove isolated
+    }
+    edges total = 6
+    seed = 46
+}

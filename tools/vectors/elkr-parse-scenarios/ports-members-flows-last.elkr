@@ -1,0 +1,8 @@
+generate 1 graphs { nodes = 1 { ports {
+    constraint = order
+    size
+    re-use = 1 to 2
+    labels
+    outgoing south = 9
+    incoming north = 1
+} } }

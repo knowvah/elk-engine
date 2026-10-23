@@ -1,0 +1,3 @@
+generate 1 graphs { nodes = 2 to 9 }
+generate 1 graphs { nodes = 1.5 to 2.5 }
+generate 1 graphs { nodes = 9 to 2 }

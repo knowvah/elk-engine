@@ -1,0 +1,4 @@
+generate 1 trees { maxDegree = 3 }
+generate 2 graphs { maxDegree = 3 }
+generate 3 bipartite graphs { partitionFraction = 1 }
+generate 4 trees { partitionFraction = 1 }

@@ -1,0 +1,11 @@
+generate 1 graphs {
+    nodes = 4 {
+        ports
+    }
+    edges total = 5
+    hierarchy {
+        levels = 2
+        compound nodes = 2
+    }
+    seed = 74
+}

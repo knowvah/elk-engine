@@ -1,0 +1,5 @@
+generate 1 graphs { hierarchy { levels = 2 cross-hierarchy edges = 3 compound nodes = 4 cross-hierarchy relative edges = 5 } }
+generate 1 graphs { hierarchy { cross-hierarchy relative edges = 5 compound nodes = 4 cross-hierarchy edges = 3 levels = 2 } }
+generate 1 graphs { hierarchy { compound nodes = 4 levels = 2 } }
+generate 1 graphs { hierarchy { cross-hierarchy edges = 3 } }
+generate 1 graphs { hierarchy { cross-hierarchy relative edges = 5 } }

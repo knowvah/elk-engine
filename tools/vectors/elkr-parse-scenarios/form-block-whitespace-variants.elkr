@@ -1,0 +1,5 @@
+generate 1 trees{}
+generate 2 graphs	{	}
+generate   3    bipartite graphs
+{
+}

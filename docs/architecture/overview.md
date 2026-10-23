@@ -11,6 +11,7 @@
 | [../conformance.md](../conformance.md)             | Oracle comparison bar and procedure (arrives later in this mission)     |
 | [elk-text.md](elk-text.md)                         | ELK Text (`.elkt`) port, the Xtext subset, runbook and deferrals        |
 | [elk-json-text.md](elk-json-text.md)               | ELK Textual JSON (`.elkj`) port, lazy linking, runbook and deferrals    |
+| [grandom.md](grandom.md)                           | grandom (`.elkr`) random graph generator port, evidence and runbook     |
 | [complexity.md](complexity.md)                     | The complexity gate that measures every function (`npm run complexity`) |
 
 ## What elk-engine is
@@ -78,6 +79,12 @@ Textual JSON adapter (`graph.json.text`, `ElkGraphJsonText`): `.elkj` text loads
 with a hand-written parser, and links lazily like Xtext's `LazyLinker`: edge endpoints are EMF proxies
 (`src/emf`) that resolve when read. An ElkGraph serializes back to `.elkj` through a grammar-specific writer.
 The entry point is internal; see [elk-json-text.md](elk-json-text.md).
+
+Random graph generator (`core.debug.grandom`, `GRandomText`): `.elkr` text parses through a hand-written lexer
+and parser on the same Xtext subset (`src/xtext`), and `RandomGraphGenerator` turns a configuration into
+ElkGraphs with the exact JVM `Random` sequence. Seeded output is byte-exact against the oracle and reproduces
+the nine `test/corpus/generated/*.json` files; unseeded paths (edge label text, cross-hierarchy shuffle, a
+missing seed) are checked by invariants only. The entry point is internal; see [grandom.md](grandom.md).
 
 ## Tech stack
 

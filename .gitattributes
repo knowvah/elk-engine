@@ -4,6 +4,9 @@
 tools/vectors/elkt-*-scenarios/*.elkt -text
 # Same for the .elkj vector scenarios (CR/CRLF/BOM/invalid-UTF-8 inputs; lenient .json/.elkt files in the write batch).
 tools/vectors/elkj-*-scenarios/** -text
+# Same for the .elkr vector scenarios and lexer cases (CR/CRLF inputs).
+tools/vectors/elkr-*-scenarios/** -text
+tools/vectors/elkr-lexer-cases.txt -text
 # Vendored elk-models inputs: hashed byte-for-byte against the oracle refs.
 test/corpus/elkt-curated/** -text
 test/corpus/elkj-curated/** -text

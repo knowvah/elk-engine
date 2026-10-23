@@ -1,0 +1,1 @@
+generate 1 biconnected graphs { partitionFraction = 1 to 2 }

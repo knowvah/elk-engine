@@ -1,0 +1,1 @@
+generate 1 acyclic graphs { maxWidth = 3 }

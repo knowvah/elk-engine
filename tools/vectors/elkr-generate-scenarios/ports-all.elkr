@@ -1,0 +1,18 @@
+generate 1 graphs {
+    nodes = 7 {
+        labels
+        ports {
+            labels
+            re-use = 0.5 +/- 0.2
+            constraint = position
+            incoming west = 80
+            outgoing east = 80
+            size {
+                height = 5
+                width = 5
+            }
+        }
+    }
+    edges total = 12
+    seed = 39
+}
