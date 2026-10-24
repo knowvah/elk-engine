@@ -1,0 +1,131 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "A",
+      "x": 100,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Alpha"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "x": 400,
+      "y": 100,
+      "width": 80,
+      "height": 70,
+      "labels": [
+        {
+          "text": "Beta"
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "x": 250,
+      "y": 300,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Gamma"
+        }
+      ]
+    },
+    {
+      "id": "p1",
+      "x": 110,
+      "y": 50,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "@attach me"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "p2",
+      "x": 410,
+      "y": 55,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "@Attach me"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "p3",
+      "x": 255,
+      "y": 260,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "Note: x"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "p4",
+      "x": 110,
+      "y": 50,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "note: x"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "p5",
+      "x": 410,
+      "y": 55,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "plain"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "p6",
+      "x": 400,
+      "y": 40,
+      "width": 100,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Note: big"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    }
+  ]
+}

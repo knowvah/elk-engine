@@ -1,0 +1,86 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "A",
+      "x": 100,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Alpha"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "x": 400,
+      "y": 100,
+      "width": 80,
+      "height": 70,
+      "labels": [
+        {
+          "text": "Beta"
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "x": 250,
+      "y": 300,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Gamma"
+        }
+      ]
+    },
+    {
+      "id": "x0",
+      "x": 410,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "plain note"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "x1",
+      "x": 700,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "@A"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "x2",
+      "x": 255,
+      "y": 265,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "@Z"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "A",
+      "x": 100,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Alpha"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "x": 400,
+      "y": 100,
+      "width": 80,
+      "height": 70,
+      "labels": [
+        {
+          "text": "Beta"
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "x": 250,
+      "y": 300,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Gamma"
+        }
+      ]
+    },
+    {
+      "id": "c1",
+      "x": 110,
+      "y": 50,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "above alpha"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "c2",
+      "x": 410,
+      "y": 55,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "above beta"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "c3",
+      "x": 260,
+      "y": 360,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "below gamma"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "c4",
+      "x": 700,
+      "y": 700,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "far away"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    }
+  ]
+}

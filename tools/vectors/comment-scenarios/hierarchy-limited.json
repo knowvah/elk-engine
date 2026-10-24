@@ -1,0 +1,112 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "A",
+      "x": 100,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Alpha"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "x": 400,
+      "y": 100,
+      "width": 80,
+      "height": 70,
+      "labels": [
+        {
+          "text": "Beta"
+        }
+      ]
+    },
+    {
+      "id": "G",
+      "x": 300,
+      "y": 450,
+      "width": 400,
+      "height": 250,
+      "labels": [
+        {
+          "text": "Group"
+        }
+      ],
+      "children": [
+        {
+          "id": "P",
+          "x": 20,
+          "y": 60,
+          "width": 80,
+          "height": 40,
+          "labels": [
+            {
+              "text": "P"
+            }
+          ]
+        },
+        {
+          "id": "Q",
+          "x": 250,
+          "y": 60,
+          "width": 80,
+          "height": 40,
+          "labels": [
+            {
+              "text": "Q"
+            }
+          ]
+        },
+        {
+          "id": "hc1",
+          "x": 20,
+          "y": 20,
+          "width": 60,
+          "height": 30,
+          "labels": [
+            {
+              "text": "inner p"
+            }
+          ],
+          "layoutOptions": {
+            "org.eclipse.elk.commentBox": true
+          }
+        },
+        {
+          "id": "hc2",
+          "x": 260,
+          "y": 120,
+          "width": 60,
+          "height": 30,
+          "labels": [
+            {
+              "text": "inner q"
+            }
+          ],
+          "layoutOptions": {
+            "org.eclipse.elk.commentBox": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "h1",
+      "x": 110,
+      "y": 50,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "outer a"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    }
+  ]
+}
