@@ -1,0 +1,161 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "A",
+      "x": 100,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Größe"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "x": 400,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "grüßGott"
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "x": 250,
+      "y": 300,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Überprüfung"
+        }
+      ]
+    },
+    {
+      "id": "u1",
+      "x": 100,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "die Größe stimmt"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "u2",
+      "x": 100,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "GRÖSSE"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "u3",
+      "x": 100,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "GRÖßE"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "u4",
+      "x": 400,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "Grüß Gott allerseits"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "u5",
+      "x": 250,
+      "y": 260,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "Überprüfung läuft"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "u6",
+      "x": 250,
+      "y": 260,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "ÜBERPRÜFUNG"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "u7",
+      "x": 400,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "grüß gott"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "u8",
+      "x": 400,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "grüßGott strict"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    }
+  ]
+}

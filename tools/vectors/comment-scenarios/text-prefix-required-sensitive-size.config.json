@@ -1,0 +1,33 @@
+{
+  "includeHierarchy": true,
+  "keepHeuristicsEnabledWithExplicitAttachments": false,
+  "explicit": "none",
+  "boundsProvider": {
+    "type": "ElkGraphBoundsProvider",
+    "cached": true
+  },
+  "filters": [
+    {
+      "type": "TextPrefixFilter",
+      "prefixes": ["@attach", "Note:"],
+      "caseSensitive": true,
+      "requiredForEligibility": true
+    },
+    {
+      "type": "SizeFilter",
+      "maxArea": 2500
+    }
+  ],
+  "matchers": [
+    {
+      "type": "DistanceMatcher",
+      "maxDistance": 300,
+      "normalization": "LINEAR"
+    }
+  ],
+  "decider": {
+    "aggregator": "max",
+    "lowerBoundary": 0,
+    "included": false
+  }
+}

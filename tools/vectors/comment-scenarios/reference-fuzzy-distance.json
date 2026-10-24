@@ -1,0 +1,233 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "A",
+      "x": 100,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "dataStore"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "x": 400,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Load Balancer"
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "x": 250,
+      "y": 300,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "HTTPServer"
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "x": 900,
+      "y": 900,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "  Cache   Layer "
+        }
+      ]
+    },
+    {
+      "id": "f1",
+      "x": 100,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "check the data store sizing"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f2",
+      "x": 100,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "DATASTORE overflow"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f3",
+      "x": 400,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "load\n  balancer config"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f4",
+      "x": 400,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "LoadBalancer"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f5",
+      "x": 900,
+      "y": 860,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "cache layer"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f6",
+      "x": 900,
+      "y": 860,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "cachelayer ok"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f7",
+      "x": 250,
+      "y": 260,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "httpserver"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f8",
+      "x": 250,
+      "y": 260,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "http server"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f9",
+      "x": 100,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "data store and load balancer"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f10",
+      "x": 400,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "load balancer, data store"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f11",
+      "x": 400,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "unrelated text"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "f12",
+      "x": 100,
+      "y": 500,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "cache layer too far"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    }
+  ]
+}

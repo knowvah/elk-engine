@@ -1,0 +1,29 @@
+{
+  "includeHierarchy": true,
+  "keepHeuristicsEnabledWithExplicitAttachments": false,
+  "explicit": "none",
+  "boundsProvider": {
+    "type": "ElkGraphBoundsProvider",
+    "cached": true
+  },
+  "filters": [
+    {
+      "type": "TextPrefixFilter",
+      "prefixes": ["TODO", "fixme"],
+      "caseSensitive": false,
+      "requiredForEligibility": false
+    }
+  ],
+  "matchers": [
+    {
+      "type": "DistanceMatcher",
+      "maxDistance": 300,
+      "normalization": "LINEAR"
+    }
+  ],
+  "decider": {
+    "aggregator": "max",
+    "lowerBoundary": 0,
+    "included": false
+  }
+}

@@ -173,6 +173,25 @@ Identity-hashed:
   `alg.radial/src/.../intermediate/overlaps/RadiusExtensionOverlapRemoval.java:83`, `:91`, `:93`
   (the order feeds the sorter)
 
+Added by mission 5b (`core-remainder`; each site journaled by its task, TS in insertion order; `C:` =
+`core/src/.../`). "Lookup only" means no iteration exists, so no order is observable:
+
+- I31 `LayoutProcessorConfiguration.processorsBefore/After` slot sets (`Sets.newHashSet`) `C:alg/LayoutProcessorConfiguration.java:244`,
+  `:257` -> `AlgorithmAssembler.retrieveProcessors` copies and sorts them (T4). The comparator orders by ordinal; the set
+  order shows only between factories it calls equal. TS: `Set`.
+- I32 `AlgorithmAssembler.cache` `C:alg/AlgorithmAssembler.java:153` (lookup only, T6). TS: `Map`.
+- I33 `IDataProvider.cached()` `commentTargetsCache` (`HashMultimap`) `C:comments/IDataProvider.java:103`
+  (T13). TS: `Map<C, Set<T>>`.
+- I34 `IBoundsProvider.cached()` `commentBoundsCache`, `targetBoundsCache` `C:comments/IBoundsProvider.java:98`, `:100`
+  (lookup only, T13). TS: `Map`.
+- I35 `CommentAttacher.findMatch` `results` and the class-keyed inner map `C:comments/CommentAttacher.java:379`, `:382`
+  -> `AggregatedMatchDecider.makeAttachmentDecision` `C:comments/AggregatedMatchDecider.java:119` (T16). The decision
+  iterates candidates and matchers; ties would depend on this order, so the comment scenarios are designed tie-free
+  (R6). A same-class matcher collision keeps the last value at the first position. TS: `Map` in insertion order.
+- I36 `DefaultSelectionIterator.visited` `C:util/selection/DefaultSelectionIterator.java:67` (contains/add only, T18).
+  TS: lazy `Set`.
+- I37 `NodeReferenceMatcher.foundAttachments` `C:comments/NodeReferenceMatcher.java:83` (lookup only, T19). TS: `Map`.
+
 Guava `HashMultimap` (12 `create()` calls; counted separately from the 142/42 above) adds
 identity-ordered iteration at:
 

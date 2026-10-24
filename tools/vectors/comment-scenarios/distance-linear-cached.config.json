@@ -1,0 +1,22 @@
+{
+  "includeHierarchy": true,
+  "keepHeuristicsEnabledWithExplicitAttachments": false,
+  "explicit": "none",
+  "boundsProvider": {
+    "type": "ElkGraphBoundsProvider",
+    "cached": true
+  },
+  "filters": [],
+  "matchers": [
+    {
+      "type": "DistanceMatcher",
+      "maxDistance": 300,
+      "normalization": "LINEAR"
+    }
+  ],
+  "decider": {
+    "aggregator": "max",
+    "lowerBoundary": 0,
+    "included": false
+  }
+}

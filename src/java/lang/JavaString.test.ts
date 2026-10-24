@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { compareTo, hashCode, split, trim } from './JavaString.js';
+import { compareTo, equalsIgnoreCase, hashCode, split, trim } from './JavaString.js';
 
 const VECTORS_URL = new URL('../../../test/golden/refs/java/hash.json', import.meta.url);
 const STRING_HASH_ROWS = 229;
@@ -92,5 +92,28 @@ describe('JavaString.trim', () => {
   it('returns the empty string for all-whitespace and empty input', () => {
     expect(trim('   ')).toBe('');
     expect(trim('')).toBe('');
+  });
+});
+
+interface EqualsRow {
+  readonly a: string;
+  readonly b: string;
+  readonly result: boolean;
+}
+
+const CHARACTER_URL = new URL('../../../test/golden/refs/java/character.json', import.meta.url);
+const equalsRows = (JSON.parse(readFileSync(CHARACTER_URL, 'utf8')) as { equalsIgnoreCase: EqualsRow[] })
+  .equalsIgnoreCase;
+
+describe('JavaString.equalsIgnoreCase', () => {
+  it('replays every recorded JVM row', () => {
+    const mismatches = equalsRows.filter((r) => equalsIgnoreCase(r.a, r.b) !== r.result);
+    expect(equalsRows.length).toBe(47);
+    expect(mismatches).toEqual([]);
+  });
+
+  it('is false for a different number of code points', () => {
+    expect(equalsIgnoreCase('abc', 'ab')).toBe(false);
+    expect(equalsIgnoreCase('ab', 'abc')).toBe(false);
   });
 });

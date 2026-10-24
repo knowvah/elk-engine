@@ -416,3 +416,56 @@ Both 5a and 5b land before mission 6. `core.util.persistence` stays out of scope
 - **Any time:** `variants.json` entries add native and generated sweep cases (`random-seed-1` adds one per model to
   the next full sweep); widen `IElkProgressMonitor` getters and `AbstractLayoutProvider.initialize` to their
   nullable Java types when those files are next touched.
+
+## Revision 2026-10-24 (core-remainder)
+
+Appended; no earlier line is edited. Source: R1-R7 and P1-P9 in `plans/core-remainder/decisions.md`; the journal is
+`plans/core-remainder/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+
+**Row 5b (`core-remainder`) is done as mission 5b; the exit is met.** The code landed on `feature/core-remainder`
+(design, evidence and runbook in `docs/architecture/core-engine.md#mission-5b`). The `core` bundle is complete except
+`core.util.persistence` (AD-11).
+
+- All listed JUnit ports are green: `LayoutConfiguratorTest`, `SpacingConfigurationTest`, `AlgorithmAssemblerTest`,
+  `LayoutProcessorConfigurationTest`, `BezierSplineTest`, `CubicSplineInterpolatorTest` and the full `ElkMathTest`,
+  including its 4 rectangle cases.
+- The `.elkt` harness uses `LayoutConfigurator` as Java's `TestAlgorithm` does (T12); both golden sets regenerate
+  byte-identical, with no assertion changed.
+- 18 of 18 `comments.json` oracle scenarios replay equal (R6 asked for about 10); all 5,044 `regex.json` pattern
+  strings match.
+- Last full gate: 404 test files, 19,389 passed, 69 skipped; 99.28 % lines, 97.13 % branches, 99.27 % functions;
+  `npm test` 53.2 s at load about 7 against the 66.3 s baseline (stop 12 clear).
+
+**Scope changes against row 5b above.**
+
+- **R1:** `comments/*`, `util/selection/*` and `PropertyConstantsDelegator` are ported now, although nothing in ELK
+  calls them (no Java tests; the evidence is R6).
+- **R2:** narrow `Pattern` and `JavaCharacter` shims from the Javadoc, proven by new vectors; extended to
+  `String.equalsIgnoreCase` (flagged to the user at planning). Amended twice by the user during execution: JVM `\b`
+  and per-code-point case maps come from the recorded `regex-boundary.json` (the JDK 21 `\b` goes beyond its Javadoc
+  for combining marks), and `Collectors.summingDouble`/`averagingDouble` is pinned by `stream-sum.json`
+  (1,035 rows). `CoreJdkVectors.java` therefore writes five files (`awt`, `regex`, `character`, `regex-boundary`,
+  `stream-sum`).
+- **R3:** `Rectangle2D` shim with only the `comments/*` surface (`awt.json`).
+- **R4:** every `ElkMath` `*l` function is `bigint` through `Int64`.
+- **R5:** comment interfaces with `default` methods are abstract classes.
+- **R6:** 18 tie-free oracle scenarios for `CommentAttacher`, compared as sets.
+- **R7:** new recorders `CoreJdkVectors.java` and `CommentVectors.java` (+ `comment-vectors.sh`); landed vectors and
+  `JavaVectors.java` untouched.
+
+**Follow-ups by mission:**
+
+- **7a (layered):** `LayeredSpacings` builds on `ElkSpacings`' `AbstractSpacingsBuilder`; `ELK_OPTION_TARGET_FILTER`
+  never filters (verbatim Java), so do not assume target filtering.
+- **Every algorithm mission (6, 7, 8):** build the pipeline with `AlgorithmAssembler`; per slot, factories are ordered by
+  ordinal and `Set` insertion order shows only between equal factories (journal such pairs, AD-10). Classes in
+  `Class`-keyed maps of `LayoutConfigurator` are the `*Impl` constructors.
+- **Next time the files are touched:** widen the nullable signatures (`AbstractLayoutProvider.initialize`,
+  `IElkProgressMonitor` getters).
+- **Any time:** a shared `devAssert` helper does not exist (T7 omitted the `ElkSpacings.java:80-84` asserts with a
+  comment); the `StringBuilder` shim drops constructor arguments (use `new StringBuilder().append(s)`).
+- **Tooling:** files added under `tools/vectors/` change the `vector-cache.sh` inputs digest, so the next `elkt`,
+  `elkj` and `elkr` recorder runs are cold once. Check `uptime` before a coverage gate: foreign CPU load (about 180
+  from another project) made timing-sensitive tests fail in batch 1.
+- **JDK upgrade:** a change to `character.json` or `regex-boundary.json` is journaled and added to the
+  known-divergences list; the shim is never patched around it (runbook in `docs/architecture/core-engine.md`).

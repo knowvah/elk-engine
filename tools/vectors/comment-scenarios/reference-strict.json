@@ -1,0 +1,146 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "A",
+      "x": 100,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Parser"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "x": 400,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Lexer"
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "x": 250,
+      "y": 300,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Data Store"
+        }
+      ]
+    },
+    {
+      "id": "r1",
+      "x": 100,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "The Parser reads tokens"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "r2",
+      "x": 100,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "uses the parser"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "r3",
+      "x": 400,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "Lexer and Parser both"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "r4",
+      "x": 100,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "ParserFactory builds"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "r5",
+      "x": 250,
+      "y": 260,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "see Data Store docs"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "r6",
+      "x": 400,
+      "y": 60,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "Lexer\ndetails"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "r7",
+      "x": 250,
+      "y": 260,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "see data store docs"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    }
+  ]
+}

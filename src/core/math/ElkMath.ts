@@ -1,35 +1,113 @@
 // SPDX-License-Identifier: EPL-2.0
+import {
+  averaged,
+  averagef,
+  averagei,
+  averagel,
+  boundd,
+  boundf,
+  boundi,
+  boundl,
+  clipVector,
+  maxd,
+  maxf,
+  maxi,
+  maxl,
+  mind,
+  minf,
+  mini,
+  minl,
+  signum,
+} from './ElkMathAggregates.js';
+import {
+  approximateBezierSegment,
+  approximateBezierSpline,
+  distanceFromBezierSegment,
+  getPointOnBezierSegment,
+} from './ElkMathBezier.js';
+import { FACT_TABLE, binomiald, binomiall, factd, factl, powd, powf } from './ElkMathCombinatorics.js';
+import { contains, distance, intersects, intersects2, shortestDistance } from './ElkMathGeometry.js';
 
 /**
- * Partial port of ElkMath, a collection of static math helpers.
- *
- * Ported so far: `boundi` (D5), needed by `RandomGraphGenerator`. The other
- * members have no in-scope caller yet and are added when one is ported.
+ * Facade of ElkMath, a collection of static math helpers. The members live in section modules
+ * (`ElkMathCombinatorics`, `ElkMathAggregates`); sections never import this file.
  *
  * @see org.eclipse.elk.core/src/org/eclipse/elk/core/math/ElkMath.java
  */
+export {
+  FACT_TABLE,
+  averaged,
+  averagef,
+  averagei,
+  averagel,
+  binomiald,
+  binomiall,
+  boundd,
+  boundf,
+  boundi,
+  boundl,
+  clipVector,
+  factd,
+  factl,
+  maxd,
+  maxf,
+  maxi,
+  maxl,
+  mind,
+  minf,
+  mini,
+  minl,
+  powd,
+  powf,
+  signum,
+  approximateBezierSegment,
+  approximateBezierSpline,
+  contains,
+  distance,
+  distanceFromBezierSegment,
+  getPointOnBezierSegment,
+  intersects,
+  intersects2,
+  shortestDistance,
+};
 
 /**
- * Limit the given integer to a specific range.
- *
- * @param x an integer value
- * @param lower the lower limit
- * @param upper the upper limit
- * @returns if x is beyond the limits, return the limit, otherwise just return x
- * @see org.eclipse.elk.core/src/org/eclipse/elk/core/math/ElkMath.java
- */
-export function boundi(x: number, lower: number, upper: number): number {
-  if (x <= lower) {
-    return lower;
-  } else if (x >= upper) {
-    return upper;
-  }
-  return x;
-}
-
-/**
- * The public statics of Java's `ElkMath` ported so far (D5: mission 4f ports `boundi` only).
+ * The public statics of Java's `ElkMath` ported so far.
  *
  * @see org.eclipse.elk.core/src/org/eclipse/elk/core/math/ElkMath.java
  */
-export const ElkMath = { boundi } as const;
+export const ElkMath = {
+  averaged,
+  averagef,
+  averagei,
+  averagel,
+  binomiald,
+  binomiall,
+  boundd,
+  boundf,
+  boundi,
+  boundl,
+  clipVector,
+  factd,
+  factl,
+  maxd,
+  maxf,
+  maxi,
+  maxl,
+  mind,
+  minf,
+  mini,
+  minl,
+  powd,
+  powf,
+  signum,
+  approximateBezierSegment,
+  approximateBezierSpline,
+  contains,
+  distance,
+  distanceFromBezierSegment,
+  getPointOnBezierSegment,
+  intersects,
+  intersects2,
+  shortestDistance,
+} as const;

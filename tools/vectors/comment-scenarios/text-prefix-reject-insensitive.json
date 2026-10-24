@@ -1,0 +1,146 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "A",
+      "x": 100,
+      "y": 100,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Alpha"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "x": 400,
+      "y": 100,
+      "width": 80,
+      "height": 70,
+      "labels": [
+        {
+          "text": "Beta"
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "x": 250,
+      "y": 300,
+      "width": 80,
+      "height": 40,
+      "labels": [
+        {
+          "text": "Gamma"
+        }
+      ]
+    },
+    {
+      "id": "t1",
+      "x": 110,
+      "y": 50,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "todo: fix"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "t2",
+      "x": 410,
+      "y": 55,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "TODO"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "t3",
+      "x": 255,
+      "y": 260,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "TOD"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "t4",
+      "x": 110,
+      "y": 50,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "note: fixme later"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "t5",
+      "x": 410,
+      "y": 55,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "FIXME x"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "t6",
+      "x": 255,
+      "y": 260,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": "Fixme"
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    },
+    {
+      "id": "t7",
+      "x": 110,
+      "y": 50,
+      "width": 60,
+      "height": 30,
+      "labels": [
+        {
+          "text": ""
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.commentBox": true
+      }
+    }
+  ]
+}

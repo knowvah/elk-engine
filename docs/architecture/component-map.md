@@ -92,7 +92,11 @@ unless noted; verified at the pinned commit.
 Ported by mission 5a ([core-engine.md](core-engine.md)): `RecursiveGraphLayoutEngine` (split with
 `RecursiveGraphLayoutEngineTopdown`, M17), `LayoutAlgorithmResolver`, and the `AbstractLayoutProvider` subclasses
 `FixedLayoutProvider`, `BoxLayoutProvider` and `RandomLayoutProvider`. `LayoutMetaDataService`, `LayoutAlgorithmData`
-and the property types came earlier (missions 2 and 3). `LayoutConfigurator` and the adapters are mission 5b.
+and the property types came earlier (missions 2 and 3). Mission 5b ([core-engine.md](core-engine.md#mission-5b)) completed the bundle: `AlgorithmAssembler` and
+`LayoutProcessorConfiguration` (the pipeline every algorithm bundle uses), `LayoutConfigurator`, `ElkSpacings`, the
+`ElkMath` sections, `ElkGraphAdapters`, `util/selection/*` and `comments/*`. Its JDK shims are `src/java/awt/geom`
+(`Rectangle2D`) and `src/java/util/regex` (`Pattern`, `WordBoundary`), next to `JavaCharacter` in `src/java/lang`;
+they are proven by `awt.json`, `regex.json`, `character.json` and `regex-boundary.json`.
 
 ```plantuml
 @startuml
