@@ -4,7 +4,7 @@ import { ElkRectangle } from './ElkRectangle.js';
 import { KVector } from './KVector.js';
 
 // ElkRectangle.java; the four ElkMathTest cases that use a rectangle (:27, :43, :55, :106) all call
-// ElkMath.contains/intersects, which are not ported yet (5b), so they are not ported here.
+// ElkMath.contains/intersects and live in ElkMathTest.test.ts.
 const RECT_X = 23;
 const RECT_Y = 14;
 const RECT_SIZE = 20;
