@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { beforeAll, describe, expect, it } from 'vitest';
+import { LayoutMetaDataService } from '../../core/data/LayoutMetaDataService.js';
 import { ElkMargin } from '../../core/math/ElkMargin.js';
 import { ElkPadding } from '../../core/math/ElkPadding.js';
 import { KVector } from '../../core/math/KVector.js';
@@ -10,7 +11,6 @@ import type { Comparable } from '../../java/lang/Comparable.js';
 import { IllegalStateException } from '../../java/lang/IllegalStateException.js';
 import { EnumSet } from '../../java/util/EnumSet.js';
 import { LinkedList } from '../../java/util/LinkedList.js';
-import { ElkReflect } from '../util/ElkReflect.js';
 import type { IProperty } from './IProperty.js';
 import { Property, isIProperty } from './Property.js';
 
@@ -46,45 +46,7 @@ function javaEquals(a: unknown, b: unknown): boolean {
 /** Ported from org.eclipse.elk.core.test PropertyTest.java (assertions unchanged). */
 describe('PropertyTest (ported JUnit)', () => {
   beforeAll(() => {
-    // Temporary seam: Java's `LayoutMetaDataService.getInstance()` (the JUnit @BeforeClass) registers these
-    // in `initElkReflect`; that class is ported in a later mission, so the registrations are mirrored here.
-    // `Array` stands for ArrayList and `Set` for HashSet, LinkedHashSet and TreeSet (AD-10). The Java
-    // `IndividualSpacings` registration is omitted: that class is not ported yet.
-    ElkReflect.register(
-      KVector,
-      () => new KVector(),
-      (v) => (v as KVector).clone(),
-    );
-    ElkReflect.register(
-      KVectorChain,
-      () => new KVectorChain(),
-      (vc) => new KVectorChain(vc as KVectorChain),
-    );
-    ElkReflect.register(
-      ElkMargin,
-      () => new ElkMargin(),
-      (m) => new ElkMargin(m as ElkMargin),
-    );
-    ElkReflect.register(
-      ElkPadding,
-      () => new ElkPadding(),
-      (p) => new ElkPadding(p as ElkPadding),
-    );
-    ElkReflect.register(
-      Array,
-      () => [],
-      (al) => [...(al as unknown[])],
-    );
-    ElkReflect.register(
-      LinkedList,
-      () => new LinkedList(),
-      (ll) => new LinkedList(ll as LinkedList<unknown>),
-    );
-    ElkReflect.register(
-      Set,
-      () => new Set(),
-      (hs) => new Set(hs as Set<unknown>),
-    );
+    LayoutMetaDataService.getInstance();
   });
 
   function testPropertyObject<T extends object>(defaultValue: T): void {

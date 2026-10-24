@@ -2,13 +2,19 @@
 # SPDX-License-Identifier: EPL-2.0
 # Regenerates the committed oracle golden refs (AD-5) from the pinned
 # elk-models corpus. Output is byte-stable: no timestamps.
-# Usage: regen-goldens.sh
+# Usage: regen-goldens.sh [--set default|algorithms]
+#   default     test/corpus/manifest.json  -> test/golden/refs/elk
+#   algorithms  test/golden/algorithms.json -> test/golden/refs/elk-algorithms
+# Both sets take the pinned models commit from test/corpus/manifest.json.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-MANIFEST="$ROOT/test/corpus/manifest.json"
+CORPUS_MANIFEST="$ROOT/test/corpus/manifest.json"
+MANIFEST="$CORPUS_MANIFEST"
 REFS_PARENT="$ROOT/test/golden/refs"
-REFS_DIR="$REFS_PARENT/elk"
+REFS_NAME="elk"
+REFS_DIR="$REFS_PARENT/$REFS_NAME"
+VENDORED_DIR=""
 ELK_ORACLE_DIR="${ELK_ORACLE_DIR:-$ROOT/../elk-oracle}"
 MODELS_DIR="${ELK_MODELS_DIR:-$ROOT/../../eclipse-elk/elk-models}"
 GENERATED_BY="tools/oracle/regen-goldens.sh"
@@ -19,14 +25,49 @@ die() {
   exit 1
 }
 
+select_set() { # select_set <default|algorithms>
+  case "$1" in
+    default) ;;
+    algorithms)
+      MANIFEST="$ROOT/test/golden/algorithms.json"
+      REFS_NAME="elk-algorithms"
+      REFS_DIR="$REFS_PARENT/$REFS_NAME"
+      VENDORED_DIR="$ROOT/test/golden/inputs"
+      ;;
+    *) die "unknown set '$1' (expected default or algorithms)" ;;
+  esac
+}
+
+parse_args() {
+  local set_name="default"
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --set)
+        [ $# -ge 2 ] || die "--set needs a value"
+        set_name="$2"
+        shift 2
+        ;;
+      *) die "unknown argument '$1'" ;;
+    esac
+  done
+  select_set "$set_name"
+}
+
 manifest_commit() {
-  node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).commit)' "$MANIFEST"
+  node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).commit)' "$CORPUS_MANIFEST"
 }
 
 golden_ids() { # prints one golden id per line
   node -e '
     const m = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
     for (const g of m.golden) console.log(g.id);
+  ' "$MANIFEST"
+}
+
+golden_paths() { # prints one golden input path per line
+  node -e '
+    const m = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+    for (const g of m.golden) console.log(g.path);
   ' "$MANIFEST"
 }
 
@@ -57,12 +98,22 @@ require_models_commit() {
     die "elk-models at $actual, expected pinned $expected"
 }
 
+# The algorithms set vendors its inputs; they must equal the pinned corpus.
+require_vendored_inputs() {
+  local rel
+  [ -n "$VENDORED_DIR" ] || return 0
+  while IFS= read -r rel; do
+    cmp -s "$VENDORED_DIR/$rel" "$MODELS_DIR/$rel" ||
+      die "vendored input $rel differs from the pinned corpus"
+  done < <(golden_paths)
+}
+
 write_meta() { # write_meta <dest file>
   node -e '
     const fs = require("fs");
-    const [build, manifest, generatedBy] = process.argv.slice(1, 4);
+    const [build, corpusManifest, generatedBy] = process.argv.slice(1, 4);
     const b = JSON.parse(fs.readFileSync(build, "utf8"));
-    const m = JSON.parse(fs.readFileSync(manifest, "utf8"));
+    const m = JSON.parse(fs.readFileSync(corpusManifest, "utf8"));
     const meta = {
       elkCommit: b.commit,
       patches: b.patches,
@@ -71,7 +122,7 @@ write_meta() { # write_meta <dest file>
       generatedBy,
     };
     fs.writeFileSync(process.argv[4], JSON.stringify(meta, null, 2) + "\n");
-  ' "$ELK_ORACLE_DIR/oracle-build.json" "$MANIFEST" "$GENERATED_BY" "$1"
+  ' "$ELK_ORACLE_DIR/oracle-build.json" "$CORPUS_MANIFEST" "$GENERATED_BY" "$1"
 }
 
 run_harness() { # run_harness <outDir> <casesFile>
@@ -105,10 +156,12 @@ cleanup() {
 
 main() {
   local count start elapsed
+  parse_args "$@"
   require_models_commit
+  require_vendored_inputs
   mkdir -p "$REFS_PARENT"
   OUT_DIR="$(mktemp -d)"
-  STAGE_DIR="$(mktemp -d "$REFS_PARENT/.elk-staging.XXXXXX")"
+  STAGE_DIR="$(mktemp -d "$REFS_PARENT/.$REFS_NAME-staging.XXXXXX")"
   CASES_FILE="$(mktemp)"
   trap cleanup EXIT
   start=$SECONDS
@@ -116,7 +169,7 @@ main() {
   elapsed=$((SECONDS - start))
   count="$(stage_refs "$OUT_DIR" "$STAGE_DIR")"
   swap_dirs "$STAGE_DIR"
-  echo "wrote $count refs + $META_FILE to test/golden/refs/elk (harness ${elapsed}s)" >&2
+  echo "wrote $count refs + $META_FILE to test/golden/refs/$REFS_NAME (harness ${elapsed}s)" >&2
 }
 
 main "$@"

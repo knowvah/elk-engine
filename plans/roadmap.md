@@ -365,3 +365,54 @@ out of goldens.
 - **Any time:** a shared `devAssert` helper does not exist; the Java `assert` statements in the grandom port are
   omitted with comments (`KVector.ts` precedent).
 - **Deferred:** the `core.debug.grandom.ide` bundle (content assist) needs a browser-editor host decision.
+
+## Revision 2026-10-23 (core-engine)
+
+Appended; no earlier line is edited. Source: M1-M17 in `plans/core-engine/decisions.md`; the journal is
+`plans/core-engine/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+
+**Row 5 splits (M1): 5a `core-engine` is done; 5b `core-remainder` is the next `/plan-mission` input.** 5a landed on
+`feature/core-engine` (design, evidence and runbook in `docs/architecture/core-engine.md`). The row 5 exit ("first
+end-to-end TS layouts for fixed, box and random equal the goldens within 1e-6") is met for 5a:
+
+- All nine curated algorithm goldens (three each for `fixed`, `box`, `random`, in `test/golden/algorithms.json`,
+  refs in `test/golden/refs/elk-algorithms/`) equal the oracle under `compareLayout` at 1e-6 on the first run (T17,
+  M4). Both golden sets regenerate byte-stable.
+- Ported JUnit: `RecursiveGraphLayoutEngineTest` (3 of 4 cases), `GraphValidatorTest`, the `ElkUtil` cases, `Issue457Test`
+  and `Issue489Test`, plus the JSON and content-assist cases that waited for mission 5 (`SectionsTest`,
+  `TransferLayoutTest`, `LayoutDataContentAssistTest`; T11, T16, T17, T18).
+- `PENDING_TYPES = []`: `fixed`, `box` and `random` are registered as in the oracle's core-only registry; every landed
+  vector replayed unchanged (M7, T8-T14).
+- Corpus comparison of the 898 retarget cases per algorithm (M5, T19): counts and known divergences are in
+  `docs/conformance.md`, section "Core layouts (fixed, box, random)".
+
+**Row 5b (`core-remainder`).** Scope from `plans/core-engine/decisions.md#m1--split`, minus `ElkRectangle` (moved into
+5a by M11): `alg/*` (rest), `comments/*`, `math/{BezierSpline,CubicSplineInterpolator,ISplineInterpolator}`, the rest
+of `ElkMath`, `util/adapters/ElkGraphAdapters`, `util/selection/*`, `ElkSpacings`, `LayoutConfigurator`,
+`PropertyConstantsDelegator`, `AbstractRandomListAccessor`, `DefaultFactory`, `Triple`, `Quadruple`,
+`WrappedException`, a `java.awt.geom.Rectangle2D` shim with JVM vectors, and the tests that go with them
+(`LayoutConfiguratorTest`, `SpacingConfigurationTest`, `AlgorithmAssemblerTest`, `LayoutProcessorConfigurationTest`,
+`BezierSplineTest`, `CubicSplineInterpolatorTest`, the rest of `ElkMathTest` including the four rectangle cases that
+call `ElkMath.contains/intersects`). Size about 7.5k Java lines, about 13 tasks. Depends on 5a. Exit: the listed tests
+are ported and green; the issue-test harness switches from the hand-applied configurator body to `LayoutConfigurator`.
+Both 5a and 5b land before mission 6. `core.util.persistence` stays out of scope (AD-11).
+
+**Scope changes against row 5 above.**
+
+- **M10, M12, M15, M16, M17 (user):** `ElkUtil`, `BoxLayoutProvider` and the engine are split into section modules for
+  the 500-line cap; generated algorithm option constants and `*_DEP_*` constants are lazy getters (the same applies to
+  every later algorithm bundle).
+- **M2:** `elkjs-exclude` blocks are dropped (debug-folder helpers, `toSafePathName`).
+- **M4:** the goldens live in a separate set so the corpus manifest and the docs-site showcase stay frozen.
+
+**Follow-ups by mission:**
+
+- **7a (layered):** `RecursiveGraphLayoutEngineTest.testEmptyAlgorithmId` (default resolves to layered), unchanged (M6).
+- **7h:** `EdgeCoordsTest`, `exportLayoutOptions`, `importIndividualSpacingsTest` (T18).
+- **Every later algorithm mission:** apply the M7/M9 procedure (replay vectors, flip tripwires per type) and rerun
+  `tools/vectors/elkj-vectors.sh` and the `.elkt` regeneration when the TS registry grows; stub algorithm ids must not
+  end in a registered algorithm's suffix (M14).
+- **Docs (any time):** add the algorithm goldens to the docs-site showcase (M4).
+- **Any time:** `variants.json` entries add native and generated sweep cases (`random-seed-1` adds one per model to
+  the next full sweep); widen `IElkProgressMonitor` getters and `AbstractLayoutProvider.initialize` to their
+  nullable Java types when those files are next touched.

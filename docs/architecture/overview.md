@@ -12,6 +12,8 @@
 | [elk-text.md](elk-text.md)                         | ELK Text (`.elkt`) port, the Xtext subset, runbook and deferrals        |
 | [elk-json-text.md](elk-json-text.md)               | ELK Textual JSON (`.elkj`) port, lazy linking, runbook and deferrals    |
 | [grandom.md](grandom.md)                           | grandom (`.elkr`) random graph generator port, evidence and runbook     |
+| [core-engine.md](core-engine.md)                   | Layout engine and the fixed, box and random providers (mission 5a)      |
+| [melk-codegen.md](melk-codegen.md)                 | The `.melk` generator, pending types, lazy constants, regeneration      |
 | [complexity.md](complexity.md)                     | The complexity gate that measures every function (`npm run complexity`) |
 
 ## What elk-engine is
@@ -20,8 +22,12 @@
 the pinned commit `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` is the specification (AD-1, AD-2). It
 is a library: browser-safe, zero runtime dependencies, no Java or WASM. Its public contract is the
 ElkGraph object model plus `ElkGraphUtil` factories; ELK JSON is an I/O adapter (AD-14). Thirteen
-bundles totalling about 134,600 hand-written lines are in scope (see the inventory). This mission
-delivers only the scaffolding: no layout algorithm is ported yet.
+bundles totalling about 134,600 hand-written lines are in scope (see the inventory). Current state:
+the layout engine (`RecursiveGraphLayoutEngine`, `LayoutAlgorithmResolver`, `GraphValidator`) and the
+three core providers `fixed`, `box` and `random` are ported and equal the oracle on the curated goldens
+(mission 5a, [core-engine.md](core-engine.md)). The rest of `core` (mission 5b) and every other
+algorithm (layered, mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex) are
+not ported yet.
 
 ## Relation to ELK Java and the oracle
 
@@ -49,7 +55,8 @@ The patch series is empty in this mission (AD-3). Goldens are committed, so CI n
 
 ## Key flows
 
-Layout in ELK, which elk-engine reproduces (details in [component-map.md](component-map.md)):
+Layout in ELK, which elk-engine reproduces for `fixed`, `box` and `random` today (details in
+[component-map.md](component-map.md) and [core-engine.md](core-engine.md#engine-flow)):
 
 ```plantuml
 @startuml

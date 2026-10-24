@@ -1,0 +1,582 @@
+{
+  "id": "G1",
+  "children": [
+    {
+      "id": "N1",
+      "labels": [
+        {
+          "text": "ThreadedComposite",
+          "id": "L1",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 116.0,
+          "height": 15.0
+        }
+      ],
+      "ports": [
+        {
+          "id": "P1",
+          "layoutOptions": {
+            "port.index": "0",
+            "port.side": "WEST"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 8.0,
+          "height": 8.0
+        }
+      ],
+      "children": [
+        {
+          "id": "N2",
+          "labels": [
+            {
+              "text": "ThreadedCompositeInside",
+              "id": "L2",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 150.0,
+              "height": 15.0
+            }
+          ],
+          "ports": [
+            {
+              "id": "P2",
+              "layoutOptions": {
+                "port.index": "0",
+                "port.side": "WEST"
+              },
+              "x": 0.0,
+              "y": 0.0,
+              "width": 8.0,
+              "height": 8.0
+            }
+          ],
+          "children": [
+            {
+              "id": "N3",
+              "labels": [
+                {
+                  "text": "ExecutionTime",
+                  "id": "L3",
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 87.0,
+                  "height": 15.0
+                }
+              ],
+              "ports": [
+                {
+                  "id": "P3",
+                  "layoutOptions": {
+                    "port.index": "0",
+                    "port.side": "EAST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                },
+                {
+                  "id": "P4",
+                  "layoutOptions": {
+                    "port.index": "-1",
+                    "port.side": "WEST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                }
+              ],
+              "layoutOptions": {
+                "nodeSize.constraints": "[]",
+                "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+                "portConstraints": "FIXED_ORDER"
+              },
+              "x": 15.0,
+              "y": 71.0,
+              "width": 61.0,
+              "height": 41.0
+            },
+            {
+              "id": "N4",
+              "labels": [
+                {
+                  "text": "Display",
+                  "id": "L4",
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 43.0,
+                  "height": 15.0
+                }
+              ],
+              "ports": [
+                {
+                  "id": "P5",
+                  "layoutOptions": {
+                    "port.index": "0",
+                    "port.side": "WEST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                }
+              ],
+              "layoutOptions": {
+                "nodeSize.constraints": "[]",
+                "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+                "portConstraints": "FIXED_ORDER"
+              },
+              "x": 15.0,
+              "y": 15.0,
+              "width": 41.0,
+              "height": 31.0
+            },
+            {
+              "id": "N5",
+              "labels": [
+                {
+                  "text": "Accumulator",
+                  "id": "L5",
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 74.0,
+                  "height": 15.0
+                }
+              ],
+              "ports": [
+                {
+                  "id": "P6",
+                  "layoutOptions": {
+                    "port.index": "0",
+                    "port.side": "WEST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                },
+                {
+                  "id": "P7",
+                  "layoutOptions": {
+                    "port.index": "1",
+                    "port.side": "EAST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                },
+                {
+                  "id": "P8",
+                  "layoutOptions": {
+                    "port.index": "-2",
+                    "port.side": "WEST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                }
+              ],
+              "layoutOptions": {
+                "nodeSize.constraints": "[]",
+                "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+                "portConstraints": "FIXED_ORDER"
+              },
+              "x": 71.0,
+              "y": 15.0,
+              "width": 41.0,
+              "height": 41.0
+            }
+          ],
+          "layoutOptions": {
+            "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+            "algorithm": "org.eclipse.elk.box",
+            "elk.padding": "[top=15.0,left=15.0,bottom=15.0,right=15.0]",
+            "nodeSize.constraints": "[]",
+            "portConstraints": "FREE",
+            "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.box",
+            "hierarchyHandling": "SEPARATE_CHILDREN"
+          },
+          "x": 15.0,
+          "y": 15.0,
+          "width": 127.0,
+          "height": 127.0,
+          "edges": [
+            {
+              "id": "E3",
+              "sources": [
+                "P2"
+              ],
+              "targets": [
+                "P4"
+              ]
+            },
+            {
+              "id": "E4",
+              "sources": [
+                "P3"
+              ],
+              "targets": [
+                "P6"
+              ]
+            },
+            {
+              "id": "E5",
+              "sources": [
+                "P7"
+              ],
+              "targets": [
+                "P5"
+              ]
+            }
+          ]
+        }
+      ],
+      "layoutOptions": {
+        "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+        "algorithm": "org.eclipse.elk.box",
+        "elk.padding": "[top=15.0,left=15.0,bottom=15.0,right=15.0]",
+        "nodeSize.constraints": "[]",
+        "portConstraints": "FREE",
+        "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.box",
+        "hierarchyHandling": "SEPARATE_CHILDREN"
+      },
+      "x": 44.0,
+      "y": 15.0,
+      "width": 157.0,
+      "height": 157.0
+    },
+    {
+      "id": "N6",
+      "labels": [
+        {
+          "text": "Const",
+          "id": "L6",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 34.0,
+          "height": 15.0
+        }
+      ],
+      "ports": [
+        {
+          "id": "P9",
+          "layoutOptions": {
+            "port.index": "0",
+            "port.side": "EAST"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 8.0,
+          "height": 8.0
+        },
+        {
+          "id": "P10",
+          "layoutOptions": {
+            "port.index": "-1",
+            "port.side": "WEST"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 8.0,
+          "height": 8.0
+        }
+      ],
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+        "portConstraints": "FIXED_ORDER"
+      },
+      "x": 15.0,
+      "y": 15.0,
+      "width": 14.0,
+      "height": 25.0
+    },
+    {
+      "id": "N7",
+      "labels": [
+        {
+          "text": "ThreadedComposite2",
+          "id": "L7",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 123.0,
+          "height": 15.0
+        }
+      ],
+      "ports": [
+        {
+          "id": "P11",
+          "layoutOptions": {
+            "port.index": "0",
+            "port.side": "WEST"
+          },
+          "x": 0.0,
+          "y": 0.0,
+          "width": 8.0,
+          "height": 8.0
+        }
+      ],
+      "children": [
+        {
+          "id": "N8",
+          "labels": [
+            {
+              "text": "ThreadedCompositeInside",
+              "id": "L8",
+              "x": 0.0,
+              "y": 0.0,
+              "width": 150.0,
+              "height": 15.0
+            }
+          ],
+          "ports": [
+            {
+              "id": "P12",
+              "layoutOptions": {
+                "port.index": "0",
+                "port.side": "WEST"
+              },
+              "x": 0.0,
+              "y": 0.0,
+              "width": 8.0,
+              "height": 8.0
+            }
+          ],
+          "children": [
+            {
+              "id": "N9",
+              "labels": [
+                {
+                  "text": "ExecutionTime",
+                  "id": "L9",
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 87.0,
+                  "height": 15.0
+                }
+              ],
+              "ports": [
+                {
+                  "id": "P13",
+                  "layoutOptions": {
+                    "port.index": "0",
+                    "port.side": "EAST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                },
+                {
+                  "id": "P14",
+                  "layoutOptions": {
+                    "port.index": "-1",
+                    "port.side": "WEST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                }
+              ],
+              "layoutOptions": {
+                "nodeSize.constraints": "[]",
+                "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+                "portConstraints": "FIXED_ORDER"
+              },
+              "x": 15.0,
+              "y": 71.0,
+              "width": 61.0,
+              "height": 41.0
+            },
+            {
+              "id": "N10",
+              "labels": [
+                {
+                  "text": "Display",
+                  "id": "L10",
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 43.0,
+                  "height": 15.0
+                }
+              ],
+              "ports": [
+                {
+                  "id": "P15",
+                  "layoutOptions": {
+                    "port.index": "0",
+                    "port.side": "WEST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                }
+              ],
+              "layoutOptions": {
+                "nodeSize.constraints": "[]",
+                "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+                "portConstraints": "FIXED_ORDER"
+              },
+              "x": 15.0,
+              "y": 15.0,
+              "width": 41.0,
+              "height": 31.0
+            },
+            {
+              "id": "N11",
+              "labels": [
+                {
+                  "text": "Accumulator",
+                  "id": "L11",
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 74.0,
+                  "height": 15.0
+                }
+              ],
+              "ports": [
+                {
+                  "id": "P16",
+                  "layoutOptions": {
+                    "port.index": "0",
+                    "port.side": "WEST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                },
+                {
+                  "id": "P17",
+                  "layoutOptions": {
+                    "port.index": "1",
+                    "port.side": "EAST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                },
+                {
+                  "id": "P18",
+                  "layoutOptions": {
+                    "port.index": "-2",
+                    "port.side": "WEST"
+                  },
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 8.0,
+                  "height": 8.0
+                }
+              ],
+              "layoutOptions": {
+                "nodeSize.constraints": "[]",
+                "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+                "portConstraints": "FIXED_ORDER"
+              },
+              "x": 71.0,
+              "y": 15.0,
+              "width": 41.0,
+              "height": 41.0
+            }
+          ],
+          "layoutOptions": {
+            "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+            "algorithm": "org.eclipse.elk.box",
+            "elk.padding": "[top=15.0,left=15.0,bottom=15.0,right=15.0]",
+            "nodeSize.constraints": "[]",
+            "portConstraints": "FREE",
+            "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.box",
+            "hierarchyHandling": "SEPARATE_CHILDREN"
+          },
+          "x": 15.0,
+          "y": 15.0,
+          "width": 127.0,
+          "height": 127.0,
+          "edges": [
+            {
+              "id": "E6",
+              "sources": [
+                "P12"
+              ],
+              "targets": [
+                "P14"
+              ]
+            },
+            {
+              "id": "E7",
+              "sources": [
+                "P13"
+              ],
+              "targets": [
+                "P16"
+              ]
+            },
+            {
+              "id": "E8",
+              "sources": [
+                "P17"
+              ],
+              "targets": [
+                "P15"
+              ]
+            }
+          ]
+        }
+      ],
+      "layoutOptions": {
+        "nodeLabels.placement": "[H_LEFT, V_TOP, OUTSIDE]",
+        "algorithm": "org.eclipse.elk.box",
+        "elk.padding": "[top=15.0,left=15.0,bottom=15.0,right=15.0]",
+        "nodeSize.constraints": "[]",
+        "portConstraints": "FREE",
+        "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.box",
+        "hierarchyHandling": "SEPARATE_CHILDREN"
+      },
+      "x": 216.0,
+      "y": 15.0,
+      "width": 157.0,
+      "height": 157.0
+    }
+  ],
+  "layoutOptions": {
+    "algorithm": "org.eclipse.elk.box",
+    "elk.padding": "[top=15.0,left=15.0,bottom=15.0,right=15.0]",
+    "nodeSize.constraints": "[]",
+    "portConstraints": "FREE",
+    "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.box",
+    "randomSeed": "1",
+    "hierarchyHandling": "SEPARATE_CHILDREN"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 388.0,
+  "height": 187.0,
+  "edges": [
+    {
+      "id": "E1",
+      "sources": [
+        "P9"
+      ],
+      "targets": [
+        "P1"
+      ]
+    },
+    {
+      "id": "E2",
+      "sources": [
+        "P9"
+      ],
+      "targets": [
+        "P11"
+      ]
+    }
+  ]
+}

@@ -89,6 +89,11 @@ unless noted; verified at the pinned commit.
 | `IProperty` / `MapPropertyHolder` | `graph/.../graph/properties/`       | Typed option keys and the map holder behind `getProperty`            |
 | `ElkNode` (ElkGraph)              | `graph/.../graph/ElkNode.java`      | Graph model; elements are `EMapPropertyHolder`                       |
 
+Ported by mission 5a ([core-engine.md](core-engine.md)): `RecursiveGraphLayoutEngine` (split with
+`RecursiveGraphLayoutEngineTopdown`, M17), `LayoutAlgorithmResolver`, and the `AbstractLayoutProvider` subclasses
+`FixedLayoutProvider`, `BoxLayoutProvider` and `RandomLayoutProvider`. `LayoutMetaDataService`, `LayoutAlgorithmData`
+and the property types came earlier (missions 2 and 3). `LayoutConfigurator` and the adapters are mission 5b.
+
 ```plantuml
 @startuml
 interface IGraphLayoutEngine
@@ -127,6 +132,6 @@ How an algorithm plugs in:
    `LayoutAlgorithmData.getInstancePool()` and calls `layout(layoutNode, progressMonitor)`, then
    releases it (or calls `dispose()` after a failure).
 
-In elk-engine the `.melk` step is replaced by a generator (AD-12, future mission) and ElkGraph
+In elk-engine the `.melk` step is replaced by a generator (AD-12, [melk-codegen.md](melk-codegen.md)) and ElkGraph
 becomes plain TS classes (AD-11). Mapping to TS files: [port-map](port-map.md); rules:
 [translation rules](../translation-rules.md).

@@ -1,0 +1,18 @@
+{
+  "repo": "eclipse-elk/elk-models",
+  "commit": "ac5af2ba511c0037e4f347e8bd91f013950951c7",
+  "files": {
+    "realworld/ptolemy/hierarchical/de_compositeqm_CheckExecutionTimeConstraints.json": "2d1317aa12c8e43668a681b79af12002f3da3e35efd70b6e841153e7658a1381",
+    "realworld/ptolemy/hierarchical/gt_sinewaveoptimization_SinewaveOptimization.json": "1cd5f7c806664cf80e1a7d1a81fe0a9b5c2d22d532367a46127f9bc19d932ca4",
+    "realworld/ptolemy/flattened/hlacerti_multidatatypes_producer.json": "6f30f5a5f316c40eaf2536869477d40af063608a5243e63df6eb20742fbfd745",
+    "realworld/ptolemy/hierarchical/hoc_threadedcomposite_MulticoreExecution.json": "55668b77428b4b4cf28704a02cf6953683b263222b6978e1602db80aacc6fde1",
+    "realworld/ptolemy/hierarchical/sdf_htvq_HTVQ4.json": "438ef5a74dadd23bbe7faff63f012e03d99dc8f49477ca2341176b5d8de4d075",
+    "realworld/ptolemy/flattened/de_router_Router.json": "a047cb61956067337c91aa2d9aff3d86902817e3dcdf80a0c3c7552d31d998f1",
+    "realworld/ptolemy/flattened/ddf_randomwalk_RandomWalk.json": "89c039382505a18941c9441f26c7f7ef654e1bccc649a413ba280ef2a942a0a5",
+    "realworld/ptolemy/flattened/continuous_levelcrossingdetector_LevelCrossingDetector.json": "83193114e73feb7aafee5bff340ec96aa7c9925244bd4d0db0861a44c7e7dc4a",
+    "realworld/ptolemy/flattened/pthales_dynamic_ThalesDynamicModalModelPN.json": "2c7d5115b347e663f35906eb3f5ecff3535405fa3c7d46373d9a33b567d4a5dc",
+    "tickets/core/457_boxLayouterIgnoresMinimumSize.elkt": "86b826e4c23a0da3c5a9b683cf8692e1c8bdbc405996fe68ab10198ce0551f9d",
+    "tickets/core/489_paddingAndMinSize_Large.elkt": "4299f2e7c6326a4f12caed4d554eeade88b33fe827ad02308ba269c0dd2d81e7",
+    "tickets/core/489_paddingAndMinSize_Small.elkt": "8909ff92338b121c4aeb424942f2031705633ca8430d57d381da1e73ffae93c2"
+  }
+}

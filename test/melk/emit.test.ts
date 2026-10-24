@@ -107,18 +107,30 @@ async function prettierConfig(): Promise<Record<string, unknown>> {
 }
 
 describe('generate', () => {
-  it('emits Core and Labels by default, Core without any held-back algorithm class', async () => {
+  it('emits Core and Labels by default, Core with nothing held back', async () => {
     expect(DEFAULT_BUNDLES).toEqual(['Core', 'Labels']);
     const output = await generate({ write: false });
     expect([...output.keys()].sort()).toEqual([
       'src/core/labels/LabelManagementOptions.ts',
+      'src/core/options/BoxLayouterOptions.ts',
       'src/core/options/CoreOptions.ts',
+      'src/core/options/FixedLayouterOptions.ts',
+      'src/core/options/RandomLayouterOptions.ts',
     ]);
     const core = output.get('src/core/options/CoreOptions.ts') ?? '';
-    expect(core).toContain('// Held back (algorithm org.eclipse.elk.fixed)');
-    expect(core).toContain('pending type org.eclipse.elk.core.util.FixedLayoutProvider');
-    expect(core).toContain('// Held back (dependency org.eclipse.elk.topdown.sizeCategories');
-    expect(core).not.toContain('FixedLayouterOptions().apply');
+    expect(core).not.toContain('// Held back (algorithm');
+    expect(core).not.toContain('// Held back');
+    expect(core).not.toContain('pending type');
+    expect(core).toContain(
+      "registry.addDependency(\n      'org.eclipse.elk.topdown.sizeCategories',\n      'org.eclipse.elk.topdown.sizeApproximator',\n      CoreOptions.TOPDOWN_SIZE_CATEGORIES_DEP_TOPDOWN_SIZE_APPROXIMATOR_0,\n    );",
+    );
+    expect(core).toContain(
+      'private static get TOPDOWN_SIZE_CATEGORIES_DEP_TOPDOWN_SIZE_APPROXIMATOR_0(): ITopdownSizeApproximator {',
+    );
+    expect(core).not.toMatch(/private static readonly \w+_DEP_/);
+    expect(core).toContain('new FixedLayouterOptions().apply(registry);');
+    expect(core).toContain('new RandomLayouterOptions().apply(registry);');
+    expect(core).toContain('new BoxLayouterOptions().apply(registry);');
   });
 
   it('names the available bundles for an unknown name', async () => {
@@ -166,8 +178,10 @@ describe('emitted text of the vendored bundles', () => {
       .replace(/,? \)/g, ')');
     expect(text).toContain("static readonly ALGORITHM_ID: string = 'org.eclipse.elk.layered';");
     expect(text).toContain('Property.withDefault(CoreOptions.ASPECT_RATIO, LayeredOptions.ASPECT_RATIO_DEFAULT)');
+    // M12: option constants of algorithm classes are cached static getters (lazy, like JVM class initialization).
+    expect(text).toContain('static #SPACING_COMMENT_COMMENT: IProperty<number> | undefined;');
     expect(text).toContain(
-      'static readonly SPACING_COMMENT_COMMENT: IProperty<number> = CoreOptions.SPACING_COMMENT_COMMENT;',
+      'static get SPACING_COMMENT_COMMENT(): IProperty<number> { return (LayeredOptions.#SPACING_COMMENT_COMMENT ??= CoreOptions.SPACING_COMMENT_COMMENT); }',
     );
     expect(text).toContain('export class LayeredFactory implements IFactory<AbstractLayoutProvider>');
     expect(text).toContain('provider.initialize(');
@@ -328,7 +342,10 @@ describe('option constants and registrations', () => {
       category c { label "Cat" description "d" }
       category e { }
     `);
-    expect(text).toContain('B_DEP_A_0: boolean = true;');
+    expect(text).toContain('static #B_DEP_A_0: boolean | undefined;');
+    expect(text).toContain('private static get B_DEP_A_0(): boolean {');
+    expect(text).toContain('return (ExampleOptions.#B_DEP_A_0 ??= true);');
+    expect(text).not.toContain('B_DEP_A_0: boolean = true;');
     expect(text).toContain('Required value for dependency between {@link B} and {@link A}.');
     expect(text).toContain("registry.addDependency('org.example.b', 'org.example.a', ExampleOptions.B_DEP_A_0);");
     expect(text).toContain("registry.addDependency('org.example.b', 'org.example.a', null);");
@@ -384,7 +401,9 @@ describe('algorithm classes from snippets', () => {
     expect(text).toContain(".description('An algorithm')");
     expect(text).toContain('private static readonly P_DEFAULT: number = 4;');
     expect(text).toContain('Property.withDefault(ExampleOptions.P, AlgMetadata.P_DEFAULT)');
-    expect(text).toContain('static readonly Q: IProperty<number> = ExampleOptions.Q;');
+    expect(text.replace(/\s+/g, ' ')).toContain(
+      'static get Q(): IProperty<number> { return (AlgMetadata.#Q ??= ExampleOptions.Q); }',
+    );
     expect(text).toContain("registry.addOptionSupport('org.example.alg', 'org.example.p', AlgMetadata.P_DEFAULT);");
     expect(text).toContain(
       "registry.addOptionSupport('org.example.alg', 'org.example.q', AlgMetadata.Q.getDefault());",

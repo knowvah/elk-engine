@@ -58,6 +58,11 @@ class StubProvider implements ILayoutMetaDataProvider {
   }
 }
 
+/** Registry-independent (M13): drops the core algorithms `getInstance()` registers (`org.eclipse.elk.*`). */
+function stubAlgorithms(algorithms: readonly LayoutAlgorithmData[]): LayoutAlgorithmData[] {
+  return algorithms.filter((a) => !a.getId().startsWith('org.eclipse.elk.'));
+}
+
 beforeEach(() => {
   LayoutMetaDataService.unload();
 });
@@ -172,7 +177,11 @@ describe('LayoutMetaDataService lookups', () => {
     );
     expect(service.getAlgorithmData('x.layered')?.getId()).toBe('x.layered');
     expect(service.getAlgorithmData('nope')).toBeNull();
-    expect(service.getAlgorithmData().map((a) => a.getId())).toEqual(['x.layered', 'x.radial', 'y.radial']);
+    expect(stubAlgorithms(service.getAlgorithmData()).map((a) => a.getId())).toEqual([
+      'x.layered',
+      'x.radial',
+      'y.radial',
+    ]);
     expect(service.getAlgorithmDataBySuffix('layered')).toBe(service.getAlgorithmDataBySuffix('layered'));
     expect(service.getAlgorithmDataBySuffix('radial')).toBeNull();
     expect(service.getAlgorithmDataBySuffix('ayered')).toBeNull();
@@ -226,17 +235,15 @@ describe('LayoutMetaDataService registration', () => {
     expect(service.getCategoryData('t.cat')?.getLayouters()).toEqual([inCategory]);
     const backup = service.getCategoryData('');
     expect(backup?.getName()).toBe('Other');
-    expect(backup?.getLayouters()).toEqual([noCategory]);
+    expect(stubAlgorithms(backup?.getLayouters() ?? [])).toEqual([noCategory]);
     expect(service.getCategoryData('t.missing')).toBeNull();
-    expect(
-      service
-        .getCategoryData()
-        .map((c) => c.getId())
-        .slice(-2),
-    ).toEqual(['t.cat', '']);
+    // M13: the backup category may already exist for the core algorithms, so its position is not asserted.
+    const categoryIds = service.getCategoryData().map((c) => c.getId());
+    expect(categoryIds.filter((id) => id.startsWith('t.'))).toEqual(['t.cat']);
+    expect(categoryIds.filter((id) => id === '')).toEqual(['']);
     // registering again neither duplicates the layouters nor creates a second backup category
     service.registerLayoutMetaDataProviders(new StubProvider(() => undefined));
-    expect(service.getCategoryData('')?.getLayouters()).toHaveLength(1);
+    expect(stubAlgorithms(service.getCategoryData('')?.getLayouters() ?? [])).toHaveLength(1);
     expect(service.getCategoryData('t.cat')?.getLayouters()).toHaveLength(1);
   });
 

@@ -4,6 +4,11 @@ import type { EClass } from '../../emf/ecore/EClass.js';
 import type { ElkGraphElement } from '../../graph/ElkGraphElement.js';
 import { ElkGraphUtil } from '../../graph/util/ElkGraphUtil.js';
 import { StringBuilder } from '../../java/lang/StringBuilder.js';
+import type { ElkNode } from '../../graph/ElkNode.js';
+import { EnumSet } from '../../java/util/EnumSet.js';
+import { KVector } from '../math/KVector.js';
+import { ContentAlignment } from '../options/ContentAlignment.js';
+import { CoreOptions } from '../options/CoreOptions.js';
 import { ElkUtil } from './ElkUtil.js';
 
 function path(element: ElkGraphElement): string {
@@ -96,5 +101,53 @@ describe('ElkUtil.printElementPath', () => {
     const node = ElkGraphUtil.createGraph();
     vi.spyOn(node, 'eClass').mockReturnValue({ getName: (): string => 'Custom' } as unknown as EClass);
     expect(path(node)).toBe('Root Custom');
+  });
+});
+
+// Port of ElkUtilTest.java (frozen assertions); `assertEquals(expected, actual, delta)` is JUnit's.
+function assertEquals(expected: number, actual: number, delta: number): void {
+  expect(Math.abs(expected - actual)).toBeLessThanOrEqual(delta);
+}
+
+/**
+ * Creates a graph with one node with inner behavior.
+ *
+ * @returns The graph with one node with dimension (100, 100) and inner behavior of dimension (80, 80)
+ */
+function createContentAlignmentTestGraph(contentAlignment: EnumSet<ContentAlignment> | null): ElkNode {
+  const parent = ElkGraphUtil.createGraph();
+  const node = ElkGraphUtil.createNode(parent);
+  node.setProperty(CoreOptions.CONTENT_ALIGNMENT, contentAlignment);
+  const innerBehavior = ElkGraphUtil.createNode(node);
+  node.setDimensions(100, 100);
+  innerBehavior.setDimensions(80, 80);
+  return parent;
+}
+
+/** One block of `translateWithContentAlignmentTest`: translate by (120,120) from (100,100), check the inner node. */
+function checkAlignment(alignment: EnumSet<ContentAlignment> | null, expectedX: number, expectedY: number): void {
+  const parent = createContentAlignmentTestGraph(alignment);
+  const node = parent.getChildren().get(0);
+  const innerBehavior = node.getChildren().get(0);
+  ElkUtil.translate(parent.getChildren().get(0), new KVector(120, 120), new KVector(100, 100));
+  assertEquals(expectedX, innerBehavior.getX(), 1);
+  assertEquals(expectedY, innerBehavior.getY(), 1);
+}
+
+describe('ElkUtilTest', () => {
+  it('translateWithContentAlignmentTest', () => {
+    // Imagine a graph with one node that has inner behavior.
+    // If this node is resized, the contents of said node should be alignment
+    // based on the ContentAlignment specific by the parent of the node.
+    checkAlignment(null, 0, 0); // Test no alignment set
+    checkAlignment(ContentAlignment.topLeft(), 0, 0); // Test top left
+    checkAlignment(ContentAlignment.topCenter(), 10, 0); // Test top center
+    checkAlignment(EnumSet.of(ContentAlignment.V_TOP, ContentAlignment.H_RIGHT), 20, 0); // Test top right
+    checkAlignment(EnumSet.of(ContentAlignment.V_CENTER, ContentAlignment.H_LEFT), 0, 10); // Test center left
+    checkAlignment(ContentAlignment.centerCenter(), 10, 10); // Test center center
+    checkAlignment(EnumSet.of(ContentAlignment.V_CENTER, ContentAlignment.H_RIGHT), 20, 10); // Test center right
+    checkAlignment(EnumSet.of(ContentAlignment.V_BOTTOM, ContentAlignment.H_LEFT), 0, 20); // Test bottom left
+    checkAlignment(EnumSet.of(ContentAlignment.V_BOTTOM, ContentAlignment.H_CENTER), 10, 20); // Test bottom center
+    checkAlignment(ContentAlignment.bottomRight(), 20, 20); // Test bottom right
   });
 });

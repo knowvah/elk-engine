@@ -19,6 +19,9 @@ import { RecordingRegistry } from './recorder.js';
 
 const CORE_OPTIONS_CLASS = 'org.eclipse.elk.core.options.CoreOptions';
 const CORE_OPTIONS_FILE = 'src/core/options/CoreOptions.ts';
+const FIXED_OPTIONS_FILE = 'src/core/options/FixedLayouterOptions.ts';
+const BOX_OPTIONS_FILE = 'src/core/options/BoxLayouterOptions.ts';
+const RANDOM_OPTIONS_FILE = 'src/core/options/RandomLayouterOptions.ts';
 const REPOSITORY_ROOT = join(import.meta.dirname, '../..');
 const ALL_CALLS: readonly RegistryCall['call'][] = [
   'registerOption',
@@ -93,16 +96,17 @@ afterEach(() => {
 });
 
 describe('CoreOptions against the JVM dump', () => {
-  it('records the calls of (i) minus the held-back registrations', () => {
+  it('records the calls of (i), nothing held back', () => {
     const recorder = new RecordingRegistry();
     new CoreOptions().apply(recorder);
     const expected = withoutHeldBackCalls(dumpCalls(CORE_OPTIONS_CLASS, ALL_CALLS));
     expect(firstDifference(recorder.calls, expected, 'calls')).toBeNull();
     expect(recorder.calls).toHaveLength(expected.length);
-    expect(recorder.calls.some((call) => call.call === 'registerAlgorithm')).toBe(false);
-    expect(dumpCalls(CORE_OPTIONS_CLASS, ALL_CALLS).length - expected.length).toBeGreaterThan(
-      HELD_BACK_ALGORITHM_IDS.length,
-    );
+    const registered = recorder.calls.flatMap((call) => (call.call === 'registerAlgorithm' ? [call.data.id] : []));
+    expect(registered).toEqual(['org.eclipse.elk.fixed', 'org.eclipse.elk.box', 'org.eclipse.elk.random']);
+    // nothing is held back since T14: the live registry is the whole dump
+    expect(expected).toHaveLength(dumpCalls(CORE_OPTIONS_CLASS, ALL_CALLS).length);
+    expect(HELD_BACK_ALGORITHM_IDS).toEqual([]);
   });
 
   it('registers Core and Labels in the service exactly as the dump (ii) minus held-back effects and the backup category', () => {
@@ -111,13 +115,16 @@ describe('CoreOptions against the JVM dump', () => {
     const expected = withoutHeldBackService(loadDumpService());
     expect(firstDifference(dumpService(service), expected, 'service')).toBeNull();
     expect(service.getOptionData()).toHaveLength(expected.options.length);
-    expect(service.getCategoryData().some((category) => category.getId() === BACKUP_CATEGORY_ID)).toBe(false);
+    // `fixed`, `box` and `random` have no category, so the registry creates the backup category for them.
+    expect(service.getCategoryData().some((category) => category.getId() === BACKUP_CATEGORY_ID)).toBe(true);
   });
 
   it('is what the generator emits, byte for byte (C6 freshness)', async () => {
     const output = await generate({ bundles: ['Core'], write: false });
-    expect([...output.keys()]).toEqual([CORE_OPTIONS_FILE]);
-    expect(output.get(CORE_OPTIONS_FILE)).toBe(readFileSync(join(REPOSITORY_ROOT, CORE_OPTIONS_FILE), 'utf8'));
+    expect([...output.keys()]).toEqual([CORE_OPTIONS_FILE, FIXED_OPTIONS_FILE, BOX_OPTIONS_FILE, RANDOM_OPTIONS_FILE]);
+    for (const file of [CORE_OPTIONS_FILE, FIXED_OPTIONS_FILE, BOX_OPTIONS_FILE, RANDOM_OPTIONS_FILE]) {
+      expect(output.get(file)).toBe(readFileSync(join(REPOSITORY_ROOT, file), 'utf8'));
+    }
   });
 
   it('evaluates as a module of its own: the import cycle is not used at load time', async () => {
@@ -126,5 +133,33 @@ describe('CoreOptions against the JVM dump', () => {
     // loads CoreOptions again while it is still being evaluated.
     const module: Record<string, unknown> = await import('../../src/core/options/CoreOptions.js');
     expect(typeof module['CoreOptions']).toBe('function');
+  });
+
+  it.each([
+    ['CoreOptions', '../../src/core/options/CoreOptions.js'],
+    ['FixedLayouterOptions', '../../src/core/options/FixedLayouterOptions.js'],
+  ])('M12: loads with %s as the entry module and creates each option constant once', async (_name, path) => {
+    vi.resetModules();
+    await import(/* @vite-ignore */ path);
+    const { FixedLayouterOptions } = await import('../../src/core/options/FixedLayouterOptions.js');
+    const { CoreOptions: Core } = await import('../../src/core/options/CoreOptions.js');
+    expect(FixedLayouterOptions.POSITION).toBe(Core.POSITION);
+    expect(FixedLayouterOptions.PADDING).toBe(FixedLayouterOptions.PADDING);
+    expect(FixedLayouterOptions.PADDING.getId()).toBe('org.eclipse.elk.padding');
+    expect(FixedLayouterOptions.PADDING).not.toBe(Core.PADDING);
+  });
+
+  it('M16: loads with TopdownSizeApproximator as the entry module and registers the sizeCategories dependency', async () => {
+    vi.resetModules();
+    // The enum imports CoreOptions, which names FIXED_INTEGER_RATIO_BOXES in a dependency constant: that constant is
+    // lazy, so the enum, still evaluating, is not read in its temporal dead zone while CoreOptions loads.
+    const { TopdownSizeApproximator } = await import('../../src/core/options/TopdownSizeApproximator.js');
+    // The service of the fresh module graph registers CoreOptions (a recorder would see foreign classes here).
+    const { LayoutMetaDataService: Service } = await import('../../src/core/data/LayoutMetaDataService.js');
+    const option = Service.getInstance().getOptionData('org.eclipse.elk.topdown.sizeCategories');
+    const [dependency] = option?.getDependencies() ?? [];
+    expect(dependency?.getFirst()?.getId()).toBe('org.eclipse.elk.topdown.sizeApproximator');
+    expect(dependency?.getSecond()).toBe(TopdownSizeApproximator.FIXED_INTEGER_RATIO_BOXES);
+    expect(TopdownSizeApproximator.FIXED_INTEGER_RATIO_BOXES.name()).toBe('FIXED_INTEGER_RATIO_BOXES');
   });
 });
