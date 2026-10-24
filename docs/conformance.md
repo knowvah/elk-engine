@@ -660,6 +660,65 @@ behaviour". Detail: [core-engine.md](architecture/core-engine.md).
   (`ElkUtil.java:537-541`), so an other edge without sections throws `IndexOutOfBoundsException`, never the
   documented `IllegalArgumentException`.
 
+## Core remainder (mission 5b) {#core-remainder}
+
+Mission 5b completed the `core` bundle (R1). Its evidence is JUnit ports, JVM vectors and oracle scenarios; there is
+no corpus sweep, because nothing in 5b lays out a graph on its own.
+
+**Evidence.**
+
+- The JUnit ports are green: `LayoutConfiguratorTest`, `SpacingConfigurationTest`, `AlgorithmAssemblerTest`,
+  `LayoutProcessorConfigurationTest`, `BezierSplineTest`, `CubicSplineInterpolatorTest` and the full `ElkMathTest`,
+  including its 4 rectangle cases. The `.elkt` harness uses `LayoutConfigurator` (T12), and both golden sets
+  regenerate byte-identical.
+- Comments (R6): `tools/vectors/comment-vectors.sh` records 18 tie-free `CommentAttacher` scenarios in
+  `test/golden/refs/java/comments.json` (best-minus-second margin 0.14 to 1.0, each run twice by the recorder). All 18
+  replay equal as sorted `[commentId, targetId]` sets (R6 asked for about 10). `NodeReferenceMatcher` builds all 5,044
+  `regex.json` pattern strings and flags exactly.
+- JDK shims: `awt.json` (2,842 rows), `regex.json` (5,044), `character.json`, `regex-boundary.json` and
+  `stream-sum.json` (1,035) replay with no row skipped. Recording is byte-stable (re-recorded by the orchestrator;
+  the earlier vector files are unchanged).
+
+**Known divergences found.** None numeric. The two behavioural differences below are open by design.
+
+- `WrappedException(cause)` uses `String(cause)` as its message (`Name: message`); Java prints the qualified class
+  name. Nothing branches on it (T1).
+- `ElkGraphDataProvider(null)` and the other `Objects.requireNonNull` sites throw `TypeError` where Java throws
+  `NullPointerException`; the Javadoc of `ElkGraphDataProvider` says `IllegalArgumentException`, the code does not (T13,
+  T15).
+
+Upstream prose typos corrected in this mission: none found.
+
+### Upstream quirks kept (mission 5b) {#core-remainder-quirks}
+
+Each is read from the Java and reproduced; all are "kept: upstream behaviour".
+
+- `ElkSpacings.DOUBLE_EQ_EPSILON` is `10e-5` (that is `1e-4`) and the method is spelled `getDependendSpacingOptions`
+  (identifier, kept verbatim) (T7).
+- `ElkSpacings.ELK_OPTION_TARGET_FILTER` tests `property instanceof ElkGraphElement` (the property, never an element),
+  so it accepts every option and never delegates to `LayoutConfigurator.OPTION_TARGET_FILTER`. `build()` with
+  overwrite off pushes a `NO_OVERWRITE_HOLDER` onto the filter list on every call (T7).
+- `IDataProvider.cached()`: the first `provideTargetsFor` call returns the uncached collection and later calls the
+  multimap's set; an empty result never becomes a key, so it is recomputed every call (T13).
+  `IBoundsProvider.cached()` checks `has()` first, so null results are cached.
+- `Triple` and `Quadruple` `equals` cast without checking the type: a non-instance throws `ClassCastException`; their
+  `hashCode` is the `Arrays.hashCode` formula (T1).
+- `NodeReferenceMatcher.fuzzyRegexpFor`/`strictRegexpFor` size their buffers from the untrimmed target name
+  (`targetName.length() * 2`) while reading the trimmed name (`NodeReferenceMatcher.java:337-339`); the port drops
+  the capacity argument, which has no observable effect (T19).
+- `DistanceMatcher.distance`: a comment touching the target's right edge with partial vertical overlap returns -1
+  (the `else if` after the horizontal-overlap branch is never reached); the left side adds the comment width
+  (left 110 vs gap 50) (T15).
+- `CubicSplineInterpolator` closed splines: `even` selects `INTERP_COEF_ODD` (`CubicSplineInterpolator.java:82`) (T11).
+- EMF `AbstractTreeIterator.hasAnyChildren()` shadows `nextPruneIterator` with a local, so pruning before the first
+  `next()` with `includeRoot=false` has no effect (T18).
+- `ElkMath.binomiall`'s `n == 0` branch is unreachable (the `k == 0` test matches first); `maxl()`/`minl()` start from
+  `Integer.MIN_VALUE`/`MAX_VALUE` (T3).
+- Matcher results in `CommentAttacher` are keyed by matcher class, so two matchers of one class overwrite each other;
+  with explicit attachments and keep-heuristics off, `edgeify` drops every heuristic attachment (T14, T16).
+- JDK 21 `\b` treats a combining mark after a word character as word, beyond its Javadoc definition; the port replays
+  the recorded table (`regex-boundary.json`, T9). The JDK `\b` never matches before a non-ASCII leading letter.
+
 ## Temporary gaps
 
 Known differences from the Java after mission 3 (core metadata), each with the mission that closes

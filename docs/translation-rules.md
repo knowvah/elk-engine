@@ -42,6 +42,11 @@ from the Javadoc/JLS only (AD-9). See also [overview](architecture/overview.md),
 | streams                    | eager vs lazy; `parallelStream`                  | arrays, sequential       | 6.9  |
 | `Double.toString`, concat  | Java format                                      | `Double.toString` shim   | 7    |
 | Xtend `==`, `?.`, `=>`     | `equals`, null-safe, `with`                      | see table                | 8    |
+| `Rectangle2D`              | Javadoc outcodes and intersects                  | `Rectangle2D` shim       | 12   |
+| `Pattern` (narrow)         | quote, `\b`, `[\h\v]*`; else throws              | `Pattern` shim           | 12   |
+| `Character.is*Case/Space`  | recorded JDK 21 ranges, not V8 `\p{}`            | `JavaCharacter`          | 12   |
+| `equalsIgnoreCase`         | per code point, JDK case maps                    | `JavaString`             | 12   |
+| `summingDouble` and kin    | compensated sum, pinned by vectors               | `stream-sum.json`        | 12   |
 
 ## Conventions
 
@@ -120,6 +125,11 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
 - `Math.round` returns `long`: `JavaMath.roundToLong` returns `bigint` (vector value
   `"9223372036854775807"` is a string); `JavaMath.round` returns `number` and throws `RangeError`
   outside the safe-integer range. In-scope consumers narrow or subtract from a small double. HIGH.
+
+- Applied to `ElkMath` (mission 5b, R4): every `*l` function (`factl`, `binomiall`, `maxl`, `minl`, `averagel`, `boundl`)
+  takes and returns `bigint` through `Int64`, wrapping as Java `long` does, and its doc comment names this rule
+  ("bigint beyond 2^53"). `maxl()`/`minl()` start from `Integer.MIN_VALUE`/`MAX_VALUE` as Java does, so `maxl()` is
+  `-2147483648n`. Nothing outside tests calls them.
 
 ### 1.5 Casts
 
@@ -345,6 +355,12 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 - 17 `default` methods (`core/src/.../comments/IDataProvider.java:70`). TS interfaces carry no bodies:
   use an abstract base class, mixin or helper function; a class implementing several such
   interfaces must receive each default explicitly.
+- Applied to `comments/*` (mission 5b, R5): `IDataProvider`, `IBoundsProvider`, `IMatcher`, `IFilter` and
+  `IExplicitAttachmentProvider` become `abstract class`es with the Java names. Abstract methods stay abstract and the
+  default bodies are inherited. The cost is that a lambda cannot implement one, and no ELK code passes a lambda.
+  `IDecider` has no defaults and stays an interface. `cached()` returns a module-private subclass that holds the
+  wrapped provider (Java `X.this`). A `null` argument that Java defaults (`withExplicitAttachmentProvider(null)`)
+  becomes a no-op subclass.
 
 ### 6.3 Enums with fields, methods, `ordinal()`
 
@@ -574,3 +590,21 @@ Other rules: a `ResourceNode` fixture for EMF tests lives in `test/helpers/emf/R
 `expect(x).not.toBe(y)` on EMF graphs in vitest: the failure message inspects a cyclic graph and hangs; compare
 with `===`. An Xtext runtime module that binds no `ILinker` gets `LazyLinker` from `DefaultRuntimeModule`: check the
 module before assuming the eager linker.
+
+## 12. JDK text and geometry shims for `comments/*` {#jdk-text-shims}
+
+Mission 5b (R2, R3) needed four JDK behaviours. Each is written from the Javadoc only (AD-9) and proven by vectors
+from `tools/vectors/CoreJdkVectors.java`; the runbook is in
+[core-engine.md](architecture/core-engine.md#runbook-5b).
+
+| Java                                                                                  | Rule                                                                                                                                                                                                                                | Shim and proof                                                            |
+| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `java.awt.geom.Rectangle2D`                                                           | Javadoc outcode constants (`OUT_LEFT` 1, `OUT_TOP` 2, `OUT_RIGHT` 4, `OUT_BOTTOM` 8), `intersects`, `isEmpty`; plain comparisons, no NaN special-casing; `Rectangle2D.Double` is a merged namespace                                 | `src/java/awt/geom/Rectangle2D.ts`; `awt.json` (2,842 rows)               |
+| `java.util.regex.Pattern`                                                             | supported grammar: `Pattern.quote` (`\Q...\E`), `\b`, the class `[\h\v]*`; flags `CASE_INSENSITIVE`, `DOTALL`; anything else throws `UnsupportedOperationException`. ASCII letters become `[xX]` classes (JS `i` never used)        | `src/java/util/regex/Pattern.ts`; `regex.json` (5,044 rows)               |
+| `\b` inside `Pattern`                                                                 | not JS `\b`, and not the Javadoc's ASCII `\w` definition: JDK 21 counts a combining mark after a word character as word. Implemented from the recorded table                                                                        | `WordBoundary.ts`; `regex-boundary.json`                                  |
+| `Character.isUpperCase/isLowerCase/isWhitespace`, `toUpperCase(int)/toLowerCase(int)` | JDK 21 (Unicode 15.0) ranges recorded for all 65,536 units, supplementary case maps recorded for U+10000..U+10FFFF; never V8 `\p{...}`                                                                                              | `src/java/lang/JavaCharacter.ts`; `character.json`, `regex-boundary.json` |
+| `String.equalsIgnoreCase`                                                             | per code point, through the recorded upper/lower mappings                                                                                                                                                                           | `JavaString.equalsIgnoreCase`; `character.json` (47 rows)                 |
+| `Collectors.summingDouble/averagingDouble`                                            | the Javadoc leaves the scheme unspecified; the pinned behaviour is compensated summation with a final `sum - c` and a simple-sum fallback when the result is NaN but the simple sum is infinite; average is sum / count, empty is 0 | `AggregatedMatchDecider`; `stream-sum.json` (1,035 rows)                  |
+
+When a JDK upgrade changes `character.json` or `regex-boundary.json`: journal it, add the code points to the
+known-divergences list in [conformance.md](conformance.md), and never patch the shim around it.

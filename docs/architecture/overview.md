@@ -25,9 +25,10 @@ ElkGraph object model plus `ElkGraphUtil` factories; ELK JSON is an I/O adapter 
 bundles totalling about 134,600 hand-written lines are in scope (see the inventory). Current state:
 the layout engine (`RecursiveGraphLayoutEngine`, `LayoutAlgorithmResolver`, `GraphValidator`) and the
 three core providers `fixed`, `box` and `random` are ported and equal the oracle on the curated goldens
-(mission 5a, [core-engine.md](core-engine.md)). The rest of `core` (mission 5b) and every other
-algorithm (layered, mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex) are
-not ported yet.
+(mission 5a, [core-engine.md](core-engine.md)). The rest of `core` is ported too (mission 5b: processor pipeline, `LayoutConfigurator`, `ElkSpacings`, `ElkMath`, splines,
+comment attachment; see [core-engine.md](core-engine.md#mission-5b)); no other
+algorithm (layered, mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex) is
+ported yet.
 
 ## Relation to ELK Java and the oracle
 
