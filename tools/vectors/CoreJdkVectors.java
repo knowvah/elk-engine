@@ -205,13 +205,13 @@ public class CoreJdkVectors {
         "x\\E.*", "node1", "node_1", "_x", "x9", "9x", "é", "É", "École", "caféBar",
         "straße", "STRASSE", "ſ", "ſs", "K", "kelvin", "Kelvin", "Σίσυφος",
         "σ", "ς", "Привет", "приВет",
-        "İstanbul", "i̇", "", " ", "   ", "\n"};
+        "İstanbul", "i\u0307", "", " ", "   ", "\n"};
     private static final String[] SWEEP_NAMES = {"foo bar", "fooBar", "Foo Bar", "foo", "", "caféBar"};
-    private static final String[] H_MEMBERS = {"\t", " ", " ", " ", "᠎", " ", " ",
-        " ", " ", " ", " ", " ", " ", " ", " ", " ", " ",
-        " ", "　"};
-    private static final String[] V_MEMBERS = {"\n", "\u000b", "\f", "\r", "\u0085", " ", " ", "\r\n"};
-    private static final String[] NEAR_MISS = {"​", "⁠", "﻿", "\u001c", "\u001f", "\u0000", "‐"};
+    private static final String[] H_MEMBERS = {"\t", " ", "\u00A0", "\u1680", "\u180E", "\u2000", "\u2001",
+        "\u2002", "\u2003", "\u2004", "\u2005", "\u2006", "\u2007", "\u2008", "\u2009", "\u200A", "\u202F",
+        "\u205F", "\u3000"};
+    private static final String[] V_MEMBERS = {"\n", "\u000b", "\f", "\r", "\u0085", "\u2028", "\u2029", "\r\n"};
+    private static final String[] NEAR_MISS = {"\u200B", "\u2060", "\uFEFF", "\u001c", "\u001f", "\u0000", "\u2010"};
 
     private static Map<String, Object> regex() {
         List<Object> rows = new ArrayList<>();
@@ -499,6 +499,9 @@ public class CoreJdkVectors {
     }
 
     private static Map<String, Object> map(Object... kv) {
+        if (kv.length % 2 != 0) {
+            throw new IllegalArgumentException("map() needs key/value pairs, got " + kv.length + " arguments");
+        }
         Map<String, Object> m = new LinkedHashMap<>();
         for (int i = 0; i < kv.length; i += 2) {
             m.put((String) kv[i], kv[i + 1]);
