@@ -26,7 +26,7 @@ bundles totalling about 134,600 hand-written lines are in scope (see the invento
 the layout engine (`RecursiveGraphLayoutEngine`, `LayoutAlgorithmResolver`, `GraphValidator`) and the
 three core providers `fixed`, `box` and `random` are ported and equal the oracle on the curated goldens
 (mission 5a, [core-engine.md](core-engine.md)). The rest of `core` is ported too (mission 5b: processor pipeline, `LayoutConfigurator`, `ElkSpacings`, `ElkMath`, splines,
-comment attachment; see [core-engine.md](core-engine.md#mission-5b)). The shared `alg.common` bundle is ported except node spacing (mission 6a: geometry, network simplex, 1D compaction, overlaps, spore, polyomino; see [alg-common.md](alg-common.md); mission 6b adds `nodespacing` and `NodeMicroLayout`).
+comment attachment; see [core-engine.md](core-engine.md#mission-5b)). The shared `alg.common` bundle is fully ported (mission 6a: geometry, network simplex, 1D compaction, overlaps, spore, polyomino; mission 6b: `nodespacing` and `NodeMicroLayout`, proven by a 326-row oracle replay; see [alg-common.md](alg-common.md)).
 No algorithm (layered, mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex)
 is ported yet.
 
