@@ -12,6 +12,7 @@
     "realworld/ptolemy/flattened/continuous_levelcrossingdetector_LevelCrossingDetector.json": "83193114e73feb7aafee5bff340ec96aa7c9925244bd4d0db0861a44c7e7dc4a",
     "realworld/ptolemy/flattened/pthales_dynamic_ThalesDynamicModalModelPN.json": "2c7d5115b347e663f35906eb3f5ecff3535405fa3c7d46373d9a33b567d4a5dc",
     "tickets/core/457_boxLayouterIgnoresMinimumSize.elkt": "86b826e4c23a0da3c5a9b683cf8692e1c8bdbc405996fe68ab10198ce0551f9d",
+    "tickets/core/475_fixedLayoutWithLongLabels.elkt": "f30fac5ebbe51ef8aef7f4624e9a64e7018df5ae89d75c88e2a32961e2a5fa77",
     "tickets/core/489_paddingAndMinSize_Large.elkt": "4299f2e7c6326a4f12caed4d554eeade88b33fe827ad02308ba269c0dd2d81e7",
     "tickets/core/489_paddingAndMinSize_Small.elkt": "8909ff92338b121c4aeb424942f2031705633ca8430d57d381da1e73ffae93c2"
   }

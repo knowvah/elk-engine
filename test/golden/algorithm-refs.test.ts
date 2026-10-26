@@ -25,6 +25,7 @@ const RANDOM_ALGORITHM = 'org.eclipse.elk.random';
 const NO_ROUTING_SUFFIX = '.sections';
 const TICKET_INPUTS = [
   'tickets/core/457_boxLayouterIgnoresMinimumSize.elkt',
+  'tickets/core/475_fixedLayoutWithLongLabels.elkt',
   'tickets/core/489_paddingAndMinSize_Large.elkt',
   'tickets/core/489_paddingAndMinSize_Small.elkt',
 ];
@@ -143,7 +144,7 @@ describe('vendored inputs', () => {
     expect(parsed['commit']).toBe(corpus['commit']);
   });
 
-  it('records every golden input and the three ticket models, nothing else', () => {
+  it('records every golden input and the four ticket models, nothing else', () => {
     const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS].sort();
     expect(Object.keys(hashes).sort()).toEqual(expected);
   });
