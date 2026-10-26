@@ -175,6 +175,9 @@ public class AlgCommonVectors {
     // ---- JSON ----
 
     private static Map<String, Object> map(Object... kv) {
+        if (kv.length % 2 != 0) {
+            throw new IllegalArgumentException("map() takes key/value pairs, got " + kv.length + " arguments");
+        }
         Map<String, Object> m = new LinkedHashMap<>();
         for (int i = 0; i < kv.length; i += 2) {
             m.put((String) kv[i], kv[i + 1]);

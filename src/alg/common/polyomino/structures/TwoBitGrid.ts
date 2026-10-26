@@ -127,22 +127,29 @@ export class TwoBitGrid implements IThreeValueGrid {
     return '0';
   }
 
-  /** Java array access `grid[y][xWord]` with its bounds checks. */
-  private checkedIndex(y: number, xWord: number): void {
-    if (y < 0 || y >= this.grid.length) {
+  /** Java array access `grid[y]` with its bounds check; the rows are dense, so `undefined` means out of bounds. */
+  private checkedRow(y: number): bigint[] {
+    const row = this.grid[y];
+    if (row === undefined) {
       throw new ArrayIndexOutOfBoundsException(`Index ${y} out of bounds for length ${this.grid.length}`);
     }
-    const length = this.grid[y]!.length;
-    if (xWord < 0 || xWord >= length) {
-      throw new ArrayIndexOutOfBoundsException(`Index ${xWord} out of bounds for length ${length}`);
+    return row;
+  }
+
+  /** Java array access `row[xWord]` with its bounds check; the words are dense, so `undefined` means out of bounds. */
+  private static checkedWord(row: bigint[], xWord: number): bigint {
+    const word = row[xWord];
+    if (word === undefined) {
+      throw new ArrayIndexOutOfBoundsException(`Index ${xWord} out of bounds for length ${row.length}`);
     }
+    return word;
   }
 
   private retrieve(x: number, y: number): bigint {
     const xWord = Int32.shr(x, RIGHT_SHIFT);
     const xRest = BigInt(x & REST_MASK);
-    this.checkedIndex(y, xWord);
-    return Int64.ushr(this.grid[y]![xWord]!, Int64.shl(xRest, 1)) & TWO_LSBS_MASK;
+    const word = TwoBitGrid.checkedWord(this.checkedRow(y), xWord);
+    return Int64.ushr(word, Int64.shl(xRest, 1)) & TWO_LSBS_MASK;
   }
 
   private set(x: number, y: number, msb: boolean, lsb: boolean): void {
@@ -154,11 +161,14 @@ export class TwoBitGrid implements IThreeValueGrid {
       const xWord = Int32.shr(x, RIGHT_SHIFT);
       const xRest = BigInt(x & REST_MASK);
       let mask = Int64.shl(LSB_MASK, Int64.shl(xRest, 1));
-      this.checkedIndex(y, xWord);
-      const row = this.grid[y]!;
-      row[xWord] = lsb ? row[xWord]! | mask : row[xWord]! & ~mask;
+      const row = this.checkedRow(y);
+      // Java re-reads `grid[y][xWord]` in each assignment; `word` always holds the value last written there.
+      let word = TwoBitGrid.checkedWord(row, xWord);
+      word = lsb ? word | mask : word & ~mask;
+      row[xWord] = word;
       mask = Int64.shl(mask, 1);
-      row[xWord] = msb ? row[xWord]! | mask : row[xWord]! & ~mask;
+      word = msb ? word | mask : word & ~mask;
+      row[xWord] = word;
     } catch (e) {
       throw this.rethrowOutOfBounds(e, x, y);
     }

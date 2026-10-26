@@ -31,7 +31,6 @@ const VECTORS_URL = new URL('../../../test/golden/refs/java/alg-common.json', im
 const vectors = JSON.parse(readFileSync(VECTORS_URL, 'utf8')) as { triangulation: TriangulationRow[] };
 
 const EXPECTED_ROWS = 22;
-const HEX_RADIX = 16;
 const CONSTANT_COST_VALUE = 1.0;
 
 /** The recorder's cost functions (`AlgCommonVectors.java:130-131`). */
