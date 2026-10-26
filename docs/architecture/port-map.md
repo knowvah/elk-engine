@@ -291,40 +291,45 @@ bundle is deferred and the `.ui` bundle is out of scope.
 14 package directories, 82 Java + 0 Xtend files, 14,677 LOC
 (`plugins/org.eclipse.elk.alg.common/src`).
 
-| Java package (`org.eclipse.elk.` omitted)   | TS directory                                    | Files |   LOC | Strategy                                          |
-| ------------------------------------------- | ----------------------------------------------- | ----: | ----: | ------------------------------------------------- |
-| `alg.common`                                | `src/alg/common`                                |     9 | 1,151 | hand port                                         |
-| `alg.common.compaction`                     | `src/alg/common/compaction`                     |     2 |   200 | hand port; hosts `Polyomino.melk`                 |
-| `alg.common.compaction.oned`                | `src/alg/common/compaction/oned`                |    13 | 1,729 | hand port                                         |
-| `alg.common.compaction.options`             | `src/alg/common/compaction/options`             |     3 |    82 | hand port; melk codegen (AD-12) output lands here |
-| `alg.common.networksimplex`                 | `src/alg/common/networksimplex`                 |     4 | 1,656 | hand port (EMF types → AD-11)                     |
-| `alg.common.nodespacing`                    | `src/alg/common/nodespacing`                    |     3 |   739 | hand port                                         |
-| `alg.common.nodespacing.cellsystem`         | `src/alg/common/nodespacing/cellsystem`         |     9 | 1,566 | hand port                                         |
-| `alg.common.nodespacing.internal`           | `src/alg/common/nodespacing/internal`           |     3 |   864 | hand port                                         |
-| `alg.common.nodespacing.internal.algorithm` | `src/alg/common/nodespacing/internal/algorithm` |    11 | 2,954 | hand port                                         |
-| `alg.common.overlaps`                       | `src/alg/common/overlaps`                       |     3 |   497 | hand port                                         |
-| `alg.common.polyomino`                      | `src/alg/common/polyomino`                      |     8 | 1,027 | hand port                                         |
-| `alg.common.polyomino.structures`           | `src/alg/common/polyomino/structures`           |     6 | 1,148 | hand port                                         |
-| `alg.common.spore`                          | `src/alg/common/spore`                          |     5 |   601 | hand port                                         |
-| `alg.common.utils`                          | `src/alg/common/utils`                          |     3 |   463 | hand port                                         |
+Status: ported in part (mission 6a); design, evidence and runbook in [alg-common.md](alg-common.md). Ported: every
+package except `nodespacing`, `nodespacing.cellsystem`, `nodespacing.internal`, `nodespacing.internal.algorithm` and
+`NodeMicroLayout` (root package), which are mission 6b (AC1). Nested classes sit in prefixed files, and
+`OneDimensionalCompactor` and `NetworkSimplex` are a facade plus section modules (P1).
+
+| Java package (`org.eclipse.elk.` omitted)   | TS directory                                    | Files |   LOC | Strategy                                            |
+| ------------------------------------------- | ----------------------------------------------- | ----: | ----: | --------------------------------------------------- |
+| `alg.common`                                | `src/alg/common`                                |     9 | 1,151 | hand port; ported (6a) except `NodeMicroLayout`     |
+| `alg.common.compaction`                     | `src/alg/common/compaction`                     |     2 |   200 | hand port; ported (6a); hosts `Polyomino.melk`      |
+| `alg.common.compaction.oned`                | `src/alg/common/compaction/oned`                |    13 | 1,729 | hand port; ported (6a)                              |
+| `alg.common.compaction.options`             | `src/alg/common/compaction/options`             |     3 |    82 | ported (6a); melk codegen (AD-12) output lands here |
+| `alg.common.networksimplex`                 | `src/alg/common/networksimplex`                 |     4 | 1,656 | hand port (EMF types → AD-11); ported (6a)          |
+| `alg.common.nodespacing`                    | `src/alg/common/nodespacing`                    |     3 |   739 | hand port; mission 6b                               |
+| `alg.common.nodespacing.cellsystem`         | `src/alg/common/nodespacing/cellsystem`         |     9 | 1,566 | hand port; mission 6b                               |
+| `alg.common.nodespacing.internal`           | `src/alg/common/nodespacing/internal`           |     3 |   864 | hand port; mission 6b                               |
+| `alg.common.nodespacing.internal.algorithm` | `src/alg/common/nodespacing/internal/algorithm` |    11 | 2,954 | hand port; mission 6b                               |
+| `alg.common.overlaps`                       | `src/alg/common/overlaps`                       |     3 |   497 | hand port; ported (6a)                              |
+| `alg.common.polyomino`                      | `src/alg/common/polyomino`                      |     8 | 1,027 | hand port; ported (6a)                              |
+| `alg.common.polyomino.structures`           | `src/alg/common/polyomino/structures`           |     6 | 1,148 | hand port; ported (6a)                              |
+| `alg.common.spore`                          | `src/alg/common/spore`                          |     5 |   601 | hand port; ported (6a)                              |
+| `alg.common.utils`                          | `src/alg/common/utils`                          |     3 |   463 | hand port; ported (6a)                              |
 
 Generated by AD-12 (not in the Java repo; produced at build time by the `.melk` compiler):
 
 | `.melk` (under `org/eclipse/elk/`)     | Declares                                    | Generated class                       | TS target                                               |
 | -------------------------------------- | ------------------------------------------- | ------------------------------------- | ------------------------------------------------------- |
-| `alg/common/compaction/Polyomino.melk` | bundle (`idPrefix org.eclipse.elk`)         | `PolyominoOptions`                    | `src/alg/common/compaction/options/PolyominoOptions.ts` |
+| `alg/common/compaction/Polyomino.melk` | bundle (`idPrefix org.eclipse.elk`)         | `PolyominoOptions` (generated, 6a)    | `src/alg/common/compaction/options/PolyominoOptions.ts` |
 | ↳                                      | 1 groups (polyomino); 4 option declarations | (registered inside the classes above) | —                                                       |
 
 JUnit: `org.eclipse.elk.alg.common.test` (5 package directories, 8 files, 1,715 LOC) → colocated
 tests:
 
-| Test package                 | TS target                                  | Files | LOC | Strategy  |
-| ---------------------------- | ------------------------------------------ | ----: | --: | --------- |
-| `alg.common`                 | `src/alg/common/*.test.ts`                 |     1 | 191 | hand port |
-| `alg.common.compaction.oned` | `src/alg/common/compaction/oned/*.test.ts` |     1 | 693 | hand port |
-| `alg.common.issues`          | `src/alg/common/issues/*.test.ts`          |     1 | 102 | hand port |
-| `alg.common.networksimplex`  | `src/alg/common/networksimplex/*.test.ts`  |     1 | 103 | hand port |
-| `alg.common.nodespacing`     | `src/alg/common/nodespacing/*.test.ts`     |     4 | 626 | hand port |
+| Test package                 | TS target                                  | Files | LOC | Strategy                                                                                                                                         |
+| ---------------------------- | ------------------------------------------ | ----: | --: | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `alg.common`                 | `src/alg/common/*.test.ts`                 |     1 | 191 | ported (6a): `RectilinearConvexHullTest`                                                                                                         |
+| `alg.common.compaction.oned` | `src/alg/common/compaction/oned/*.test.ts` |     1 | 693 | ported (6a): `OneDimensionalCompactorTest`                                                                                                       |
+| `alg.common.issues`          | `src/alg/common/issues/*.test.ts`          |     1 | 102 | ported (6a): `Issue475Test`                                                                                                                      |
+| `alg.common.networksimplex`  | `src/alg/common/networksimplex/*.test.ts`  |     1 | 103 | ported (6a): `NetworkSimplexTest`                                                                                                                |
+| `alg.common.nodespacing`     | `src/alg/common/nodespacing/*.test.ts`     |     4 | 626 | deferred: `InsidePortLabelTest`, `NextToPortLabelPlacementTest`, `PortLabelPlacementVariantsTest` (7a, need layered); `NodeMicroLayoutTest` (8x) |
 
 ## `alg.layered` → `src/alg/layered/`
 

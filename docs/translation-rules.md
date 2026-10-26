@@ -230,6 +230,14 @@ Inventory, commands, per-site tables and container rows:
   2 enum-keyed (identity hash), 30 identity-hashed.
 - Clearest AD-10 site: spore `NaiveMinST` sorts a `HashSet<TEdge>` by weight, so equal-weight tie
   order is HashSet order: `alg.common/src/.../NaiveMinST.java:58`, `:59`.
+- Value-hashed sets with ported strategies (mission 6a): `TEdge` and `TTriangle` have a `HashStrategy` of their own
+  (`TEDGE_STRATEGY`, `TTRIANGLE_STRATEGY`; `POINT_STRATEGY` for `Point`), built with `hashable<K>()` over the verbatim
+  `hashCode`/`equals` and `Int32` arithmetic. The site then uses `JavaHashSet`/`JavaHashMap` with that strategy, never a
+  plain `Set`: `BowyerWatsonTriangulation.java:85`, `:155`, `NaiveMinST.java:52`, `:65`. Expected hashes in tests come
+  from an independent script over the Java formulas, not from the port.
+- Stable sort for tie preservation (`NaiveMinST.java:58-59`): `Collections.sort` is stable, so the port copies the
+  HashSet iteration order into an array and sorts it with `Array.prototype.sort` and the `Double.compare` shim. Do not
+  replace it with an unstable or `PriorityQueue`-based sort: ties keep the HashSet order.
 - Shims: `src/java/util/{HashStrategy,JavaHashMap,JavaHashSet,PriorityQueue,Collections}.ts`
   (models, skipped scripts and runbook in the collections doc). Rows for `LinkedHash*`,
   `EnumMap/EnumSet`, `TreeSet/TreeMultimap`, `PriorityQueue`, sorts, `Iterator.remove`,
@@ -395,6 +403,11 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   runtime dispatch can differ when a `double` holds an integer.
 - Varargs (34 sites): `...` becomes a rest parameter; `Arrays.asList(array)` aliasing is gone:
   `core/src/.../math/ElkMath.java:671` (`long... values`).
+- `BiFunction` becomes a function type or a one-method interface (mission 6a, T12): the successor functions of
+  `PolyominoCompactor` are `BiFunction<Pair<Integer, Integer>, Polyomino, Pair<Integer, Integer>>` in Java. The port
+  declares `PolyominoSuccessor` (an interface with `apply(coords, poly)`) and implements each successor as a class
+  (`SuccessorLineByLine`, `SuccessorManhattan`, ...), because `SuccessorQuadrantsGeneric` carries state between calls
+  and the call sites keep calling `apply`. A stateless one-off `BiFunction` is a plain `(a: A, b: B) => R` type.
 
 ### 6.6 `instanceof` chains
 

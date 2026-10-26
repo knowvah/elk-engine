@@ -469,3 +469,70 @@ Appended; no earlier line is edited. Source: R1-R7 and P1-P9 in `plans/core-rema
   from another project) made timing-sensitive tests fail in batch 1.
 - **JDK upgrade:** a change to `character.json` or `regex-boundary.json` is journaled and added to the
   known-divergences list; the shim is never patched around it (runbook in `docs/architecture/core-engine.md`).
+
+## Revision 2026-10-26 (alg-common)
+
+Appended; no earlier line is edited. Source: AC1-AC6 and P1-P7 in `plans/alg-common/decisions.md`; the journal is
+`plans/alg-common/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+
+**Row 6 is split (AC1).** Mission 6a (`alg-common`) is done; mission 6b is next.
+
+**Row 6a (`alg-common`) is done; the exit is met.** The code landed on `feature/alg-common` (design, evidence and
+runbook in `docs/architecture/alg-common.md`). Ported: the root geometry, `utils`, `networksimplex`, `compaction`
+(with `oned` and `options`), `overlaps`, `polyomino` (with `structures`), `spore`, and `PolyominoOptions` generated from
+`Polyomino.melk`. Nothing is exported from `src/index.ts` and no provider is ported.
+
+- The JUnit ports are green: `RectilinearConvexHullTest` (T8), `NetworkSimplexTest` (T7), `OneDimensionalCompactorTest`
+  17 of 17 (T9) and `Issue475Test` (T5).
+- Every `alg-common.json` scenario replays exactly (AC3, new recorder `tools/vectors/alg-common-vectors.sh`):
+  `triangulation` 22, `polyomino` 108 (3 rows expect `IndexOutOfBoundsException`), `overlaps` 34, `spore` 18 (8
+  scanline, 10 depth-first compaction).
+- V6-V8 are implemented and proven: the 22 `triangulation` rows pin the edge iteration order and both cost trees,
+  including the all-ties `constant` cost (T2 strategies, T8 sites).
+- Landed vectors, goldens and corpus are unchanged: only `refs/java/alg-common.json` was added.
+- Final gates and landing: see the decision journal and the mission summary in `plans/alg-common/README.md`.
+
+**Scope changes against row 6 above.**
+
+- **AC1:** `nodespacing/**` and `NodeMicroLayout` move to mission 6b.
+- **P5:** the 8 `alg.common.test` files are split: 4 ported in 6a, 4 deferred (below).
+- **AC4:** no debug file output (`SVGImage`, `DebugUtil`, `NGraph.writeDebugGraph`); every `/*d*/` call stays.
+- **AC5:** `Issue475Test` vendors `475_fixedLayoutWithLongLabels.elkt` and adds it to `TICKET_INPUTS` in the landed
+  `test/golden/algorithm-refs.test.ts` (AD-13 change approved by the user).
+- **AC6:** Java recursions whose depth grows with the input become explicit-stack loops proven against a verbatim
+  recursive reference (first case: `NetworkSimplex.tightTreeDFS`, `postorderTraversal`).
+
+**Row 6b (`alg-common-nodespacing`): scope and evidence plan.**
+
+- Scope: `nodespacing/**` (`cellsystem`, `internal`, `internal/algorithm`; 26 classes, 6,123 LOC) and `NodeMicroLayout`.
+- Evidence (AC2): the 4 deferred JUnit files cannot run before layered, so the evidence is an oracle sweep of
+  `NodeMicroLayout` over a designed set of graphs (a new recorder, as in AC3), compared at the AD-4 bar.
+- Package edges to plan around: only `NodeMicroLayout` imports `nodespacing`, and `nodespacing` imports `overlaps`
+  (ported in 6a).
+
+**Deferred JUnit files (P5).**
+
+- `InsidePortLabelTest`, `NextToPortLabelPlacementTest`, `PortLabelPlacementVariantsTest`: run `LayoutTestRunner` with
+  layered; port in mission 7a.
+- `NodeMicroLayoutTest`: needs layered, force, stress, mrtree, radial and rectpacking; port in mission 8x.
+- Planning for any ticket-model JUnit port (7a, 8x) puts the model, its `inputs/manifest.json` row and the
+  `TICKET_INPUTS` entry in the write-set; the `TICKET_INPUTS` edit is an AD-13 change to raise with the user.
+
+**Follow-ups by mission.**
+
+- **6b:** the above; `NodeMicroLayout` is the first root-package class to import `nodespacing`.
+- **Before 7a (layered):** promote one of the three task-local `TreeSet` stand-ins (T9, T10, T11) to
+  `src/java/util/TreeSet.ts`; layered's `CrossingsCounter` and `NodeContext` need a live `TreeSet`. Check every
+  unbounded-depth recursive port (layered DFS passes) under `--jitless` and convert per AC6. A horizontal compaction
+  that relies on predefined constraints must use `SCANLINE_CONSTRAINTS` (the quadratic calculation clears them).
+- **7a:** port the 3 deferred label-placement JUnit files; `ElkMath.distance` callers pass a vector at least as long as
+  the gap.
+- **8a (disco):** `TwoBitGridTest` treats words as `bigint` and expects the read/write asymmetry; `PlanarGrid.weaklyIntersectsArea`
+  throws on out-of-grid extensions (3 of 108 recorded rows); nothing registers `PolyominoOptions` before disco.
+- **8x:** `DepthFirstCompaction.compactTree` and `minUnderlapWithSubtree` recurse per spanning-tree level; check large
+  graphs with `--jitless`; port `NodeMicroLayoutTest`.
+- **Any time:** the `devAssert` helper of translation rules 6.8 was never written (T10 omitted `assert false` defaults
+  with a comment, as `KVector.ts` does); the `fromPattern` test helper is duplicated in two polyomino tests (move it to
+  `test/helpers/` when next touched); `NetworkSimplexTest.testDeltas` is the canary for stack depth under suite load.
+- **Tooling:** files added under `tools/vectors/` change the `vector-cache.sh` inputs digest, so the next `elkt`, `elkj`,
+  `elkr` and `comments` recorder runs are cold once.
