@@ -22,6 +22,7 @@ this document describes what it implements. Port rules live in
 | 7   | [ELK Text](#elk-text-elkt)                        | How is `.elkt` proven?                   |
 | 8   | [ELK Textual JSON](#elk-textual-json-elkj)        | How is `.elkj` proven?                   |
 | -   | [Core layouts](#core-layouts-fixed-box-random)    | How are `fixed`, `box`, `random` proven? |
+| -   | [alg.common](#alg-common)                         | How is `alg.common` part a proven?       |
 | -   | [Temporary gaps](#temporary-gaps)                 | What differs from the Java for now?      |
 
 ## 1. Oracle
@@ -718,6 +719,83 @@ Each is read from the Java and reproduced; all are "kept: upstream behaviour".
   with explicit attachments and keep-heuristics off, `edgeify` drops every heuristic attachment (T14, T16).
 - JDK 21 `\b` treats a combining mark after a word character as word, beyond its Javadoc definition; the port replays
   the recorded table (`regex-boundary.json`, T9). The JDK `\b` never matches before a non-ASCII leading letter.
+
+## alg.common, part a (mission 6a) {#alg-common}
+
+Mission 6a ported `alg.common` except `nodespacing/**` and `NodeMicroLayout` (AC1; design and runbook in
+[alg-common.md](architecture/alg-common.md)). Its evidence is four JUnit ports, a new oracle recorder
+(`tools/vectors/alg-common-vectors.sh`, AC3) for the packages without Java tests, and the vendored ticket model of
+`Issue475Test`. No corpus sweep applies: nothing in 6a lays out a graph on its own.
+
+**Evidence.**
+
+- The JUnit ports are green: `RectilinearConvexHullTest` (T8), `NetworkSimplexTest` (T7), `OneDimensionalCompactorTest`
+  (17 of 17, T9) and `Issue475Test` (T5).
+- `test/golden/refs/java/alg-common.json` (234,053 bytes, seeds 7001, 7101, 7201, 7301, 7401; recorded twice,
+  byte-identical, every scenario also run twice inside the recording). Every scenario replays exactly:
+
+| Section         | Rows | Replayed equal | Notes                                                                                |
+| --------------- | ---- | -------------- | ------------------------------------------------------------------------------------ |
+| `triangulation` | 22   | 22             | edge iteration order and both cost trees, incl. the all-ties `constant` cost (V6-V8) |
+| `polyomino`     | 108  | 108            | 3 rows expect `IndexOutOfBoundsException` and the port throws it                     |
+| `overlaps`      | 34   | 34             | includes 8 deterministic `tie-*` rows                                                |
+| `spore`         | 18   | 18             | 8 scanline, 10 depth-first compaction                                                |
+
+- `Issue475Test` runs the vendored `tickets/core/475_fixedLayoutWithLongLabels.elkt` (elk-models `ac5af2ba`, SHA-256 row
+  in `test/golden/inputs/manifest.json`); `TICKET_INPUTS` in `test/golden/algorithm-refs.test.ts` lists four ticket
+  models (AC5, an AD-13 change approved by the user).
+- Landed vectors, goldens and corpus are unchanged: `git diff --name-status main -- test/golden/refs/ test/corpus/` shows
+  only the added `refs/java/alg-common.json`.
+
+**Known divergences found.** None numeric. The differences below are open by design.
+
+- **No debug file output (AC4).** `SVGImage.save`/`isave` (`SVGImage.java:252-301`), the `DebugUtil` writer and
+  `NGraph.writeDebugGraph` keep their logic and write nothing, because `src/` is browser-safe. Every `/*d*/` call stays,
+  because some compute values (`BowyerWatsonTriangulation.java:101-102`).
+- **Iterative traversals (AC6).** `NetworkSimplex.tightTreeDFS` and `postorderTraversal` are explicit-stack loops; the
+  behaviour is identical and proven against a verbatim recursive reference (`NetworkSimplexTree.test.ts`).
+- **Exception class where Java dereferences null.** `SVGImage.addElementStr` after `removeGroup` of the current group:
+  `IllegalStateException` (Java NPE; T2). Disconnected input to `NetworkSimplex` (`feasibleTree`): `TypeError` (Java
+  NPE; T7). A null quadrant or `xMin` in `RectilinearConvexHull` and a null `lastX` in its event handler:
+  `IllegalStateException` or `TypeError` (T8). Each site is unreachable from valid input; only an invalid input or a use after removal reaches it.
+- **`CNode.toString`** without a delegate prints the shim's identity hash, which differs from the JVM's (debug only; T9).
+- **Omitted `assert false` defaults** in `RectangleStripOverlapRemover` (`importRectangle`), kept as commented `default`
+  arms, following the `KVector.ts` precedent; no dev-assert helper exists (T10).
+- **Prose typos corrected:** none found in this mission.
+
+### Upstream quirks kept (mission 6a) {#alg-common-quirks}
+
+Each is read from the Java and reproduced; all are "kept: upstream behaviour".
+
+- `PlanarGrid.weaklyIntersectsArea` is not bounds tolerant, so `PolyominoCompactor.packPolyominoes` throws
+  `IndexOutOfBoundsException` when an extension leaves the grid (3 of 108 recorded rows, aspect ratio 2.5; T4, T12).
+- `RectangleStripOverlapRemover.computeOverlaps` keeps a `TreeSet` ordered by right border, so a rectangle with an equal
+  right border is dropped from the scanline set; `exportRectangle` for `DOWN` adds `startCoordinate` to a `y` the
+  strategy already wrote on the same rectangle. The `tie-*` rows pin both (T10).
+- `exportRectangle(node, stripSize)` keeps its unused `stripSize` parameter (T10).
+- `QuadraticConstraintCalculation` clears every node's constraints first (`QuadraticConstraintCalculation.java:30-32`),
+  so only the scanline algorithm keeps predefined constraints (T9).
+- `ScanlineConstraintCalculator.insert` reports an overlap on `System.err`, but `floor`/`ceiling` right after `add` return
+  the node itself, so the message never fires (T9).
+- `TwoBitGrid` words are Java `long` (cell 31's weak bit is the sign bit); reads past the width inside the last word
+  return 0 while writes throw (T6).
+- `NGraph.makeConnected` and `isAcyclic` overwrite `NNode.internalId` with the position in `nodes` (T3).
+- `NetworkSimplex` guards a cut-value array with `cutvalue == null`; Java-null arrays are empty arrays here, so the test
+  folds into the length check and the reuse `else` is unreachable but kept (T7).
+- `PolyominoCompactor` compares polyominoes with `equals`, which is identity (no override in Java) (T12).
+- `ElkMath.distance` traces rays of length `|v|`, so a vector shorter than the gap returns Infinity; spore callers pass a
+  vector scaled to the underlap (T11).
+- `UniqueTriple` declares no `equals`/`hashCode` (identity) but nothing hashes it (T6, T12).
+
+### Deferred JUnit files (P5) {#alg-common-deferred}
+
+Four of the eight `alg.common.test` files need algorithms that are not ported. Each is ported unchanged when its
+algorithm exists.
+
+- `InsidePortLabelTest`: needs layered; closed by mission 7a.
+- `NextToPortLabelPlacementTest`: needs layered; closed by mission 7a.
+- `PortLabelPlacementVariantsTest`: needs layered; closed by mission 7a.
+- `NodeMicroLayoutTest`: needs layered, force, stress, mrtree, radial and rectpacking; closed by mission 8x.
 
 ## Temporary gaps
 

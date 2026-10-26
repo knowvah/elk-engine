@@ -108,6 +108,11 @@ and 4 KVector scripts (`seq-kvector-grid`, `seq-kvector-frac`, `shrink-kvector-f
   copied to a list and sorted by weight: **tie order = HashSet iteration order**, the clearest
   AD-10 case in scope. `KVector.hashCode` is `Double.valueOf(x).hashCode() +
 Integer.reverse(Double.valueOf(y).hashCode())` (`core/src/.../math/KVector.java:155`, int overflow wraps).
+- **V6-V8 status (mission 6a): implemented and proven.** The sites `BowyerWatsonTriangulation.java:85`, `:155` and
+  `NaiveMinST.java:52`, `:65` use `JavaHashSet`/`JavaHashMap` with `TTRIANGLE_STRATEGY`, `TEDGE_STRATEGY` and a
+  `KVector` strategy; the 22 `triangulation` rows of `alg-common.json` replay the edge iteration order and both cost
+  trees, including the all-ties `constant` cost (18 of 22 rows are order-sensitive). `OverlapRemovalLayoutProvider.overlapEdges`
+  (the `alg.spore` end of V8) arrives with mission 8x. Details: [alg-common.md](architecture/alg-common.md#hash-order).
 - V9, V10 `modelOrderMap` (Integer keys) in `alg.layered/src/.../p1cycles/BFSNodeOrderCycleBreaker.java:181`
   and `.../p1cycles/DFSNodeOrderCycleBreaker.java:155`: keys go through `new TreeSet<>(map.keySet())`
   (`.../p1cycles/BFSNodeOrderCycleBreaker.java:215`, `.../p1cycles/DFSNodeOrderCycleBreaker.java:190`),
@@ -191,6 +196,23 @@ Added by mission 5b (`core-remainder`; each site journaled by its task, TS in in
 - I36 `DefaultSelectionIterator.visited` `C:util/selection/DefaultSelectionIterator.java:67` (contains/add only, T18).
   TS: lazy `Set`.
 - I37 `NodeReferenceMatcher.foundAttachments` `C:comments/NodeReferenceMatcher.java:83` (lookup only, T19). TS: `Map`.
+
+Added by mission 6a (`alg-common`; each site journaled by its task, TS in insertion order; `A:` =
+`alg.common/src/.../`). All four are lookup only or add/clear only, so no order is observable (stop 7 not tripped):
+
+- I38 `NGraph.nodeMap` (`NNode` keys) `A:networksimplex/NGraph.java:56` (`put`/`get` in `writeDebugGraph` only,
+  never iterated; T3). TS: `Map`.
+- I39 `GreedyRectangleStripOverlapRemover.alreadyPlacedNodes` `A:overlaps/GreedyRectangleStripOverlapRemover.java:33`
+  (`add`/`contains` only; T10). TS: `Set`.
+- I40 `CGroup.incomingConstraints` `A:compaction/oned/CGroup.java:66` (`add`/`clear` only; T9). TS: `Set`. The
+  neighbouring `CGroup.java:65` is a linked set and needs no row.
+- I41 `OneDimensionalCompactor.incMap` `A:compaction/oned/OneDimensionalCompactor.java:500` (`put`/`get` only; T9).
+  TS: `Map`.
+
+Noted, no row: `UniqueTriple` declares no `equals`/`hashCode` (identity), but nothing in `alg.common` hashes it
+(`A:utils/UniqueTriple.java`, T6, T12); `PolyominoCompactor`'s `Collectors.toSet()` of `Direction` constants is only
+sized and tested for membership (T12). Linked sites keep insertion order with a plain `Set`: `NaiveMinST.java:60`,
+`NetworkSimplex.java:241`, `CGroup.java:65`, `SVGImage.java:41`.
 
 Guava `HashMultimap` (12 `create()` calls; counted separately from the 142/42 above) adds
 identity-ordered iteration at:

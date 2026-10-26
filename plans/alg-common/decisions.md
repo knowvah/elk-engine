@@ -1,0 +1,90 @@
+<!-- SPDX-License-Identifier: EPL-2.0 -->
+
+# Decisions — alg-common, mission 6a (locked 2026-10-24)
+
+The user approved all of these during planning, as recommended. They amend, and never rewrite, AD-1…AD-16, C1–C10 and
+the standing rules, the J-decisions, G1–G8, D1–D9, M1–M17 and R1–R7 with the two R2 amendments (see README "Mission
+start" for the files).
+
+| ID | Decision |
+|----|----------|
+| AC1 | Mission 6 is split. 6a (this brief) is everything except `nodespacing/**` and `NodeMicroLayout`; 6b is those, with their own brief |
+| AC2 | (for 6b) Evidence for nodespacing is an oracle `NodeMicroLayout` sweep, not unit tests alone |
+| AC3 | One oracle recorder, `AlgCommonVectors.java`, gives evidence for Bowyer–Watson + `NaiveMinST`, polyomino packing, strip overlap removal and the spore helpers, compared exactly |
+| AC4 | `SVGImage` and `compaction/DebugUtil` are ported verbatim, with every `/*d*/` call kept; only the file writes are no-ops |
+| P1–P7 | Pre-made rules from standing decisions and precedents ([below](#pre-made)) |
+
+## AC1 — Split
+
+`alg.common` is 82 Java files and 14,677 lines. In the root package only `NodeMicroLayout` imports `nodespacing`, and
+`nodespacing` imports `overlaps`, so 6a is closed. 6a meets roadmap row 6's exit criteria. 6b adds the nodespacing
+evidence that layered (7a) relies on. The roadmap revision (T13) records the split.
+
+## AC2 — Nodespacing evidence (6b, recorded here so 6a's T13 can write the roadmap row)
+
+A recorder runs `NodeMicroLayout.forGraph(root).execute()` on the oracle (`J/NodeMicroLayout.java:44-64`) over:
+- the 5 models of the deferred tests (`tests/core/label_placement/{node_labels,port_labels}/*.elkt`,
+  `tests/core/node_size/inside_port_labels.elkt`) and the deferred tests' configurator variants;
+- the curated `.elkt` set;
+- the corpus folders `tests/core/{node_size,label_placement}`.
+
+It records node sizes and margins, port positions and label positions. TS compares them within AD-4's 1e-6 tolerance.
+
+## AC3 — 6a oracle vectors
+
+**`tools/vectors/AlgCommonVectors.java`** plus **`tools/vectors/alg-common-vectors.sh`** follow the
+`CommentVectors.java` / `comment-vectors.sh` pattern: oracle classpath, `vector-cache.sh`, cache namespace
+`alg-common`. They write **`test/golden/refs/java/alg-common.json`**.
+- **Inputs:** seeded and generated in Java, but **stored in the JSON**, so the TS replay needs no Java `Random`.
+  Doubles are written as IEEE-754 hex bit strings.
+- **Sections:**
+  - `triangulation`: `BowyerWatsonTriangulation.triangulate(vertices, null)`, recording the returned `Set<TEdge>` in
+    iteration order. Then `NaiveMinST.createSpanningTree(edges, root, …)` (both overloads), recording the tree
+    structure and child order. Include equal-weight edges, so the tie order (V8) is observable.
+  - `polyomino`: `new PolyominoCompactor().packPolyominoes(new Polyominoes<>(polys, aspectRatio, fill))` for every
+    `TraversalStrategy`, `LowLevelSortingCriterion` and `HighLevelSortingCriterion`, recording each polyomino's final
+    offset.
+  - `overlaps`: `RectangleStripOverlapRemover` for each `OverlapRemovalDirection`, gap and start coordinate, recording
+    each rectangle's final position.
+  - `spore`: `ScanlineOverlapCheck.sweep` (the overlap pairs in handler order) and `DepthFirstCompaction.compact` (both
+    overloads), recording node positions.
+- **Stability:** the recorder runs twice; the output must be byte-identical and the second run served from the cache.
+
+## AC4 — Debug output
+
+- **`SVGImage`:** the group, element, view-box and `debug` bookkeeping is ported verbatim. The constructor's
+  enable rule (`J/utils/SVGImage.java:57-60`) is kept.
+- **File writes:** `save`/`isave` keep their logic up to the `FileWriter` (`:252-301`) and then write nothing.
+  `compaction/DebugUtil`'s writer becomes a no-op in the same way. Comments name the Java lines.
+- **Call sites:** every `/*d*/` call stays verbatim. Some of them compute values, e.g.
+  `BowyerWatsonTriangulation.java:101-102`.
+- **Docs:** `docs/conformance.md` lists the change as a known divergence: there is no debug file output in a browser
+  build.
+
+## Pre-made
+
+| ID | Rule | Source |
+|----|------|--------|
+| P1 | `src/alg/common/**` mirrors the Java packages. Nested classes and enums go in prefixed files. Classes over 500 lines become section modules behind a facade (`NetworkSimplex`, `OneDimensionalCompactor`), with sections never importing their facade | AD-7, M10, M15 |
+| P2 | Value-hashed sites use `JavaHashSet`/`JavaHashMap` with strategies porting the Java `equals`/`hashCode` (`TTriangle` V6, `TEdge` V7, `KVector` keys). Identity-hashed sites (`NGraph.java:56`, `GreedyRectangleStripOverlapRemover.java:33`, `CGroup.java:66`, `OneDimensionalCompactor.java:500`) become `Map`/`Set` in insertion order, each journaled with an I-row (next free I38). Linked sites are already ordered | AD-10 |
+| P3 | `PolyominoOptions` is generated by `npm run melk:generate Polyomino` after T1 ports the 3 `compaction/options` enums. `DEFAULT_BUNDLES` is unchanged (`test/melk/emit.test.ts:110`). Constants are cached static getters (ESM cycle). Nothing registers it until disco (8a) | M12, M16, C1 |
+| P4 | `Issue475Test` → `src/alg/common/issues/Issue475Test.test.ts`, through `test/helpers/elkt-layout-harness.ts` with fixed; Java expectations unchanged | P8 (5b), 5b T12 |
+| P5 | `InsidePortLabelTest`, `NextToPortLabelPlacementTest` and `PortLabelPlacementVariantsTest` → follow-up for 7a. `NodeMicroLayoutTest` → follow-up for 8x (needs force, stress, mrtree, radial and rectpacking too). Recorded in the roadmap revision | roadmap row 6, YAGNI |
+| P6 | Recorders write new files only. They are recorded twice and must be byte-identical, and are never regenerated to get green | R7, AD-13 |
+| P7 | Java `int` arithmetic (`TwoBitGrid`/`PlanarGrid` bit packing, polyomino successors, network simplex) goes through `Int32`. Comparators use the `Double.compare` shim; `DoubleMath.fuzzyCompare` through `src/guava/DoubleMath.ts` | translation rules |
+
+## Baseline
+
+Recorded at planning (Phase 8, 2026-10-24) on `main` at the PR #19 merge commit:
+
+- `npm test`: 54.6 s wall time (vitest reports 54.1 s); 404 files, 19,389 passed and 69 skipped; exit 0.
+- Load average at measurement: 5.4 at the start, 9.2 at the end (1-minute).
+- Stop 11 compares a later run at similar load: about 65 s or more at load ~5–10 trips it. Foreign load reached 180+
+  during 5b; compare only at similar load.
+
+## Execution decisions (user, during the run; append-only)
+
+| ID | Date | Decision |
+|----|------|----------|
+| AC5 | 2026-10-24 | `Issue475Test` (T5) vendors `tickets/core/475_fixedLayoutWithLongLabels.elkt` from elk-models `ac5af2ba` into `test/golden/inputs/` with its SHA-256 row in `inputs/manifest.json`, and adds it to `TICKET_INPUTS` in the landed `test/golden/algorithm-refs.test.ts` (AD-13 change approved: the test still pins the exact vendored set). Later ticket-model ports plan all three files into their write-set |
+| AC6 | 2026-10-26 | Java recursions whose depth grows with the input (first case: `NetworkSimplex.tightTreeDFS`/`postorderTraversal`, 4000 deep in `NetworkSimplexTest`) become explicit-stack loops that reproduce the Java visit, side-effect and accumulation order; each is proven against a test-local verbatim recursive reference. Reason: interpreted V8 frames overflow the default ~984 KB stack (deterministic under `--jitless`) |
