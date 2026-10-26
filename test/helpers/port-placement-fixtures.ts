@@ -10,7 +10,6 @@ import type { PortConstraints } from '../../src/core/options/PortConstraints.js'
 import { PortSide } from '../../src/core/options/PortSide.js';
 import type { ElkNode } from '../../src/graph/ElkNode.js';
 import type { ElkPort } from '../../src/graph/ElkPort.js';
-import { ElkGraphUtil } from '../../src/graph/util/ElkGraphUtil.js';
 import { PortPlacementCalculator } from '../../src/alg/common/nodespacing/internal/algorithm/PortPlacementCalculator.js';
 import { addPort, contextOf, nodeFixture } from './node-context-fixtures.js';
 

@@ -828,6 +828,11 @@ f30fac5ebbe51ef8aef7f4624e9a64e7018df5ae89d75c88e2a32961e2a5fa77  repo:test/gold
                     best = row;
                 }
             }
+            if (best == null) {
+                // Unreachable: CANDIDATES > 0 and gain >= 0 > -1, so the first candidate is always taken. Stated for
+                // the static analyser; draws nothing from rnd, so the recording is unchanged.
+                throw new IllegalStateException("pairwise: no candidate row was evaluated");
+            }
             for (int i = 0; i < f; i++) {
                 for (int j = i + 1; j < f; j++) {
                     if (unc[i][j][best[i]][best[j]]) {

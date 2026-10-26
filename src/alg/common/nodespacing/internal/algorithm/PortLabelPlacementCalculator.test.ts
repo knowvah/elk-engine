@@ -15,7 +15,7 @@ import { VerticalLabelAlignment } from '../../cellsystem/VerticalLabelAlignment.
 import { PortLabelPlacementCalculator } from './PortLabelPlacementCalculator.js';
 
 const { NORTH, EAST, SOUTH, WEST } = PortSide;
-const { OUTSIDE, INSIDE, NEXT_TO_PORT_IF_POSSIBLE, ALWAYS_SAME_SIDE, ALWAYS_OTHER_SAME_SIDE, SPACE_EFFICIENT } =
+const { OUTSIDE, NEXT_TO_PORT_IF_POSSIBLE, ALWAYS_SAME_SIDE, ALWAYS_OTHER_SAME_SIDE, SPACE_EFFICIENT } =
   PortLabelPlacement;
 const { LEFT, RIGHT, CENTER } = HorizontalLabelAlignment;
 const { TOP, BOTTOM, CENTER: MIDDLE } = VerticalLabelAlignment;
