@@ -536,3 +536,53 @@ runbook in `docs/architecture/alg-common.md`). Ported: the root geometry, `utils
   `test/helpers/` when next touched); `NetworkSimplexTest.testDeltas` is the canary for stack depth under suite load.
 - **Tooling:** files added under `tools/vectors/` change the `vector-cache.sh` inputs digest, so the next `elkt`, `elkj`,
   `elkr` and `comments` recorder runs are cold once.
+
+## Revision 2026-10-26 (alg-common-nodespacing)
+
+Appended; no earlier line is edited. Source: NS1-NS6 and Q1-Q6 in `plans/alg-common-nodespacing/decisions.md`; the
+journal is `plans/alg-common-nodespacing/decision-journal.md`. Where this section conflicts with the text above, this
+section wins.
+
+**Row 6b (`alg-common-nodespacing`) is done; the exit is met.** The code landed on `feature/alg-common-nodespacing`
+(design, evidence and runbook in `docs/architecture/alg-common.md`, section 7; counts in
+`docs/conformance.md#alg-common-nodespacing`). Ported: `nodespacing/**` (`cellsystem`, `internal`,
+`internal/algorithm`; 26 classes) and `NodeMicroLayout`. Row 6 is now complete. Nothing is exported from
+`src/index.ts` and no provider is ported.
+
+- Every row of `test/golden/refs/java/node-micro-layout.json` replays at the AD-4 bar on the first run: 326 rows
+  (`corpus` 16, `curated` 70, `variants` 4, `sweep` 236), 23 of them exceptions matched by class and message
+  (20 `IllegalArgumentException` for models whose ports have no side, 3 `UnsupportedConfigurationException` for
+  rejected placements).
+- Branch coverage of `src/alg/common/nodespacing/**` is 99.87 % (748/749; the miss is an NS5 `default` arm).
+- Landed vectors, goldens and corpus are unchanged: only `refs/java/node-micro-layout.json` was added.
+- `npm test` 62.0 s against the 55.4 s baseline (+6.6 s, inside the stop-11 journal band); the replay itself is 1 s.
+
+**NS decisions.** NS1: inputs are stored in the vector JSON as ELK JSON and replayed through `ElkGraphJson`; nothing
+is vendored. NS2: four scenario groups. NS3: `NodeMicroLayout` runs bottom-up on every node with children. NS4: 0×0
+labels get `width = 6.5 * text.length()`, `height = 13.0` (AWT metrics are platform-dependent); model rows are
+recorded `raw` and `sized`. NS5: the 3 `assert` sites stay comments. NS6: nodes (x, y, w, h, `MARGINS`, `PADDING`),
+ports (x, y) and labels (x, y, w, h) in model order, doubles as raw bits, compared within 1e-6.
+
+**Kept upstream quirks (see `docs/conformance.md#alg-common-nodespacing-quirks`).** `NodeMicroLayout` rejects ports
+without a side; `CellSystemConfigurator.java:118-119` sets the middle row's height contribution twice and never its
+width; constrained outside port labels use swapped `withGap` arguments; `NodeMarginCalculator` processes a port edge's
+head/tail label twice; `GridContainerCell` width passes overwrite earlier rows; `ContainerCell.minWidthOfCell` ignores
+the padding of a zero-content cell.
+
+**Follow-ups by mission.**
+
+- **7a (layered):** port the 3 deferred label-placement JUnit files (`InsidePortLabelTest`,
+  `NextToPortLabelPlacementTest`, `PortLabelPlacementVariantsTest`); `NodeDimensionCalculation` is the facade layered
+  calls through `LGraphAdapters`. The 10 corpus/curated models whose ports have no side gain port coverage only once
+  layered assigns sides. `NodeContext.portContexts` already uses the landed `TreeMultimap` (TreeSet semantics per
+  side), so the live `TreeSet` follow-up from 6a is still only for `CrossingsCounter` and the three 6a stand-ins.
+- **8x:** `NodeMicroLayout.forGraph(...).execute()` is the entry point for force, mrtree, radial and rectpacking; port
+  `NodeMicroLayoutTest` (needs layered, force, stress, mrtree, radial and rectpacking).
+- **Any time:** the `devAssert` helper of translation rules 6.8 is still unwritten (6b added three more commented
+  `assert` sites: `NodeContext.java:277`, `HorizontalPortPlacementSizeCalculator.java:212`,
+  `PortLabelPlacementCalculator.java:208`). When deriving nodespacing expectations by hand, check first:
+  `minWidth/HeightOfCell` returns 0 for a zero-content cell with padding; a side with exactly 2 ports is
+  space-efficient; port-edge labels count twice in margins; `NodeLabelLocation` sets overlap (OUT_T_L vs OUT_L_T).
+- **Tooling:** `tools/vectors/NodeMicroLayoutVectors.java` is 920 lines; single-file recorders are outside the
+  complexity gate but trip the global file-length hook on write (as `JavaVectors.java` does). Adding it under
+  `tools/vectors/` made the next `elkt`/`elkj`/`elkr`/`comments` recorder runs cold once.

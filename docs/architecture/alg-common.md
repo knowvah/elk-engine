@@ -1,10 +1,12 @@
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-# alg.common, part a (mission 6a)
+# alg.common (missions 6a and 6b)
 
 What mission 6a (`alg-common`, roadmap row 6, first half) ported, the evidence for each package, how the HashSet order
-of `NaiveMinST` is reproduced, and a runbook for the three failure modes the plan expected. Decisions cited are
-`plans/alg-common/decisions.md` (AC1-AC6, P1-P7); task ids (T1-T13) are in `plans/alg-common/decision-journal.md`.
+of `NaiveMinST` is reproduced, and a runbook for the three failure modes the plan expected; section 7 covers mission
+6b (`alg-common-nodespacing`, the second half). Decisions cited are `plans/alg-common/decisions.md` (AC1-AC6, P1-P7)
+and `plans/alg-common-nodespacing/decisions.md` (NS1-NS6, Q1-Q6); task ids (T1-T13, and 6b's T1-T8) are in the two
+missions' `decision-journal.md`.
 AD-n are `plans/elk-engine-skeleton/decisions.md`. Nothing here is exported from `src/index.ts` (AD-14), and no
 algorithm provider is ported. Counts of oracle scenarios live in [conformance.md](../conformance.md#alg-common).
 
@@ -16,6 +18,7 @@ algorithm provider is ported. Counts of oracle scenarios live in [conformance.md
 | [4. PolyominoOptions](#polyomino-options) | How the options class is generated                             |
 | [5. Design notes](#design-notes)          | Facades, stand-ins, explicit stacks, AC4                       |
 | [6. Runbook](#runbook)                    | Re-recording, regenerating, and the three failure modes        |
+| [7. Nodespacing (6b)](#nodespacing)       | The cell system, contexts, algorithms, oracle replay, runbook  |
 
 ## 1. Package map {#package-map}
 
@@ -36,9 +39,9 @@ enums live in prefixed files (M15). Class counts exclude `*.test.ts`.
 | `polyomino`            | `polyomino`            | `PolyominoCompactor`, the six comparators, the successors, `ProfileFill` (T6, T12)                                                            |
 | `issues` (test)        | `issues`               | `Issue475Test` (T5)                                                                                                                           |
 
-**Mission 6b adds** (AC1): `nodespacing/**` (`cellsystem`, `internal`, `internal/algorithm`, 26 classes) and
-`NodeMicroLayout`, the only root class that imports `nodespacing`. The evidence plan for it is the AC2 oracle
-`NodeMicroLayout` sweep, because `NodeMicroLayoutTest` needs five other algorithms.
+**Mission 6b added** (AC1): `nodespacing/**` (`cellsystem`, `internal`, `internal/algorithm`, 26 classes) and
+`NodeMicroLayout`, the only root class that imports `nodespacing`. Its evidence is the AC2 oracle `NodeMicroLayout`
+sweep ([section 7](#nodespacing)), because `NodeMicroLayoutTest` needs five other algorithms.
 
 ## 2. Evidence {#evidence}
 
@@ -153,3 +156,135 @@ Never change `DEFAULT_BUNDLES` to include `Polyomino`. If generating changes any
 
 A fourth source of surprise is stack depth: if a ported recursion fails with `RangeError` only under suite load, run
 the test under `--jitless` (a scratch vitest config with `pool: 'forks'` and `execArgv`), then convert it per AC6.
+
+## 7. Nodespacing (mission 6b) {#nodespacing}
+
+Mission 6b ported `org.eclipse.elk.alg.common.nodespacing` (26 classes) and `NodeMicroLayout`. Decisions are NS1-NS6
+and Q1-Q6 in `plans/alg-common-nodespacing/decisions.md`; task ids below (T1-T8) are that mission's. Row counts and
+the kept quirks live in [conformance.md](../conformance.md#alg-common-nodespacing).
+
+### 7.1 Package layout
+
+Four layers, each importing only the ones below it. TS paths are under `src/alg/common/nodespacing/`.
+
+| Layer        | Java package                          | Classes (task)                                                                                                                                                                                                                                                                                            |
+| ------------ | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| cell system  | `nodespacing.cellsystem`              | `Cell`, `AtomicCell`, `LabelCell`, `ContainerCell`, `StripContainerCell` (+ `StripContainerCellStrip`, M15), `GridContainerCell`, the three enums (T2); `internal.NodeLabelLocation` (T2)                                                                                                                 |
+| contexts     | `nodespacing.internal`                | `NodeContext`, `PortContext` (T3)                                                                                                                                                                                                                                                                         |
+| algorithms   | `nodespacing.internal.algorithm`      | `PortContextCreator`, `NodeLabelAndSizeUtilities` (T3); `PortPlacementCalculator`, `Horizontal`/`VerticalPortPlacementSizeCalculator` (T4); `PortLabelPlacementCalculator` (T5); `CellSystemConfigurator`, `NodeLabelCellCreator`, `InsidePortLabelCellCreator`, `LabelPlacer`, `NodeSizeCalculator` (T6) |
+| entry points | `nodespacing` root, `alg.common` root | `NodeMarginCalculator` (T5); `NodeLabelAndSizeCalculator`, `NodeDimensionCalculation` (T7); `../NodeMicroLayout` (T7)                                                                                                                                                                                     |
+
+```plantuml
+@startuml
+skinparam componentStyle rectangle
+package "src/alg/common" {
+  [NodeMicroLayout] as NML
+  [nodespacing entry points\nNodeDimensionCalculation,\nNodeLabelAndSizeCalculator] as Entry
+  [NodeMarginCalculator] as NMC
+  [port placement] as PP
+  [PortLabelPlacementCalculator\n+ 4 section modules] as PLP
+  [cell creators + sizing] as CC
+  [contexts\nNodeContext, PortContext,\nNodeLabelAndSizeUtilities] as Ctx
+  [cellsystem + NodeLabelLocation] as Cells
+  [overlaps (6a)] as Ovl
+}
+[src/core\nadapters, options, math] as Core
+[src/guava\nTreeMultimap, Maps.newEnumMap] as Guava
+[src/java/util/EnumSet] as ES
+[alg.layered (7a)] as Layered #lightgray
+[force, mrtree, radial,\nrectpacking (8x)] as Algs #lightgray
+[NodeMicroLayoutVectors.java\n+ replay test] as Ev
+
+NML --> Entry : sort, sizes, margins
+Entry --> Ctx : one NodeContext per node
+Entry --> PP : port sizes and positions
+Entry --> PLP : port label positions
+Entry --> CC : cells, node size, labels
+Entry --> NMC : margins
+PP --> Ctx : portContexts per side
+PLP --> Ovl : strip overlap removal
+PLP --> Ctx : port label cells
+CC --> Cells : builds cell tree
+Ctx --> Cells : node container cells
+Ctx --> Guava : sorted portContexts, enum maps
+Cells --> ES : placement sets
+Entry --> Core : GraphAdapter
+NMC --> Core : MARGINS
+Layered --> Entry : via LGraphAdapters
+Algs --> NML : forGraph(...).execute()
+Ev --> NML : oracle replay
+@enduml
+```
+
+### 7.2 Phase sequence
+
+`NodeMicroLayout.execute()` runs `NodeDimensionCalculation.sortPortLists`, `calculateLabelAndNodeSizes` and
+`calculateNodeMargins` on the adapter, in that order. `calculateLabelAndNodeSizes` calls
+`NodeLabelAndSizeCalculator.process(graph, node, applyStuff, ignoreInsidePortLabels)` per node, whose Java code-name
+comments are kept verbatim:
+
+1. preparatory preparations: one `NodeContext` per node (options read once, in Java order), then
+   `PortContextCreator.createPortContexts`;
+2. phase 1 (Wonderous Waterfowl): `NodeLabelCellCreator` and `InsidePortLabelCellCreator` build the cell tree;
+3. phase 2 (Defective Duck): `CellSystemConfigurator.configureCellSystemSizeContributions`;
+4. phase 3 (Salvageable Swan): `HorizontalPortPlacementSizeCalculator` sets the width the ports need;
+5. phase 4 (Damnable Duckling): `NodeSizeCalculator.setNodeWidth`, then the vertical size calculator and
+   `setNodeHeight`;
+6. phase 5 (Duck and Cover): the cell system is laid out horizontally and vertically;
+7. phase 6 (Gigantic Goose): `PortPlacementCalculator` places the ports, `PortLabelPlacementCalculator` the port
+   labels, `LabelPlacer` the node labels;
+8. phase 7 (Thanksgiving): `applyStuff` writes the node size, port positions and label positions back through the
+   adapter.
+
+In TS, phases 1-2 are `setupCells` and 3-4 `computeMinimumPortSpace` (function-size limit); the order is Java's.
+
+### 7.3 Port contexts
+
+`NodeContext.portContexts` is `TreeMultimap.create(comparePortSides, comparePortContexts)` (Q2,
+`src/guava/TreeMultimap.ts`). Keys iterate in `PortSide` ordinal order; values on NORTH and EAST ascend by
+`getVolatileId()`, on SOUTH and WEST they descend. The value comparator reads only the volatile id, and the multimap
+has `TreeSet` semantics per key, so two contexts on one side with equal ids collapse to one (`NodeContext.test.ts`
+pins it). `PortContextCreator` assigns unique ids `0..n-1`, so the collapse is reachable only by direct insertion. The
+three `EnumMap` fields use `Maps.newEnumMap` (ordinal order), and the `NodeLabelLocation` placement sets use `EnumSet`.
+
+### 7.4 Splits
+
+Every split is at a Java method, section or switch-arm boundary and keeps Java names and order (Q1, standing rule):
+
+- **Facade + sections (Q1):** `PortLabelPlacementCalculator` (546 Java lines) is a facade over
+  `PortLabelPlacementCalculator{SimpleInside,ConstrainedInside,SimpleOutside,ConstrainedOutside}.ts`, named after the
+  Java section comments; sections never import the facade.
+- **Switch arms:** `NodeLabelLocation.getOutsideSide` (WEST/EAST arms), `NodeLabelAndSizeUtilities.setupNodePaddingForPortsWithOffset`
+  (one method per side), the simple port label placement (one method per side, loop locals in a file-local record),
+  `NodeMarginCalculator.computeLabelBox`.
+- **Sections:** `StripContainerCell` row/column layout, the fixed-ratio loops and `setupPortMargins` of both port
+  placement size calculators, `CellSystemConfigurator` (PORTS / NODE_LABELS / MINIMUM_SIZE blocks),
+  `NodeSizeCalculator` free-size arms, `NodeLabelCellCreator` container creation, `NodeLabelAndSizeCalculator`
+  (phases 1-2, 3-4; the inside-padding extents).
+- **Shared helpers (2026-10-14 amendment):** the horizontal and vertical free-port placement bodies differ only in the
+  axis, so they share `centerSinglePort`, `distributeAvailableSpace` and `alignPorts` over a per-axis state record.
+
+### 7.5 Evidence
+
+The package has no runnable Java tests (its 4 JUnit files need layered, P5). `tools/vectors/NodeMicroLayoutVectors.java`
+(T1) runs `NodeMicroLayout` bottom-up over every node with children (NS3) and records nodes, ports and labels in model
+order (NS6) for four groups (NS2): `corpus` (the 8 `tests/core/{node_size,label_placement}` models), `curated` (the 31
+curated models and 4 vendored tickets), `variants` (`PortLabelPlacementVariantsTest`'s configuration on all four
+sides) and `sweep` (a pairwise cover of 11 option factors, `Random(6101)`). Model rows are recorded `raw` and `sized`
+(NS4). Each row stores its prepared input as ELK JSON (NS1), re-imports it, and fails if the re-imported graph gives a
+different result. `src/alg/common/NodeMicroLayoutVectors.test.ts` replays every row through `ElkGraphJson` and the same
+bottom-up harness (`test/helpers/node-micro-layout-replay.ts`): 326 rows, 23 expected exceptions, all equal on the
+first run. Each class also has colocated unit tests with Java-derived expectations (about 1,000 tests).
+
+### 7.6 Runbook
+
+```bash
+tools/vectors/node-micro-layout-vectors.sh test/golden/refs/java      # needs $ELK_MODELS_DIR at record time only
+git status --short test/golden/refs/java                              # must show nothing for a same-JDK re-record
+ELK_VECTORS_CACHE=off tools/vectors/node-micro-layout-vectors.sh test/golden/refs/java   # cold (about 4 s)
+```
+
+The recorder embeds the SHA-256 of every model it reads and fails naming any missing or changed file, because the
+`vector-cache.sh` inputs digest does not cover `$ELK_MODELS_DIR` or `test/golden/inputs/`. The replay needs no model
+directory. A replay mismatch is diagnosed against the oracle, never fixed by re-recording (AD-13); the rules a
+hand-derived expectation most often misses are listed in `.agent-notes/alg-common-nodespacing.md`.

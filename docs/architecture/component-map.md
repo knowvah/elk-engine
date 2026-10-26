@@ -96,7 +96,7 @@ and the property types came earlier (missions 2 and 3). Mission 5b ([core-engine
 `LayoutProcessorConfiguration` (the pipeline every algorithm bundle uses), `LayoutConfigurator`, `ElkSpacings`, the
 `ElkMath` sections, `ElkGraphAdapters`, `util/selection/*` and `comments/*`. Its JDK shims are `src/java/awt/geom`
 (`Rectangle2D`) and `src/java/util/regex` (`Pattern`, `WordBoundary`), next to `JavaCharacter` in `src/java/lang`;
-they are proven by `awt.json`, `regex.json`, `character.json` and `regex-boundary.json`. Mission 6a ([alg-common.md](alg-common.md)) ported `alg.common` except `nodespacing` and `NodeMicroLayout` (mission 6b).
+they are proven by `awt.json`, `regex.json`, `character.json` and `regex-boundary.json`. Missions 6a and 6b ([alg-common.md](alg-common.md)) ported all of `alg.common`; 6b added `nodespacing` and `NodeMicroLayout`, proven by a 326-row `NodeMicroLayout` oracle replay.
 
 ```plantuml
 @startuml

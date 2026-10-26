@@ -23,6 +23,7 @@ this document describes what it implements. Port rules live in
 | 8   | [ELK Textual JSON](#elk-textual-json-elkj)        | How is `.elkj` proven?                   |
 | -   | [Core layouts](#core-layouts-fixed-box-random)    | How are `fixed`, `box`, `random` proven? |
 | -   | [alg.common](#alg-common)                         | How is `alg.common` part a proven?       |
+| -   | [alg.common nodespacing](#alg-common-nodespacing) | How is `alg.common` part b proven?       |
 | -   | [Temporary gaps](#temporary-gaps)                 | What differs from the Java for now?      |
 
 ## 1. Oracle
@@ -796,6 +797,95 @@ algorithm exists.
 - `NextToPortLabelPlacementTest`: needs layered; closed by mission 7a.
 - `PortLabelPlacementVariantsTest`: needs layered; closed by mission 7a.
 - `NodeMicroLayoutTest`: needs layered, force, stress, mrtree, radial and rectpacking; closed by mission 8x.
+
+## alg.common, part b: nodespacing (mission 6b) {#alg-common-nodespacing}
+
+Mission 6b ported `nodespacing/**` and `NodeMicroLayout`, which closes `alg.common` (design and runbook in
+[alg-common.md](architecture/alg-common.md#nodespacing)). The package has no runnable Java tests: its 4 JUnit files
+need layered (P5, [deferred](#alg-common-deferred)). The evidence is therefore an oracle sweep of `NodeMicroLayout`
+(AC2, refined by NS1-NS6 in `plans/alg-common-nodespacing/decisions.md`): a new recorder,
+`tools/vectors/node-micro-layout-vectors.sh`, stores each prepared input graph as ELK JSON inside the vector row (NS1),
+and TS replays it through `ElkGraphJson` and the ported `NodeMicroLayout`, bottom-up over every node with children
+(NS3). No model is vendored.
+
+**Evidence.**
+
+- `test/golden/refs/java/node-micro-layout.json` (1,118,635 bytes; JDK 21.0.1; oracle `8aaa3c14`): recorded twice,
+  byte-identical, and every row built twice inside one recording. Each row's re-imported input gives the same output as
+  the prepared original (the NS1 round-trip check). Every row replays within 1e-6 on the first run
+  (`src/alg/common/NodeMicroLayoutVectors.test.ts`); identifiers, element counts and exceptions match exactly.
+
+| Group      | Rows | Replayed equal | Source and configuration                                                                                                           |
+| ---------- | ---- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `corpus`   | 16   | 16             | the 8 `tests/core/{node_size,label_placement}` models of elk-models `ac5af2ba`, as written; each `raw` and `sized`                 |
+| `curated`  | 70   | 70             | the 31 `test/corpus/elkt-curated` models and the 4 vendored `tickets/core` models, as written; each `raw` and `sized`              |
+| `variants` | 4    | 4              | `port_labels/variants.elkt` with `PORT_SIDE` on every port: `west`, `east` (the upstream providers) plus `north`, `south` (below)  |
+| `sweep`    | 236  | 236            | synthetic node, 11 factors covered pairwise (`Random(6101)`); rows 233-235 each add one rejected placement and expect an exception |
+
+- 23 rows expect an exception and the port throws it with the Java class name and message: 20 `IllegalArgumentException`
+  ("Label and node size calculator can only be used with ports that have port sides assigned.": 10 models whose
+  `.elkt` ports declare no `port.side`, `raw` and `sized` each) and 3 `UnsupportedConfigurationException` ("Invalid
+  port label placement: [OUTSIDE, INSIDE]", "… [OUTSIDE, INSIDE, ALWAYS_SAME_SIDE, SPACE_EFFICIENT]", "Invalid node
+  label placement: [H_CENTER, INSIDE, OUTSIDE]"; the sets print in enum-ordinal order).
+- **Label sizes (NS4).** The JUnit framework sizes labels with AWT font metrics (`TestConfiguration.computeLabelSize`),
+  which depend on the platform, so they cannot serve as an oracle. In `sized` rows every label with text and a 0×0
+  size gets `width = 6.5 * text.length()` (UTF-16 code units) and `height = 13.0`; explicit sizes are kept. `raw` rows
+  keep the sizes as written, so both the empty-label and the sized paths are recorded.
+- **`variants` NORTH and SOUTH.** `PortLabelPlacementVariantsTest` only activates the WEST and EAST providers upstream
+  (the other two are commented out). The oracle records all four; the NORTH and SOUTH rows complete without an
+  exception and replay exactly, so the port covers configurations the upstream test does not run.
+- Landed vectors, goldens and corpus are unchanged: `git diff --name-status main -- test/golden/refs/ test/corpus/
+test/golden/inputs/` shows only the added `refs/java/node-micro-layout.json`.
+
+**Known divergences found.** None numeric. The differences below are open by design.
+
+- **Exception class where Java dereferences null.** `LabelCell.setHorizontalAlignment/setVerticalAlignment(null)`:
+  `TypeError` with the Java `Objects.requireNonNull` message (T2). Fields Java leaves null until the algorithm sets
+  them (`NodeContext.insideNodeLabelContainer`, `insidePortLabelCells.get(side)`, `PortContext.portLabelCell`) are
+  non-null-asserted; calling a calculator before its cells exist throws `TypeError` where Java throws NPE (T3-T5). A
+  `LabelCell` built from `NodeLabelLocation.UNDEFINED` would NPE in Java's `switch(null)` and leaves the coordinate at 0
+  here; unreachable, because `NodeLabelCellCreator.java:80` returns first (T2). Each site is unreachable from
+  `NodeMicroLayout`.
+- **Omitted `assert` sites (NS5).** `NodeContext.java:277`, `HorizontalPortPlacementSizeCalculator.java:212` and
+  `PortLabelPlacementCalculator.java:208` are comments naming the line, following the `KVector.ts` precedent; the oracle
+  runs without `-ea`, so they never fire there either. No dev-assert helper exists.
+- **Prose typos corrected:** none found in this mission.
+
+### Upstream quirks kept (mission 6b) {#alg-common-nodespacing-quirks}
+
+Each is read from the Java, reproduced, and pinned by a unit test and the oracle replay; all are "kept: upstream
+behaviour".
+
+- `NodeMicroLayout` throws `IllegalArgumentException` on any port without a side (`PortContextCreator.java:50`), so
+  `.elkt` models that leave sides unassigned (layered normally assigns them) are recorded and replayed as throws (T1,
+  T3).
+- `NodeContext.portContexts` is a `TreeMultimap` whose value comparator reads only `getVolatileId()`
+  (`NodeContext.java:257-282`): two contexts on one side with equal ids collapse to one. `PortContextCreator` assigns
+  unique ids `0..n-1`, so the collapse is reachable only by inserting contexts directly (T3).
+- `GridContainerCell.applyWidthToColumn` (non-tabular) loops over all rows, so the END row pass overwrites every
+  column's x and width; tabular mode shares one `colWidths` array across its three row passes and adds the gaps into it
+  each time (T2).
+- `ContainerCell.minWidthOfCell`/`minHeightOfCell` return 0 for an `AtomicCell` with zero content size even when its
+  padding is non-zero, while `StripContainerCell`'s cross-axis minimum counts the padding (T2, T6).
+- `CellSystemConfigurator.java:118-119` sets `nodeContainerMiddleRow.setContributesToMinimumHeight(true)` twice and
+  never the width flag; with `MINIMUM_SIZE` plus `MINIMUM_SIZE_ACCOUNTS_FOR_PADDING` alone the node width comes out 0
+  (T6).
+- With `OUTSIDE_NODE_LABELS_OVERHANG`, the outside label containers stop contributing on both axes, so N/S containers
+  have height 0 and E/W containers width 0 and the labels are laid out in zero-size containers (T6).
+- `setupPortMargins` treats a side with exactly 2 ports as space-efficient
+  (`HorizontalPortPlacementSizeCalculator.java:276-277`) and also zeroes the first port's inner margin when its labels
+  are not next to it (`:305`) (T4).
+- One free, non-overhanging port whose space is too small falls back to CENTER and divides by `size() - 1 = 0`; the
+  resulting −Infinity spacing is never read for a single port (`PortPlacementCalculator.java:110-209`) (T4).
+- `constrainedOutsidePortLabelPlacement` calls `withGap(portLabelSpacingVertical, portLabelSpacingHorizontal)`, swapped
+  relative to the inside variant (`PortLabelPlacementCalculator.java:459` vs `:250`) (T5).
+- In simple outside placement a port without labels is skipped before `placeFirstPortDifferently` is reset
+  (`:371-374`, `:437`), so the flag carries over to the next labelled port (T5).
+- `ElkNodeAdapter.getOutgoingEdges/getIncomingEdges` include edges attached to the node's ports
+  (`ElkGraphAdapters.java:303-311`), so `NodeMarginCalculator` processes a port edge's head/tail label twice: once
+  relative to the port, once as a node edge (T5).
+- `JsonExporter` writes a label `id` only when it is non-empty, so unnamed labels round-trip with a null identifier;
+  the vectors record `null` and the replay compares it exactly (T1, T7).
 
 ## Temporary gaps
 
