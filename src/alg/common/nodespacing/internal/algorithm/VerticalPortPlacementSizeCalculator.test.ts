@@ -105,6 +105,8 @@ describe('calculateVerticalPortPlacementSize, FIXED_RATIO', () => {
       surroundingMargins: new ElkMargin(3, 0, 4, 0),
     });
     VerticalPortPlacementSizeCalculator.calculateVerticalPortPlacementSize(context);
+    // Oracle row t4/v-fixed-ratio-surrounding: a top (VerticalPortPlacementSizeCalculator.java:146-152) and a bottom
+    // (:172-185) surrounding margin above zero each add a term.
     // max(3 / 0.25, (2 + 10) / 0.5, (2 + 4) / 0.25)
     expect(size(context, EAST)).toBe(24);
     expect(padding(context, EAST)[0]).toBe(0);
@@ -125,6 +127,8 @@ describe('calculateVerticalPortPlacementSize, FIXED_RATIO', () => {
       portContext.portMargin.bottom = 5;
     }
     VerticalPortPlacementSizeCalculator.calculateVerticalPortPlacementSize(context);
+    // The INSIDE value 44 is oracle row t4/v-fixed-ratio-inside-end-margin: VerticalPortPlacementSizeCalculator.java:
+    // 177-179 adds the last port's bottom margin only if portLabelsInside (:120).
     expect(size(context, EAST)).toBe(expected);
   });
 
@@ -300,6 +304,8 @@ describe('calculateVerticalPortPlacementSize, free ports', () => {
       };
       const context = labelContext([short], EnumSet.of(INSIDE));
       VerticalPortPlacementSizeCalculator.calculateVerticalPortPlacementSize(context);
+      // Oracle row t4/v-short-next-to-port: a label no taller than its port adds no overhang
+      // (VerticalPortPlacementSizeCalculator.java:309, the false arm).
       expect(margins(context, EAST)).toEqual([[0, 0]]);
     });
 
@@ -342,6 +348,9 @@ describe('calculateVerticalPortPlacementSize, free ports', () => {
     it('widens margins by fixed labels that stick out of the port', () => {
       const context = labelContext([labelled(EAST, -3), { side: EAST }], EnumSet.noneOf(PortLabelPlacement));
       VerticalPortPlacementSizeCalculator.calculateVerticalPortPlacementSize(context);
+      // Oracle row t4/v-fixed-labels (VerticalPortPlacementSizeCalculator.java:336-343: the fixed label bounds -3 .. 7
+      // stick out at the top at :336 and at the bottom at :340 of the port 0 .. 2; the second, unlabelled port has
+      // empty bounds).
       // label y -3 .. 7 against the port 0 .. 2
       expect(margins(context, EAST)).toEqual([
         [3, 5],

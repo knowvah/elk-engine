@@ -73,3 +73,15 @@ allIncomingEdges`, which include edges attached to the node's ports. `NodeMargin
   double processing above; and `NodeLabelLocation` placement sets that overlap (OUT_T_L vs OUT_L_T).
 - **Impact**: when deriving expectations by hand for nodespacing (7a/8x JUnit ports), check these four rules first.
 - **Confidence**: High
+
+## Observation: the node-micro-layout replay never sets a port alignment
+
+- **Context**: mission 6c T1, coverage of the three T4 port placement files under the 326-row replay alone.
+- **Finding**: no landed row sets `portAlignment.*`, so every free placement runs DISTRIBUTED. The BEGIN/END/JUSTIFIED
+  switch arms, the non-DISTRIBUTED size paths, `PORT_BORDER_OFFSET` on N/S ports, `FIXED_RATIO` with surrounding
+  margins, and the next-to-port/fixed-label margin arms stay unreached (26 branches, 13 T4 scenarios to cover them).
+  The TS also shares one helper for the Java's duplicated horizontal/vertical free-placement switches
+  (`PortPlacementCalculator.java:167/343`, `175/351`, `188/364`), so each unreached TS arm stands for two Java sites.
+- **Impact**: replay coverage alone does not vouch for port alignment or border offset behaviour. Later replays
+  (layered output in 7a) or a targeted recorder have to set these options explicitly.
+- **Confidence**: High

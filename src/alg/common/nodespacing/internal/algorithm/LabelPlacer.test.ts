@@ -95,19 +95,24 @@ describe('placeLabels on a fixed-size 40x30 node', () => {
   });
 
   it('places the western container left of the node, the label centered and right-aligned', () => {
+    // Oracle row insideLabels/fixed-size-node (WEST container, west label).
     // width 9 + padding 5 = 14, height = node height 30
     expect(rectOf(context, WEST)).toEqual([-14, 0, 14, 30]);
     expect(at(labels['west']!)).toEqual([-14, 8]);
   });
 
   it('places the eastern container right of the node, the label at the bottom', () => {
+    // Oracle row insideLabels/fixed-size-node (EAST container, east label).
     expect(rectOf(context, EAST)).toEqual([40, 0, 11, 30]);
     expect(at(labels['east']!)).toEqual([45, 20]);
   });
 
   it('places inside node labels in the laid out grid', () => {
-    // The north and south port label cells have no content height, so they take no height (ContainerCell.java
-    // minHeightOfCell): the inside container spans y 0..30; the grid content area (padding 5) is x 5..35, y 5..25.
+    // Oracle row insideLabels/fixed-size-node. The north and south port label cells have a zero-height content area,
+    // so ContainerCell.minHeightOfCell returns 0 for them although their padding would give a non-zero
+    // getMinimumHeight (ContainerCell.java:92-96, AtomicCell.java:79-82): the inside container spans y 0..30; the
+    // grid content area (padding 5) is x 5..35, y 5..25. The width twin is ContainerCell.minWidthOfCell
+    // (ContainerCell.java:62-66).
     // Top left: (5, 5). Bottom right: the END row is 6 high at y 25 - 6 = 19; its column is 8 wide, right-aligned
     // at 35 - 8 = 27.
     expect(at(labels['insideTopLeft']!)).toEqual([5, 5]);
@@ -192,6 +197,10 @@ describe('outside node label containers wider or higher than the node', () => {
     const { context, north, west } = oversized(true, false);
     expect(rectOf(context, NORTH)).toEqual([0, 0, 50, 0]);
     expect(rectOf(context, WEST)).toEqual([0, 0, 0, 30]);
+    // Oracle row collapsedContainers/overhang-no-contribution. CellSystemConfigurator.java:97-106 sets
+    // setContributesToMinimumHeight/Width(!overhang) on the outside label cells, so with OUTSIDE_NODE_LABELS_OVERHANG
+    // they contribute nothing and ContainerCell.minWidthOfCell/minHeightOfCell return 0 for them
+    // (ContainerCell.java:57-59, :87-89); the containers collapse to the node's extent on the other axis.
     // north: cell height 0 - bottom padding 5 = -5, bottom-aligned: 0 + (-5) - 12; west: cell width 0 - padding 5 =
     // -5, right-aligned: 0 + (-5) - 9
     expect(at(north)).toEqual([-15, -17]);

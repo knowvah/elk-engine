@@ -315,6 +315,10 @@ describe('NodeLabelAndSizeUtilities port and node application', () => {
     c.portContexts.values().forEach((pc, index) => pc.portPosition.set(10 + index, 20 + index));
     NodeLabelAndSizeUtilities.applyStuff(c);
     expect([fixture.node.getWidth(), fixture.node.getHeight()]).toEqual([70, 60]);
+    // Oracle row applyStuff/north-west: ports [[10,20],[11,21]] in creation order. The NORTH port is created first and
+    // portContexts iterates NORTH before WEST (NodeContext.java:250-252 orders sides by ordinal), so the NORTH
+    // port gets index 0 (10, 20) and the WEST port index 1 (11, 21); applyStuff writes every context's position
+    // (NodeLabelAndSizeUtilities.java:183-186).
     expect([...fixture.node.getPorts()].map((port) => [port.getX(), port.getY()])).toEqual([
       [10, 20],
       [11, 21],

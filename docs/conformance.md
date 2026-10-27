@@ -851,6 +851,34 @@ test/golden/inputs/` shows only the added `refs/java/node-micro-layout.json`.
   runs without `-ea`, so they never fire there either. No dev-assert helper exists.
 - **Prose typos corrected:** none found in this mission.
 
+**AD-13 re-derivation (mission 6c).** Five 6b unit tests had their hand-derived expectations corrected after a first
+failure, and T4 wrote its port placement code before its tests. Mission 6c re-derived each site from the oracle. A
+targeted recorder, `tools/vectors/nodespacing-site-vectors.sh` (`NodespacingSiteVectors.java`), rebuilds each scenario
+by hand in Java with the same fixture and direct calls. It writes `test/golden/refs/java/nodespacing-sites.json`: 23
+rows, JDK 21.0.1, oracle `8aaa3c14`. Each row stores its input graph as ELK JSON, plus `steps` for the in-memory
+mutations ELK JSON cannot carry. `PortPlacementCalculator.PORT_RATIO_OR_POSITION` is one such mutation: no metadata
+provider registers it, so the JSON importer drops it. The recorder output is byte-stable, and each re-imported input
+plus its steps reproduces the hand-built result. `src/alg/common/nodespacing/NodespacingSiteVectors.test.ts` replays
+every row within 1e-6 on the first run, with no `src/` divergence.
+
+| Site                  | Rows | Outcome                                                                                                                                                                                               |
+| --------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `labelLocation`       | 2    | 6b T2 flag. The original input `{OUTSIDE, V_TOP, H_LEFT, H_PRIORITY}` is OUT_L_T's own set: restored as its own case asserting `OUT_L_T`; `UNDEFINED` case kept                                       |
+| `applyStuff`          | 1    | 6b T3 flag. Port order `[[10,20],[11,21]]` confirmed (NORTH sorts before WEST, `NodeContext.java:250-252`)                                                                                            |
+| `fixedRatioMargins`   | 2    | 6b T4 flag. 3-port case confirmed; the original 2-port case is restored and asserts `[[0,0],[0,0]]`, size 24 (`spaceEfficientPortLabels`, `HorizontalPortPlacementSizeCalculator.java:276-277, :305`) |
+| `sidelessPortMargins` | 1    | 6b T5 flag. Right margin 104 confirmed (port-edge label processed twice, `NodeMarginCalculator.java:205, :212`)                                                                                       |
+| `insideLabels`        | 1    | 6b T6 flag. `[5,5]` and `[27,19]` confirmed (`ContainerCell.java:92-96`: a zero-content cell has height 0 despite padding)                                                                            |
+| `allConstraints`      | 1    | 6b T6 flag. `[100,79]` and south `[79,0]` confirmed (same rule)                                                                                                                                       |
+| `collapsedContainers` | 1    | 6b T6 flag. Collapsed containers and label positions confirmed (`CellSystemConfigurator.java:97-106` clears the overhanging cells' contribution)                                                      |
+| `t4`                  | 14   | 6b T4 "implementation first": the 13 T4 test scenarios whose branches the 326-row replay never reaches, plus the `minSizeRequiredToRespectSpacing` tolerance cases; all confirmed                     |
+
+Every corrected 6b value equals the oracle, and the only original value the oracle contradicts is the 2-port margin
+case, which rested on an invalid premise. The `t4` scenarios exist because no `node-micro-layout.json` row sets a port
+alignment. As a result, the replay alone never reaches the BEGIN/END/JUSTIFIED arms, border offsets on north and south
+ports, `FIXED_RATIO` with surrounding margins, or the next-to-port and fixed label margin arms. The scenario table is in
+`plans/ad13-rederivation/t4-unreached.md`. Landed vectors, goldens and corpus are unchanged; only
+`refs/java/nodespacing-sites.json` was added.
+
 ### Upstream quirks kept (mission 6b) {#alg-common-nodespacing-quirks}
 
 Each is read from the Java, reproduced, and pinned by a unit test and the oracle replay; all are "kept: upstream

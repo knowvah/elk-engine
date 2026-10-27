@@ -124,6 +124,11 @@ describe('NodeMarginCalculator', () => {
     root.setProperty(CoreOptions.SPACING_LABEL_NODE, 4);
     // Port level: x = 10 + 2 + 4 + 0 + 4 = 20 -> [20,120]. The node's own outgoing edges include the ports' edges
     // (ElkGraphUtil.allOutgoingEdges), so the node level adds x = 40 + 4 = 44 -> [44,144]; the node ends at 40.
+    // Oracle row sidelessPortMargins/undefined-side: [t, r, b, l] = [0, 104, 0, 0], i.e. marginsOf's
+    // [top, bottom, left, right] = [0, 0, 0, 104]. The label is processed twice: at port level
+    // (NodeMarginCalculator.java:205) and again at node level (NodeMarginCalculator.java:212), because the node
+    // adapter's outgoing edges include its ports' edges (ElkGraphAdapters.java:303-311 via
+    // ElkGraphUtil.allOutgoingEdges, ElkGraphUtil.java:477-486); the larger reach [44,144] wins over [20,120].
     new NodeMarginCalculator(graph).process();
     expect(marginsOf(node)).toEqual([0, 0, 0, 104]);
   });

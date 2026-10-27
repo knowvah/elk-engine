@@ -276,12 +276,23 @@ different result. `src/alg/common/NodeMicroLayoutVectors.test.ts` replays every 
 bottom-up harness (`test/helpers/node-micro-layout-replay.ts`): 326 rows, 23 expected exceptions, all equal on the
 first run. Each class also has colocated unit tests with Java-derived expectations (about 1,000 tests).
 
+Mission 6c added a targeted recorder for unit-test sites, `tools/vectors/NodespacingSiteVectors.java`. Its scenarios
+were hand-derived in 6b, or sit on branches the 326-row replay never reaches. Each row rebuilds one fixture in Java
+and records what the Java produces, as `{ id, site, input, steps, expected }`. `site` names the call sequence (the
+harness), `input` is the ELK JSON graph or `null`, and `steps` are mutations applied after `NodeContext` construction.
+The steps are `setMinimumContentAreaSize`, `setContributes`, `setCellRectangle`, `setPortMargin` and `setPortRatio`.
+`setPortRatio` exists because `PORT_RATIO_OR_POSITION` is registered by no metadata provider, so ELK JSON drops it.
+`src/alg/common/nodespacing/NodespacingSiteVectors.test.ts` replays the 23 rows through
+`test/helpers/nodespacing-site-replay.ts`, one function per `site`. The unit tests keep their literals, each annotated
+with its row id and the Java line that produces it.
+
 ### 7.6 Runbook
 
 ```bash
 tools/vectors/node-micro-layout-vectors.sh test/golden/refs/java      # needs $ELK_MODELS_DIR at record time only
 git status --short test/golden/refs/java                              # must show nothing for a same-JDK re-record
 ELK_VECTORS_CACHE=off tools/vectors/node-micro-layout-vectors.sh test/golden/refs/java   # cold (about 4 s)
+tools/vectors/nodespacing-site-vectors.sh test/golden/refs/java       # site rows; reads no model directory
 ```
 
 The recorder embeds the SHA-256 of every model it reads and fails naming any missing or changed file, because the

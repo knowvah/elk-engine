@@ -586,3 +586,29 @@ the padding of a zero-content cell.
 - **Tooling:** `tools/vectors/NodeMicroLayoutVectors.java` is 920 lines; single-file recorders are outside the
   complexity gate but trip the global file-length hook on write (as `JavaVectors.java` does). Adding it under
   `tools/vectors/` made the next `elkt`/`elkj`/`elkr`/`comments` recorder runs cold once.
+
+## Revision 2026-10-27 (ad13-rederivation)
+
+Appended; no earlier line is edited. Source: D1-D7 and E1-E3 in `plans/ad13-rederivation/decisions.md`; the journal is
+`plans/ad13-rederivation/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+
+**Row 6b evidence is strengthened; mission 6c is done.** Each of the five 6b `flag` sites (hand-derived expectations
+corrected after a first failure) is now pinned to an oracle row in `test/golden/refs/java/nodespacing-sites.json`.
+The 13 T4 test scenarios whose branches the `node-micro-layout.json` replay never reaches are pinned the same way. The
+file has 23 rows and replays at the AD-4 bar (`src/alg/common/nodespacing/NodespacingSiteVectors.test.ts`). The
+recorder is `tools/vectors/nodespacing-site-vectors.sh`. Every corrected 6b value equals the oracle. Two invalid-premise
+originals are restored as their own cases: the OUT_L_T set and the 2-port `FIXED_RATIO` margins. No `src/` file changed
+and no landed vector or golden changed. Counts are in `docs/conformance.md#alg-common-nodespacing`.
+
+**Follow-ups.**
+
+- The four hand-derivation rules from 6b are now pinned by oracle rows:
+  - zero-content cells ignore padding: `insideLabels`, `allConstraints`, `collapsedContainers`
+  - a side with exactly 2 ports is space-efficient: `fixedRatioMargins/two-ports`
+  - port-edge labels count twice: `sidelessPortMargins`
+  - overlapping label location sets: `labelLocation`
+- **7a (layered):** the `node-micro-layout.json` sweep never sets a port alignment or a north/south border offset. A
+  layered replay, or a later sweep revision, should cover BEGIN/END/JUSTIFIED and border offsets end to end. The
+  `t4/*` rows cover them only at the unit level, and only on the horizontal axis for placement.
+- **Tooling:** `PortPlacementCalculator.PORT_RATIO_OR_POSITION` is not a registered option, so any ELK JSON based
+  vector carrying `FIXED_RATIO` ratios needs a side channel (here the `setPortRatio` step).
