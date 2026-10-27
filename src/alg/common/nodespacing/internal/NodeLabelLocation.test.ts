@@ -143,6 +143,17 @@ describe('NodeLabelLocation', () => {
     });
   });
 
+  // Oracle row labelLocation/out-l-t-set (nodespacing-sites.json): OUT_L_T. The set {OUTSIDE, V_TOP, H_LEFT,
+  // H_PRIORITY} is OUT_L_T's own assigned set (NodeLabelLocation.java:108-115), and fromNodeLabelPlacement returns the
+  // location whose set equals the argument (NodeLabelLocation.java:371).
+  it('maps {OUTSIDE, V_TOP, H_LEFT, H_PRIORITY} to OUT_L_T', () => {
+    expect(NodeLabelLocation.fromNodeLabelPlacement(EnumSet.of(OUTSIDE, V_TOP, H_LEFT, H_PRIORITY))).toBe(
+      NodeLabelLocation.OUT_L_T,
+    );
+  });
+
+  // Oracle row labelLocation/unmatched: UNDEFINED. No location is assigned {OUTSIDE, H_LEFT, H_CENTER}
+  // (NodeLabelLocation.java:371 falls through to UNDEFINED).
   it('returns UNDEFINED for unmatched placement sets', () => {
     expect(NodeLabelLocation.fromNodeLabelPlacement(EnumSet.of(INSIDE))).toBe(NodeLabelLocation.UNDEFINED);
     expect(NodeLabelLocation.fromNodeLabelPlacement(EnumSet.of(OUTSIDE, H_LEFT, H_CENTER))).toBe(

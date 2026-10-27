@@ -102,10 +102,15 @@ describe('placeHorizontalPorts, free ports', () => {
     [END, [74, 86, 98]],
     [JUSTIFIED, [0, 49, 98]],
   ])('aligns three ports %s in a wide cell', (alignment, expected) => {
+    // JUSTIFIED is oracle row t4/p-justified-wide: PortPlacementCalculator.java:188-194 only spreads the ports
+    // (:132 is not taken for three ports).
     expect(xs(placedNorth(alignment), NORTH)).toEqual(expected);
   });
 
   it.each([DISTRIBUTED, JUSTIFIED, CENTER])('centers a single port with %s alignment', (alignment) => {
+    // JUSTIFIED is oracle row t4/p-justified-single: PortPlacementCalculator.java:131-139 falls back to CENTER for a
+    // single DISTRIBUTED or JUSTIFIED port, and modifiedPortPlacementSize (:416-420) only subtracts the two spacings
+    // for the old DISTRIBUTED alignment.
     expect(xs(placedNorth(alignment, CELL, { count: 1 }), NORTH)).toEqual([49]);
   });
 
@@ -160,7 +165,9 @@ describe('placeHorizontalPorts, free ports', () => {
     sizeHorizontalCell(context, NORTH, CELL);
     sizeHorizontalCell(context, SOUTH, CELL);
     PortPlacementCalculator.placeHorizontalPorts(context);
+    // Oracle row t4/p-begin-end: NORTH BEGIN (PortPlacementCalculator.java:167-169), SOUTH END (:175-177).
     expect(xs(context, NORTH)).toEqual([0, 12]);
+    expect(ys(context, NORTH)).toEqual([-PORT, -PORT]);
     expect(xs(context, SOUTH)).toEqual([86, 98]);
     expect(ys(context, SOUTH)).toEqual([0, 0]);
     expect(contextsOn(context, EAST)).toEqual([]);
@@ -189,6 +196,8 @@ describe('placeHorizontalPorts, free ports', () => {
     sizeHorizontalCell(context, NORTH, CELL);
     sizeHorizontalCell(context, SOUTH, CELL);
     PortPlacementCalculator.placeHorizontalPorts(context);
+    // Oracle row t4/p-border-offset: PortPlacementCalculator.java:218-221 returns -portHeight - offset for NORTH and
+    // the offset itself for SOUTH once PORT_BORDER_OFFSET is set.
     expect(ys(context, NORTH)).toEqual([-5]);
     expect(ys(context, SOUTH)).toEqual([3]);
   });

@@ -156,8 +156,10 @@ describe('size constraints', () => {
     };
 
     it('combines all contributions for free port placement', () => {
-      // width: ports 60, north label 80, minimum 100; height: 9 (north) + 70 (east) + 0 (the south cell has no content
-      // height, so its padding does not count: ContainerCell.java minHeightOfCell) = 79
+      // Oracle row allConstraints/free. width: ports 60, north label 80, minimum 100; height: 9 (north) + 70 (east) + 0
+      // (the south cell has a zero-height content area, so ContainerCell.minHeightOfCell returns 0 although its padding
+      // would give a non-zero getMinimumHeight: ContainerCell.java:92-96, AtomicCell.java:79-82) = 79; the south cell
+      // thus starts at y 79 with height 0.
       const context = sized(everything(PortConstraints.FREE), portCells);
       expect(size(context)).toEqual([100, 79]);
       const rect = (cell: { getCellRectangle(): { y: number; height: number } }) => [

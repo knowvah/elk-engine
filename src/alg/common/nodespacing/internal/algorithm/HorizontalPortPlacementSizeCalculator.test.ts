@@ -104,6 +104,8 @@ describe('calculateHorizontalPortPlacementSize, FIXED_RATIO', () => {
       surroundingMargins: new ElkMargin(0, 4, 0, 3),
     });
     HorizontalPortPlacementSizeCalculator.calculateHorizontalPortPlacementSize(context);
+    // Oracle row t4/h-fixed-ratio-surrounding: a left (HorizontalPortPlacementSizeCalculator.java:147-153) and a right
+    // (:173-186) surrounding margin above zero each add a term.
     // max(3 / 0.25, (2 + 10) / 0.5, (2 + 4) / 0.25)
     expect(size(context, NORTH)).toBe(24);
     expect(padding(context, NORTH)[0]).toBe(0);
@@ -125,7 +127,9 @@ describe('calculateHorizontalPortPlacementSize, FIXED_RATIO', () => {
     }
     HorizontalPortPlacementSizeCalculator.calculateHorizontalPortPlacementSize(context);
     // OUTSIDE: max((3 + 1) / 0.25, (2 + 5 + 10 + 1) / 0.5, (2 + 4) / 0.25) = 36
-    // INSIDE: the last term is (2 + 4 + 5) / 0.25 = 44
+    // INSIDE: the last term is (2 + 4 + 5) / 0.25 = 44. The INSIDE value is oracle row
+    // t4/h-fixed-ratio-inside-end-margin: HorizontalPortPlacementSizeCalculator.java:177-179 adds the last port's right
+    // margin only if portLabelsInside (:122).
     expect(size(context, NORTH)).toBe(expected);
   });
 
@@ -156,6 +160,27 @@ describe('calculateHorizontalPortPlacementSize, FIXED_RATIO', () => {
     expect(padding(context, SOUTH)).toEqual([0, 0]);
   });
 
+  it('drops the margins of two ports with labels, as two ports are treated as space efficient', () => {
+    const context = placementContext({
+      ports: [
+        { ...labelled(NORTH), ratio: 0.25 },
+        { ...labelled(NORTH), ratio: 0.75 },
+      ],
+      portConstraints: PortConstraints.FIXED_RATIO,
+      configure: labelSettings(EnumSet.of(OUTSIDE)),
+    });
+    HorizontalPortPlacementSizeCalculator.calculateHorizontalPortPlacementSize(context);
+    // Oracle row fixedRatioMargins/two-ports. HorizontalPortPlacementSizeCalculator.java:276-277 sets
+    // spaceEfficientPortLabels when portContexts.size() == 2 (without ALWAYS_SAME_SIDE), so :305 zeroes the leftmost
+    // port's right margin (its label is not next to the port), and :300-301 zero the outermost left and right
+    // margins for OUTSIDE labels. All four margins are 0, so the size is (2 + 0 + 10 + 0) / 0.5 = 24.
+    expect(margins(context, NORTH)).toEqual([
+      [0, 0],
+      [0, 0],
+    ]);
+    expect(size(context, NORTH)).toBe(24);
+  });
+
   it('computes the port margins from the labels when port labels are a size constraint', () => {
     const context = placementContext({
       ports: [
@@ -167,6 +192,7 @@ describe('calculateHorizontalPortPlacementSize, FIXED_RATIO', () => {
       configure: labelSettings(EnumSet.of(OUTSIDE)),
     });
     HorizontalPortPlacementSizeCalculator.calculateHorizontalPortPlacementSize(context);
+    // Oracle row fixedRatioMargins/three-ports.
     // outside labels sit right of their port: right margin 2 + 10, the last port loses its right margin
     expect(margins(context, NORTH)).toEqual([
       [0, 12],
@@ -179,6 +205,9 @@ describe('calculateHorizontalPortPlacementSize, FIXED_RATIO', () => {
 });
 
 describe('minSizeRequiredToRespectSpacing', () => {
+  // The seven triples below are the cases of oracle row t4/min-size-tolerance
+  // (HorizontalPortPlacementSizeCalculator.java:209-220: fuzzyEquals within EQUALITY_TOLERANCE 0.01, :195, else a
+  // division). The last triple is 599.9999999999994 in the oracle, hence toBeCloseTo.
   it('divides the spacing by the ratio difference', () => {
     expect(minSize(12, 0.25, 0.75)).toBe(24);
     expect(minSize(6, 0, 1)).toBe(6);
@@ -263,6 +292,8 @@ describe('calculateHorizontalPortPlacementSize, free ports', () => {
     });
 
     it('treats two ports as space efficient even without the option', () => {
+      // HorizontalPortPlacementSizeCalculator.java:276-277 (portContexts.size() == 2) and :305; see also oracle row
+      // fixedRatioMargins/two-ports above.
       const context = labelContext([labelled(NORTH), labelled(NORTH)], EnumSet.of(OUTSIDE));
       HorizontalPortPlacementSizeCalculator.calculateHorizontalPortPlacementSize(context);
       expect(margins(context, NORTH)).toEqual([
@@ -290,6 +321,8 @@ describe('calculateHorizontalPortPlacementSize, free ports', () => {
       };
       const context = labelContext([narrow], EnumSet.of(INSIDE));
       HorizontalPortPlacementSizeCalculator.calculateHorizontalPortPlacementSize(context);
+      // Oracle row t4/h-narrow-next-to-port: a label no wider than its port adds no overhang
+      // (HorizontalPortPlacementSizeCalculator.java:337, the false arm).
       expect(margins(context, NORTH)).toEqual([[0, 0]]);
     });
 
@@ -300,6 +333,8 @@ describe('calculateHorizontalPortPlacementSize, free ports', () => {
         SizeOptions.UNIFORM_PORT_SPACING,
       );
       HorizontalPortPlacementSizeCalculator.calculateHorizontalPortPlacementSize(context);
+      // Oracle row t4/h-uniform-unlabelled (HorizontalPortPlacementSizeCalculator.java:311-319: unifyPortMargins, then
+      // the outermost margins are reset for OUTSIDE labels).
       expect(margins(context, NORTH)).toEqual([
         [0, 12],
         [0, 12],
@@ -330,6 +365,8 @@ describe('calculateHorizontalPortPlacementSize, free ports', () => {
     it('widens margins by fixed labels that stick out of the port', () => {
       const context = labelContext([labelled(NORTH, -3), { side: NORTH }], EnumSet.noneOf(PortLabelPlacement));
       HorizontalPortPlacementSizeCalculator.calculateHorizontalPortPlacementSize(context);
+      // Oracle row t4/h-fixed-labels (HorizontalPortPlacementSizeCalculator.java:346-361: the fixed label bounds -3 .. 7
+      // stick out left at :353 and right at :357 of the port 0 .. 2; the second, unlabelled port has empty bounds).
       // label x -3 .. 7 against the port 0 .. 2
       expect(margins(context, NORTH)).toEqual([
         [3, 5],
