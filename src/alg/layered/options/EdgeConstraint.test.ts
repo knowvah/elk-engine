@@ -35,3 +35,34 @@ describe('EdgeConstraint', () => {
     expect(EdgeConstraint.NONE.compareTo(EdgeConstraint.NONE)).toBe(0);
   });
 });
+
+describe('EdgeConstraint oracle row site/enums/EdgeConstraint', () => {
+  // oracle: site/enums/EdgeConstraint
+  it('site/enums/EdgeConstraint: constants in declaration order with name, ordinal and toString', () => {
+    expect(EdgeConstraint.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['NONE', 0, 'NONE'],
+      ['INCOMING_ONLY', 1, 'INCOMING_ONLY'],
+      ['OUTGOING_ONLY', 2, 'OUTGOING_ONLY'],
+    ]);
+  });
+
+  // oracle: site/enums/EdgeConstraint
+  it('site/enums/EdgeConstraint: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => EdgeConstraint.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => EdgeConstraint.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.EdgeConstraint.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/EdgeConstraint
+  it('site/enums/EdgeConstraint: compareTo first/last', () => {
+    const values = EdgeConstraint.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-2);
+    expect(last.compareTo(first)).toBe(2);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

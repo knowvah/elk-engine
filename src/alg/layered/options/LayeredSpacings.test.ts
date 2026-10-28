@@ -2,9 +2,15 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import { LayoutOptionDataTarget } from '../../../core/data/LayoutOptionDataTarget.js';
+import type { IPropertyHolder } from '../../../graph/properties/IPropertyHolder.js';
 import { MapPropertyHolder } from '../../../graph/properties/MapPropertyHolder.js';
+import { Property } from '../../../graph/properties/Property.js';
+import { LEdge } from '../graph/LEdge.js';
 import { LGraph } from '../graph/LGraph.js';
+import { LLabel } from '../graph/LLabel.js';
 import { LNode } from '../graph/LNode.js';
+import { LPort } from '../graph/LPort.js';
+import { Layer } from '../graph/Layer.js';
 import { LayeredMetaDataProvider } from './LayeredMetaDataProvider.js';
 import { LayeredOptions } from './LayeredOptions.js';
 import { LayeredSpacings, LayeredSpacingsBuilder } from './LayeredSpacings.js';
@@ -67,5 +73,66 @@ describe('LayeredSpacings', () => {
     expect(LayeredSpacings.OPTION_TARGET_FILTER(node, LayeredOptions.SPACING_NODE_NODE)).toBe(
       targets.contains(LayoutOptionDataTarget.NODES),
     );
+  });
+});
+
+/** The 13 option ids probed by the site/layeredSpacings/targetFilter rows, in row order. */
+const FILTER_OPTION_IDS = [
+  'org.eclipse.elk.bendPoints',
+  'org.eclipse.elk.noLayout',
+  'org.eclipse.elk.priority',
+  'org.eclipse.elk.layered.considerModelOrder.groupModelOrder.componentGroupId',
+  'org.eclipse.elk.edgeLabels.inline',
+  'org.eclipse.elk.nodeLabels.placement',
+  'org.eclipse.elk.position',
+  'org.eclipse.elk.labelManager',
+  'org.eclipse.elk.alignment',
+  'org.eclipse.elk.hierarchyHandling',
+  'org.eclipse.elk.algorithm',
+  'org.eclipse.elk.layered.allowNonFlowPortsToSwitchSides',
+  'origin',
+];
+
+const A = true;
+const _ = false;
+
+// oracle: site/layeredSpacings/targetFilter/<kind>; one boolean per FILTER_OPTION_IDS entry (the JVM's answers).
+const FILTER_MATRIX: [string, boolean[]][] = [
+  ['graph', [_, A, A, A, _, A, A, A, A, A, A, _, A]],
+  ['node', [_, A, A, A, _, A, A, _, A, A, _, _, A]],
+  ['edge', [A, A, A, A, _, _, _, _, _, _, _, _, A]],
+  ['port', [_, A, _, A, _, _, A, _, _, _, _, A, A]],
+  ['label', [_, A, _, _, A, A, A, A, _, _, _, _, A]],
+  ['layer', [A, A, A, A, A, A, A, A, A, A, A, A, A]],
+  ['plain', [A, A, A, A, A, A, A, A, A, A, A, A, A]],
+];
+
+function holderOfKind(kind: string): IPropertyHolder {
+  const graph = new LGraph();
+  switch (kind) {
+    case 'graph':
+      return graph;
+    case 'node':
+      return new LNode(graph);
+    case 'edge':
+      return new LEdge();
+    case 'port':
+      return new LPort();
+    case 'label':
+      return new LLabel();
+    case 'layer':
+      return new Layer(graph);
+    default:
+      return new MapPropertyHolder();
+  }
+}
+
+describe('LayeredSpacings.OPTION_TARGET_FILTER site rows', () => {
+  it.each(FILTER_MATRIX)('site/layeredSpacings/targetFilter/%s', (kind, expected) => {
+    const holder = holderOfKind(kind);
+    const actual = FILTER_OPTION_IDS.map((id) =>
+      LayeredSpacings.OPTION_TARGET_FILTER(holder, new Property<unknown>(id)),
+    );
+    expect(actual).toEqual(expected);
   });
 });

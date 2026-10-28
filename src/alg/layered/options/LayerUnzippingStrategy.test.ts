@@ -35,3 +35,33 @@ describe('LayerUnzippingStrategy', () => {
     expect(LayerUnzippingStrategy.NONE.compareTo(LayerUnzippingStrategy.NONE)).toBe(0);
   });
 });
+
+describe('LayerUnzippingStrategy oracle row site/enums/LayerUnzippingStrategy', () => {
+  // oracle: site/enums/LayerUnzippingStrategy
+  it('site/enums/LayerUnzippingStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(LayerUnzippingStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['NONE', 0, 'NONE'],
+      ['ALTERNATING', 1, 'ALTERNATING'],
+    ]);
+  });
+
+  // oracle: site/enums/LayerUnzippingStrategy
+  it('site/enums/LayerUnzippingStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => LayerUnzippingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => LayerUnzippingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.LayerUnzippingStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/LayerUnzippingStrategy
+  it('site/enums/LayerUnzippingStrategy: compareTo first/last', () => {
+    const values = LayerUnzippingStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-1);
+    expect(last.compareTo(first)).toBe(1);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

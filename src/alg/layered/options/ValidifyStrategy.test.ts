@@ -35,3 +35,34 @@ describe('ValidifyStrategy', () => {
     expect(ValidifyStrategy.NO.compareTo(ValidifyStrategy.NO)).toBe(0);
   });
 });
+
+describe('ValidifyStrategy oracle row site/enums/ValidifyStrategy', () => {
+  // oracle: site/enums/ValidifyStrategy
+  it('site/enums/ValidifyStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(ValidifyStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['NO', 0, 'NO'],
+      ['GREEDY', 1, 'GREEDY'],
+      ['LOOK_BACK', 2, 'LOOK_BACK'],
+    ]);
+  });
+
+  // oracle: site/enums/ValidifyStrategy
+  it('site/enums/ValidifyStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => ValidifyStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => ValidifyStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.ValidifyStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/ValidifyStrategy
+  it('site/enums/ValidifyStrategy: compareTo first/last', () => {
+    const values = ValidifyStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-2);
+    expect(last.compareTo(first)).toBe(2);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

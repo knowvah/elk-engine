@@ -42,3 +42,37 @@ describe('GraphCompactionStrategy', () => {
     expect(GraphCompactionStrategy.NONE.compareTo(GraphCompactionStrategy.NONE)).toBe(0);
   });
 });
+
+describe('GraphCompactionStrategy oracle row site/enums/GraphCompactionStrategy', () => {
+  // oracle: site/enums/GraphCompactionStrategy
+  it('site/enums/GraphCompactionStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(GraphCompactionStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['NONE', 0, 'NONE'],
+      ['LEFT', 1, 'LEFT'],
+      ['RIGHT', 2, 'RIGHT'],
+      ['LEFT_RIGHT_CONSTRAINT_LOCKING', 3, 'LEFT_RIGHT_CONSTRAINT_LOCKING'],
+      ['LEFT_RIGHT_CONNECTION_LOCKING', 4, 'LEFT_RIGHT_CONNECTION_LOCKING'],
+      ['EDGE_LENGTH', 5, 'EDGE_LENGTH'],
+    ]);
+  });
+
+  // oracle: site/enums/GraphCompactionStrategy
+  it('site/enums/GraphCompactionStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => GraphCompactionStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => GraphCompactionStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.GraphCompactionStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/GraphCompactionStrategy
+  it('site/enums/GraphCompactionStrategy: compareTo first/last', () => {
+    const values = GraphCompactionStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-5);
+    expect(last.compareTo(first)).toBe(5);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

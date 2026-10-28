@@ -35,3 +35,34 @@ describe('SelfLoopOrderingStrategy', () => {
     expect(SelfLoopOrderingStrategy.STACKED.compareTo(SelfLoopOrderingStrategy.STACKED)).toBe(0);
   });
 });
+
+describe('SelfLoopOrderingStrategy oracle row site/enums/SelfLoopOrderingStrategy', () => {
+  // oracle: site/enums/SelfLoopOrderingStrategy
+  it('site/enums/SelfLoopOrderingStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(SelfLoopOrderingStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['STACKED', 0, 'STACKED'],
+      ['REVERSE_STACKED', 1, 'REVERSE_STACKED'],
+      ['SEQUENCED', 2, 'SEQUENCED'],
+    ]);
+  });
+
+  // oracle: site/enums/SelfLoopOrderingStrategy
+  it('site/enums/SelfLoopOrderingStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => SelfLoopOrderingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => SelfLoopOrderingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.SelfLoopOrderingStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/SelfLoopOrderingStrategy
+  it('site/enums/SelfLoopOrderingStrategy: compareTo first/last', () => {
+    const values = SelfLoopOrderingStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-2);
+    expect(last.compareTo(first)).toBe(2);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

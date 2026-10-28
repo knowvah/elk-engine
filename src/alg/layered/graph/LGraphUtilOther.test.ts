@@ -95,3 +95,63 @@ describe('getMinimalModelOrder', () => {
     expect(getMinimalModelOrder(graph)).toBe(3);
   });
 });
+
+describe('LGraphUtil other helpers (oracle rows)', () => {
+  function withIndividual(node: LNode, values: [typeof LayeredOptions.SPACING_NODE_NODE, number][]): LNode {
+    const individual = new IndividualSpacings();
+    for (const [property, value] of values) {
+      individual.setProperty(property, value);
+    }
+    node.setProperty(LayeredOptions.SPACING_INDIVIDUAL, individual);
+    return node;
+  }
+
+  // oracle: site/lgraphutil/other/individualOrInherited; LGraphUtil.java:1109-1130
+  it('getIndividualOrInherited prefers an individual value, else the graph value, else null without a graph', () => {
+    const graph = new LGraph();
+    graph.setProperty(LayeredOptions.SPACING_NODE_NODE, 20);
+    graph.setProperty(LayeredOptions.SPACING_EDGE_NODE, 21);
+    const plain = addNode(graph);
+    const emptyIndividual = withIndividual(addNode(graph), []);
+    const otherIndividual = withIndividual(addNode(graph), [[LayeredOptions.SPACING_EDGE_NODE, 7]]);
+    const individual = withIndividual(addNode(graph), [[LayeredOptions.SPACING_NODE_NODE, 5]]);
+    const loose = new LNode(null);
+    const looseIndividual = withIndividual(new LNode(null), [[LayeredOptions.SPACING_NODE_NODE, 6]]);
+    const looseEmptyIndividual = withIndividual(new LNode(null), []);
+    const nodeNode = [
+      plain,
+      emptyIndividual,
+      otherIndividual,
+      individual,
+      loose,
+      looseIndividual,
+      looseEmptyIndividual,
+    ].map((node) => getIndividualOrInherited(node, LayeredOptions.SPACING_NODE_NODE));
+    expect(nodeNode).toEqual([20, 20, 20, 5, null, 6, null]);
+  });
+
+  // oracle: site/lgraphutil/other/minimalModelOrder; LGraphUtil.java:1153-1163
+  it('getMinimalModelOrder is Integer.MAX_VALUE until a node gets a model order, then the smallest', () => {
+    const graph = new LGraph();
+    expect(getMinimalModelOrder(graph)).toBe(2147483647);
+    const [a, b, c] = [addNode(graph), addNode(graph), addNode(graph)] as [LNode, LNode, LNode];
+    expect(getMinimalModelOrder(graph)).toBe(2147483647);
+    a.setProperty(InternalProperties.MODEL_ORDER, 5);
+    c.setProperty(InternalProperties.MODEL_ORDER, 2);
+    expect(getMinimalModelOrder(graph)).toBe(2);
+    b.setProperty(InternalProperties.MODEL_ORDER, 9);
+    expect(getMinimalModelOrder(graph)).toBe(2);
+  });
+
+  // oracle: site/lgraphutil/other/direction; LGraphUtil.java:1134-1150
+  it('getDirection falls back to RIGHT, DOWN below aspect ratio 1, RIGHT at 1, and keeps an explicit UP', () => {
+    const graph = new LGraph();
+    expect(getDirection(graph)).toBe(Direction.RIGHT);
+    graph.setProperty(LayeredOptions.ASPECT_RATIO, 0.5);
+    expect(getDirection(graph)).toBe(Direction.DOWN);
+    graph.setProperty(LayeredOptions.ASPECT_RATIO, 1.0);
+    expect(getDirection(graph)).toBe(Direction.RIGHT);
+    graph.setProperty(LayeredOptions.DIRECTION, Direction.UP);
+    expect(getDirection(graph)).toBe(Direction.UP);
+  });
+});

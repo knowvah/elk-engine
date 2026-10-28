@@ -35,3 +35,37 @@ describe('FixedAlignment', () => {
     expect(FixedAlignment.NONE.compareTo(FixedAlignment.NONE)).toBe(0);
   });
 });
+
+describe('FixedAlignment oracle row site/enums/FixedAlignment', () => {
+  // oracle: site/enums/FixedAlignment
+  it('site/enums/FixedAlignment: constants in declaration order with name, ordinal and toString', () => {
+    expect(FixedAlignment.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['NONE', 0, 'NONE'],
+      ['LEFTUP', 1, 'LEFTUP'],
+      ['RIGHTUP', 2, 'RIGHTUP'],
+      ['LEFTDOWN', 3, 'LEFTDOWN'],
+      ['RIGHTDOWN', 4, 'RIGHTDOWN'],
+      ['BALANCED', 5, 'BALANCED'],
+    ]);
+  });
+
+  // oracle: site/enums/FixedAlignment
+  it('site/enums/FixedAlignment: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => FixedAlignment.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => FixedAlignment.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.FixedAlignment.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/FixedAlignment
+  it('site/enums/FixedAlignment: compareTo first/last', () => {
+    const values = FixedAlignment.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-5);
+    expect(last.compareTo(first)).toBe(5);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

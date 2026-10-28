@@ -52,3 +52,53 @@ describe('LNode.NodeType', () => {
     expect(NodeType.NONSHIFTING_PLACEHOLDER.getColor()).toBe('#eeeeee');
   });
 });
+
+describe('NodeType oracle row site/enums/NodeType', () => {
+  // oracle: site/enums/NodeType
+  it('site/enums/NodeType: constants in declaration order with name, ordinal and toString', () => {
+    expect(NodeType.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['NORMAL', 0, 'NORMAL'],
+      ['LONG_EDGE', 1, 'LONG_EDGE'],
+      ['EXTERNAL_PORT', 2, 'EXTERNAL_PORT'],
+      ['NORTH_SOUTH_PORT', 3, 'NORTH_SOUTH_PORT'],
+      ['LABEL', 4, 'LABEL'],
+      ['BREAKING_POINT', 5, 'BREAKING_POINT'],
+      ['PLACEHOLDER', 6, 'PLACEHOLDER'],
+      ['NONSHIFTING_PLACEHOLDER', 7, 'NONSHIFTING_PLACEHOLDER'],
+    ]);
+  });
+
+  // oracle: site/enums/NodeType
+  it('site/enums/NodeType: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => NodeType.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => NodeType.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.graph.LNode.NodeType.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/NodeType
+  it('site/enums/NodeType: compareTo first/last', () => {
+    const values = NodeType.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-7);
+    expect(last.compareTo(first)).toBe(7);
+    expect(first.compareTo(first)).toBe(0);
+  });
+
+  // oracle: site/enums/NodeType
+  it.each([
+    ['NORMAL', '#eeeeee'],
+    ['LONG_EDGE', '#eaed00'],
+    ['EXTERNAL_PORT', '#cc99cc'],
+    ['NORTH_SOUTH_PORT', '#0034de'],
+    ['LABEL', '#75c3c3'],
+    ['BREAKING_POINT', '#eeeeff'],
+    ['PLACEHOLDER', '#eeeeee'],
+    ['NONSHIFTING_PLACEHOLDER', '#eeeeee'],
+  ] as const)('site/enums/NodeType: %s.getColor() is %s', (constant, expected) => {
+    expect(NodeType.valueOf(constant).getColor()).toBe(expected);
+  });
+});

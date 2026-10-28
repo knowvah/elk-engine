@@ -72,3 +72,40 @@ describe('CycleBreakingStrategy', () => {
     );
   });
 });
+
+describe('CycleBreakingStrategy oracle row site/enums/CycleBreakingStrategy', () => {
+  // oracle: site/enums/CycleBreakingStrategy
+  it('site/enums/CycleBreakingStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(CycleBreakingStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['GREEDY', 0, 'GREEDY'],
+      ['DEPTH_FIRST', 1, 'DEPTH_FIRST'],
+      ['INTERACTIVE', 2, 'INTERACTIVE'],
+      ['MODEL_ORDER', 3, 'MODEL_ORDER'],
+      ['GREEDY_MODEL_ORDER', 4, 'GREEDY_MODEL_ORDER'],
+      ['SCC_CONNECTIVITY', 5, 'SCC_CONNECTIVITY'],
+      ['SCC_NODE_TYPE', 6, 'SCC_NODE_TYPE'],
+      ['DFS_NODE_ORDER', 7, 'DFS_NODE_ORDER'],
+      ['BFS_NODE_ORDER', 8, 'BFS_NODE_ORDER'],
+    ]);
+  });
+
+  // oracle: site/enums/CycleBreakingStrategy
+  it('site/enums/CycleBreakingStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => CycleBreakingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => CycleBreakingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.CycleBreakingStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/CycleBreakingStrategy
+  it('site/enums/CycleBreakingStrategy: compareTo first/last', () => {
+    const values = CycleBreakingStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-8);
+    expect(last.compareTo(first)).toBe(8);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

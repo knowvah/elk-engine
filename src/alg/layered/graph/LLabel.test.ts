@@ -37,3 +37,19 @@ describe('LLabel', () => {
     expect(label.toString()).toBe('label');
   });
 });
+
+describe('LLabel strings (oracle row)', () => {
+  // oracle: site/strings/llabel; LLabel.java:56-70
+  it('prints text, empty, default and null labels', () => {
+    const rows: [LLabel, string | null, string | null, string][] = [
+      [new LLabel('hello'), 'hello', 'hello', 'l_hello'],
+      [new LLabel(''), '', null, 'label'],
+      [new LLabel(), '', null, 'label'],
+      // Java's LLabel(String) accepts null, which Guava's isNullOrEmpty treats like ""
+      [new LLabel(null as unknown as string), null, null, 'label'],
+    ];
+    expect(rows.map(([l]) => [l.getText(), l.getDesignation(), l.toString()])).toEqual(
+      rows.map(([, text, designation, string]) => [text, designation, string]),
+    );
+  });
+});

@@ -62,3 +62,52 @@ describe('CenterEdgeLabelPlacementStrategy', () => {
     }
   });
 });
+
+describe('CenterEdgeLabelPlacementStrategy oracle row site/enums/CenterEdgeLabelPlacementStrategy', () => {
+  // oracle: site/enums/CenterEdgeLabelPlacementStrategy
+  it('site/enums/CenterEdgeLabelPlacementStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(CenterEdgeLabelPlacementStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['MEDIAN_LAYER', 0, 'MEDIAN_LAYER'],
+      ['TAIL_LAYER', 1, 'TAIL_LAYER'],
+      ['HEAD_LAYER', 2, 'HEAD_LAYER'],
+      ['SPACE_EFFICIENT_LAYER', 3, 'SPACE_EFFICIENT_LAYER'],
+      ['WIDEST_LAYER', 4, 'WIDEST_LAYER'],
+      ['CENTER_LAYER', 5, 'CENTER_LAYER'],
+    ]);
+  });
+
+  // oracle: site/enums/CenterEdgeLabelPlacementStrategy
+  it('site/enums/CenterEdgeLabelPlacementStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => CenterEdgeLabelPlacementStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => CenterEdgeLabelPlacementStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.CenterEdgeLabelPlacementStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/CenterEdgeLabelPlacementStrategy
+  it('site/enums/CenterEdgeLabelPlacementStrategy: compareTo first/last', () => {
+    const values = CenterEdgeLabelPlacementStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-5);
+    expect(last.compareTo(first)).toBe(5);
+    expect(first.compareTo(first)).toBe(0);
+  });
+
+  // oracle: site/enums/CenterEdgeLabelPlacementStrategy
+  it.each([
+    ['MEDIAN_LAYER', false],
+    ['TAIL_LAYER', false],
+    ['HEAD_LAYER', false],
+    ['SPACE_EFFICIENT_LAYER', true],
+    ['WIDEST_LAYER', true],
+    ['CENTER_LAYER', true],
+  ] as const)(
+    'site/enums/CenterEdgeLabelPlacementStrategy: %s.usesLabelSizeInformation() is %s',
+    (constant, expected) => {
+      expect(CenterEdgeLabelPlacementStrategy.valueOf(constant).usesLabelSizeInformation()).toBe(expected);
+    },
+  );
+});

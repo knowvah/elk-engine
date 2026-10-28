@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { addLayer, addNode, label } from '../../../../test/helpers/lgraph-builders.js';
 import { LGraph } from './LGraph.js';
 import { LGraphElement } from './LGraphElement.js';
+import { LNode } from './LNode.js';
 import { LPadding } from './LPadding.js';
 
 function named(graph: LGraph, name: string): ReturnType<typeof addNode> {
@@ -90,5 +91,28 @@ describe('LGraph', () => {
     b.setLayer(layer);
     graph.getLayerlessNodes().length = 0;
     expect(graph.toString()).toBe('G-layered[L_0[n_a, n_b]]');
+  });
+});
+
+describe('LGraph strings (oracle row)', () => {
+  // oracle: site/strings/lgraph; LGraph.java:196, LGraphElement.java:51
+  it('prints layerless nodes, layers, or both, and has no designation', () => {
+    const graph = new LGraph();
+    const l0 = addLayer(graph);
+    const l1 = addLayer(graph);
+    expect(graph.toString()).toBe('G-layered[L_0[], L_1[]]');
+    const n1 = addNode(graph);
+    const n2 = addNode(graph);
+    expect(graph.toString()).toBe('G[layerless[n_-1, n_-1], layers[L_0[], L_1[]]]');
+    const loose = new LNode(graph);
+    loose.setLayer(l0);
+    expect(graph.toString()).toBe('G[layerless[n_-1, n_-1], layers[L_0[n_0], L_1[]]]');
+    expect(graph.getLayerlessNodes().splice(graph.getLayerlessNodes().indexOf(n1), 1)).toEqual([n1]);
+    expect(graph.getLayerlessNodes().splice(graph.getLayerlessNodes().indexOf(n2), 1)).toEqual([n2]);
+    expect(graph.toString()).toBe('G-layered[L_0[n_0], L_1[]]');
+    expect([l0.toString(), l1.toString()]).toEqual(['L_0[n_0]', 'L_1[]']);
+    expect([graph.getDesignation(), l0.getDesignation()]).toEqual([null, null]);
+    graph.getLayers().push(l0);
+    expect(graph.toString()).toBe('G-layered[L_0[n_0], L_1[], L_0[n_0]]');
   });
 });

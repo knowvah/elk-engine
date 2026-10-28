@@ -35,3 +35,34 @@ describe('WrappingStrategy', () => {
     expect(WrappingStrategy.OFF.compareTo(WrappingStrategy.OFF)).toBe(0);
   });
 });
+
+describe('WrappingStrategy oracle row site/enums/WrappingStrategy', () => {
+  // oracle: site/enums/WrappingStrategy
+  it('site/enums/WrappingStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(WrappingStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['OFF', 0, 'OFF'],
+      ['SINGLE_EDGE', 1, 'SINGLE_EDGE'],
+      ['MULTI_EDGE', 2, 'MULTI_EDGE'],
+    ]);
+  });
+
+  // oracle: site/enums/WrappingStrategy
+  it('site/enums/WrappingStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => WrappingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => WrappingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.WrappingStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/WrappingStrategy
+  it('site/enums/WrappingStrategy: compareTo first/last', () => {
+    const values = WrappingStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-2);
+    expect(last.compareTo(first)).toBe(2);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

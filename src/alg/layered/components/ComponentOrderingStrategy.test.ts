@@ -35,3 +35,35 @@ describe('ComponentOrderingStrategy', () => {
     expect(ComponentOrderingStrategy.NONE.compareTo(ComponentOrderingStrategy.NONE)).toBe(0);
   });
 });
+
+describe('ComponentOrderingStrategy oracle row site/enums/ComponentOrderingStrategy', () => {
+  // oracle: site/enums/ComponentOrderingStrategy
+  it('site/enums/ComponentOrderingStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(ComponentOrderingStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['NONE', 0, 'NONE'],
+      ['INSIDE_PORT_SIDE_GROUPS', 1, 'INSIDE_PORT_SIDE_GROUPS'],
+      ['GROUP_MODEL_ORDER', 2, 'GROUP_MODEL_ORDER'],
+      ['MODEL_ORDER', 3, 'MODEL_ORDER'],
+    ]);
+  });
+
+  // oracle: site/enums/ComponentOrderingStrategy
+  it('site/enums/ComponentOrderingStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => ComponentOrderingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => ComponentOrderingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.components.ComponentOrderingStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/ComponentOrderingStrategy
+  it('site/enums/ComponentOrderingStrategy: compareTo first/last', () => {
+    const values = ComponentOrderingStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-3);
+    expect(last.compareTo(first)).toBe(3);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

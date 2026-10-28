@@ -35,3 +35,33 @@ describe('InteractiveReferencePoint', () => {
     expect(InteractiveReferencePoint.CENTER.compareTo(InteractiveReferencePoint.CENTER)).toBe(0);
   });
 });
+
+describe('InteractiveReferencePoint oracle row site/enums/InteractiveReferencePoint', () => {
+  // oracle: site/enums/InteractiveReferencePoint
+  it('site/enums/InteractiveReferencePoint: constants in declaration order with name, ordinal and toString', () => {
+    expect(InteractiveReferencePoint.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['CENTER', 0, 'CENTER'],
+      ['TOP_LEFT', 1, 'TOP_LEFT'],
+    ]);
+  });
+
+  // oracle: site/enums/InteractiveReferencePoint
+  it('site/enums/InteractiveReferencePoint: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => InteractiveReferencePoint.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => InteractiveReferencePoint.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.InteractiveReferencePoint.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/InteractiveReferencePoint
+  it('site/enums/InteractiveReferencePoint: compareTo first/last', () => {
+    const values = InteractiveReferencePoint.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-1);
+    expect(last.compareTo(first)).toBe(1);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

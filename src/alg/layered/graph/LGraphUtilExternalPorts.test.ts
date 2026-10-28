@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: EPL-2.0
 import { beforeAll, describe, expect, it } from 'vitest';
 import { addNode } from '../../../../test/helpers/lgraph-builders.js';
+import { EXTERNAL_PORT_ROWS } from '../../../../test/helpers/lgraph-site-external-tables.js';
+import { xy } from '../../../../test/helpers/lgraph-site-shapes.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import { KVector } from '../../../core/math/KVector.js';
+import type { IProperty } from '../../../graph/properties/IProperty.js';
 import { Direction } from '../../../core/options/Direction.js';
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { PortSide } from '../../../core/options/PortSide.js';
@@ -317,5 +320,67 @@ describe('getExternalPortPosition', () => {
     const east = lonely(PortSide.EAST);
     getExternalPortPosition(east.graph, east.dummy, 0, 0);
     expect(east.dummy.getPosition().y).toBe(8);
+  });
+});
+
+describe('createExternalPortDummy and getExternalPortPosition (oracle rows)', () => {
+  /** The scenario every `site/lgraphutil/externalPorts/*` row shares: see test/helpers/lgraph-site-external-tables.ts. */
+  function runRow(name: string): { dummy: LNode; position: KVector } {
+    const { input } = EXTERNAL_PORT_ROWS[name]!;
+    const graph = new LGraph();
+    graph.getSize().x = 120;
+    graph.getSize().y = 90;
+    graph.getPadding().set(5, 6, 7, 8);
+    graph.getOffset().x = 2;
+    graph.getOffset().y = 3;
+    const holder = new LPort();
+    if (input.holderOffset !== undefined) {
+      holder.setProperty(LayeredOptions.PORT_BORDER_OFFSET, input.holderOffset);
+    }
+    if (input.holderAnchor !== undefined) {
+      holder.setProperty(LayeredOptions.PORT_ANCHOR, new KVector(input.holderAnchor[0], input.holderAnchor[1]));
+    }
+    if (input.holderIndex !== undefined) {
+      holder.setProperty(LayeredOptions.PORT_INDEX, input.holderIndex);
+    }
+    const dummy = createExternalPortDummy({
+      propertyHolder: holder,
+      portConstraints: PortConstraints.valueOf(input.constraints),
+      portSide: PortSide.valueOf(input.side),
+      netFlow: input.netFlow,
+      portNodeSize: new KVector(100, 80),
+      portPosition: new KVector(7, 9),
+      portSize: new KVector(6, 4),
+      layoutDirection: Direction.valueOf(input.direction),
+      layeredGraph: graph,
+    });
+    dummy.getPosition().x = 30;
+    dummy.getPosition().y = 40;
+    return { dummy, position: getExternalPortPosition(graph, dummy, 6, 4) };
+  }
+
+  function optional<T>(holder: LNode, property: IProperty<T>): T | null {
+    return holder.hasProperty(property) ? holder.getProperty(property) : null;
+  }
+
+  // oracle: site/lgraphutil/externalPorts/{north,east,south,west}-{implicit,explicit}-anchor-{negative,positive}-offset,
+  // fixed-order-{index,no-index}-*, fixed-ratio-*, fixed-side-*, fixed-side-undefined,
+  // free-{right,left,up,down,undefined}-netflow-{positive,zero,negative}; LGraphUtil.java:800-1030
+  it.each(Object.keys(EXTERNAL_PORT_ROWS))('site/lgraphutil/externalPorts/%s', (name) => {
+    const { expect: want } = EXTERNAL_PORT_ROWS[name]!;
+    const { dummy, position } = runRow(name);
+    expect(dummy.getType()).toBe(NodeType.EXTERNAL_PORT);
+    expect(xy(dummy.getSize())).toEqual([...want.size]);
+    expect(dummy.getProperty(InternalProperties.EXT_PORT_SIDE).name()).toBe(want.externalPortSide);
+    expect(optional(dummy, InternalProperties.IN_LAYER_CONSTRAINT)?.name() ?? null).toBe(want.inLayerConstraint);
+    expect(optional(dummy, LayeredOptions.LAYERING_LAYER_CONSTRAINT)?.name() ?? null).toBe(want.layerConstraint);
+    expect(optional(dummy, InternalProperties.EDGE_CONSTRAINT)?.name() ?? null).toBe(want.edgeConstraint);
+    expect(xy(dummy.getProperty(LayeredOptions.PORT_ANCHOR))).toEqual([...want.anchor]);
+    expect(dummy.getProperty(LayeredOptions.PORT_BORDER_OFFSET)).toBe(want.borderOffset);
+    expect(optional(dummy, InternalProperties.PORT_RATIO_OR_POSITION)).toBe(want.ratioOrPosition);
+    const port = dummy.getPorts()[0]!;
+    expect([port.getSide().name(), ...xy(port.getPosition())]).toEqual([...want.port]);
+    expect(xy(position)).toEqual([...want.position]);
+    expect(xy(dummy.getPosition())).toEqual([...want.moved]);
   });
 });

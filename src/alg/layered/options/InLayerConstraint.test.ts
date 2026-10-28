@@ -35,3 +35,34 @@ describe('InLayerConstraint', () => {
     expect(InLayerConstraint.NONE.compareTo(InLayerConstraint.NONE)).toBe(0);
   });
 });
+
+describe('InLayerConstraint oracle row site/enums/InLayerConstraint', () => {
+  // oracle: site/enums/InLayerConstraint
+  it('site/enums/InLayerConstraint: constants in declaration order with name, ordinal and toString', () => {
+    expect(InLayerConstraint.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['NONE', 0, 'NONE'],
+      ['TOP', 1, 'TOP'],
+      ['BOTTOM', 2, 'BOTTOM'],
+    ]);
+  });
+
+  // oracle: site/enums/InLayerConstraint
+  it('site/enums/InLayerConstraint: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => InLayerConstraint.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => InLayerConstraint.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.InLayerConstraint.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/InLayerConstraint
+  it('site/enums/InLayerConstraint: compareTo first/last', () => {
+    const values = InLayerConstraint.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-2);
+    expect(last.compareTo(first)).toBe(2);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

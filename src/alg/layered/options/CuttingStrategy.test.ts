@@ -35,3 +35,34 @@ describe('CuttingStrategy', () => {
     expect(CuttingStrategy.ARD.compareTo(CuttingStrategy.ARD)).toBe(0);
   });
 });
+
+describe('CuttingStrategy oracle row site/enums/CuttingStrategy', () => {
+  // oracle: site/enums/CuttingStrategy
+  it('site/enums/CuttingStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(CuttingStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['ARD', 0, 'ARD'],
+      ['MSD', 1, 'MSD'],
+      ['MANUAL', 2, 'MANUAL'],
+    ]);
+  });
+
+  // oracle: site/enums/CuttingStrategy
+  it('site/enums/CuttingStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => CuttingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => CuttingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.CuttingStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/CuttingStrategy
+  it('site/enums/CuttingStrategy: compareTo first/last', () => {
+    const values = CuttingStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-2);
+    expect(last.compareTo(first)).toBe(2);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

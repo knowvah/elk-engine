@@ -35,3 +35,36 @@ describe('LayerConstraint', () => {
     expect(LayerConstraint.NONE.compareTo(LayerConstraint.NONE)).toBe(0);
   });
 });
+
+describe('LayerConstraint oracle row site/enums/LayerConstraint', () => {
+  // oracle: site/enums/LayerConstraint
+  it('site/enums/LayerConstraint: constants in declaration order with name, ordinal and toString', () => {
+    expect(LayerConstraint.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['NONE', 0, 'NONE'],
+      ['FIRST', 1, 'FIRST'],
+      ['FIRST_SEPARATE', 2, 'FIRST_SEPARATE'],
+      ['LAST', 3, 'LAST'],
+      ['LAST_SEPARATE', 4, 'LAST_SEPARATE'],
+    ]);
+  });
+
+  // oracle: site/enums/LayerConstraint
+  it('site/enums/LayerConstraint: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => LayerConstraint.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => LayerConstraint.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.LayerConstraint.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/LayerConstraint
+  it('site/enums/LayerConstraint: compareTo first/last', () => {
+    const values = LayerConstraint.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-4);
+    expect(last.compareTo(first)).toBe(4);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

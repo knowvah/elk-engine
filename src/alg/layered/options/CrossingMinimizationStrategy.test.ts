@@ -57,3 +57,35 @@ describe('CrossingMinimizationStrategy', () => {
     );
   });
 });
+
+describe('CrossingMinimizationStrategy oracle row site/enums/CrossingMinimizationStrategy', () => {
+  // oracle: site/enums/CrossingMinimizationStrategy
+  it('site/enums/CrossingMinimizationStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(CrossingMinimizationStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['LAYER_SWEEP', 0, 'LAYER_SWEEP'],
+      ['MEDIAN_LAYER_SWEEP', 1, 'MEDIAN_LAYER_SWEEP'],
+      ['INTERACTIVE', 2, 'INTERACTIVE'],
+      ['NONE', 3, 'NONE'],
+    ]);
+  });
+
+  // oracle: site/enums/CrossingMinimizationStrategy
+  it('site/enums/CrossingMinimizationStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => CrossingMinimizationStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => CrossingMinimizationStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.CrossingMinimizationStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/CrossingMinimizationStrategy
+  it('site/enums/CrossingMinimizationStrategy: compareTo first/last', () => {
+    const values = CrossingMinimizationStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-3);
+    expect(last.compareTo(first)).toBe(3);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

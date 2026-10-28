@@ -41,3 +41,43 @@ describe('LongEdgeOrderingStrategy', () => {
     expect(LongEdgeOrderingStrategy.EQUAL.returnValue()).toBe(0);
   });
 });
+
+describe('LongEdgeOrderingStrategy oracle row site/enums/LongEdgeOrderingStrategy', () => {
+  // oracle: site/enums/LongEdgeOrderingStrategy
+  it('site/enums/LongEdgeOrderingStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(LongEdgeOrderingStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['DUMMY_NODE_OVER', 0, 'DUMMY_NODE_OVER'],
+      ['DUMMY_NODE_UNDER', 1, 'DUMMY_NODE_UNDER'],
+      ['EQUAL', 2, 'EQUAL'],
+    ]);
+  });
+
+  // oracle: site/enums/LongEdgeOrderingStrategy
+  it('site/enums/LongEdgeOrderingStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => LongEdgeOrderingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => LongEdgeOrderingStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.LongEdgeOrderingStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/LongEdgeOrderingStrategy
+  it('site/enums/LongEdgeOrderingStrategy: compareTo first/last', () => {
+    const values = LongEdgeOrderingStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-2);
+    expect(last.compareTo(first)).toBe(2);
+    expect(first.compareTo(first)).toBe(0);
+  });
+
+  // oracle: site/enums/LongEdgeOrderingStrategy
+  it.each([
+    ['DUMMY_NODE_OVER', 2147483647],
+    ['DUMMY_NODE_UNDER', -2147483648],
+    ['EQUAL', 0],
+  ] as const)('site/enums/LongEdgeOrderingStrategy: %s.returnValue() is %s', (constant, expected) => {
+    expect(LongEdgeOrderingStrategy.valueOf(constant).returnValue()).toBe(expected);
+  });
+});

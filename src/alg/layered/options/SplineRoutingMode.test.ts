@@ -35,3 +35,34 @@ describe('SplineRoutingMode', () => {
     expect(SplineRoutingMode.CONSERVATIVE.compareTo(SplineRoutingMode.CONSERVATIVE)).toBe(0);
   });
 });
+
+describe('SplineRoutingMode oracle row site/enums/SplineRoutingMode', () => {
+  // oracle: site/enums/SplineRoutingMode
+  it('site/enums/SplineRoutingMode: constants in declaration order with name, ordinal and toString', () => {
+    expect(SplineRoutingMode.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['CONSERVATIVE', 0, 'CONSERVATIVE'],
+      ['CONSERVATIVE_SOFT', 1, 'CONSERVATIVE_SOFT'],
+      ['SLOPPY', 2, 'SLOPPY'],
+    ]);
+  });
+
+  // oracle: site/enums/SplineRoutingMode
+  it('site/enums/SplineRoutingMode: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => SplineRoutingMode.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => SplineRoutingMode.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.SplineRoutingMode.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/SplineRoutingMode
+  it('site/enums/SplineRoutingMode: compareTo first/last', () => {
+    const values = SplineRoutingMode.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-2);
+    expect(last.compareTo(first)).toBe(2);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

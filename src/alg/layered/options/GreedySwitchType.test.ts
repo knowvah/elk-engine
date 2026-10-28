@@ -35,3 +35,34 @@ describe('GreedySwitchType', () => {
     expect(GreedySwitchType.ONE_SIDED.compareTo(GreedySwitchType.ONE_SIDED)).toBe(0);
   });
 });
+
+describe('GreedySwitchType oracle row site/enums/GreedySwitchType', () => {
+  // oracle: site/enums/GreedySwitchType
+  it('site/enums/GreedySwitchType: constants in declaration order with name, ordinal and toString', () => {
+    expect(GreedySwitchType.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['ONE_SIDED', 0, 'ONE_SIDED'],
+      ['TWO_SIDED', 1, 'TWO_SIDED'],
+      ['OFF', 2, 'OFF'],
+    ]);
+  });
+
+  // oracle: site/enums/GreedySwitchType
+  it('site/enums/GreedySwitchType: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => GreedySwitchType.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => GreedySwitchType.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.GreedySwitchType.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/GreedySwitchType
+  it('site/enums/GreedySwitchType: compareTo first/last', () => {
+    const values = GreedySwitchType.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-2);
+    expect(last.compareTo(first)).toBe(2);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

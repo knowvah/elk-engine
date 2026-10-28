@@ -243,3 +243,139 @@ describe('Tarjan.resetTarjan', () => {
     expect(t['stack']).toEqual([]);
   });
 });
+
+describe('Tarjan (oracle rows)', () => {
+  // the S9 graph: two cycles (n0-n1-n2, n3-n4), a tail, two self loops n6 and n7 and a lone n8
+  const S9_EDGES: [number, number][] = [
+    [0, 1],
+    [1, 2],
+    [2, 0],
+    [2, 3],
+    [3, 4],
+    [4, 3],
+    [4, 5],
+    [5, 6],
+    [6, 6],
+    [7, 7],
+    [1, 0],
+  ];
+
+  interface Run {
+    readonly built: BuiltTarjanGraph;
+    readonly tarjan: Tarjan;
+    readonly components: Set<LNode>[];
+    readonly componentIds: Map<LNode, number>;
+  }
+
+  function newRun(reversed: number[]): Run {
+    const built = buildTarjanGraph({ nodeCount: 9, edges: S9_EDGES, reversed });
+    const components: Set<LNode>[] = [];
+    const componentIds = new Map<LNode, number>();
+    return { built, tarjan: new Tarjan(built.reversed, components, componentIds), components, componentIds };
+  }
+
+  const read = (run: Run, property: typeof InternalProperties.TARJAN_ID | typeof InternalProperties.TARJAN_LOWLINK) =>
+    run.built.nodes.map((n) => n.getProperty(property));
+
+  /** Components as sorted node indices, componentIds as { node index: component index }. */
+  function snapshot(run: Run): { components: number[][]; componentIds: Record<string, number> } {
+    const ids = (nodes: Iterable<LNode>): number[] => [...nodes].map((n) => n.id).sort((a, b) => a - b);
+    const entries = [...run.componentIds].sort(([a], [b]) => a.id - b.id);
+    return {
+      components: run.components.map(ids),
+      componentIds: Object.fromEntries(entries.map(([n, i]) => [`n${n.id}`, i])),
+    };
+  }
+
+  const UNVISITED = Array<number>(9).fill(-1);
+
+  // oracle: site/tarjan/reversed-{none,2,2-4-8,0-1-2-3-4-5-6-7-8-9-10}; Tarjan.java:45, 56, 104
+  it.each([
+    [
+      'none',
+      [],
+      [0, 1, 2, 3, 4, 5, 6, 7, 8],
+      [0, 0, 0, 3, 3, 5, 6, 7, 8],
+      [
+        [3, 4],
+        [0, 1, 2],
+      ],
+      { n0: 1, n1: 1, n2: 1, n3: 0, n4: 0 },
+    ],
+    [
+      '2',
+      [2],
+      [0, 1, 2, 3, 4, 5, 6, 7, 8],
+      [0, 0, 2, 3, 3, 5, 6, 7, 8],
+      [
+        [3, 4],
+        [0, 1],
+      ],
+      { n0: 1, n1: 1, n3: 0, n4: 0 },
+    ],
+    ['2-4-8', [2, 4, 8], [0, 1, 2, 3, 4, 5, 6, 7, 8], [0, 0, 2, 3, 4, 5, 6, 7, 8], [[0, 1]], { n0: 0, n1: 0 }],
+    [
+      '0-1-2-3-4-5-6-7-8-9-10',
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      [0, 2, 1, 3, 4, 5, 6, 7, 8],
+      [0, 0, 0, 3, 3, 5, 6, 7, 8],
+      [
+        [0, 1, 2],
+        [3, 4],
+      ],
+      { n0: 0, n1: 0, n2: 0, n3: 1, n4: 1 },
+    ],
+  ] as const)(
+    'reversed-%s: reset, run, run again and reset-and-run again give the recorded ids, lowlinks and components',
+    (_name, reversed, ids, lowlinks, components, componentIds) => {
+      const run = newRun([...reversed]);
+      run.tarjan.resetTarjan(run.built.graph);
+      expect(read(run, InternalProperties.TARJAN_ID)).toEqual(UNVISITED);
+      expect(read(run, InternalProperties.TARJAN_LOWLINK)).toEqual(UNVISITED);
+      expect(snapshot(run)).toEqual({ components: [], componentIds: {} });
+
+      run.tarjan.tarjan(run.built.graph);
+      const afterRun = { components: components.map((c) => [...c]), componentIds: { ...componentIds } };
+      expect(read(run, InternalProperties.TARJAN_ID)).toEqual([...ids]);
+      expect(read(run, InternalProperties.TARJAN_LOWLINK)).toEqual([...lowlinks]);
+      expect(run.built.nodes.some((n) => n.getProperty(InternalProperties.TARJAN_ON_STACK))).toBe(false);
+      expect(run.built.edges.some((e) => e.getProperty(InternalProperties.IS_PART_OF_CYCLE))).toBe(false);
+      expect(snapshot(run)).toEqual(afterRun);
+
+      // a second run finds every node visited and changes nothing
+      run.tarjan.tarjan(run.built.graph);
+      expect(snapshot(run)).toEqual(afterRun);
+
+      // after a reset the components are found and appended again, with the component indices shifted
+      run.tarjan.resetTarjan(run.built.graph);
+      run.tarjan.tarjan(run.built.graph);
+      const again = snapshot(run);
+      expect(again.components).toEqual([...afterRun.components, ...afterRun.components]);
+      expect(again.componentIds).toEqual(
+        Object.fromEntries(Object.entries(componentIds).map(([n, i]) => [n, i + afterRun.components.length])),
+      );
+      expect(read(run, InternalProperties.TARJAN_ID)).toEqual([...ids]);
+    },
+  );
+
+  // oracle: site/tarjan/direct-visit; Tarjan.java:56
+  it('stronglyConnected called directly visits only what is reachable from the node', () => {
+    const run = newRun([]);
+    run.tarjan.resetTarjan(run.built.graph);
+    run.tarjan.stronglyConnected(run.built.nodes[0]!);
+    expect(read(run, InternalProperties.TARJAN_ID)).toEqual([0, 1, 2, 3, 4, 5, 6, -1, -1]);
+    expect(read(run, InternalProperties.TARJAN_LOWLINK)).toEqual([0, 0, 0, 3, 3, 5, 6, -1, -1]);
+    const afterN0 = {
+      components: [
+        [3, 4],
+        [0, 1, 2],
+      ],
+      componentIds: { n0: 1, n1: 1, n2: 1, n3: 0, n4: 0 },
+    };
+    expect(snapshot(run)).toEqual(afterN0);
+    run.tarjan.stronglyConnected(run.built.nodes[7]!);
+    expect(read(run, InternalProperties.TARJAN_ID)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, -1]);
+    expect(read(run, InternalProperties.TARJAN_LOWLINK)).toEqual([0, 0, 0, 3, 3, 5, 6, 7, -1]);
+    expect(snapshot(run)).toEqual(afterN0);
+  });
+});

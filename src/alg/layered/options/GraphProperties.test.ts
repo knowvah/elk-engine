@@ -46,3 +46,41 @@ describe('GraphProperties', () => {
     expect(GraphProperties.COMMENTS.compareTo(GraphProperties.COMMENTS)).toBe(0);
   });
 });
+
+describe('GraphProperties oracle row site/enums/GraphProperties', () => {
+  // oracle: site/enums/GraphProperties
+  it('site/enums/GraphProperties: constants in declaration order with name, ordinal and toString', () => {
+    expect(GraphProperties.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['COMMENTS', 0, 'COMMENTS'],
+      ['EXTERNAL_PORTS', 1, 'EXTERNAL_PORTS'],
+      ['HYPEREDGES', 2, 'HYPEREDGES'],
+      ['HYPERNODES', 3, 'HYPERNODES'],
+      ['NON_FREE_PORTS', 4, 'NON_FREE_PORTS'],
+      ['NORTH_SOUTH_PORTS', 5, 'NORTH_SOUTH_PORTS'],
+      ['SELF_LOOPS', 6, 'SELF_LOOPS'],
+      ['CENTER_LABELS', 7, 'CENTER_LABELS'],
+      ['END_LABELS', 8, 'END_LABELS'],
+      ['PARTITIONS', 9, 'PARTITIONS'],
+    ]);
+  });
+
+  // oracle: site/enums/GraphProperties
+  it('site/enums/GraphProperties: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => GraphProperties.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => GraphProperties.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.GraphProperties.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/GraphProperties
+  it('site/enums/GraphProperties: compareTo first/last', () => {
+    const values = GraphProperties.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-9);
+    expect(last.compareTo(first)).toBe(9);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

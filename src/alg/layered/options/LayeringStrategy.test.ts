@@ -72,3 +72,40 @@ describe('LayeringStrategy', () => {
     );
   });
 });
+
+describe('LayeringStrategy oracle row site/enums/LayeringStrategy', () => {
+  // oracle: site/enums/LayeringStrategy
+  it('site/enums/LayeringStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(LayeringStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['NETWORK_SIMPLEX', 0, 'NETWORK_SIMPLEX'],
+      ['LONGEST_PATH', 1, 'LONGEST_PATH'],
+      ['LONGEST_PATH_SOURCE', 2, 'LONGEST_PATH_SOURCE'],
+      ['COFFMAN_GRAHAM', 3, 'COFFMAN_GRAHAM'],
+      ['INTERACTIVE', 4, 'INTERACTIVE'],
+      ['STRETCH_WIDTH', 5, 'STRETCH_WIDTH'],
+      ['MIN_WIDTH', 6, 'MIN_WIDTH'],
+      ['BF_MODEL_ORDER', 7, 'BF_MODEL_ORDER'],
+      ['DF_MODEL_ORDER', 8, 'DF_MODEL_ORDER'],
+    ]);
+  });
+
+  // oracle: site/enums/LayeringStrategy
+  it('site/enums/LayeringStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => LayeringStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => LayeringStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.LayeringStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/LayeringStrategy
+  it('site/enums/LayeringStrategy: compareTo first/last', () => {
+    const values = LayeringStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-8);
+    expect(last.compareTo(first)).toBe(8);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

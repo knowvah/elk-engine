@@ -58,3 +58,36 @@ describe('NodePlacementStrategy', () => {
     );
   });
 });
+
+describe('NodePlacementStrategy oracle row site/enums/NodePlacementStrategy', () => {
+  // oracle: site/enums/NodePlacementStrategy
+  it('site/enums/NodePlacementStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(NodePlacementStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['SIMPLE', 0, 'SIMPLE'],
+      ['INTERACTIVE', 1, 'INTERACTIVE'],
+      ['LINEAR_SEGMENTS', 2, 'LINEAR_SEGMENTS'],
+      ['BRANDES_KOEPF', 3, 'BRANDES_KOEPF'],
+      ['NETWORK_SIMPLEX', 4, 'NETWORK_SIMPLEX'],
+    ]);
+  });
+
+  // oracle: site/enums/NodePlacementStrategy
+  it('site/enums/NodePlacementStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => NodePlacementStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => NodePlacementStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.NodePlacementStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/NodePlacementStrategy
+  it('site/enums/NodePlacementStrategy: compareTo first/last', () => {
+    const values = NodePlacementStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-4);
+    expect(last.compareTo(first)).toBe(4);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});

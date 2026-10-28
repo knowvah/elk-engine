@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { beforeAll, describe, expect, it } from 'vitest';
 import { addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';
+import { PROPERTIES_DIRECTIONS, propertiesScenario } from '../../../../test/helpers/lgraph-site-properties.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import { Direction } from '../../../core/options/Direction.js';
 import { EdgeLabelPlacement } from '../../../core/options/EdgeLabelPlacement.js';
@@ -183,5 +184,63 @@ describe('computeGraphProperties: ports and edges', () => {
       computeGraphProperties(graph);
       expect(flags(graph)).toEqual(expected);
     }
+  });
+});
+
+describe('computeGraphProperties (oracle rows)', () => {
+  const EXPECTED_FLAGS = [
+    'CENTER_LABELS',
+    'COMMENTS',
+    'END_LABELS',
+    'EXTERNAL_PORTS',
+    'HYPEREDGES',
+    'HYPERNODES',
+    'NON_FREE_PORTS',
+    'NORTH_SOUTH_PORTS',
+    'SELF_LOOPS',
+  ];
+  // every node of the scenario ends FREE, only `fixed` keeps FIXED_SIDE
+  const EXPECTED_CONSTRAINTS = ['cmt', 'hyp', 'cmtHyp', 'ext', 'undef', 'free', 'fixed', 'hub', 'sides', 'loop'].map(
+    (name): [string, PortConstraints] => [name, name === 'fixed' ? PortConstraints.FIXED_SIDE : PortConstraints.FREE],
+  );
+
+  // oracle: site/lgraphutil/graphProperties/{right,down,up,left}; LGraphUtil.java:349-430
+  it.each(PROPERTIES_DIRECTIONS.map((d) => [d.name(), d] as const))(
+    'direction %s: the flags and constraints are the same on a fresh, a repeated and a pre-filled computation',
+    (_name, direction) => {
+      const { graph, nodes } = propertiesScenario(direction);
+      const constraints = (): [string, PortConstraints][] =>
+        Object.entries(nodes).map(([name, node]) => [name, node.getProperty(LayeredOptions.PORT_CONSTRAINTS)]);
+      computeGraphProperties(graph);
+      expect(flags(graph)).toEqual(EXPECTED_FLAGS);
+      expect(constraints().sort()).toEqual([...EXPECTED_CONSTRAINTS].sort());
+      computeGraphProperties(graph);
+      expect(flags(graph)).toEqual(EXPECTED_FLAGS);
+      // the pre-filled set (HYPERNODES, PARTITIONS, NORTH_SOUTH_PORTS) is cleared before it is recomputed
+      const prefilled = graph.getProperty(InternalProperties.GRAPH_PROPERTIES);
+      prefilled.clear();
+      for (const flag of [GraphProperties.HYPERNODES, GraphProperties.PARTITIONS, GraphProperties.NORTH_SOUTH_PORTS]) {
+        prefilled.add(flag);
+      }
+      computeGraphProperties(graph);
+      expect(flags(graph)).toEqual(EXPECTED_FLAGS);
+      expect(constraints().sort()).toEqual([...EXPECTED_CONSTRAINTS].sort());
+    },
+  );
+
+  // oracle: site/lgraphutil/graphProperties/all-free; LGraphUtil.java:349-357
+  it('a FREE node alone raises no flag', () => {
+    const graph = new LGraph();
+    const node = addNode(graph);
+    node.setProperty(LayeredOptions.PORT_CONSTRAINTS, PortConstraints.FREE);
+    computeGraphProperties(graph);
+    expect(flags(graph)).toEqual([]);
+  });
+
+  // oracle: site/lgraphutil/graphProperties/empty; LGraphUtil.java:349-357
+  it('an empty graph raises no flag', () => {
+    const graph = new LGraph();
+    computeGraphProperties(graph);
+    expect(flags(graph)).toEqual([]);
   });
 });

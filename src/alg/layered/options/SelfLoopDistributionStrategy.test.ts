@@ -35,3 +35,34 @@ describe('SelfLoopDistributionStrategy', () => {
     expect(SelfLoopDistributionStrategy.EQUALLY.compareTo(SelfLoopDistributionStrategy.EQUALLY)).toBe(0);
   });
 });
+
+describe('SelfLoopDistributionStrategy oracle row site/enums/SelfLoopDistributionStrategy', () => {
+  // oracle: site/enums/SelfLoopDistributionStrategy
+  it('site/enums/SelfLoopDistributionStrategy: constants in declaration order with name, ordinal and toString', () => {
+    expect(SelfLoopDistributionStrategy.values().map((c) => [c.name(), c.ordinal(), c.toString()])).toEqual([
+      ['EQUALLY', 0, 'EQUALLY'],
+      ['NORTH', 1, 'NORTH'],
+      ['NORTH_SOUTH', 2, 'NORTH_SOUTH'],
+    ]);
+  });
+
+  // oracle: site/enums/SelfLoopDistributionStrategy
+  it('site/enums/SelfLoopDistributionStrategy: valueOf of an unknown name throws IllegalArgumentException with the Java message', () => {
+    expect(() => SelfLoopDistributionStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(IllegalArgumentException);
+    expect(() => SelfLoopDistributionStrategy.valueOf('NO_SUCH_CONSTANT')).toThrow(
+      new IllegalArgumentException(
+        'No enum constant org.eclipse.elk.alg.layered.options.SelfLoopDistributionStrategy.NO_SUCH_CONSTANT',
+      ),
+    );
+  });
+
+  // oracle: site/enums/SelfLoopDistributionStrategy
+  it('site/enums/SelfLoopDistributionStrategy: compareTo first/last', () => {
+    const values = SelfLoopDistributionStrategy.values();
+    const first = values[0]!;
+    const last = values[values.length - 1]!;
+    expect(first.compareTo(last)).toBe(-2);
+    expect(last.compareTo(first)).toBe(2);
+    expect(first.compareTo(first)).toBe(0);
+  });
+});
