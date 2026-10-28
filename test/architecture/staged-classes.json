@@ -1,0 +1,9 @@
+[
+  { "path": "src/alg/layered/compound/CrossHierarchyEdge.ts", "mission": "7h" },
+  { "path": "src/alg/layered/intermediate/loops/SelfLoopEdge.ts", "mission": "7g" },
+  { "path": "src/alg/layered/intermediate/loops/SelfLoopHolder.ts", "mission": "7g" },
+  { "path": "src/alg/layered/intermediate/loops/SelfLoopPort.ts", "mission": "7g" },
+  { "path": "src/alg/layered/intermediate/wrapping/BreakingPointInserter.ts", "mission": "7g" },
+  { "path": "src/alg/layered/intermediate/wrapping/BreakingPointInserterBPInfo.ts", "mission": "7g" },
+  { "path": "src/alg/layered/p5edges/splines/SplineSegment.ts", "mission": "7e" }
+]

@@ -410,6 +410,28 @@ describe('algorithm classes from snippets', () => {
     );
     expect(text).toContain(".melkBundleName('Ex')");
   });
+
+  it('emits a held-back algorithm class with its constants but no factory or registration (mission 7a, X3)', async () => {
+    const files = await emitSnippet(
+      `
+      option p: int { default = 1 }
+      algorithm alg(Gone) {
+        supports p = 4
+      }
+    `,
+      ['org.example.Gone'],
+    );
+    const text = [...files].find(([path]) => path.endsWith('AlgMetadata.ts'))?.[1] ?? '';
+    expect(text).toContain("static readonly ALGORITHM_ID: string = 'org.example.alg';");
+    expect(text).toContain('private static readonly P_DEFAULT: number = 4;');
+    expect(text).toContain(
+      '// Held back (algorithm org.example.alg): the layout provider is pending type org.example.Gone.',
+    );
+    expect(text).not.toMatch(/import .*Gone/);
+    expect(text).not.toContain('AlgFactory');
+    expect(text).not.toContain('registry.register(');
+    expect(text).not.toContain('registry.addOptionSupport(');
+  });
 });
 
 class StubProvider extends AbstractLayoutProvider {
