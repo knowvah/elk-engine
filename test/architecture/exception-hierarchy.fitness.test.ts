@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { BasicIndexOutOfBoundsException } from '../../src/emf/common/util/BasicIndexOutOfBoundsException.js';
 import { UnsupportedConfigurationException } from '../../src/core/UnsupportedConfigurationException.js';
 import { UnsupportedGraphException } from '../../src/core/UnsupportedGraphException.js';
+import { UnspecifiedSpacingException } from '../../src/alg/layered/options/SpacingsUnspecifiedSpacingException.js';
 import { WrappedException } from '../../src/core/util/WrappedException.js';
 import { GraphValidationException } from '../../src/core/validation/GraphValidationException.js';
 import { OperationCanceledException } from '../../src/equinox/core/runtime/OperationCanceledException.js';
@@ -85,6 +86,7 @@ const JAVA_PARENTS: ReadonlyMap<ErrorClass, ErrorClass> = new Map<ErrorClass, Er
   [JsonImportException, RuntimeException],
   [UnsupportedConfigurationException, RuntimeException],
   [UnsupportedGraphException, RuntimeException],
+  [UnspecifiedSpacingException, RuntimeException],
   [WrappedException, RuntimeException],
   [GraphValidationException, RuntimeException],
   // Xtext 2.36.0

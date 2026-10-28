@@ -69,3 +69,17 @@ tests:
 | `alg.layered.p3order.counting`           | `src/alg/layered/p3order/counting/*.test.ts`           |     4 |   925 | hand port |
 | `alg.layered.p4nodes`                    | `src/alg/layered/p4nodes/*.test.ts`                    |     1 |   211 | hand port |
 | `alg.layered.p5edges`                    | `src/alg/layered/p5edges/*.test.ts`                    |     1 |   150 | hand port |
+
+## Status after mission 7a (2026-10-28) {#status-7a}
+
+Ported (design in [alg-layered.md](alg-layered.md)): `alg.layered` root — `LayeredLayoutProvider`, `LayeredPhases`,
+`IHierarchyAwareLayoutProcessor` (`ElkLayered` staged for 7f; `GraphConfigurator`, `InteractiveLayeredGraphVisitor`,
+`DebugUtil`, `DotDebugUtil`, `JsonDebugUtil` → 7f per L2); `alg.layered.components` — `ComponentOrderingStrategy`
+only; `alg.layered.graph` — all 13 classes (+ `LGraphUtil` and `LGraphAdapters` section/M15 files, `Tarjan`);
+`alg.layered.graph.transform` — all 4 (+ importer and transferrer section files, `ElkGraphTransformerUtility`);
+`alg.layered.options` — all 35 plus the generated `LayeredOptions` and `LayeredMetaDataProvider`. Every other row
+of the table above is pending (7b–7h). Staged files (`test/architecture/staged-classes.json`): `ElkLayered` (7f),
+`intermediate/LabelDummySwitcher` (7f), `intermediate/loops/{SelfLoopEdge,SelfLoopHolder,SelfLoopPort}` (7g),
+`intermediate/wrapping/{BreakingPointInserter,BreakingPointInserterBPInfo}` (7g), `compound/CrossHierarchyEdge` (7h),
+`p5edges/splines/SplineSegment` (7e). JUnit: `LayeredSpacingTest` ported (15 of 16 cases; `AfterLayoutTest` → 7f);
+`TestGraphCreator` → 7b (L6).

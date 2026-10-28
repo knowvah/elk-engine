@@ -5,6 +5,9 @@ import { isDeepStrictEqual } from 'node:util';
 import type { MelkFile } from '../../tools/melk/ast.js';
 import { resolveAll, type RegistryCall, type ResolvedBundle } from '../../tools/melk/model.js';
 import { parseMelk } from '../../tools/melk/parser.js';
+import type { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
+import type { ServiceDump } from './held-back.js';
+import { RecordingRegistry } from './recorder.js';
 
 export const SOURCES_DIR = join(import.meta.dirname, '../../tools/melk/sources');
 export const METADATA_PATH = join(import.meta.dirname, '../golden/refs/java/metadata.json');
@@ -132,4 +135,49 @@ export function firstDifference(actual: unknown, expected: unknown, path: string
 /** Compares two call lists in order; returns a readable description of the first difference, or null when equal. */
 export function diffCalls(actual: readonly RegistryCall[], expected: readonly RegistryCall[]): string | null {
   return firstDifference(actual, expected, 'calls');
+}
+
+/** The service state in the shape of the dump's `service` section (T7 (ii)), values encoded by the recorder. */
+export function dumpService(service: LayoutMetaDataService): ServiceDump {
+  const recorder = new RecordingRegistry();
+  const options = service.getOptionData();
+  const optionRecords = options.map((option) => {
+    recorder.register(option);
+    return lastData(recorder);
+  });
+  const dependencies = options.map((option) =>
+    option.getDependencies().map((pair) => {
+      recorder.addDependency(option.getId(), pair.getFirst()?.getId() ?? '', pair.getSecond());
+      const call = recorder.calls[recorder.calls.length - 1];
+      return { target: pair.getFirst()?.getId(), value: call?.call === 'addDependency' ? call.value : undefined };
+    }),
+  );
+  const categories = service.getCategoryData().map((category) => {
+    recorder.register(category);
+    return { ...lastData(recorder), layouters: category.getLayouters().map((layouter) => layouter.getId()) };
+  });
+  const algorithms = service.getAlgorithmData().map((algorithm) => {
+    recorder.register(algorithm);
+    const known = [...algorithm.getKnownOptionIds()].map((id) => {
+      recorder.addOptionSupport(algorithm.getId(), id, algorithm.getDefaultValue(id));
+      const call = recorder.calls[recorder.calls.length - 1];
+      return { id, default: call?.call === 'addOptionSupport' ? call.default : undefined };
+    });
+    return { ...lastDataBefore(recorder, known.length), knownOptions: known };
+  });
+  return {
+    options: optionRecords.map((record, i) => ({ ...record, dependencies: dependencies[i] })),
+    categories,
+    algorithms,
+  };
+}
+
+function lastData(recorder: RecordingRegistry): Record<string, unknown> {
+  const call = recorder.calls[recorder.calls.length - 1];
+  return call !== undefined && 'data' in call ? { ...call.data } : {};
+}
+
+function lastDataBefore(recorder: RecordingRegistry, trailing: number): Record<string, unknown> {
+  const call = recorder.calls[recorder.calls.length - 1 - trailing];
+  return call !== undefined && 'data' in call ? { ...call.data } : {};
 }

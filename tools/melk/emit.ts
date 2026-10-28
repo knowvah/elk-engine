@@ -21,8 +21,9 @@ import {
   type TypeContext,
 } from './imports.js';
 import { definingBundleId, type ResolvedAlgorithm, type ResolvedSupport } from './model-algorithms.js';
-import { loadUpstreamPaths } from './config.js';
+import { loadUpstreamPaths, NON_LEAF_DEFAULT_TYPES } from './config.js';
 import type { IndexedOption } from './model-index.js';
+import { referencedClasses, type PendingContext } from './model-pending.js';
 import { bundleClassName } from './model-names.js';
 import type { ResolvedBundle, ResolvedDependency, ResolvedOption, RegistryCall } from './model.js';
 
@@ -146,18 +147,8 @@ function optionConstants(option: ResolvedOption, context: FileContext): string[]
   const { option: md } = entry;
   const ownContext = contextOfOption(option, context);
   const type = tsTypeOf(md.type, ownContext);
-  const defaults =
-    md.defaultValue === null
-      ? []
-      : [
-          constantDeclaration(
-            [`Default value for {@link ${entry.constantName}}.`],
-            'private static readonly',
-            option.defaultConstantName,
-            `${type}${md.defaultValue.kind === 'null' ? ' | null' : ''}`,
-            emitExpression(md.defaultValue, ownContext),
-          ),
-        ];
+  const lazy = md.defaultValue !== null && referencesNonLeaf(md.defaultValue, ownContext);
+  const defaults = defaultConstants(option, type, lazy, context);
   const bounds = [
     md.lowerBound === null
       ? []
@@ -166,7 +157,31 @@ function optionConstants(option: ResolvedOption, context: FileContext): string[]
       ? []
       : [boundConstant('Upper', md.upperBound, option.upperBoundConstantName, option, context)],
   ].flat();
-  return [...defaults, ...bounds, propertyConstant(option, type, context)];
+  return [...defaults, ...bounds, propertyConstant(option, type, context, lazy)];
+}
+
+/** The `*_DEFAULT` constant of an option, if any; a cached private getter when the default is non-leaf. */
+function defaultConstants(option: ResolvedOption, type: string, lazy: boolean, context: FileContext): string[] {
+  const { entry } = option;
+  const { option: md } = entry;
+  if (md.defaultValue === null) {
+    return [];
+  }
+  const defaultType = `${type}${md.defaultValue.kind === 'null' ? ' | null' : ''}`;
+  const doc = [`Default value for {@link ${entry.constantName}}.`];
+  const init = emitExpression(md.defaultValue, contextOfOption(option, context));
+  const name = option.defaultConstantName;
+  return [
+    lazy
+      ? lazyConstant(doc, name, defaultType, init, context.className, 'private ')
+      : constantDeclaration(doc, 'private static readonly', name, defaultType, init),
+  ];
+}
+
+/** Whether a default expression names a class of {@link NON_LEAF_DEFAULT_TYPES} (mission 7a, T3). */
+function referencesNonLeaf(expr: Expr, typeContext: TypeContext): boolean {
+  const pending: PendingContext = { ...typeContext, pendingTypes: new Set() };
+  return referencedClasses(expr, pending).some((name) => NON_LEAF_DEFAULT_TYPES.includes(name));
 }
 
 function propertyArguments(option: ResolvedOption, context: FileContext): string {
@@ -184,19 +199,16 @@ function propertyArguments(option: ResolvedOption, context: FileContext): string
   return [str(option.data.id), defaultValue, lower, upper].join(', ');
 }
 
-function propertyConstant(option: ResolvedOption, type: string, context: FileContext): string {
+function propertyConstant(option: ResolvedOption, type: string, context: FileContext, lazy = false): string {
   const { imports } = context;
   const property = imports.useNamed('Property', PROPERTY_MODULE, 'value');
   const iProperty = imports.useNamed('IProperty', PROPERTY_INTERFACE_MODULE, 'type');
   const { option: md } = option.entry;
   const doc = [...descriptionLines(md.description), ...(md.deprecated ? ['@deprecated'] : [])];
-  return constantDeclaration(
-    doc,
-    'static readonly',
-    option.entry.constantName,
-    `${iProperty}<${type}>`,
-    `new ${property}<${type}>(${propertyArguments(option, context)})`,
-  );
+  const initializer = `new ${property}<${type}>(${propertyArguments(option, context)})`;
+  return lazy
+    ? lazyConstant(doc, option.entry.constantName, `${iProperty}<${type}>`, initializer, context.className)
+    : constantDeclaration(doc, 'static readonly', option.entry.constantName, `${iProperty}<${type}>`, initializer);
 }
 
 function dependencyConstant(source: ResolvedOption, dependency: ResolvedDependency, context: FileContext): string[] {
@@ -461,6 +473,23 @@ export class ${algorithm.factoryName} implements ${factory}<${layoutProvider}> {
 }`;
 }
 
+/** The members of an algorithm class; a held-back one has no factory static and only the held-back comment. */
+function algorithmMembers(algorithm: ResolvedAlgorithm, context: FileContext): string[] {
+  const idDoc = docComment([`The id of the ${algorithm.algorithm.label ?? algorithm.algorithm.name} algorithm.`]);
+  const held = algorithm.heldBackReason;
+  const factory = `${docComment(['Layouter-specific algorithm factory.'])}\nstatic readonly ${algorithm.factoryName}: typeof ${algorithm.factoryName} = ${algorithm.factoryName};`;
+  const statements =
+    held === null
+      ? [algorithmRegistration(algorithm, context), ...supportRegistrations(algorithm, context)]
+      : [heldComment(`algorithm ${algorithm.id}`, held)];
+  return [
+    `${idDoc}\nstatic readonly ALGORITHM_ID: string = ${str(algorithm.id)};`,
+    ...algorithm.supports.flatMap((support) => supportConstants(algorithm, support, context)),
+    ...(held === null ? [factory] : []),
+    applyMethod(statements, context),
+  ];
+}
+
 function algorithmSource(
   bundle: ResolvedBundle,
   algorithm: ResolvedAlgorithm,
@@ -468,17 +497,12 @@ function algorithmSource(
   opts: EmitOptions,
 ): string {
   const context = fileContext(algorithm.className, file, bundle.source, opts);
-  const idDoc = docComment([`The id of the ${algorithm.algorithm.label ?? algorithm.algorithm.name} algorithm.`]);
-  const members = [
-    `${idDoc}\nstatic readonly ALGORITHM_ID: string = ${str(algorithm.id)};`,
-    ...algorithm.supports.flatMap((support) => supportConstants(algorithm, support, context)),
-    `${docComment(['Layouter-specific algorithm factory.'])}\nstatic readonly ${algorithm.factoryName}: typeof ${algorithm.factoryName} = ${algorithm.factoryName};`,
-    applyMethod([algorithmRegistration(algorithm, context), ...supportRegistrations(algorithm, context)], context),
-  ];
+  const held = algorithm.heldBackReason;
+  const members = algorithmMembers(algorithm, context);
   const upstream = loadUpstreamPaths().get(bundle.file);
   const definingBundle = definingBundleId(upstream);
   const declarations = [
-    factoryClass(algorithm, context, definingBundle),
+    ...(held === null ? [factoryClass(algorithm, context, definingBundle)] : []),
     classDeclaration(localName(algorithm.className), [seeTag(definingBundle, algorithm.className)], members, context),
   ];
   return assemble(bundle.file, context, declarations);
@@ -494,14 +518,16 @@ function fileFor(className: string, opts: EmitOptions): string {
 }
 
 /**
- * Emits TypeScript for a resolved bundle: the bundle class and one class per algorithm that is not held back. The
- * result maps repository-relative output paths to prettier-formatted text.
+ * Emits TypeScript for a resolved bundle: the bundle class and one class per algorithm. A held-back algorithm's class
+ * keeps its id and option constants but has no factory, and its `apply` holds only the held-back comment (mission 7a,
+ * X3: callers read the constants before the provider is ported). The result maps repository-relative output paths to
+ * prettier-formatted text.
  */
 export async function emitBundle(bundle: ResolvedBundle, opts: EmitOptions = {}): Promise<Map<string, string>> {
   const files = new Map<string, string>();
   const bundleFile = fileFor(bundle.bundleClass, opts);
   files.set(bundleFile, await formatSource(bundleSource(bundle, bundleFile, opts), bundleFile));
-  for (const algorithm of bundle.algorithms.filter((a) => a.heldBackReason === null)) {
+  for (const algorithm of bundle.algorithms) {
     const file = fileFor(algorithm.className, opts);
     files.set(file, await formatSource(algorithmSource(bundle, algorithm, file, opts), file));
   }

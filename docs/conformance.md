@@ -10,21 +10,22 @@ The comparator is [`test/golden/compare-json.ts`](../test/golden/compare-json.ts
 this document describes what it implements. Port rules live in
 [`docs/translation-rules.md`](translation-rules.md).
 
-| #   | Section                                           | Answers                                  |
-| --- | ------------------------------------------------- | ---------------------------------------- |
-| 1   | [Oracle](#1-oracle)                               | What is "correct", and at which commit?  |
-| 1a  | [Conformance unit](#1a-conformance-unit)          | What is one case, and which cases exist? |
-| 2   | [Conformance bar](#2-conformance-bar)             | What counts as equal?                    |
-| 3   | [Goldens and corpus](#3-goldens-and-corpus)       | Where do reference outputs come from?    |
-| 4   | [Seam patches](#4-seam-patches)                   | How do we change the oracle?             |
-| 5   | [Oracle operations](#5-oracle-operations-runbook) | What do I do when it breaks?             |
-| 6   | [Gates](#6-gates)                                 | What must pass before a change lands?    |
-| 7   | [ELK Text](#elk-text-elkt)                        | How is `.elkt` proven?                   |
-| 8   | [ELK Textual JSON](#elk-textual-json-elkj)        | How is `.elkj` proven?                   |
-| -   | [Core layouts](#core-layouts-fixed-box-random)    | How are `fixed`, `box`, `random` proven? |
-| -   | [alg.common](#alg-common)                         | How is `alg.common` part a proven?       |
-| -   | [alg.common nodespacing](#alg-common-nodespacing) | How is `alg.common` part b proven?       |
-| -   | [Temporary gaps](#temporary-gaps)                 | What differs from the Java for now?      |
+| #   | Section                                           | Answers                                   |
+| --- | ------------------------------------------------- | ----------------------------------------- |
+| 1   | [Oracle](#1-oracle)                               | What is "correct", and at which commit?   |
+| 1a  | [Conformance unit](#1a-conformance-unit)          | What is one case, and which cases exist?  |
+| 2   | [Conformance bar](#2-conformance-bar)             | What counts as equal?                     |
+| 3   | [Goldens and corpus](#3-goldens-and-corpus)       | Where do reference outputs come from?     |
+| 4   | [Seam patches](#4-seam-patches)                   | How do we change the oracle?              |
+| 5   | [Oracle operations](#5-oracle-operations-runbook) | What do I do when it breaks?              |
+| 6   | [Gates](#6-gates)                                 | What must pass before a change lands?     |
+| 7   | [ELK Text](#elk-text-elkt)                        | How is `.elkt` proven?                    |
+| 8   | [ELK Textual JSON](#elk-textual-json-elkj)        | How is `.elkj` proven?                    |
+| -   | [Core layouts](#core-layouts-fixed-box-random)    | How are `fixed`, `box`, `random` proven?  |
+| -   | [alg.common](#alg-common)                         | How is `alg.common` part a proven?        |
+| -   | [alg.common nodespacing](#alg-common-nodespacing) | How is `alg.common` part b proven?        |
+| -   | [alg.layered framework](#alg-layered-framework)   | How is the layered framework (7a) proven? |
+| -   | [Temporary gaps](#temporary-gaps)                 | What differs from the Java for now?       |
 
 ## 1. Oracle
 
@@ -914,6 +915,66 @@ behaviour".
   relative to the port, once as a node edge (T5).
 - `JsonExporter` writes a label `id` only when it is non-empty, so unnamed labels round-trip with a null identifier;
   the vectors record `null` and the replay compares it exactly (T1, T7).
+
+## alg.layered, part a: the framework (mission 7a) {#alg-layered-framework}
+
+Mission 7a ported the framework of `org.eclipse.elk.alg.layered` that the sub-missions 7b–7h build on: the options
+package (32 enums, `InternalProperties`, `Spacings`, `LayeredSpacings`, the generated `LayeredOptions` and
+`LayeredMetaDataProvider`), the LGraph model (13 classes), the ElkGraph ↔ LGraph transform, `LayeredLayoutProvider`,
+`LayeredPhases`, `IHierarchyAwareLayoutProcessor` and `ComponentOrderingStrategy` (design, staged-class lifecycle and
+runbook in [alg-layered.md](architecture/alg-layered.md)). No layout runs yet: `ElkLayered` and eight other forward
+references are **staged** (`test/architecture/staged-classes.json`, L1) and throw `UnsupportedOperationException`
+naming the mission that completes them. Decisions: `plans/layered-framework/decisions.md` (L1–L7, S1–S4, X1–X7).
+
+**Evidence.**
+
+- `test/golden/refs/java/layered-framework.json` (2,654,156 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-framework-vectors.sh`): 272 rows, recorded twice byte-identical, every row built twice inside
+  one recording, every ELK JSON `input` re-imported and compared with the directly built scenario. Replayed at the AD-4
+  bar on the first run (numbers within 1e-6; ids, counts, enums, properties, exception class and message exact).
+
+| Group       | Rows | Replayed equal | Source and configuration                                                                                                                                                                                                                                                                                                                         |
+| ----------- | ---- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `transform` | 129  | 129            | 31 `elkt-curated`, 4 `tickets/core` and 9 realworld models as written, 18 `#include-children` variants, a pairwise sweep over 7 synthetic shapes and the importer/transferrer options; 12 rows expect an exception (8 `UnsupportedGraphException`, 4 `IllegalArgumentException`)                                                                 |
+| `adapters`  | 142  | 142            | the same models with NS4 label sizes plus a pairwise sweep over port alignment (BEGIN 46, END 57, JUSTIFIED 47 rows), N/S and E/W `PORT_BORDER_OFFSET` (32), port and node size constraints, padding, label placements; nodes placed in one layer first (X4); 9 rows expect the "ports that have port sides assigned" `IllegalArgumentException` |
+| `metadata`  | 1    | 1              | the `LayoutMetaDataService` state with core, labels and layered registered (449 layered calls equal `metadata.json`)                                                                                                                                                                                                                             |
+
+- `test/golden/refs/java/layered-sites.json` (2,286 KB + 5 rows; recorder `tools/vectors/layered-site-vectors.sh`,
+  JDK 21.0.1, oracle `8aaa3c14`): 330 rows in 22 scenario groups, one per group of branches the three replays leave
+  untaken (`plans/layered-framework/unreached.md`, L4 under the user's literal reading X5/X6), every scenario built and
+  run through the recorder's own step interpreter (146 ops) so the TS replay is exact by construction; 128 rows carry
+  an ELK JSON `input` that is re-imported and compared; embedded ELK JSON maps Gson's bare non-finite doubles to the
+  strings `"Infinity"`/`"-Infinity"`/`"NaN"` so the file is strict JSON (one row, `transform/misc/undefined-port-side-zero-size-graph`,
+  has one). `LayeredSiteVectors.test.ts` replays all 330 rows (T11a); 330 colocated cases cite a row id (T11b–T11d).
+- Per-class branch coverage after T11: 100 % for every non-staged 7a class except seven whose remainder is
+  Java-unreachable or 7f-bound (`unreached.md` § Amendments); whole suite 99.25 / 97.34 / 99.0 / 99.26.
+- Landed vectors, goldens and corpus are unchanged: `git diff --name-status main -- test/golden/refs/ test/corpus/
+test/golden/inputs/` shows only the two added `refs/java/layered-*.json`.
+
+**AD-10 sites.** `ElkGraphImporter.java:83` `nodeAndPortMap` (identity keys; insertion-ordered `Map`, never
+iterated), `:237`/`:316` `HashSet<Integer>` (only `size()` read); `Tarjan.java:36` `HashMap<LNode,Integer>` and `:78`
+per-SCC `HashSet<LNode>` (insertion order; a 7b replay mismatch traced to either is that mission's stop). No
+`JavaHashMap` site.
+
+**Divergences found during the mission, fixed at origin.** The first `adapters` recording was vacuous (nodes were
+layerless, `LGraphAdapter.getNodes()` walks layers only): recorder and replay now layer the nodes first and the file
+was re-recorded once (X4). The port-side view proxy returned `undefined`/`UnsupportedOperationException` where
+`ArrayList.SubList.get/set` throw `IndexOutOfBoundsException` (X7; two T3 cases re-anchored to the oracle row).
+
+**Known divergences found.** None numeric. Open by design:
+
+- **Exception class where Java dereferences null** (D10, AD-16b): `LPort.setSide(null)` and the
+  `insideSelfLoops/hierarchical-host-without-include-children` import throw `TypeError` where Java throws
+  `NullPointerException`; the JDK 21 helpful-NPE message is not reproduced. The site replay compares those rows by
+  class only and every other exception by class and message.
+- **Omitted `assert` sites:** `LNode.setGraph`, `LGraphUtil.createExternalPortDummy` ×2,
+  `ElkGraphImporter.java:203, 561-562, 730` (the `KVector.ts` precedent; the oracle runs without `-ea`).
+- **TS-only surface:** `isHierarchyAwareLayoutProcessor`'s null/primitive guards (the brand stands in for `instanceof`);
+  the `getPortSideView` proxy's membership-by-index trap.
+- **Staged boundary:** `LayeredLayoutProvider.layout` reaches `ElkLayered.doLayout`/`doCompoundLayout`, which throw
+  naming 7f; the `isCanceled` arm after them is unreachable until then (X6). The oracle's layout output for the four
+  `site/provider/*` rows is recorded for 7f to replay.
+- **Prose typos corrected:** none found in this mission.
 
 ## Temporary gaps
 
