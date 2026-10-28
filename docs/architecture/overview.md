@@ -2,19 +2,20 @@
 
 # elk-engine architecture overview
 
-| Document                                           | Content                                                                 |
-| -------------------------------------------------- | ----------------------------------------------------------------------- |
-| [inventory.md](inventory.md)                       | Every ELK bundle: purpose, LOC, generated sources, scope                |
-| [port-map.md](port-map.md)                         | Java packages to `src/` modules mapping                                 |
-| [component-map.md](component-map.md)               | In-scope bundle dependencies; core runtime pieces                       |
-| [../translation-rules.md](../translation-rules.md) | Java to TypeScript rules                                                |
-| [../conformance.md](../conformance.md)             | Oracle comparison bar and procedure (arrives later in this mission)     |
-| [elk-text.md](elk-text.md)                         | ELK Text (`.elkt`) port, the Xtext subset, runbook and deferrals        |
-| [elk-json-text.md](elk-json-text.md)               | ELK Textual JSON (`.elkj`) port, lazy linking, runbook and deferrals    |
-| [grandom.md](grandom.md)                           | grandom (`.elkr`) random graph generator port, evidence and runbook     |
-| [core-engine.md](core-engine.md)                   | Layout engine and the fixed, box and random providers (mission 5a)      |
-| [melk-codegen.md](melk-codegen.md)                 | The `.melk` generator, pending types, lazy constants, regeneration      |
-| [complexity.md](complexity.md)                     | The complexity gate that measures every function (`npm run complexity`) |
+| Document                                           | Content                                                                          |
+| -------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [inventory.md](inventory.md)                       | Every ELK bundle: purpose, LOC, generated sources, scope                         |
+| [port-map.md](port-map.md)                         | Java packages to `src/` modules mapping                                          |
+| [component-map.md](component-map.md)               | In-scope bundle dependencies; core runtime pieces                                |
+| [../translation-rules.md](../translation-rules.md) | Java to TypeScript rules                                                         |
+| [../conformance.md](../conformance.md)             | Oracle comparison bar and procedure (arrives later in this mission)              |
+| [elk-text.md](elk-text.md)                         | ELK Text (`.elkt`) port, the Xtext subset, runbook and deferrals                 |
+| [elk-json-text.md](elk-json-text.md)               | ELK Textual JSON (`.elkj`) port, lazy linking, runbook and deferrals             |
+| [grandom.md](grandom.md)                           | grandom (`.elkr`) random graph generator port, evidence and runbook              |
+| [core-engine.md](core-engine.md)                   | Layout engine and the fixed, box and random providers (mission 5a)               |
+| [melk-codegen.md](melk-codegen.md)                 | The `.melk` generator, pending types, lazy constants, regeneration               |
+| [complexity.md](complexity.md)                     | The complexity gate that measures every function (`npm run complexity`)          |
+| [alg-layered.md](alg-layered.md)                   | Layered framework (mission 7a): LGraph model, transform, staged classes, runbook |
 
 ## What elk-engine is
 
@@ -27,8 +28,7 @@ the layout engine (`RecursiveGraphLayoutEngine`, `LayoutAlgorithmResolver`, `Gra
 three core providers `fixed`, `box` and `random` are ported and equal the oracle on the curated goldens
 (mission 5a, [core-engine.md](core-engine.md)). The rest of `core` is ported too (mission 5b: processor pipeline, `LayoutConfigurator`, `ElkSpacings`, `ElkMath`, splines,
 comment attachment; see [core-engine.md](core-engine.md#mission-5b)). The shared `alg.common` bundle is fully ported (mission 6a: geometry, network simplex, 1D compaction, overlaps, spore, polyomino; mission 6b: `nodespacing` and `NodeMicroLayout`, proven by a 326-row oracle replay; see [alg-common.md](alg-common.md)).
-No algorithm (layered, mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex)
-is ported yet.
+The layered framework is ported (mission 7a: the options package, the LGraph model, the ElkGraph ↔ LGraph transform and the provider shell, proven by two oracle vector files of 272 and 330 rows; the layout phases follow in 7b–7h; see [alg-layered.md](alg-layered.md)). No layout algorithm runs yet (layered phases, mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex).
 
 ## Relation to ELK Java and the oracle
 

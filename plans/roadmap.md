@@ -612,3 +612,55 @@ and no landed vector or golden changed. Counts are in `docs/conformance.md#alg-c
   `t4/*` rows cover them only at the unit level, and only on the horizontal axis for placement.
 - **Tooling:** `PortPlacementCalculator.PORT_RATIO_OR_POSITION` is not a registered option, so any ELK JSON based
   vector carrying `FIXED_RATIO` ratios needs a side channel (here the `setPortRatio` step).
+
+## Revision 2026-10-28 (layered-framework)
+
+Appended; no earlier line is edited. Source: L1–L7, S1–S4 and X1–X7 in `plans/layered-framework/decisions.md`; the
+journal is `plans/layered-framework/decision-journal.md`. Where this section conflicts with the text above, this
+section wins.
+
+**Row 7a is done.** The layered framework is ported and proven by three oracle replays (`layered-framework.json`,
+272 rows) plus 330 site rows (`layered-sites.json`) that reach every branch the replays leave untaken; design, staged
+classes and runbook in `docs/architecture/alg-layered.md`, counts in `docs/conformance.md#alg-layered-framework`.
+No layout runs yet.
+
+**Scope moves (binding for 7b–7h).**
+
+- **L2 → 7f:** `ElkLayered` (staged in 7a: `doLayout`, `doCompoundLayout`, `prepareLayoutTest` throw),
+  `GraphConfigurator`, `InteractiveLayeredGraphVisitor`, `DebugUtil`, `DotDebugUtil`, `JsonDebugUtil` (~3,100 lines)
+  move from 7a to 7f, the first sub-mission with a running pipeline.
+- **S1 → 7f:** the full-layout follow-ups: `InsidePortLabelTest`, `NextToPortLabelPlacementTest`,
+  `PortLabelPlacementVariantsTest`, `RecursiveGraphLayoutEngineTest.testEmptyAlgorithmId`,
+  `LayeredSpacingTest.AfterLayoutTest`, and an end-to-end alignment/border-offset sweep (7a covers alignment and
+  border offsets at the adapter level: 142 `adapters` rows).
+- **S2 → 7c:** the `TreeSet` stand-in promotion (first consumer `CrossingsCounter`); no 7a class uses a `TreeSet`.
+- **S3 → 7b:** `IntermediateProcessorStrategy` (first consumers: the 7b phases' processor configurations).
+- **L6 → 7b:** `TestGraphCreator` (1,217 lines) with its first consumers.
+
+**Staged classes (L1), with the mission that replaces each** (`test/architecture/staged-classes.json`; the list is
+empty after 7h): `ElkLayered` 7f, `intermediate/LabelDummySwitcher` 7f, `intermediate/loops/{SelfLoopEdge,
+SelfLoopHolder, SelfLoopPort}` 7g, `intermediate/wrapping/{BreakingPointInserter, BreakingPointInserterBPInfo}` 7g,
+`compound/CrossHierarchyEdge` 7h, `p5edges/splines/SplineSegment` 7e. The phase-strategy factory arms throw naming
+7b (cycles, layers), 7c (crossing minimization) and 7d (node placement). Replacing a staged file: port it at the same
+path, drop the `@staged` marker and the JSON row, keep the three 7a replays green.
+
+**Follow-ups found during the run.**
+
+- **7b:** `Tarjan`'s two hash containers are insertion-ordered (AD-10); a `SCCModelOrderCycleBreaker` replay mismatch
+  traced to either is a stop. The `hierarchyAware` site row lists `LayerSweepCrossingMinimizer` as the only
+  `IHierarchyAwareLayoutProcessor` implementor; the sentinel test in `IHierarchyAwareLayoutProcessor.test.ts` fails
+  once 7c ports it and must then be updated to assert the brand.
+- **7c:** `LNode.getPortSideView` is a write-through proxy with Java `SubList` bounds (X7); `GreedyPortDistributor.switchPorts`
+  writes through `Lists.reverse(view)`.
+- **7f:** the four `site/provider/*` rows carry the oracle's full layout output for small graphs; replay them once
+  `ElkLayered` runs, and re-anchor `LayeredLayoutProvider.test.ts` (the `isCanceled` arm) and T11a's provider
+  replay (which observes the staged driver by wrapping `ElkLayered.prototype`). The rows named in `unreached.md`
+  § Amendments as "dead by construction" in `ElkGraphLayoutTransferrerNonMutating` stay dead with a real layout.
+- **Any sub-mission:** a green replay is not evidence until replay-alone coverage shows the code under test ran
+  (X4: a scenario that drives a layered processor before layering sizes nothing). Measure per class before writing
+  unit tests, as T9 did.
+- **Tooling:** the melk recorder cannot encode a `List<Integer>` option default (`cmEnforcedGroupOrders`); both melk
+  tests check that record separately (`ShapePrimer`). T1's `dumpLGraph` encodes a `KVectorChain` property value as
+  `{ class }` rather than a list; T11a wraps it. Embedded ELK JSON in a ref must be sanitised for Gson's bare
+  `Infinity`/`NaN` (the T10 `strictNumbers` rule); the TS `JsonWriter` shim writes them bare too. The three 7a
+  recorders are single-file launchers of 1,858 and 4,643 lines, outside `npm run complexity` (which scans `src/`).
