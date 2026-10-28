@@ -27,6 +27,7 @@ import { GreedySwitchType } from './GreedySwitchType.js';
 import { GroupOrderStrategy } from './GroupOrderStrategy.js';
 import { InteractiveReferencePoint } from './InteractiveReferencePoint.js';
 import { LayerConstraint } from './LayerConstraint.js';
+import { LayeredOptions } from './LayeredOptions.js';
 import { LayeringStrategy } from './LayeringStrategy.js';
 import { LayerUnzippingStrategy } from './LayerUnzippingStrategy.js';
 import { LongEdgeOrderingStrategy } from './LongEdgeOrderingStrategy.js';
@@ -3662,6 +3663,6 @@ export class LayeredMetaDataProvider implements ILayoutMetaDataProvider {
         .visibility(LayoutOptionData.Visibility.VISIBLE)
         .create(),
     );
-    // Held back (algorithm org.eclipse.elk.layered): the layout provider is pending type org.eclipse.elk.alg.layered.LayeredLayoutProvider.
+    new LayeredOptions().apply(registry);
   }
 }

@@ -118,9 +118,8 @@ const MISSION3_PENDING_TYPES: readonly string[] = [
 describe('pending types (C1)', () => {
   const bundles = resolveVendoredWith(MISSION3_PENDING_TYPES);
 
-  // Mission 7a (X3): LayeredLayoutProvider is pending from T3 until T7 ports it; T7 restores `[]`.
-  it('lists only LayeredLayoutProvider (Fixed left the list in T8, Random in T10, Box in T12, TopdownSizeApproximator in T14)', () => {
-    expect(PENDING_TYPES).toEqual(['org.eclipse.elk.alg.layered.LayeredLayoutProvider']);
+  it('lists no pending type (Fixed left the list in T8, Random in T10, Box in T12, TopdownSizeApproximator in T14)', () => {
+    expect(PENDING_TYPES).toEqual([]);
   });
 
   it('holds back exactly the three Core algorithms and the topdown.sizeCategories dependency', () => {

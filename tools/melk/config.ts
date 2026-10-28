@@ -5,10 +5,10 @@ import { join } from 'node:path';
 /**
  * Types whose classes are not ported yet (decision C1). A registration whose expression or provider references one of
  * them is held back from the generated registry until the class exists; emptied in mission 5 (T14).
- * Mission 7a holds back `LayeredLayoutProvider` from T3 until T7 ports it (L7). Fully qualified;
+ * Mission 7a held back `LayeredLayoutProvider` from T3 until T7 ported it (L7). Fully qualified;
  * the nested `BoxLayoutProvider.PackingMode` is a different name and is not pending.
  */
-export const PENDING_TYPES: readonly string[] = ['org.eclipse.elk.alg.layered.LayeredLayoutProvider'];
+export const PENDING_TYPES: readonly string[] = [];
 
 /**
  * Ported classes that import a generated options class (non-leaf, M12/M16). A bundle-class option whose default

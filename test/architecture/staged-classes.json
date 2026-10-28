@@ -1,5 +1,7 @@
 [
+  { "path": "src/alg/layered/ElkLayered.ts", "mission": "7f" },
   { "path": "src/alg/layered/compound/CrossHierarchyEdge.ts", "mission": "7h" },
+  { "path": "src/alg/layered/intermediate/LabelDummySwitcher.ts", "mission": "7f" },
   { "path": "src/alg/layered/intermediate/loops/SelfLoopEdge.ts", "mission": "7g" },
   { "path": "src/alg/layered/intermediate/loops/SelfLoopHolder.ts", "mission": "7g" },
   { "path": "src/alg/layered/intermediate/loops/SelfLoopPort.ts", "mission": "7g" },

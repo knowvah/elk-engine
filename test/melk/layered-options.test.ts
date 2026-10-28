@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { generate } from '../../tools/melk/generate.js';
+import { LayeredLayoutProvider } from '../../src/alg/layered/LayeredLayoutProvider.js';
 import { LayeredMetaDataProvider } from '../../src/alg/layered/options/LayeredMetaDataProvider.js';
 import { LayeredOptions } from '../../src/alg/layered/options/LayeredOptions.js';
 import type { ILayoutMetaDataProvider } from '../../src/core/data/ILayoutMetaDataProvider.js';
@@ -15,7 +16,6 @@ import { RecordingRegistry } from './recorder.js';
 const OPTIONS_PATH = 'src/alg/layered/options/LayeredOptions.ts';
 const PROVIDER_PATH = 'src/alg/layered/options/LayeredMetaDataProvider.ts';
 const PROVIDER_CLASS = 'org.eclipse.elk.alg.layered.options.LayeredMetaDataProvider';
-const PENDING_PROVIDER = 'LayeredLayoutProvider';
 const ENFORCED_GROUP_ORDERS = 'org.eclipse.elk.layered.considerModelOrder.groupModelOrder.cmEnforcedGroupOrders';
 const REPOSITORY_ROOT = join(import.meta.dirname, '../..');
 
@@ -55,8 +55,8 @@ class ShapePrimer implements ILayoutMetaDataProvider.Registry {
 }
 
 /**
- * Mission 7a (L7, X3): `LayeredLayoutProvider` is pending until T7, so `LayeredOptions` keeps its constants but
- * registers nothing; the bundle class registers every layered option, category and dependency as the oracle did.
+ * Mission 7a (L7, X3): `LayeredLayoutProvider` is ported (T7), so `LayeredOptions` registers the algorithm and its
+ * option supports; the bundle class registers every layered option, category and dependency as the oracle did.
  */
 describe('LayeredOptions and LayeredMetaDataProvider', () => {
   // the service registers the ElkReflect clone functions that cloneable option defaults need
@@ -82,8 +82,9 @@ describe('LayeredOptions and LayeredMetaDataProvider', () => {
     const coreCalls = recorder.calls.length;
     const skipping = new ShapePrimer(recorder, true);
     new LayeredMetaDataProvider().apply(skipping);
-    // the dump's algorithm registrations (via LayeredOptions) are held back until T7
-    const expected = dumpCalls(PROVIDER_CLASS, OPTION_MODEL_CALLS);
+    // the bundle class also registers the algorithm (via LayeredOptions); its option supports are not forwarded here
+    // (layered-registry.test.ts compares them)
+    const expected = dumpCalls(PROVIDER_CLASS, [...OPTION_MODEL_CALLS, 'registerAlgorithm']);
     expect(skipping.unencodable.map((data) => data.getId())).toEqual([ENFORCED_GROUP_ORDERS]);
     const encodable = expected.filter(
       (call) => !(call.call === 'registerOption' && call.data.id === ENFORCED_GROUP_ORDERS),
@@ -103,17 +104,22 @@ describe('LayeredOptions and LayeredMetaDataProvider', () => {
     );
   });
 
-  it('holds back the algorithm registrations, so none references the pending provider', () => {
-    const recorder = new RecordingRegistry();
-    new LayeredOptions().apply(recorder);
-    expect(recorder.calls).toEqual([]);
-    expect(dumpCalls(PROVIDER_CLASS, ['registerAlgorithm']).length).toBe(1);
+  it('registers the algorithm and its option supports, with the factory and no held-back comment', () => {
+    const algorithms: string[] = [];
+    const supports: string[] = [];
+    new LayeredOptions().apply({
+      register: (data) => algorithms.push(data.getId()),
+      addDependency: () => undefined,
+      addOptionSupport: (_algorithm, option) => supports.push(option),
+    });
+    expect(algorithms).toEqual([LayeredOptions.ALGORITHM_ID]);
+    expect(supports).toHaveLength(dumpCalls(PROVIDER_CLASS, ['addOptionSupport']).length);
+    expect(LayeredOptions.LayeredFactory.name).toBe('LayeredFactory');
+    expect(new LayeredOptions.LayeredFactory().create()).toBeInstanceOf(LayeredLayoutProvider);
     const generated = readFileSync(join(REPOSITORY_ROOT, OPTIONS_PATH), 'utf8');
-    expect(generated).toContain(
-      `// Held back (algorithm org.eclipse.elk.layered): the layout provider is pending type org.eclipse.elk.alg.layered.${PENDING_PROVIDER}.`,
-    );
-    expect(generated).not.toContain(`import { ${PENDING_PROVIDER} }`);
-    expect(generated).not.toContain('class LayeredFactory');
+    expect(generated).not.toContain('Held back');
+    expect(generated).toContain("import { LayeredLayoutProvider } from '../LayeredLayoutProvider.js';");
+    expect(generated).toContain('class LayeredFactory');
   });
 
   it('exposes the algorithm id and option constants with the dump ids', () => {
