@@ -65,3 +65,43 @@ describe('StretchWidthLayerer configuration', () => {
     ]);
   });
 });
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const siteRows = loadRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+
+function siteRow(id: string): PhaseRow {
+  const row = siteRows.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return row;
+}
+
+describe('StretchWidthLayerer on the site rows', () => {
+  it('leaves the external port dummies out of the node size average and layers them with the rest', () => {
+    // oracle: sites/ModelOrderLayerers/externalPorts/STRETCH_WIDTH; StretchWidthLayerer.java:358
+    const result = replay(siteRow('sites/ModelOrderLayerers/externalPorts/STRETCH_WIDTH'), () =>
+      LayeringStrategy.STRETCH_WIDTH.create(),
+    ).expected;
+    expect(result.layers).toEqual([
+      ['g0/n0'],
+      ['g0/n2'],
+      ['g0/n3', 'g0/n4', 'g0/n8'],
+      ['g0/n5'],
+      ['g0/n6'],
+      ['g0/n7', 'g0/n1'],
+    ]);
+    expect(result.layerless).toEqual([]);
+    expect(result.changed).toEqual([]);
+  });
+
+  it('returns early on a graph without nodes', () => {
+    // oracle: sites/Layerers/emptyGraph/STRETCH_WIDTH; StretchWidthLayerer.java:120
+    const result = replay(siteRow('sites/Layerers/emptyGraph/STRETCH_WIDTH'), () =>
+      LayeringStrategy.STRETCH_WIDTH.create(),
+    ).expected;
+    expect(result.layers).toEqual([]);
+    expect(result.layerless).toEqual([]);
+    expect(result.changed).toEqual([]);
+  });
+});

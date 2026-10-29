@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
-import { addNode } from '../../../../test/helpers/lgraph-builders.js';
+import { addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { dumpLGraph } from '../../../../test/helpers/layered-framework-replay.js';
 import { compareExpected, compareFullDump } from '../../../../test/helpers/layered-phase-replay-compare.js';
@@ -8,6 +8,7 @@ import { phaseDump, type Expected } from '../../../../test/helpers/layered-phase
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow, loadRows, type PhaseRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { UnsupportedGraphException } from '../../../core/UnsupportedGraphException.js';
+import { NoSuchElementException } from '../../../java/util/NoSuchElementException.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
@@ -94,5 +95,65 @@ describe('BreadthFirstModelOrderLayerer structure', () => {
     expect(() => run(new BreadthFirstModelOrderLayerer(), graph)).toThrow(
       new UnsupportedGraphException('The BF model order layer assigner requires all real nodes to have a model order.'),
     );
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const siteRows = loadRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+
+function siteRow(id: string): PhaseRow {
+  const row = siteRows.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return row;
+}
+
+describe('BreadthFirstModelOrderLayerer on the site rows', () => {
+  it('skips the external port dummies of a hierarchical target and layers the real nodes', () => {
+    // oracle: sites/ModelOrderLayerers/externalPorts/BF_MODEL_ORDER; BreadthFirstModelOrderLayerer.java:73
+    const result = replay(siteRow('sites/ModelOrderLayerers/externalPorts/BF_MODEL_ORDER'), () =>
+      LayeringStrategy.BF_MODEL_ORDER.create(),
+    ).expected;
+    expect(result.layers).toEqual([['g0/n2'], ['g0/n3', 'g0/n4'], ['g0/n5'], ['g0/n6', 'g0/n7', 'g0/n8']]);
+    expect(result.layerless).toEqual([]);
+    expect(result.changed).toEqual([]);
+  });
+});
+
+describe('BreadthFirstModelOrderLayerer Java semantics', () => {
+  it('sorts the real nodes ascending by model order (Integer.compare)', () => {
+    // Java: BreadthFirstModelOrderLayerer.java:79 (`Integer.compare` of the model orders)
+    const graph = new LGraph();
+    const names = new Map<LNode, string>();
+    [3, 2, 1, 0].forEach((order) => ordered(graph, names, `n${String(order)}`, order));
+    run(new BreadthFirstModelOrderLayerer(), graph);
+    expect(graph.getLayers().map((layer) => layer.getNodes().map((node) => names.get(node)))).toEqual([
+      ['n0', 'n1', 'n2', 'n3'],
+    ]);
+  });
+
+  it('keeps nodes with equal model orders in their list order (Integer.compare is 0)', () => {
+    // Java: BreadthFirstModelOrderLayerer.java:79 (`Integer.compare` of equal model orders; `Collections.sort` is stable)
+    const graph = new LGraph();
+    const names = new Map<LNode, string>();
+    ordered(graph, names, 'a', 1);
+    ordered(graph, names, 'b', 1);
+    ordered(graph, names, 'c', 0);
+    run(new BreadthFirstModelOrderLayerer(), graph);
+    expect(graph.getLayers().map((layer) => layer.getNodes().map((node) => names.get(node)))).toEqual([
+      ['c', 'a', 'b'],
+    ]);
+  });
+
+  it('throws NoSuchElementException for a label dummy without an incoming edge', () => {
+    // Java: BreadthFirstModelOrderLayerer.java:100-101 (`getIncomingEdges().iterator().next()` on an empty iterable)
+    const graph = new LGraph();
+    const names = new Map<LNode, string>();
+    ordered(graph, names, 'a', 0);
+    const target = ordered(graph, names, 'b', 1);
+    const label = addNode(graph, NodeType.LABEL);
+    connect(addPort(label), addPort(target));
+    expect(() => run(new BreadthFirstModelOrderLayerer(), graph)).toThrow(NoSuchElementException);
   });
 });

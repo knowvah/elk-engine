@@ -208,3 +208,19 @@ describe('InteractiveCycleBreaker against the recursive twin', () => {
     }
   });
 });
+
+describe('InteractiveCycleBreaker on the site row', () => {
+  it('an edge to a node on the current DFS path is reversed', () => {
+    // oracle: sites/InteractiveCycleBreaker/pathCycle; InteractiveCycleBreaker.java:114 (target on the current path closes a cycle)
+    const row = loadRows(ROWS_FILE).find((candidate) => candidate.id === 'sites/InteractiveCycleBreaker/pathCycle')!;
+    const actual = replay(row);
+    expect(actual.edges.filter((edge) => edge.reversed).map((edge) => edge.path)).toEqual(['g0/e1', 'g0/e3']);
+    expect(
+      actual.changed
+        .filter((entry) => entry.props.reversed !== undefined)
+        .map((entry) => entry.path)
+        .sort(),
+    ).toEqual(['g0/e1', 'g0/e3'].sort());
+    expect(actual.changed.some((entry) => entry.path === 'g0' && entry.props.cyclic !== undefined)).toBe(false);
+  });
+});

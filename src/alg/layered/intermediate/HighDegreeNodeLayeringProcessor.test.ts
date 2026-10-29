@@ -21,6 +21,7 @@ import { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
 import { Layer } from '../graph/Layer.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
+import { LongestPathLayerer } from '../p2layers/LongestPathLayerer.js';
 import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-phases.json`;
@@ -288,5 +289,55 @@ describe('HighDegreeNodeLayeringProcessor (deep trees, B8)', () => {
     expect(() => {
       processor['moveTree'](root, (n) => n.getIncomingEdges(), tooFew);
     }).toThrow(/out of bounds/);
+  });
+});
+
+// ------------------------------------------------------------------------------------------------------------
+// Site rows (T11): tree height and self-loops on the hub (S10)
+
+const SITE_PREFIX = 'sites/HighDegreeNodeLayeringProcessor/treeHeight/';
+const SITE_ROWS = loadRows(ROWS_FILE).filter((row) => row.id.startsWith(SITE_PREFIX));
+
+function siteRow(name: string): PhaseRow {
+  const row = SITE_ROWS.find((candidate) => candidate.id === `${SITE_PREFIX}${name}`);
+  if (row === undefined) {
+    throw new Error(`no site row ${SITE_PREFIX}${name}`);
+  }
+  return row;
+}
+
+function replaySite(row: PhaseRow): Expected {
+  const graph = runSteps(row, {
+    createProcessor(name) {
+      if (name !== PROCESSOR_NAME) {
+        throw new Error(`unexpected processor ${name}`);
+      }
+      return new HighDegreeNodeLayeringProcessor();
+    },
+    createPhase(phase, strategy) {
+      if (phase === 'P2_LAYERING' && strategy === 'LONGEST_PATH') {
+        return new LongestPathLayerer();
+      }
+      throw new Error(`unexpected phase ${phase}/${strategy}`);
+    },
+  });
+  return phaseDump(graph, importRow(row).importDump);
+}
+
+describe('HighDegreeNodeLayeringProcessor (site rows)', () => {
+  // oracle: sites/HighDegreeNodeLayeringProcessor/treeHeight/h0; HighDegreeNodeLayeringProcessor.java:77
+  // (height 0 is unlimited; :169 and :197 skip the hub's self-loop; :365 never cuts a tree)
+  it('moves whole trees when the tree height is 0, ignoring the hub self-loop', () => {
+    const actual = replaySite(siteRow('h0'));
+    expect(actual.layers).toEqual([['g0/n3'], ['g0/n2'], ['g0/n1'], ['g0/n0'], ['g0/n4', 'g0/n6'], ['g0/n5']]);
+    expect(actual.layerless).toEqual([]);
+  });
+
+  // oracle: sites/HighDegreeNodeLayeringProcessor/treeHeight/h1; HighDegreeNodeLayeringProcessor.java:365
+  // (a tree deeper than treeHeight - 1 is not a tree: the outgoing chain stays in its own layers)
+  it('leaves trees deeper than the threshold in place when the tree height is 1', () => {
+    const actual = replaySite(siteRow('h1'));
+    expect(actual.layers).toEqual([['g0/n3'], ['g0/n2'], ['g0/n1'], ['g0/n0'], ['g0/n6'], ['g0/n4'], ['g0/n5']]);
+    expect(actual.layerless).toEqual([]);
   });
 });

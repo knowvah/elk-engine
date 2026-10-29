@@ -58,3 +58,28 @@ describe('SCCNodeTypeCycleBreaker configuration', () => {
     expect([...configuration.processorsBefore(LayeredPhases.P1_CYCLE_BREAKING)]).toEqual([]);
   });
 });
+
+describe('SCCNodeTypeCycleBreaker on the site row', () => {
+  it('the preferred source and target ids and then the edge counts pick the edges of each component', () => {
+    // oracle: sites/GroupModelOrder/cycleBreakers/SCC_NODE_TYPE; SCCNodeTypeCycleBreaker.java:81 (preferred source), :89 (preferred target), :98 (connectivity)
+    const row = loadRows(ROWS_FILE).find(
+      (candidate) => candidate.id === 'sites/GroupModelOrder/cycleBreakers/SCC_NODE_TYPE',
+    )!;
+    const actual = replay(row);
+    expect(actual.edges.filter((edge) => edge.reversed).map((edge) => edge.path)).toEqual([
+      'g0/e1',
+      'g0/e2',
+      'g0/e6',
+      'g0/e11',
+      'g0/e13',
+      'g0/e15',
+    ]);
+    expect(
+      actual.changed
+        .filter((entry) => entry.props.reversed !== undefined)
+        .map((entry) => entry.path)
+        .sort(),
+    ).toEqual(['g0/e1', 'g0/e2', 'g0/e6', 'g0/e11', 'g0/e13', 'g0/e15'].sort());
+    expect(actual.changed.some((entry) => entry.path === 'g0' && entry.props.cyclic !== undefined)).toBe(true);
+  });
+});

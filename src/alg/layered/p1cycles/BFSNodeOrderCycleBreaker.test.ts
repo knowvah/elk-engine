@@ -56,3 +56,28 @@ describe('BFSNodeOrderCycleBreaker configuration', () => {
     expect([...configuration.processorsBefore(LayeredPhases.P1_CYCLE_BREAKING)]).toEqual([]);
   });
 });
+
+describe('BFSNodeOrderCycleBreaker on the site row', () => {
+  it('the group model order and the model-order-less external port dummies decide which edges are reversed', () => {
+    // oracle: sites/GroupModelOrder/cycleBreakers/BFS_NODE_ORDER; BFSNodeOrderCycleBreaker.java:194 (group model order scales the target order), :186 (target without MODEL_ORDER)
+    const row = loadRows(ROWS_FILE).find(
+      (candidate) => candidate.id === 'sites/GroupModelOrder/cycleBreakers/BFS_NODE_ORDER',
+    )!;
+    const actual = replay(row);
+    expect(actual.edges.filter((edge) => edge.reversed).map((edge) => edge.path)).toEqual([
+      'g0/e1',
+      'g0/e2',
+      'g0/e6',
+      'g0/e11',
+      'g0/e13',
+      'g0/e15',
+    ]);
+    expect(
+      actual.changed
+        .filter((entry) => entry.props.reversed !== undefined)
+        .map((entry) => entry.path)
+        .sort(),
+    ).toEqual(['g0/e1', 'g0/e2', 'g0/e6', 'g0/e11', 'g0/e13', 'g0/e15'].sort());
+    expect(actual.changed.some((entry) => entry.path === 'g0' && entry.props.cyclic !== undefined)).toBe(true);
+  });
+});

@@ -167,3 +167,36 @@ describe('NetworkSimplexLayerer structure', () => {
     );
   });
 });
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const siteRows = loadRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+
+function siteRow(id: string): PhaseRow {
+  const row = siteRows.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return row;
+}
+
+describe('NetworkSimplexLayerer on the site rows', () => {
+  it('returns early on a graph without nodes', () => {
+    // oracle: sites/Layerers/emptyGraph/NETWORK_SIMPLEX; NetworkSimplexLayerer.java:251
+    const result = replay(siteRow('sites/Layerers/emptyGraph/NETWORK_SIMPLEX'), () =>
+      LayeringStrategy.NETWORK_SIMPLEX.create(),
+    ).expected;
+    expect(result.layers).toEqual([]);
+    expect(result.layerless).toEqual([]);
+    expect(result.changed).toEqual([]);
+  });
+
+  it('leaves a self-loop out of the network', () => {
+    // oracle: sites/Layerers/selfLoop/NETWORK_SIMPLEX; NetworkSimplexLayerer.java:200
+    const result = replay(siteRow('sites/Layerers/selfLoop/NETWORK_SIMPLEX'), () =>
+      LayeringStrategy.NETWORK_SIMPLEX.create(),
+    ).expected;
+    expect(result.layers).toEqual([['g0/n0'], ['g0/n1'], ['g0/n2'], ['g0/n3']]);
+    expect(result.layerless).toEqual([]);
+    expect(result.changed).toEqual([]);
+  });
+});

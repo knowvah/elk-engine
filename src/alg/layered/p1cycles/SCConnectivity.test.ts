@@ -58,3 +58,27 @@ describe('SCConnectivity configuration', () => {
     expect([...configuration.processorsBefore(LayeredPhases.P1_CYCLE_BREAKING)]).toEqual([]);
   });
 });
+
+describe('SCConnectivity on the site row', () => {
+  it('the connectivity decision picks the edges of each component', () => {
+    // oracle: sites/GroupModelOrder/cycleBreakers/SCC_CONNECTIVITY; SCConnectivity.java:86 (the minimum node has more incoming edges than the maximum node has outgoing)
+    const row = loadRows(ROWS_FILE).find(
+      (candidate) => candidate.id === 'sites/GroupModelOrder/cycleBreakers/SCC_CONNECTIVITY',
+    )!;
+    const actual = replay(row);
+    expect(actual.edges.filter((edge) => edge.reversed).map((edge) => edge.path)).toEqual([
+      'g0/e1',
+      'g0/e2',
+      'g0/e6',
+      'g0/e11',
+      'g0/e15',
+    ]);
+    expect(
+      actual.changed
+        .filter((entry) => entry.props.reversed !== undefined)
+        .map((entry) => entry.path)
+        .sort(),
+    ).toEqual(['g0/e1', 'g0/e2', 'g0/e6', 'g0/e11', 'g0/e15'].sort());
+    expect(actual.changed.some((entry) => entry.path === 'g0' && entry.props.cyclic !== undefined)).toBe(true);
+  });
+});

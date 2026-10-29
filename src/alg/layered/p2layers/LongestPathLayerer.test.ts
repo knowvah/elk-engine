@@ -182,3 +182,26 @@ describe('LongestPathLayerer against the recursive twin', () => {
     }
   });
 });
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const siteRows = loadRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+
+function siteRow(id: string): PhaseRow {
+  const row = siteRows.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return row;
+}
+
+describe('LongestPathLayerer on the site rows', () => {
+  it('ignores a self-loop when computing node heights', () => {
+    // oracle: sites/Layerers/selfLoop/LONGEST_PATH; LongestPathLayerer.java:111
+    const result = replay(siteRow('sites/Layerers/selfLoop/LONGEST_PATH'), () =>
+      LayeringStrategy.LONGEST_PATH.create(),
+    );
+    expect(result.layers).toEqual([['g0/n0'], ['g0/n1'], ['g0/n2'], ['g0/n3']]);
+    expect(result.layerless).toEqual([]);
+    expect(result.changed).toEqual([]);
+  });
+});

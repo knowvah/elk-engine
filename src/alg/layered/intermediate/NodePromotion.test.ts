@@ -15,12 +15,15 @@ import { repoRoot } from '../../../../test/corpus/corpus.js';
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
 import { Pair } from '../../../core/util/Pair.js';
+import { NoSuchElementException } from '../../../java/util/NoSuchElementException.js';
 import { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
 import { NodePromotionStrategy } from '../options/NodePromotionStrategy.js';
+import { LongestPathLayerer } from '../p2layers/LongestPathLayerer.js';
+import { LongestPathSourceLayerer } from '../p2layers/LongestPathSourceLayerer.js';
 import { NodePromotion } from './NodePromotion.js';
 import { promoteNode } from './NodePromotionHeuristic.js';
 import { precalculateAndSetInformation } from './NodePromotionPrecalculation.js';
@@ -288,5 +291,84 @@ describe('NodePromotion strategies', () => {
     expect(() => {
       run(graph, NodePromotionStrategy.MODEL_ORDER_LEFT_TO_RIGHT);
     }).toThrow();
+  });
+});
+
+// ------------------------------------------------------------------------------------------------------------
+// Site rows (T11): the model-order branches the generic replay leaves untaken (S4)
+
+const SITE_PREFIX = 'sites/ModelOrderLayerers/externalPorts/NODE_PROMOTION_MODEL_ORDER_';
+const SITE_ROWS = loadRows(ROWS_FILE).filter((row) => row.id.startsWith(SITE_PREFIX));
+
+function siteRow(name: string): PhaseRow {
+  const row = SITE_ROWS.find((candidate) => candidate.id === `${SITE_PREFIX}${name}`);
+  if (row === undefined) {
+    throw new Error(`no site row ${SITE_PREFIX}${name}`);
+  }
+  return row;
+}
+
+/** The row's steps run a layerer first, then NODE_PROMOTION: both are injected. */
+function replaySite(row: PhaseRow): Expected {
+  const graph = runSteps(row, {
+    createProcessor(name) {
+      if (name !== PROCESSOR_NAME) {
+        throw new Error(`unexpected processor ${name}`);
+      }
+      return new NodePromotion();
+    },
+    createPhase(phase, strategy) {
+      if (phase === 'P2_LAYERING' && strategy === 'LONGEST_PATH_SOURCE') {
+        return new LongestPathSourceLayerer();
+      }
+      if (phase === 'P2_LAYERING' && strategy === 'LONGEST_PATH') {
+        return new LongestPathLayerer();
+      }
+      throw new Error(`unexpected phase ${phase}/${strategy}`);
+    },
+  });
+  return phaseDump(graph, importRow(row).importDump);
+}
+
+describe('NodePromotion model order (site rows)', () => {
+  // oracle: sites/ModelOrderLayerers/externalPorts/NODE_PROMOTION_MODEL_ORDER_LEFT_TO_RIGHT; NodePromotion.java:396
+  // (EXTERNAL_PORT dummies have no MODEL_ORDER: not candidates; the comparators at :74 return 0 for them)
+  it('promotes left to right around nodes without a model order', () => {
+    const actual = replaySite(siteRow('LEFT_TO_RIGHT'));
+    expect(actual.layers).toEqual([
+      ['g0/n0'],
+      ['g0/n2'],
+      ['g0/n3'],
+      ['g0/n4'],
+      ['g0/n1', 'g0/n6', 'g0/n7', 'g0/n5', 'g0/n8'],
+    ]);
+    expect(actual.layerless).toEqual([]);
+  });
+
+  // oracle: sites/ModelOrderLayerers/externalPorts/NODE_PROMOTION_MODEL_ORDER_RIGHT_TO_LEFT; NodePromotion.java:396
+  // (comparator :87 and the minimal-key test at :402-403 for the opposite direction)
+  it('promotes right to left around nodes without a model order', () => {
+    const actual = replaySite(siteRow('RIGHT_TO_LEFT'));
+    expect(actual.layers).toEqual([
+      ['g0/n0'],
+      ['g0/n2'],
+      ['g0/n3', 'g0/n4', 'g0/n8'],
+      ['g0/n5'],
+      ['g0/n6'],
+      ['g0/n7'],
+      ['g0/n1'],
+    ]);
+    expect(actual.layerless).toEqual([]);
+  });
+
+  // J: firstEdge on an empty iterable is Iterator.next() on an exhausted iterator (NodePromotion.java:485)
+  it('throws NoSuchElementException when a label node of the next layer has no incoming edge', () => {
+    const graph = new LGraph();
+    const [a] = withModelOrder(graph, [5]) as [LNode];
+    const label = addNode(graph, NodeType.LABEL);
+    layered([[a], [label]], graph);
+    expect(() => {
+      run(graph, NodePromotionStrategy.MODEL_ORDER_LEFT_TO_RIGHT);
+    }).toThrow(NoSuchElementException);
   });
 });

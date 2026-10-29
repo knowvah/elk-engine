@@ -64,3 +64,19 @@ describe('GreedyCycleBreaker configuration', () => {
     expect([...configuration.processorsBefore(LayeredPhases.P1_CYCLE_BREAKING)]).toEqual([]);
   });
 });
+
+describe('GreedyCycleBreaker on the site row', () => {
+  it('a negative priority is clamped to 0 and the cycle is broken at the priority-free edge', () => {
+    // oracle: sites/GreedyCycleBreaker/negativePriority; GreedyCycleBreaker.java:265 (negative PRIORITY_DIRECTION clamped to 0)
+    const row = loadRows(ROWS_FILE).find((candidate) => candidate.id === 'sites/GreedyCycleBreaker/negativePriority')!;
+    const actual = replay(row);
+    expect(actual.edges.filter((edge) => edge.reversed).map((edge) => edge.path)).toEqual(['g0/e1']);
+    expect(
+      actual.changed
+        .filter((entry) => entry.props.reversed !== undefined)
+        .map((entry) => entry.path)
+        .sort(),
+    ).toEqual(['g0/e1'].sort());
+    expect(actual.changed.some((entry) => entry.path === 'g0' && entry.props.cyclic !== undefined)).toBe(true);
+  });
+});

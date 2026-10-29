@@ -44,3 +44,34 @@ describe('PartitionPreprocessor (oracle rows)', () => {
 });
 
 describe('PartitionPreprocessor', () => {});
+
+// ------------------------------------------------------------------------------------------------------------
+// Site row (T11): reversals through unpartitioned nodes (S15)
+
+describe('PartitionPreprocessor (site row)', () => {
+  // oracle: sites/PartitionPreprocessor/transitive; PartitionPreprocessor.java:110-130 (reachesLowerPartition search)
+  // and :148 (the base priority 1000 plus the edge's own PRIORITY_DIRECTION: 1003)
+  it('reverses edges that reach a lower partition through unpartitioned nodes, and no others', () => {
+    const row = loadRows(ROWS_FILE).find((candidate) => candidate.id === 'sites/PartitionPreprocessor/transitive')!;
+    const actual = replay(row);
+    expect(actual.layerless).toEqual(['g0/n0', 'g0/n1', 'g0/n2', 'g0/n3', 'g0/n4']);
+    expect(actual.edges.map((edge) => [edge.path, edge.src, edge.tgt, edge.reversed]).sort()).toEqual([
+      ['g0/e0', 'g0/n1/p0', 'g0/n0/p0', true],
+      ['g0/e1', 'g0/n2/p1', 'g0/n0/p1', true],
+      ['g0/e2', 'g0/n1/p1', 'g0/n2/p0', false],
+      ['g0/e3', 'g0/n4/p2', 'g0/n1/p2', false],
+      ['g0/e4', 'g0/n3/p0', 'g0/n4/p0', false],
+      ['g0/e5', 'g0/n3/p1', 'g0/n4/p1', false],
+    ]);
+    const valueOf = (value: unknown): unknown => (value as { v: unknown }).v;
+    const changed = actual.changed.map((entry) => [
+      entry.path,
+      valueOf(entry.props['org.eclipse.elk.layered.priority.direction']),
+      valueOf(entry.props.reversed),
+    ]);
+    expect(changed.sort()).toEqual([
+      ['g0/e0', 1000, true],
+      ['g0/e1', 1003, true],
+    ]);
+  });
+});

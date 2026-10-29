@@ -6,7 +6,9 @@ import { importRow, loadRows, type PhaseRow } from '../../../../test/helpers/lay
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { dumpLGraph } from '../../../../test/helpers/layered-framework-replay.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
+import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { PartitionMidprocessor } from './PartitionMidprocessor.js';
+import { PartitionPreprocessor } from './PartitionPreprocessor.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-phases.json`;
 const ROW_PREFIX = 'scenarios/PartitionMidprocessor/';
@@ -44,3 +46,37 @@ describe('PartitionMidprocessor (oracle rows)', () => {
 });
 
 describe('PartitionMidprocessor', () => {});
+
+// ------------------------------------------------------------------------------------------------------------
+// Site row (T11): partitioning activated, no partitioned node (S14)
+
+describe('PartitionMidprocessor (site row)', () => {
+  // oracle: sites/Partition/none; PartitionMidprocessor.java:73 (no node has a partition: nothing to constrain)
+  it('adds nothing when no node carries a partition', () => {
+    const row = loadRows(ROWS_FILE).find((candidate) => candidate.id === 'sites/Partition/none')!;
+    const graph = runSteps(row, {
+      createProcessor(name) {
+        if (name === 'PARTITION_PREPROCESSOR') {
+          return new PartitionPreprocessor();
+        }
+        if (name !== PROCESSOR_NAME) {
+          throw new Error(`unexpected processor ${name}`);
+        }
+        return new PartitionMidprocessor();
+      },
+      createPhase(phase, strategy) {
+        if (phase === 'P1_CYCLE_BREAKING' && strategy === 'GREEDY') {
+          return CycleBreakingStrategy.GREEDY.create();
+        }
+        throw new Error(`unexpected phase ${phase}/${strategy}`);
+      },
+    });
+    const actual = phaseDump(graph, importRow(row).importDump);
+    expect(actual.layerless).toEqual(['g0/n0', 'g0/n1', 'g0/n2']);
+    expect(actual.edges.map((edge) => [edge.path, edge.src, edge.tgt, edge.reversed])).toEqual([
+      ['g0/e0', 'g0/n0/p0', 'g0/n1/p0', false],
+      ['g0/e1', 'g0/n1/p1', 'g0/n2/p0', false],
+    ]);
+    expect(actual.changed).toEqual([]);
+  });
+});

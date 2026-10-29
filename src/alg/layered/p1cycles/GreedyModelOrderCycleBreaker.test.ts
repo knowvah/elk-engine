@@ -58,3 +58,27 @@ describe('GreedyModelOrderCycleBreaker configuration', () => {
     expect([...configuration.processorsBefore(LayeredPhases.P1_CYCLE_BREAKING)]).toEqual([]);
   });
 });
+
+describe('GreedyModelOrderCycleBreaker on the site row', () => {
+  it('dummies without MODEL_ORDER are skipped and the fallback picks the node', () => {
+    // oracle: sites/GroupModelOrder/cycleBreakers/GREEDY_MODEL_ORDER; GreedyModelOrderCycleBreaker.java:45 (node without MODEL_ORDER skipped), :55 (fallback to the max-outflow choice)
+    const row = loadRows(ROWS_FILE).find(
+      (candidate) => candidate.id === 'sites/GroupModelOrder/cycleBreakers/GREEDY_MODEL_ORDER',
+    )!;
+    const actual = replay(row);
+    expect(actual.edges.filter((edge) => edge.reversed).map((edge) => edge.path)).toEqual([
+      'g0/e1',
+      'g0/e3',
+      'g0/e5',
+      'g0/e11',
+      'g0/e15',
+    ]);
+    expect(
+      actual.changed
+        .filter((entry) => entry.props.reversed !== undefined)
+        .map((entry) => entry.path)
+        .sort(),
+    ).toEqual(['g0/e1', 'g0/e3', 'g0/e5', 'g0/e11', 'g0/e15'].sort());
+    expect(actual.changed.some((entry) => entry.path === 'g0' && entry.props.cyclic !== undefined)).toBe(true);
+  });
+});

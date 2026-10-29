@@ -180,3 +180,36 @@ function runSpec(
 }
 
 describe('CoffmanGrahamLayerer structure', () => {});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const siteRows = loadRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+
+function siteRow(id: string): PhaseRow {
+  const row = siteRows.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return row;
+}
+
+describe('CoffmanGrahamLayerer on the site rows', () => {
+  it('returns early on a graph without nodes', () => {
+    // oracle: sites/Layerers/emptyGraph/COFFMAN_GRAHAM; CoffmanGrahamLayerer.java:78
+    const result = replay(siteRow('sites/Layerers/emptyGraph/COFFMAN_GRAHAM'), () =>
+      LayeringStrategy.COFFMAN_GRAHAM.create(),
+    ).expected;
+    expect(result.layers).toEqual([]);
+    expect(result.layerless).toEqual([]);
+    expect(result.changed).toEqual([]);
+  });
+
+  it('orders sinks with equal predecessor positions by their topological lists', () => {
+    // oracle: sites/CoffmanGrahamLayerer/topoTies; CoffmanGrahamLayerer.java:233-245
+    const result = replay(siteRow('sites/CoffmanGrahamLayerer/topoTies'), () =>
+      LayeringStrategy.COFFMAN_GRAHAM.create(),
+    ).expected;
+    expect(result.layers).toEqual([['g0/n1', 'g0/n0'], ['g0/n2'], ['g0/n5', 'g0/n4', 'g0/n3']]);
+    expect(result.layerless).toEqual([]);
+    expect(result.changed).toEqual([]);
+  });
+});
