@@ -2,9 +2,17 @@
 import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
 import type { ILayoutPhaseFactory } from '../../../core/alg/ILayoutPhaseFactory.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import type { LayeredPhases } from '../LayeredPhases.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { BreadthFirstModelOrderLayerer } from '../p2layers/BreadthFirstModelOrderLayerer.js';
+import { CoffmanGrahamLayerer } from '../p2layers/CoffmanGrahamLayerer.js';
+import { DepthFirstModelOrderLayerer } from '../p2layers/DepthFirstModelOrderLayerer.js';
+import { InteractiveLayerer } from '../p2layers/InteractiveLayerer.js';
+import { LongestPathLayerer } from '../p2layers/LongestPathLayerer.js';
+import { LongestPathSourceLayerer } from '../p2layers/LongestPathSourceLayerer.js';
+import { MinWidthLayerer } from '../p2layers/MinWidthLayerer.js';
+import { NetworkSimplexLayerer } from '../p2layers/NetworkSimplexLayerer.js';
+import { StretchWidthLayerer } from '../p2layers/StretchWidthLayerer.js';
 
 /**
  * Enumeration of and factory for the different available layering strategies.
@@ -95,37 +103,29 @@ export class LayeringStrategy implements ILayoutPhaseFactory<LayeredPhases, LGra
     return this.#ordinal - other.#ordinal;
   }
 
-  /**
-   * Creates the phase implementation. Every arm's class is ported in a later mission (L1): until then the arm throws
-   * `UnsupportedOperationException` naming the class and the mission, with no import.
-   */
+  /** Creates the phase implementation. */
   create(): ILayoutPhase<LayeredPhases, LGraph> {
     switch (this) {
       case LayeringStrategy.NETWORK_SIMPLEX:
-        throw notPorted('NetworkSimplexLayerer', '7b');
+        return new NetworkSimplexLayerer();
       case LayeringStrategy.LONGEST_PATH:
-        throw notPorted('LongestPathLayerer', '7b');
+        return new LongestPathLayerer();
       case LayeringStrategy.COFFMAN_GRAHAM:
-        throw notPorted('CoffmanGrahamLayerer', '7b');
+        return new CoffmanGrahamLayerer();
       case LayeringStrategy.INTERACTIVE:
-        throw notPorted('InteractiveLayerer', '7b');
+        return new InteractiveLayerer();
       case LayeringStrategy.STRETCH_WIDTH:
-        throw notPorted('StretchWidthLayerer', '7b');
+        return new StretchWidthLayerer();
       case LayeringStrategy.MIN_WIDTH:
-        throw notPorted('MinWidthLayerer', '7b');
+        return new MinWidthLayerer();
       case LayeringStrategy.LONGEST_PATH_SOURCE:
-        throw notPorted('LongestPathSourceLayerer', '7b');
+        return new LongestPathSourceLayerer();
       case LayeringStrategy.BF_MODEL_ORDER:
-        throw notPorted('BreadthFirstModelOrderLayerer', '7b');
+        return new BreadthFirstModelOrderLayerer();
       case LayeringStrategy.DF_MODEL_ORDER:
-        throw notPorted('DepthFirstModelOrderLayerer', '7b');
+        return new DepthFirstModelOrderLayerer();
       default:
         throw new IllegalArgumentException(`No implementation is available for the layerer ${this.toString()}`);
     }
   }
-}
-
-/** The L1 placeholder for a `create()` arm whose class is not ported yet. */
-function notPorted(className: string, mission: string): UnsupportedOperationException {
-  return new UnsupportedOperationException(`${className} is ported in mission ${mission}`);
 }

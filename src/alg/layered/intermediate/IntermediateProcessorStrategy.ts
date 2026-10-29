@@ -4,6 +4,16 @@ import type { ILayoutProcessorFactory } from '../../../core/alg/ILayoutProcessor
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { EdgeAndLayerConstraintEdgeReverser } from './EdgeAndLayerConstraintEdgeReverser.js';
+import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
+import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
+import { LayerConstraintPostprocessor } from './LayerConstraintPostprocessor.js';
+import { LayerConstraintPreprocessor } from './LayerConstraintPreprocessor.js';
+import { NodePromotion } from './NodePromotion.js';
+import { PartitionMidprocessor } from './PartitionMidprocessor.js';
+import { PartitionPostprocessor } from './PartitionPostprocessor.js';
+import { PartitionPreprocessor } from './PartitionPreprocessor.js';
+import { ReversedEdgeRestorer } from './ReversedEdgeRestorer.js';
 
 /** Local alias that keeps the constant declarations within the line width. */
 type Strategy = IntermediateProcessorStrategy;
@@ -263,9 +273,9 @@ export class IntermediateProcessorStrategy implements ILayoutProcessorFactory<LG
   }
 
   /**
-   * Creates an instance of the layout processor described by this instance. Every arm's class is ported in a later
-   * mission (L1, B9): until then the arm throws `UnsupportedOperationException` naming the class and the mission,
-   * with no import.
+   * Creates an instance of the layout processor described by this instance. An arm whose class is ported returns a new
+   * instance; until its mission (L1, B9) lands, every other arm throws `UnsupportedOperationException` naming the class
+   * and the mission, with no import.
    *
    * The Java switch is one 59-arm method; it is split here into a chain of switches, one per run of at most nine
    * members of the enum's own section order, to stay within the complexity limits. A member not handled by a link
@@ -284,11 +294,11 @@ function createBeforePhase1(strategy: IntermediateProcessorStrategy): ILayoutPro
     case IntermediateProcessorStrategy.COMMENT_PREPROCESSOR:
       throw notPorted('CommentPreprocessor', '7f');
     case IntermediateProcessorStrategy.EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER:
-      throw notPorted('EdgeAndLayerConstraintEdgeReverser', '7b');
+      return new EdgeAndLayerConstraintEdgeReverser();
     case IntermediateProcessorStrategy.INTERACTIVE_EXTERNAL_PORT_POSITIONER:
-      throw notPorted('InteractiveExternalPortPositioner', '7b');
+      return new InteractiveExternalPortPositioner();
     case IntermediateProcessorStrategy.PARTITION_PREPROCESSOR:
-      throw notPorted('PartitionPreprocessor', '7b');
+      return new PartitionPreprocessor();
     default:
       return createBeforePhase2(strategy);
   }
@@ -302,9 +312,9 @@ function createBeforePhase2(strategy: IntermediateProcessorStrategy): ILayoutPro
     case IntermediateProcessorStrategy.SELF_LOOP_PREPROCESSOR:
       throw notPorted('SelfLoopPreProcessor', '7g');
     case IntermediateProcessorStrategy.LAYER_CONSTRAINT_PREPROCESSOR:
-      throw notPorted('LayerConstraintPreprocessor', '7b');
+      return new LayerConstraintPreprocessor();
     case IntermediateProcessorStrategy.PARTITION_MIDPROCESSOR:
-      throw notPorted('PartitionMidprocessor', '7b');
+      return new PartitionMidprocessor();
     default:
       return createBeforePhase3(strategy);
   }
@@ -314,13 +324,13 @@ function createBeforePhase2(strategy: IntermediateProcessorStrategy): ILayoutPro
 function createBeforePhase3(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy) {
     case IntermediateProcessorStrategy.HIGH_DEGREE_NODE_LAYER_PROCESSOR:
-      throw notPorted('HighDegreeNodeLayeringProcessor', '7b');
+      return new HighDegreeNodeLayeringProcessor();
     case IntermediateProcessorStrategy.NODE_PROMOTION:
-      throw notPorted('NodePromotion', '7b');
+      return new NodePromotion();
     case IntermediateProcessorStrategy.LAYER_CONSTRAINT_POSTPROCESSOR:
-      throw notPorted('LayerConstraintPostprocessor', '7b');
+      return new LayerConstraintPostprocessor();
     case IntermediateProcessorStrategy.PARTITION_POSTPROCESSOR:
-      throw notPorted('PartitionPostprocessor', '7b');
+      return new PartitionPostprocessor();
     case IntermediateProcessorStrategy.HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR:
       throw notPorted('HierarchicalPortConstraintProcessor', '7f');
     case IntermediateProcessorStrategy.SEMI_INTERACTIVE_CROSSMIN_PROCESSOR:
@@ -454,7 +464,7 @@ function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutPro
     case IntermediateProcessorStrategy.END_LABEL_SORTER:
       throw notPorted('EndLabelSorter', '7f');
     case IntermediateProcessorStrategy.REVERSED_EDGE_RESTORER:
-      throw notPorted('ReversedEdgeRestorer', '7b');
+      return new ReversedEdgeRestorer();
     case IntermediateProcessorStrategy.END_LABEL_POSTPROCESSOR:
       throw notPorted('EndLabelPostprocessor', '7f');
     case IntermediateProcessorStrategy.HIERARCHICAL_NODE_RESIZER:

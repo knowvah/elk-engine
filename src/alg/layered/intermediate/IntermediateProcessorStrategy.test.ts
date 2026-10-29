@@ -3,6 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import { IntermediateProcessorStrategy as Strategy } from './IntermediateProcessorStrategy.js';
+import { EdgeAndLayerConstraintEdgeReverser } from './EdgeAndLayerConstraintEdgeReverser.js';
+import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
+import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
+import { LayerConstraintPostprocessor } from './LayerConstraintPostprocessor.js';
+import { LayerConstraintPreprocessor } from './LayerConstraintPreprocessor.js';
+import { NodePromotion } from './NodePromotion.js';
+import { PartitionMidprocessor } from './PartitionMidprocessor.js';
+import { PartitionPostprocessor } from './PartitionPostprocessor.js';
+import { PartitionPreprocessor } from './PartitionPreprocessor.js';
+import { ReversedEdgeRestorer } from './ReversedEdgeRestorer.js';
 
 const DECLARED = [
   'DIRECTION_PREPROCESSOR',
@@ -131,6 +141,23 @@ const ARMS: Record<Name, [string, string]> = {
   DIRECTION_POSTPROCESSOR: ['GraphTransformer', '7f'],
 };
 
+/** The ported (mission 7b) arms: constant name to the class `create()` returns. */
+const PORTED = {
+  EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER: EdgeAndLayerConstraintEdgeReverser,
+  INTERACTIVE_EXTERNAL_PORT_POSITIONER: InteractiveExternalPortPositioner,
+  PARTITION_PREPROCESSOR: PartitionPreprocessor,
+  LAYER_CONSTRAINT_PREPROCESSOR: LayerConstraintPreprocessor,
+  PARTITION_MIDPROCESSOR: PartitionMidprocessor,
+  HIGH_DEGREE_NODE_LAYER_PROCESSOR: HighDegreeNodeLayeringProcessor,
+  NODE_PROMOTION: NodePromotion,
+  LAYER_CONSTRAINT_POSTPROCESSOR: LayerConstraintPostprocessor,
+  PARTITION_POSTPROCESSOR: PartitionPostprocessor,
+  REVERSED_EDGE_RESTORER: ReversedEdgeRestorer,
+} as const;
+
+const PORTED_NAMES: ReadonlySet<string> = new Set(Object.keys(PORTED));
+const PENDING = DECLARED.filter((name) => !PORTED_NAMES.has(name));
+
 describe('IntermediateProcessorStrategy', () => {
   it('declares the 59 constants in Java order with matching ordinals and names', () => {
     expect(DECLARED).toHaveLength(59);
@@ -159,12 +186,24 @@ describe('IntermediateProcessorStrategy', () => {
     );
   });
 
-  it.each(DECLARED)('create() of %s throws UnsupportedOperationException naming its class and mission', (name) => {
+  it.each(Object.entries(PORTED))('create() of %s returns a new instance of its ported class', (name, ctor) => {
+    const created = Strategy.valueOf(name).create();
+    expect(created).toBeInstanceOf(ctor);
+    expect(Strategy.valueOf(name).create()).not.toBe(created);
+  });
+
+  it.each(PENDING)('create() of %s throws UnsupportedOperationException naming its class and mission', (name) => {
     const [className, mission] = ARMS[name];
     expect(() => Strategy[name].create()).toThrow(UnsupportedOperationException);
     expect(() => Strategy[name].create()).toThrow(
       new UnsupportedOperationException(`${className} is ported in mission ${mission}`),
     );
+  });
+
+  it('ports exactly the 7b members and leaves the other 49 pending', () => {
+    expect(PORTED_NAMES.size).toBe(10);
+    expect(PENDING).toHaveLength(49);
+    expect(DECLARED.filter((name) => ARMS[name][1] === '7b').sort()).toEqual([...PORTED_NAMES].sort());
   });
 
   it('assigns the missions per B9 (10 in 7b, 2 in 7c, 9 in 7g, 38 in 7f)', () => {

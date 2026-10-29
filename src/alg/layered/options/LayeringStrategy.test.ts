@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
+import { BreadthFirstModelOrderLayerer } from '../p2layers/BreadthFirstModelOrderLayerer.js';
+import { CoffmanGrahamLayerer } from '../p2layers/CoffmanGrahamLayerer.js';
+import { DepthFirstModelOrderLayerer } from '../p2layers/DepthFirstModelOrderLayerer.js';
+import { InteractiveLayerer } from '../p2layers/InteractiveLayerer.js';
+import { LongestPathLayerer } from '../p2layers/LongestPathLayerer.js';
+import { LongestPathSourceLayerer } from '../p2layers/LongestPathSourceLayerer.js';
+import { MinWidthLayerer } from '../p2layers/MinWidthLayerer.js';
+import { NetworkSimplexLayerer } from '../p2layers/NetworkSimplexLayerer.js';
+import { StretchWidthLayerer } from '../p2layers/StretchWidthLayerer.js';
 import { LayeringStrategy } from './LayeringStrategy.js';
 
 const DECLARED = [
@@ -16,17 +24,17 @@ const DECLARED = [
   'DF_MODEL_ORDER',
 ] as const;
 
-/** Constant name to the class its `create()` arm will return, and the mission porting it. */
-const ARMS: Record<(typeof DECLARED)[number], [string, string]> = {
-  NETWORK_SIMPLEX: ['NetworkSimplexLayerer', '7b'],
-  LONGEST_PATH: ['LongestPathLayerer', '7b'],
-  LONGEST_PATH_SOURCE: ['LongestPathSourceLayerer', '7b'],
-  COFFMAN_GRAHAM: ['CoffmanGrahamLayerer', '7b'],
-  INTERACTIVE: ['InteractiveLayerer', '7b'],
-  STRETCH_WIDTH: ['StretchWidthLayerer', '7b'],
-  MIN_WIDTH: ['MinWidthLayerer', '7b'],
-  BF_MODEL_ORDER: ['BreadthFirstModelOrderLayerer', '7b'],
-  DF_MODEL_ORDER: ['DepthFirstModelOrderLayerer', '7b'],
+/** Constant name to the class its `create()` arm returns. */
+const ARMS: Record<(typeof DECLARED)[number], new () => object> = {
+  NETWORK_SIMPLEX: NetworkSimplexLayerer,
+  LONGEST_PATH: LongestPathLayerer,
+  LONGEST_PATH_SOURCE: LongestPathSourceLayerer,
+  COFFMAN_GRAHAM: CoffmanGrahamLayerer,
+  INTERACTIVE: InteractiveLayerer,
+  STRETCH_WIDTH: StretchWidthLayerer,
+  MIN_WIDTH: MinWidthLayerer,
+  BF_MODEL_ORDER: BreadthFirstModelOrderLayerer,
+  DF_MODEL_ORDER: DepthFirstModelOrderLayerer,
 };
 
 describe('LayeringStrategy', () => {
@@ -56,11 +64,12 @@ describe('LayeringStrategy', () => {
     );
   });
 
-  it('create() of every constant throws UnsupportedOperationException naming its class and mission', () => {
+  it('create() of every constant returns a new instance of its layerer class', () => {
     for (const name of DECLARED) {
-      const [className, mission] = ARMS[name];
-      expect(() => LayeringStrategy[name].create()).toThrow(UnsupportedOperationException);
-      expect(() => LayeringStrategy[name].create()).toThrow(`${className} is ported in mission ${mission}`);
+      const first = LayeringStrategy[name].create();
+      expect(first).toBeInstanceOf(ARMS[name]);
+      expect(first.constructor).toBe(ARMS[name]);
+      expect(LayeringStrategy[name].create()).not.toBe(first);
     }
   });
 
