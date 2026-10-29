@@ -28,7 +28,7 @@ the layout engine (`RecursiveGraphLayoutEngine`, `LayoutAlgorithmResolver`, `Gra
 three core providers `fixed`, `box` and `random` are ported and equal the oracle on the curated goldens
 (mission 5a, [core-engine.md](core-engine.md)). The rest of `core` is ported too (mission 5b: processor pipeline, `LayoutConfigurator`, `ElkSpacings`, `ElkMath`, splines,
 comment attachment; see [core-engine.md](core-engine.md#mission-5b)). The shared `alg.common` bundle is fully ported (mission 6a: geometry, network simplex, 1D compaction, overlaps, spore, polyomino; mission 6b: `nodespacing` and `NodeMicroLayout`, proven by a 326-row oracle replay; see [alg-common.md](alg-common.md)).
-The layered framework is ported (mission 7a: the options package, the LGraph model, the ElkGraph ↔ LGraph transform and the provider shell, proven by two oracle vector files of 272 and 330 rows; the layout phases follow in 7b–7h; see [alg-layered.md](alg-layered.md)). No layout algorithm runs yet (layered phases, mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex).
+The layered framework is ported (mission 7a: the options package, the LGraph model, the ElkGraph ↔ LGraph transform and the provider shell, proven by two oracle vector files of 272 and 330 rows; the layout phases follow in 7b–7h; see [alg-layered.md](alg-layered.md)). Its first two phases are ported (mission 7b: the eleven cycle breakers, the nine layerers and the ten processors around them, proven by 651 oracle phase rows and a 32,652-case sweep; [alg-layered.md § 8](alg-layered.md#part-b)). No layout algorithm runs yet (layered phases, mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex).
 
 ## Relation to ELK Java and the oracle
 

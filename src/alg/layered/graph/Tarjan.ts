@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import * as JavaInteger from '../../../java/lang/JavaInteger.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import type { LEdge } from './LEdge.js';
 import type { LGraph } from './LGraph.js';
@@ -110,7 +111,15 @@ export class Tarjan {
 
   /** The Java code after the edge loop: pop the component if `v` is its root. */
   private leave(v: LNode): void {
-    if (v.getProperty(InternalProperties.TARJAN_LOWLINK) === v.getProperty(InternalProperties.TARJAN_ID)) {
+    // Java `:86` compares the two boxed `Integer` properties by reference (`==`); both were boxed on their own from an
+    // `int` (`index` at `:57-58`, `Math.min` at `:77-83`), so a node whose id is outside the `Integer.valueOf` cache
+    // (-128..127) never passes this test even when the values are equal. The port reproduces that (mission 7b, E2a).
+    if (
+      JavaInteger.sameValueOfBox(
+        v.getProperty(InternalProperties.TARJAN_LOWLINK),
+        v.getProperty(InternalProperties.TARJAN_ID),
+      )
+    ) {
       const sCC = new Set<LNode>(); // Java HashSet of identity-hashed nodes: AD-10, insertion order
       let n: LNode;
       do {

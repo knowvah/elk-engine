@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { hashCode, MAX_VALUE, MIN_VALUE, reverse, valueOf } from './JavaInteger.js';
+import { hashCode, MAX_VALUE, MIN_VALUE, reverse, sameValueOfBox, valueOf } from './JavaInteger.js';
 import { NumberFormatException } from './NumberFormatException.js';
 
 const HASH_URL = new URL('../../../test/golden/refs/java/hash.json', import.meta.url);
@@ -54,6 +54,16 @@ describe('JavaInteger named cases', () => {
   it('exposes the int range', () => {
     expect(MIN_VALUE).toBe(-2147483648);
     expect(MAX_VALUE).toBe(2147483647);
+  });
+
+  it('sameValueOfBox is value equality inside the valueOf cache and false outside it', () => {
+    // Integer.valueOf(int) Javadoc: values in -128..127 inclusive are always cached.
+    expect(sameValueOfBox(-128, -128)).toBe(true);
+    expect(sameValueOfBox(127, 127)).toBe(true);
+    expect(sameValueOfBox(0, 0)).toBe(true);
+    expect(sameValueOfBox(-129, -129)).toBe(false);
+    expect(sameValueOfBox(128, 128)).toBe(false);
+    expect(sameValueOfBox(5, 6)).toBe(false);
   });
 
   it('hashCode is the value itself', () => {

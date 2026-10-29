@@ -664,3 +664,50 @@ path, drop the `@staged` marker and the JSON row, keep the three 7a replays gree
   `{ class }` rather than a list; T11a wraps it. Embedded ELK JSON in a ref must be sanitised for Gson's bare
   `Infinity`/`NaN` (the T10 `strictNumbers` rule); the TS `JsonWriter` shim writes them bare too. The three 7a
   recorders are single-file launchers of 1,858 and 4,643 lines, outside `npm run complexity` (which scans `src/`).
+
+## Revision 2026-10-29 (layered-cycles-layers)
+
+Appended; no earlier line is edited. Source: SC1–SC4, B1–B10 and E1–E2a in `plans/layered-cycles-layers/decisions.md`;
+the journal is `plans/layered-cycles-layers/decision-journal.md`. Where this section conflicts with the text above, this
+section wins.
+
+**Row 7b is done.** The eleven cycle breakers, the nine layerers, `IntermediateProcessorStrategy` and the ten
+processors the two phases need are ported and proven by `layered-phases.json` (651 oracle rows: 534 pipeline rows
+recorded through `ElkLayered.runLayoutTestUntil`, 80 scenario rows, 37 site rows), eight ported JUnit invariant
+tests, and a 32,652-case hash sweep over all ptolemy models; design, idioms and runbook in
+`docs/architecture/alg-layered.md` § 8, counts in `docs/conformance.md#alg-layered-phases`. The pipeline still does not
+run (`ElkLayered`, `GraphConfigurator` → 7f).
+
+**Scope moves (binding for 7c–7h).**
+
+- **SC2 → 7f:** `ModelOrderLayerAssignmentTest` (7 cases), `PartitionTest`, `Issue871Test` need a full layout; their
+  hand-built graphs are recorded as 7b `scenarios/*` rows, so the layer assignment they encode is proven now.
+- **SC3 → 7c:** `TestGraphCreator` (L6 said 7b); `BasicCycleBreakerTest` extends it but calls none of its builders.
+- **SC4 (7f):** `GraphConfigurator` and `ElkLayered` stay in 7f; 7f re-replays every 7b `models/*` row through the real
+  pipeline and under the default `SEPARATE_CONNECTED_COMPONENTS` (B3: 7b rows set it false, `ComponentsProcessor` is 7h).
+- **S3 (7a) closed:** `IntermediateProcessorStrategy` has 59 members (the 7a estimate of 63 was wrong); 10 arms are
+  live, 2 throw naming 7c, 38 naming 7f, 9 naming 7g (B9 table).
+
+**Hand-offs found during the run.**
+
+- **Every phase mission (7c, 7d, 7e):** wiring a strategy enum's arms closes the ESM cycle enum → phase class →
+  `LayeredOptions` → provider → transformer → enum. Before wiring: add the enum to melk `NON_LEAF_DEFAULT_TYPES`
+  and regenerate; write every phase class's `*_PROCESSING_CONFIGURATION` as a cached static getter from the start;
+  keep module-level reads of enum constants out of `graph/transform`; probe `import()` of each enum and the metadata
+  provider after wiring; tests enter through the enum, never through an abstract phase base class (E1).
+- **Every mission:** a Java `==`/`!=` on boxed `Integer`/`Long` is ported by tracing where the boxes come from;
+  fresh `Integer.valueOf` boxes compare through `JavaInteger.sameValueOfBox` (equal and in -128..127), never as value
+  equality by default (E2a). Four such sites exist in 7a/7b; `Tarjan.java:86` is one, so the SCC strategies never pop a
+  component rooted at DFS index ≥ 128 and `SCCModelOrderCycleBreaker` stalls on large graphs — faithful, and a
+  candidate upstream report.
+- **7f:** `LabelDummyInserter` unlocks 43 branches of the 7b classes (`unreached.md` § U); re-measure replay-alone
+  coverage of `p2layers` and `intermediate` after it lands. The 14 `SCC_*` oracle timeouts and the 581 zero-height
+  `STRETCH_WIDTH` cases of the sweep stay `timeout`.
+- **7f:** the Java invariant `testEdgesPointTowardsNextLayers` fails on the oracle's own left-to-right model-order
+  promotion when external port dummies without `MODEL_ORDER` are present, and on BF/DF model-order layerings;
+  decide whether to report upstream once the full pipeline reproduces it.
+- **Tooling:** the recorder runs the JVM with `-XX:hashCode=2` so identity-hashed `HashSet`s iterate in insertion
+  order; that holds only up to ten entries (the BFS source guard), and any later recorder that iterates a `HashSet`
+  of graph elements needs the same bound. `LayeredPhaseVectors.java` is a 2,730-line single-file launcher (JDK 21's
+  source launcher takes one file); a `javac` multi-file launcher is still a follow-up. The TS sweep test is stride-2
+  sampled to stay near four minutes; `PHASE_SWEEP_STRIDE=1` runs every case.

@@ -83,3 +83,17 @@ of the table above is pending (7b–7h). Staged files (`test/architecture/staged
 `intermediate/wrapping/{BreakingPointInserter,BreakingPointInserterBPInfo}` (7g), `compound/CrossHierarchyEdge` (7h),
 `p5edges/splines/SplineSegment` (7e). JUnit: `LayeredSpacingTest` ported (15 of 16 cases; `AfterLayoutTest` → 7f);
 `TestGraphCreator` → 7b (L6).
+
+## Status after mission 7b (2026-10-29) {#status-7b}
+
+Ported (design in [alg-layered.md § 8](alg-layered.md#part-b)): `alg.layered.p1cycles` — all 11;
+`alg.layered.p2layers` — all 9 (+ `MinWidthLayeringComputation`, M15); `alg.layered.intermediate` —
+`IntermediateProcessorStrategy` (10 of 59 arms live) and the ten processors `EdgeAndLayerConstraintEdgeReverser`,
+`LayerConstraintPreprocessor`, `LayerConstraintPostprocessor`, `ReversedEdgeRestorer`,
+`InteractiveExternalPortPositioner`, `NodePromotion` (+ four section files), `HighDegreeNodeLayeringProcessor`
+(+ M15 file), `PartitionPreprocessor`, `PartitionMidprocessor`, `PartitionPostprocessor`, with `BiLinkedHashMultiMap`.
+JUnit: `BasicCycleBreakerTest`, `BasicLayerAssignmentTest`, `BasicModelOrderTest`,
+`EdgeAndLayerConstraintEdgeReverserTest`, `LayerConstraintProcessorTest`, `ReversedEdgeRestorerTest`,
+`NodePromotionTest`, `PartitionPostProcessorTest` ported as invariant tests over oracle rows;
+`ModelOrderLayerAssignmentTest`, `PartitionTest`, `Issue871Test` → 7f (SC2, their graphs recorded as rows);
+`TestGraphCreator` → 7c (SC3). The staged list is unchanged.

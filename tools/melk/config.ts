@@ -14,9 +14,14 @@ export const PENDING_TYPES: readonly string[] = [];
  * Ported classes that import a generated options class (non-leaf, M12/M16). A bundle-class option whose default
  * expression references one is emitted as cached static getters (its `*_DEFAULT` and its property constant), because
  * entering through that class would otherwise evaluate the default in the class's temporal dead zone. Mission 7a:
- * `NodeFlexibility.getNodeFlexibility` reads `LayeredOptions` (decision journal, T3).
+ * `NodeFlexibility.getNodeFlexibility` reads `LayeredOptions` (decision journal, T3). Mission 7b: the strategy enums
+ * `CycleBreakingStrategy` and `LayeringStrategy` create the phase classes, which read `LayeredOptions` (stop 1).
  */
-export const NON_LEAF_DEFAULT_TYPES: readonly string[] = ['org.eclipse.elk.alg.layered.options.NodeFlexibility'];
+export const NON_LEAF_DEFAULT_TYPES: readonly string[] = [
+  'org.eclipse.elk.alg.layered.options.CycleBreakingStrategy',
+  'org.eclipse.elk.alg.layered.options.LayeringStrategy',
+  'org.eclipse.elk.alg.layered.options.NodeFlexibility',
+];
 
 /** Where the vendored sources and their manifest live. */
 export const SOURCES_DIRECTORY = join(import.meta.dirname, 'sources');

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import * as JavaInteger from '../../../java/lang/JavaInteger.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import {
   type BuiltTarjanGraph,
@@ -73,7 +74,13 @@ class RecursiveTarjan {
 
   /** Test-only split (complexity limit): the Java code after the edge loop. */
   private closeComponent(v: LNode): void {
-    if (v.getProperty(InternalProperties.TARJAN_LOWLINK) === v.getProperty(InternalProperties.TARJAN_ID)) {
+    // Tarjan.java:86 compares the two boxed Integers by reference: equal only inside the Integer.valueOf cache (E2a).
+    if (
+      JavaInteger.sameValueOfBox(
+        v.getProperty(InternalProperties.TARJAN_LOWLINK),
+        v.getProperty(InternalProperties.TARJAN_ID),
+      )
+    ) {
       const sCC = new Set<LNode>();
       let n: LNode;
       do {

@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
+import { BFSNodeOrderCycleBreaker } from '../p1cycles/BFSNodeOrderCycleBreaker.js';
+import { DFSNodeOrderCycleBreaker } from '../p1cycles/DFSNodeOrderCycleBreaker.js';
+import { DepthFirstCycleBreaker } from '../p1cycles/DepthFirstCycleBreaker.js';
+import { GreedyCycleBreaker } from '../p1cycles/GreedyCycleBreaker.js';
+import { GreedyModelOrderCycleBreaker } from '../p1cycles/GreedyModelOrderCycleBreaker.js';
+import { InteractiveCycleBreaker } from '../p1cycles/InteractiveCycleBreaker.js';
+import { ModelOrderCycleBreaker } from '../p1cycles/ModelOrderCycleBreaker.js';
+import { SCCNodeTypeCycleBreaker } from '../p1cycles/SCCNodeTypeCycleBreaker.js';
+import { SCConnectivity } from '../p1cycles/SCConnectivity.js';
 import { CycleBreakingStrategy } from './CycleBreakingStrategy.js';
 
 const DECLARED = [
@@ -16,18 +24,18 @@ const DECLARED = [
   'BFS_NODE_ORDER',
 ] as const;
 
-/** Constant name to the class its `create()` arm will return, and the mission porting it. */
-const ARMS: Record<(typeof DECLARED)[number], [string, string]> = {
-  GREEDY: ['GreedyCycleBreaker', '7b'],
-  DEPTH_FIRST: ['DepthFirstCycleBreaker', '7b'],
-  INTERACTIVE: ['InteractiveCycleBreaker', '7b'],
-  MODEL_ORDER: ['ModelOrderCycleBreaker', '7b'],
-  GREEDY_MODEL_ORDER: ['GreedyModelOrderCycleBreaker', '7b'],
-  SCC_CONNECTIVITY: ['SCConnectivity', '7b'],
-  SCC_NODE_TYPE: ['SCCNodeTypeCycleBreaker', '7b'],
-  DFS_NODE_ORDER: ['DFSNodeOrderCycleBreaker', '7b'],
-  BFS_NODE_ORDER: ['BFSNodeOrderCycleBreaker', '7b'],
-};
+/** Constant name to the class its `create()` arm returns. */
+const ARMS = {
+  GREEDY: GreedyCycleBreaker,
+  DEPTH_FIRST: DepthFirstCycleBreaker,
+  INTERACTIVE: InteractiveCycleBreaker,
+  MODEL_ORDER: ModelOrderCycleBreaker,
+  GREEDY_MODEL_ORDER: GreedyModelOrderCycleBreaker,
+  SCC_CONNECTIVITY: SCConnectivity,
+  SCC_NODE_TYPE: SCCNodeTypeCycleBreaker,
+  DFS_NODE_ORDER: DFSNodeOrderCycleBreaker,
+  BFS_NODE_ORDER: BFSNodeOrderCycleBreaker,
+} satisfies Record<(typeof DECLARED)[number], new () => unknown>;
 
 describe('CycleBreakingStrategy', () => {
   it('declares the constants in Java order with matching ordinals and names', () => {
@@ -56,11 +64,12 @@ describe('CycleBreakingStrategy', () => {
     );
   });
 
-  it('create() of every constant throws UnsupportedOperationException naming its class and mission', () => {
+  it('create() of every constant returns a new instance of its class', () => {
     for (const name of DECLARED) {
-      const [className, mission] = ARMS[name];
-      expect(() => CycleBreakingStrategy[name].create()).toThrow(UnsupportedOperationException);
-      expect(() => CycleBreakingStrategy[name].create()).toThrow(`${className} is ported in mission ${mission}`);
+      const created = CycleBreakingStrategy[name].create();
+      expect(created).toBeInstanceOf(ARMS[name]);
+      expect(created.constructor).toBe(ARMS[name]);
+      expect(CycleBreakingStrategy[name].create()).not.toBe(created);
     }
   });
 

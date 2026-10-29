@@ -2,9 +2,17 @@
 import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
 import type { ILayoutPhaseFactory } from '../../../core/alg/ILayoutPhaseFactory.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import type { LayeredPhases } from '../LayeredPhases.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { BFSNodeOrderCycleBreaker } from '../p1cycles/BFSNodeOrderCycleBreaker.js';
+import { DFSNodeOrderCycleBreaker } from '../p1cycles/DFSNodeOrderCycleBreaker.js';
+import { DepthFirstCycleBreaker } from '../p1cycles/DepthFirstCycleBreaker.js';
+import { GreedyCycleBreaker } from '../p1cycles/GreedyCycleBreaker.js';
+import { GreedyModelOrderCycleBreaker } from '../p1cycles/GreedyModelOrderCycleBreaker.js';
+import { InteractiveCycleBreaker } from '../p1cycles/InteractiveCycleBreaker.js';
+import { ModelOrderCycleBreaker } from '../p1cycles/ModelOrderCycleBreaker.js';
+import { SCCNodeTypeCycleBreaker } from '../p1cycles/SCCNodeTypeCycleBreaker.js';
+import { SCConnectivity } from '../p1cycles/SCConnectivity.js';
 
 /**
  * Enumeration of and factory for the different available cycle breaking strategies. The model order cycle breakers
@@ -104,37 +112,29 @@ export class CycleBreakingStrategy implements ILayoutPhaseFactory<LayeredPhases,
     return this.#ordinal - other.#ordinal;
   }
 
-  /**
-   * Creates the phase implementation. Every arm's class is ported in a later mission (L1): until then the arm throws
-   * `UnsupportedOperationException` naming the class and the mission, with no import.
-   */
+  /** Creates the phase implementation. */
   create(): ILayoutPhase<LayeredPhases, LGraph> {
     switch (this) {
       case CycleBreakingStrategy.GREEDY:
-        throw notPorted('GreedyCycleBreaker', '7b');
+        return new GreedyCycleBreaker();
       case CycleBreakingStrategy.DEPTH_FIRST:
-        throw notPorted('DepthFirstCycleBreaker', '7b');
+        return new DepthFirstCycleBreaker();
       case CycleBreakingStrategy.INTERACTIVE:
-        throw notPorted('InteractiveCycleBreaker', '7b');
+        return new InteractiveCycleBreaker();
       case CycleBreakingStrategy.MODEL_ORDER:
-        throw notPorted('ModelOrderCycleBreaker', '7b');
+        return new ModelOrderCycleBreaker();
       case CycleBreakingStrategy.GREEDY_MODEL_ORDER:
-        throw notPorted('GreedyModelOrderCycleBreaker', '7b');
+        return new GreedyModelOrderCycleBreaker();
       case CycleBreakingStrategy.SCC_CONNECTIVITY:
-        throw notPorted('SCConnectivity', '7b');
+        return new SCConnectivity();
       case CycleBreakingStrategy.SCC_NODE_TYPE:
-        throw notPorted('SCCNodeTypeCycleBreaker', '7b');
+        return new SCCNodeTypeCycleBreaker();
       case CycleBreakingStrategy.DFS_NODE_ORDER:
-        throw notPorted('DFSNodeOrderCycleBreaker', '7b');
+        return new DFSNodeOrderCycleBreaker();
       case CycleBreakingStrategy.BFS_NODE_ORDER:
-        throw notPorted('BFSNodeOrderCycleBreaker', '7b');
+        return new BFSNodeOrderCycleBreaker();
       default:
         throw new IllegalArgumentException(`No implementation is available for the cycle breaker ${this.toString()}`);
     }
   }
-}
-
-/** The L1 placeholder for a `create()` arm whose class is not ported yet. */
-function notPorted(className: string, mission: string): UnsupportedOperationException {
-  return new UnsupportedOperationException(`${className} is ported in mission ${mission}`);
 }
