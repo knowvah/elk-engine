@@ -14,6 +14,18 @@
     "tickets/core/457_boxLayouterIgnoresMinimumSize.elkt": "86b826e4c23a0da3c5a9b683cf8692e1c8bdbc405996fe68ab10198ce0551f9d",
     "tickets/core/475_fixedLayoutWithLongLabels.elkt": "f30fac5ebbe51ef8aef7f4624e9a64e7018df5ae89d75c88e2a32961e2a5fa77",
     "tickets/core/489_paddingAndMinSize_Large.elkt": "4299f2e7c6326a4f12caed4d554eeade88b33fe827ad02308ba269c0dd2d81e7",
-    "tickets/core/489_paddingAndMinSize_Small.elkt": "8909ff92338b121c4aeb424942f2031705633ca8430d57d381da1e73ffae93c2"
+    "tickets/core/489_paddingAndMinSize_Small.elkt": "8909ff92338b121c4aeb424942f2031705633ca8430d57d381da1e73ffae93c2",
+    "tests/layered/layer_constraints/01.elkt": "5530ec8e29a2b0896b808710553be8995bf59b8a19f6ef828e541bb8b78e0e58",
+    "tests/layered/layer_constraints/02.elkt": "e57cb83df7e22f534205c946a4ad6fa973ba7d341e35f8a8194101bf78c72489",
+    "tests/layered/layer_constraints/03.elkt": "dc84df689d7c3293c530ccac2753a0914577c69d885a56f7d3083d1613289934",
+    "tests/layered/layer_constraints/emptyLayerFirst.elkt": "347f8a322f2b2a0fbcef82cc75eaf5467e0ec91c191881b28ce24a0a7c93dff3",
+    "tests/layered/layer_constraints/emptyLayerLast.elkt": "746847a957c1e493475edd3ee2fa2f39c6a31f23c7cd35ed569b5fa9f495f500",
+    "tests/layered/layer_constraints/emptyLayerMid.elkt": "18e2209e4ce99b946095bd7f50249e0c69e85abea1693aca5f4390c2ecb6c4e4",
+    "tests/layered/partitioning/nonConsecutivePartitions.elkt": "10d848f79e99defdcefc60e271fe26071f684b1e4ef5a8611f6cfbd37abbe686",
+    "tests/layered/partitioning/partitions01.elkt": "2320d22a074fdac2c18c1e4467cd31b351fd5bd069e2ce261cda8c5a1e98f173",
+    "tests/layered/partitioning/partitions02.elkt": "011a0dde94a5b8ccdb1914576f024f1c06af94ad75d08e25e4414be6dddc66e5",
+    "tests/layered/partitioning/withEdgeLabels.elkt": "ae0de9a9f3062b7f13441a0c0d6b1bb1051cfa90059eb193d9f33df513737827",
+    "tickets/layered/600_outgoingEdgeInLastSeparateNode.elkt": "e503b6a0ed9e45f0ee0d1a34249e75f415e25123fc19252cdffcb5ccb513caa0",
+    "tickets/layered/656_brokenLayoutPartitions.elkt": "ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e"
   }
 }

@@ -29,6 +29,25 @@ const TICKET_INPUTS = [
   'tickets/core/489_paddingAndMinSize_Large.elkt',
   'tickets/core/489_paddingAndMinSize_Small.elkt',
 ];
+/**
+ * Inputs of the layered phase vectors (mission 7b B5, `tools/vectors/LayeredPhaseVectors.java`): vendored with
+ * SHA-256 rows so the recorder and `test/helpers/layered-phase-replay-rows.ts` pin them; they have no algorithm
+ * golden (alg-common AC5: the list below pins the exact vendored set).
+ */
+const LAYERED_PHASE_INPUTS = [
+  'tests/layered/layer_constraints/01.elkt',
+  'tests/layered/layer_constraints/02.elkt',
+  'tests/layered/layer_constraints/03.elkt',
+  'tests/layered/layer_constraints/emptyLayerFirst.elkt',
+  'tests/layered/layer_constraints/emptyLayerLast.elkt',
+  'tests/layered/layer_constraints/emptyLayerMid.elkt',
+  'tests/layered/partitioning/nonConsecutivePartitions.elkt',
+  'tests/layered/partitioning/partitions01.elkt',
+  'tests/layered/partitioning/partitions02.elkt',
+  'tests/layered/partitioning/withEdgeLabels.elkt',
+  'tickets/layered/600_outgoingEdgeInLastSeparateNode.elkt',
+  'tickets/layered/656_brokenLayoutPartitions.elkt',
+];
 
 type Obj = Record<string, unknown>;
 
@@ -144,8 +163,8 @@ describe('vendored inputs', () => {
     expect(parsed['commit']).toBe(corpus['commit']);
   });
 
-  it('records every golden input and the four ticket models, nothing else', () => {
-    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS].sort();
+  it('records every golden input, the four ticket models and the twelve layered phase inputs, nothing else', () => {
+    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS].sort();
     expect(Object.keys(hashes).sort()).toEqual(expected);
   });
 
