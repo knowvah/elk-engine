@@ -220,10 +220,16 @@ export class LayeredMetaDataProvider implements ILayoutMetaDataProvider {
     null,
   );
 
+  static #CYCLE_BREAKING_STRATEGY_DEFAULT: CycleBreakingStrategy | undefined;
+
   /**
    * Default value for {@link CYCLE_BREAKING_STRATEGY}.
    */
-  private static readonly CYCLE_BREAKING_STRATEGY_DEFAULT: CycleBreakingStrategy = CycleBreakingStrategy.GREEDY;
+  private static get CYCLE_BREAKING_STRATEGY_DEFAULT(): CycleBreakingStrategy {
+    return (LayeredMetaDataProvider.#CYCLE_BREAKING_STRATEGY_DEFAULT ??= CycleBreakingStrategy.GREEDY);
+  }
+
+  static #CYCLE_BREAKING_STRATEGY: IProperty<CycleBreakingStrategy> | undefined;
 
   /**
    * Strategy for cycle breaking. Cycle breaking looks for cycles in the graph and determines
@@ -231,27 +237,37 @@ export class LayeredMetaDataProvider implements ILayoutMetaDataProvider {
    * opposite direction of regular edges (that is, reversed edges will point left if edges
    * usually point right).
    */
-  static readonly CYCLE_BREAKING_STRATEGY: IProperty<CycleBreakingStrategy> = new Property<CycleBreakingStrategy>(
-    'org.eclipse.elk.layered.cycleBreaking.strategy',
-    LayeredMetaDataProvider.CYCLE_BREAKING_STRATEGY_DEFAULT,
-    null,
-    null,
-  );
+  static get CYCLE_BREAKING_STRATEGY(): IProperty<CycleBreakingStrategy> {
+    return (LayeredMetaDataProvider.#CYCLE_BREAKING_STRATEGY ??= new Property<CycleBreakingStrategy>(
+      'org.eclipse.elk.layered.cycleBreaking.strategy',
+      LayeredMetaDataProvider.CYCLE_BREAKING_STRATEGY_DEFAULT,
+      null,
+      null,
+    ));
+  }
+
+  static #LAYERING_STRATEGY_DEFAULT: LayeringStrategy | undefined;
 
   /**
    * Default value for {@link LAYERING_STRATEGY}.
    */
-  private static readonly LAYERING_STRATEGY_DEFAULT: LayeringStrategy = LayeringStrategy.NETWORK_SIMPLEX;
+  private static get LAYERING_STRATEGY_DEFAULT(): LayeringStrategy {
+    return (LayeredMetaDataProvider.#LAYERING_STRATEGY_DEFAULT ??= LayeringStrategy.NETWORK_SIMPLEX);
+  }
+
+  static #LAYERING_STRATEGY: IProperty<LayeringStrategy> | undefined;
 
   /**
    * Strategy for node layering.
    */
-  static readonly LAYERING_STRATEGY: IProperty<LayeringStrategy> = new Property<LayeringStrategy>(
-    'org.eclipse.elk.layered.layering.strategy',
-    LayeredMetaDataProvider.LAYERING_STRATEGY_DEFAULT,
-    null,
-    null,
-  );
+  static get LAYERING_STRATEGY(): IProperty<LayeringStrategy> {
+    return (LayeredMetaDataProvider.#LAYERING_STRATEGY ??= new Property<LayeringStrategy>(
+      'org.eclipse.elk.layered.layering.strategy',
+      LayeredMetaDataProvider.LAYERING_STRATEGY_DEFAULT,
+      null,
+      null,
+    ));
+  }
 
   /**
    * Default value for {@link LAYERING_LAYER_CONSTRAINT}.

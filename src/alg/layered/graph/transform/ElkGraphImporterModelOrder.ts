@@ -8,16 +8,6 @@ import { LayeringStrategy } from '../../options/LayeringStrategy.js';
 import { NodePromotionStrategy } from '../../options/NodePromotionStrategy.js';
 import { OrderingStrategy } from '../../options/OrderingStrategy.js';
 
-/** The cycle breaking strategies that need the model order (`needsModelOrderBasedOnParent`). */
-const MODEL_ORDER_CYCLE_BREAKING: readonly CycleBreakingStrategy[] = [
-  CycleBreakingStrategy.MODEL_ORDER,
-  CycleBreakingStrategy.BFS_NODE_ORDER,
-  CycleBreakingStrategy.DFS_NODE_ORDER,
-  CycleBreakingStrategy.GREEDY_MODEL_ORDER,
-  CycleBreakingStrategy.SCC_CONNECTIVITY,
-  CycleBreakingStrategy.SCC_NODE_TYPE,
-];
-
 /** The "Import Entry Points" helpers that decide whether model order is set. */
 
 /** The `modelOrderLayering` condition of `needsModelOrderBasedOnParent`. */
@@ -53,10 +43,17 @@ function usesModelOrderCrossingMinimization(elkgraph: ElkNode): boolean {
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/graph/transform/ElkGraphImporter.java
  */
 export function needsModelOrderBasedOnParent(elkgraph: ElkNode): boolean {
-  // Java reads the strategy once per comparison; the property read has no side effect for an enum.
-  const modelOrderCycleBreaking = MODEL_ORDER_CYCLE_BREAKING.includes(
-    elkgraph.getProperty(LayeredOptions.CYCLE_BREAKING_STRATEGY),
-  );
+  // Java reads the strategy once per comparison; the property read has no side effect for an enum. The constants are
+  // read here, not at module level: the strategy enums import the phase classes, which import LayeredOptions, which
+  // reaches this module through LayeredLayoutProvider, so a module-level read would run before the enum initialises.
+  const cycleBreaking = elkgraph.getProperty(LayeredOptions.CYCLE_BREAKING_STRATEGY);
+  const modelOrderCycleBreaking =
+    cycleBreaking === CycleBreakingStrategy.MODEL_ORDER ||
+    cycleBreaking === CycleBreakingStrategy.BFS_NODE_ORDER ||
+    cycleBreaking === CycleBreakingStrategy.DFS_NODE_ORDER ||
+    cycleBreaking === CycleBreakingStrategy.GREEDY_MODEL_ORDER ||
+    cycleBreaking === CycleBreakingStrategy.SCC_CONNECTIVITY ||
+    cycleBreaking === CycleBreakingStrategy.SCC_NODE_TYPE;
   const modelOrderLayering = usesModelOrderLayering(elkgraph);
   const modelOrderCrossingMinimization = usesModelOrderCrossingMinimization(elkgraph);
   return modelOrderCycleBreaking || modelOrderLayering || modelOrderCrossingMinimization;

@@ -6,6 +6,27 @@ export const MIN_VALUE = -2147483648;
 /** @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Integer.html#MAX_VALUE */
 export const MAX_VALUE = 2147483647;
 
+/**
+ * `Integer.valueOf(int)` caches, and so returns one object for, every value in this range; outside it every call
+ * returns a fresh box. The upper bound is the JDK default (`java.lang.Integer.IntegerCache.high`), which the oracle JVM
+ * runs with.
+ *
+ * @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Integer.html#valueOf(int)
+ */
+const VALUE_OF_CACHE_LOW = -128;
+const VALUE_OF_CACHE_HIGH = 127;
+
+/**
+ * Whether `Integer.valueOf(a) == Integer.valueOf(b)` holds for two values each boxed by its own `valueOf` call (the
+ * autoboxing of an `int` expression): the same cached object inside -128..127, distinct objects otherwise. Only for
+ * sites whose operands are provably fresh boxes.
+ *
+ * @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Integer.html#valueOf(int)
+ */
+export function sameValueOfBox(a: number, b: number): boolean {
+  return a === b && a >= VALUE_OF_CACHE_LOW && a <= VALUE_OF_CACHE_HIGH;
+}
+
 const RADIX = 10;
 const INT_BITS = 32;
 const ND = /^\p{Nd}$/u;
