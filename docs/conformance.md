@@ -10,22 +10,23 @@ The comparator is [`test/golden/compare-json.ts`](../test/golden/compare-json.ts
 this document describes what it implements. Port rules live in
 [`docs/translation-rules.md`](translation-rules.md).
 
-| #   | Section                                           | Answers                                   |
-| --- | ------------------------------------------------- | ----------------------------------------- |
-| 1   | [Oracle](#1-oracle)                               | What is "correct", and at which commit?   |
-| 1a  | [Conformance unit](#1a-conformance-unit)          | What is one case, and which cases exist?  |
-| 2   | [Conformance bar](#2-conformance-bar)             | What counts as equal?                     |
-| 3   | [Goldens and corpus](#3-goldens-and-corpus)       | Where do reference outputs come from?     |
-| 4   | [Seam patches](#4-seam-patches)                   | How do we change the oracle?              |
-| 5   | [Oracle operations](#5-oracle-operations-runbook) | What do I do when it breaks?              |
-| 6   | [Gates](#6-gates)                                 | What must pass before a change lands?     |
-| 7   | [ELK Text](#elk-text-elkt)                        | How is `.elkt` proven?                    |
-| 8   | [ELK Textual JSON](#elk-textual-json-elkj)        | How is `.elkj` proven?                    |
-| -   | [Core layouts](#core-layouts-fixed-box-random)    | How are `fixed`, `box`, `random` proven?  |
-| -   | [alg.common](#alg-common)                         | How is `alg.common` part a proven?        |
-| -   | [alg.common nodespacing](#alg-common-nodespacing) | How is `alg.common` part b proven?        |
-| -   | [alg.layered framework](#alg-layered-framework)   | How is the layered framework (7a) proven? |
-| -   | [Temporary gaps](#temporary-gaps)                 | What differs from the Java for now?       |
+| #   | Section                                              | Answers                                   |
+| --- | ---------------------------------------------------- | ----------------------------------------- |
+| 1   | [Oracle](#1-oracle)                                  | What is "correct", and at which commit?   |
+| 1a  | [Conformance unit](#1a-conformance-unit)             | What is one case, and which cases exist?  |
+| 2   | [Conformance bar](#2-conformance-bar)                | What counts as equal?                     |
+| 3   | [Goldens and corpus](#3-goldens-and-corpus)          | Where do reference outputs come from?     |
+| 4   | [Seam patches](#4-seam-patches)                      | How do we change the oracle?              |
+| 5   | [Oracle operations](#5-oracle-operations-runbook)    | What do I do when it breaks?              |
+| 6   | [Gates](#6-gates)                                    | What must pass before a change lands?     |
+| 7   | [ELK Text](#elk-text-elkt)                           | How is `.elkt` proven?                    |
+| 8   | [ELK Textual JSON](#elk-textual-json-elkj)           | How is `.elkj` proven?                    |
+| -   | [Core layouts](#core-layouts-fixed-box-random)       | How are `fixed`, `box`, `random` proven?  |
+| -   | [alg.common](#alg-common)                            | How is `alg.common` part a proven?        |
+| -   | [alg.common nodespacing](#alg-common-nodespacing)    | How is `alg.common` part b proven?        |
+| -   | [alg.layered framework](#alg-layered-framework)      | How is the layered framework (7a) proven? |
+| -   | [alg.layered cycles and layers](#alg-layered-phases) | How are the first two phases (7b) proven? |
+| -   | [Temporary gaps](#temporary-gaps)                    | What differs from the Java for now?       |
 
 ## 1. Oracle
 
@@ -974,6 +975,63 @@ was re-recorded once (X4). The port-side view proxy returned `undefined`/`Unsupp
 - **Staged boundary:** `LayeredLayoutProvider.layout` reaches `ElkLayered.doLayout`/`doCompoundLayout`, which throw
   naming 7f; the `isCanceled` arm after them is unreachable until then (X6). The oracle's layout output for the four
   `site/provider/*` rows is recorded for 7f to replay.
+- **Prose typos corrected:** none found in this mission.
+
+## alg.layered, part b: cycles and layers (mission 7b) {#alg-layered-phases}
+
+Mission 7b ported the eleven cycle breakers (`p1cycles`), the nine layerers (`p2layers`), `IntermediateProcessorStrategy`
+and the ten intermediate processors the two phases need (design, idioms and runbook in
+[alg-layered.md § 8](architecture/alg-layered.md#part-b)). The pipeline still does not run (`ElkLayered` and
+`GraphConfigurator` are 7f); every phase is proven by replaying what the oracle's pipeline recorded. Decisions:
+`plans/layered-cycles-layers/decisions.md` (SC1–SC4, B1–B10, E1–E2a).
+
+**Evidence.**
+
+- `test/golden/refs/java/layered-phases.json` (1,958,962 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-phase-vectors.sh`, JVM flag `-XX:hashCode=2`): 651 rows, byte-stable; `models` 534 (the nine
+  vendored ptolemy models at every hierarchy level and twelve `.elkt` models vendored from elk-models, run through the
+  real Java pipeline to a P1 strategy, a P2 strategy or a 7b processor, the processor `prefix` recorded), `scenarios` 80
+  (the Java tests' hand-built graphs as step rows, 10 of them pipeline rows), `sites` 37 (one step row per T9 branch
+  scenario). `LayeredPhaseVectors.test.ts` replays all 651 at the AD-4 bar; the 81 step rows under ten nodes also match
+  the full 7a dump.
+- Eight JUnit invariant tests ported verbatim over the replayed graphs of their Java configurations.
+- Breadth sweep (B6, gitignored): 32,652 oracle cases over all 550 ptolemy models and every strategy
+  (30,074 ok, 1,983 refused, 595 timeout, 0 throws); the port's canonical phase-dump hash equals the oracle's for every
+  ok case (stride 1).
+- 40 anchored unit cases cite a site row (`// oracle: <row id>; <Java file:line>`); after them every 7b class is at 100 % branches except fourteen whose remainder is Java-unreachable or 7f-bound (`plans/layered-cycles-layers/unreached.md`, with the T11 and T12 corrections); whole-suite coverage 99.18 / 97.11 / 98.99 / 99.19.
+- Landed vectors, goldens and corpus are unchanged: the refs diff against `main` is the new `layered-phases.json`,
+  the twelve vendored `.elkt` inputs and their manifest rows.
+
+**AD-10 sites.** `BFSNodeOrderCycleBreaker.java:121` iterates a `HashSet<LNode>` of sources: the port iterates in
+insertion order and the oracle was recorded with a constant identity hash, which keeps `HashSet` insertion order only up
+to ten entries, so the recorder refuses BFS rows with more sources. `NodePromotion`'s `BiLinkedHashMultiMap` and
+`Tarjan`'s containers are insertion-ordered as in 7a.
+
+**Divergences found during the mission, fixed at origin.** The replay helper set a row's options on the root rather
+than the imported level (T3, found by T8's non-root rows). Three boxed-`Integer` reference comparisons had been ported
+as value equality under decision E2; T8 and T10 showed the Java result depends on the `Integer.valueOf` cache
+(`NodePromotion.java:541` never terminates otherwise; `Tarjan.java:86` finds components the Java does not), so the
+four sites — the two above, `CoffmanGrahamLayerer.java:244`, `SCCNodeTypeCycleBreaker.java:80,88` — compare through
+`JavaInteger.sameValueOfBox` (E2a; the 7a `Tarjan` fix is this mission's).
+
+**Known divergences found.** None numeric. Open by design:
+
+- **Components flag (B3):** every row runs with `SEPARATE_CONNECTED_COMPONENTS=false` because `ComponentsProcessor` is
+  7h; 7f re-runs the rows under the default.
+- **No `DefaultConfiguration` sizing (B5):** the Java test runner's node sizing is not reproduced; models are replayed
+  with their own sizes.
+- **`Integer` cache assumption:** `sameValueOfBox` assumes the JDK default `IntegerCache.high` (127), which the oracle
+  runs with; a JVM started with `-XX:AutoBoxCacheMax` would behave differently.
+- **Faithful non-termination:** `StretchWidthLayerer` never terminates on a zero-height normal node or a self-loop; the
+  SCC cycle breakers never pop a component rooted at DFS index 128 or more (`Tarjan.java:86`), and
+  `SCCModelOrderCycleBreaker` then loops. The sweep records those cases as `timeout` and the replay skips them.
+  Candidate upstream reports.
+- **Invariants the Java violates on its own output:** `testEdgesPointTowardsNextLayers` fails on the recorded
+  left-to-right model-order promotion of a graph with external port dummies, and on BF/DF model-order layerings; the
+  Java tests never run those configurations, so the ported invariant tests do not either (the rows still replay).
+- **Sweep scope:** INTERACTIVE cases replay the models with the positions they carry on disk; the Java tests' seeded
+  positions are not reproduced.
+- **Label dummies:** 43 branches of the 7b classes need `LabelDummyInserter` (7f) and are measured there.
 - **Prose typos corrected:** none found in this mission.
 
 ## Temporary gaps

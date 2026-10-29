@@ -19,6 +19,7 @@ algorithm classes land in 7b–7h. Counts of oracle rows live in [conformance.md
 | [5. Options and registration](#options)   | Generated `LayeredOptions`, `Spacings`, L5 registration              |
 | [6. Evidence](#evidence)                  | The three replays, the site rows, coverage                           |
 | [7. Runbook](#runbook)                    | Re-recording, regenerating, reading a staged throw                   |
+| [8. Part b: cycles and layers](#part-b)   | Mission 7b: p1cycles, p2layers, ten processors, phase rows, sweep    |
 
 ## 1. Package map {#package-map}
 
@@ -220,3 +221,107 @@ and keep the oracle's layout output for 7f).
 | TDZ on an options class               | `ReferenceError` when a layered module is imported first; the fresh-process import smoke fails | a `*_DEFAULT` reads a non-leaf class: add the option to `NON_LEAF_DEFAULT_TYPES` in `tools/melk/config.ts` and regenerate (7.2); never hand-edit the generated file                               |
 | Staged member reached by a replay row | a row throws `… is ported in mission 7x` where the oracle recorded a value                     | stop 7 of the mission: the staged inventory missed a member; the owning mission ports it, or the row is re-scoped by the user                                                                     |
 | Identity-hash order                   | a replay mismatch at `ElkGraphImporter` `nodeAndPortMap` or `Tarjan`'s containers              | insertion order is journaled as the choice (AD-10); follow [collections 2.5](../translation-rules-collections.md#25-runbook-javahashmap-order-mismatch-in-a-ported-site) before touching the port |
+
+## 8. Part b: cycles and layers (mission 7b) {#part-b}
+
+Mission 7b (`layered-cycles-layers`, roadmap row 7b) ported the first two phases and the processors around them.
+Decisions cited are `plans/layered-cycles-layers/decisions.md` (SC1–SC4, B1–B10, E1–E2a); task ids T1–T13 are in that
+mission's `decision-journal.md`. The pipeline still does not run: `ElkLayered` and `GraphConfigurator` stay staged for
+7f, and every phase here is proven by replaying what the oracle's pipeline recorded, not by running one.
+
+### 8.1 Package map {#part-b-package-map}
+
+| Java package   | TS directory   | Ported in 7b (task)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| -------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `p1cycles`     | `p1cycles`     | all 11: `GreedyCycleBreaker`, `DepthFirstCycleBreaker`, `InteractiveCycleBreaker`, `ModelOrderCycleBreaker`, `GreedyModelOrderCycleBreaker`, `BFSNodeOrderCycleBreaker`, `DFSNodeOrderCycleBreaker`, `SCCModelOrderCycleBreaker` + `SCConnectivity` + `SCCNodeTypeCycleBreaker`, `GroupModelOrderCalculator` (T6); the `CycleBreakingStrategy` arms create them (T6)                                                                                                                                                                                                                                                      |
+| `p2layers`     | `p2layers`     | all 9: `NetworkSimplexLayerer`, `LongestPathLayerer`, `LongestPathSourceLayerer`, `CoffmanGrahamLayerer`, `InteractiveLayerer`, `StretchWidthLayerer`, `MinWidthLayerer` (+ `MinWidthLayeringComputation`, M15), `BreadthFirstModelOrderLayerer`, `DepthFirstModelOrderLayerer` (T7); the `LayeringStrategy` arms create them (T7)                                                                                                                                                                                                                                                                                        |
+| `intermediate` | `intermediate` | `IntermediateProcessorStrategy` (59 members, T2; 10 arms wired in T8, 49 throw naming 7c/7f/7g per B9); the five processors the phases declare — `EdgeAndLayerConstraintEdgeReverser`, `LayerConstraintPreprocessor`, `LayerConstraintPostprocessor`, `ReversedEdgeRestorer`, `InteractiveExternalPortPositioner` (T4) — and the five `GraphConfigurator` adds between P1 and P3 — `NodePromotion` (+ `NodePromotion{State,Precalculation,ModelOrder,Heuristic}` sections), `HighDegreeNodeLayeringProcessor` (+ `…HighDegreeNodeInformation`, M15), `Partition{Pre,Mid,Post}processor`, `BiLinkedHashMultiMap` (T5, SC1) |
+
+Why the ten processors (SC1): a layering recorded by the oracle's `runLayoutTestUntil` is the result of every
+processor the configuration ran before the stop, so the set a 7b replay needs is exactly what P1 and P2 declare plus
+what `GraphConfigurator` inserts between them. Nothing else of `intermediate` is in 7b.
+
+### 8.2 Rows and the prefix replay {#part-b-rows}
+
+`test/golden/refs/java/layered-phases.json` (recorder `tools/vectors/LayeredPhaseVectors.java`, launcher
+`tools/vectors/layered-phase-vectors.sh`) has three row groups (B1, B2):
+
+- `models/*` (534): a vendored model, imported at one hierarchy level (`target`), run through the real Java pipeline
+  (`ElkLayered.prepareLayoutTest`, then `runLayoutTestUntil` at a P1 strategy, a P2 strategy or a 7b processor);
+  the row stores the ordered `prefix` of processors that ran. The TS replay mirrors `GraphConfigurator`'s
+  normalisation (`test/helpers/layered-phase-replay-normalise.ts`, B4) and runs the prefix by name through the enum
+  and the strategy factories. 7f re-replays every one of these rows through the real `ElkLayered` (SC4).
+- `scenarios/*` (80) and `sites/*` (37): step rows run by the recorder's own interpreter (`importGraph`, `normalise`,
+  `setProperty`, `layers`, `reverseEdge`, `runProcessor`, `runPhase`, `dump`) and its TS twin
+  (`test/helpers/layered-phase-replay-ops.ts`); hand-built graphs of the Java tests and the T9 branch scenarios.
+- `expected`: layers (node paths per layer), layerless and hidden nodes, every edge with its `reversed` flag, and the
+  properties that changed since normalisation (C4-encoded); rows under ten nodes carry the full 7a dump.
+
+Every row sets `SEPARATE_CONNECTED_COMPONENTS=false` (B3: `ComponentsProcessor` is 7h). The recorder refuses a row
+whose prefix names a processor outside the 7b set (two accepted refusals: `SELF_LOOP_PREPROCESSOR`,
+`LABEL_DUMMY_INSERTER`) and a `BFS_NODE_ORDER` row with more than ten source nodes (8.6).
+
+### 8.3 Recursion rewrites (B8) {#part-b-recursion}
+
+Nine input-depth recursions are explicit-stack loops that reproduce the Java visit, side-effect and accumulation
+order, each proven against a verbatim recursive twin in its test file over the oracle rows plus a 5,000-node case run
+under `--pool=forks --execArgv=--jitless`: `DepthFirstCycleBreaker.dfs`, `DFSNodeOrderCycleBreaker.dfs`,
+`InteractiveCycleBreaker.findCycles`, `CoffmanGrahamLayerer.dfs`, `LongestPathLayerer.visit`,
+`LongestPathSourceLayerer.visit`, `NetworkSimplexLayerer.connectedComponentsDFS`, `NodePromotion`'s promotion
+cascade, `HighDegreeNodeLayeringProcessor.isTreeRoot`/`moveTree` (the brief's `degree` and
+`LayerConstraintPreprocessor.hide` are not recursive). `BasicCycleBreakerTest`'s own `dfs` follows the same rule.
+
+### 8.4 Two Java idioms the port had to reproduce {#part-b-idioms}
+
+- **Class-initialisation laziness (E1).** Wiring the strategy-enum arms closes an import cycle the Java also has
+  (enum → phase class → `LayeredOptions` → provider → transformer → importer → enum). Java initialises classes on
+  first use; ESM evaluates modules in import order, so three kinds of module-level reads failed in the temporal dead
+  zone and are now lazy: the generated option defaults for `CycleBreakingStrategy`/`LayeringStrategy` (melk
+  `NON_LEAF_DEFAULT_TYPES`, 7.2), the six strategy comparisons of `ElkGraphImporterModelOrder` (read inside the
+  function, as `ElkGraphImporter.java:484-489` does) and the thirteen phase classes' `*_PROCESSING_CONFIGURATION`
+  (cached static getters). Tests enter the graph through a strategy enum, never through an abstract phase base class.
+- **`Integer` box identity (E2a).** Four sites compare boxed `Integer`s by reference (`NodePromotion.java:541`,
+  `CoffmanGrahamLayerer.java:244`, `SCCNodeTypeCycleBreaker.java:80,88`, `Tarjan.java:86`); each operand is a fresh
+  `Integer.valueOf` box, so the comparison holds exactly for equal values inside the -128..127 cache.
+  `JavaInteger.sameValueOfBox` encodes that Javadoc guarantee. It is load-bearing: value equality made the
+  left-to-right model-order promotion loop forever on eight oracle rows, and `Tarjan` found components the Java never
+  finds on graphs with 128 or more nodes (8.6).
+
+### 8.5 Evidence {#part-b-evidence}
+
+| Layer                        | What                                                                                                                                                                                                                                                 | Replay / test                                                                                                                                                                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Phase rows (T1, T11)         | `layered-phases.json`, 651 rows (`models` 534, `scenarios` 80, `sites` 37), 1,958,962 bytes, JDK 21.0.1, oracle `8aaa3c14`, byte-stable; every class also proven on its own rows with the class injected (T4–T7)                                     | `src/alg/layered/LayeredPhaseVectors.test.ts` replays all 651 by name (T8); `test/helpers/layered-phase-replay-pre-state.test.ts` checks the 81 step dumps' pre-states                                                                |
+| Ported JUnit invariants (T8) | `BasicCycleBreakerTest`, `BasicLayerAssignmentTest`, `BasicModelOrderTest`, `EdgeAndLayerConstraintEdgeReverserTest`, `LayerConstraintProcessorTest`, `ReversedEdgeRestorerTest`, `NodePromotionTest`, `PartitionPostProcessorTest`, bodies verbatim | over the replayed graphs of the Java tests' configurations (pipeline and scenario rows); the coordinate tests of SC2 are 7f                                                                                                           |
+| Breadth sweep (T10, B6)      | `tools/oracle/phase-sweep.sh`: 32,652 oracle cases over 550 ptolemy models (30,074 ok, 1,983 refused, 595 timeout), one canonical-dump SHA-256 each, gitignored                                                                                      | `test/corpus/phase-sweep.test.ts`: 15,003 cases at stride 2 (all 30,074 with `PHASE_SWEEP_STRIDE=1`), 0 mismatches after the two divergences below were fixed                                                                         |
+| Anchored unit tests (T12a–c) | one colocated case per S and J item of `plans/layered-cycles-layers/unreached.md`, `// oracle: <row id>; <Java file:line>`                                                                                                                           | 40 row cases over 24 files (p1cycles 7, p2layers 16, intermediate 17) plus six Java-constant cases (`Integer.compare`, `NoSuchElementException`, enum ordinals); every S and J item of the map is anchored, the U list stays untested |
+
+**Coverage.** Replay-alone coverage of the 7b packages before the site rows (T9): 88.75 / 76.59 / 81.86 % (statements
+/ branches / functions); 216 untaken branches, of which 51 are the enum's throwing arms, 43 need label dummies (7f) and
+20 are dead by construction or unused in the Java (`unreached.md`). After the site rows and the anchored cases, every 7b class is at 100 % branches with the generic replay and its directory's tests except those whose remainder is Java-unreachable or 7f-bound: `SCCModelOrderCycleBreaker` 16.7 (the base `findNodes`/`findMaximum`, overridden by both subclasses), `DFSNodeOrderCycleBreaker` 95.0 and `DepthFirstCycleBreaker` 92.9 (the `dfs` entry guard), `SCCNodeTypeCycleBreaker` 92.3 and `SCConnectivity` 94.4 (singleton components never stored by `Tarjan`), `BreadthFirstModelOrderLayerer` 89.3 and `DepthFirstModelOrderLayerer` 92.2 (label dummies), `CoffmanGrahamLayerer` 94.6 (two dead comparator arms), `NetworkSimplexLayerer` 93.8 (instance reuse), `EdgeAndLayerConstraintEdgeReverser` 93.8, `HighDegreeNodeLayeringProcessor` 98.1, `LayerConstraintPreprocessor` 97.3, `LayerConstraintPostprocessor` 74.3 and `NodePromotionModelOrder` 75.0 (label dummies). Whole-suite coverage after batch 6: 99.18 / 97.11 / 98.99 / 99.19 (lines / branches / functions / statements).
+
+**Divergences found and fixed at origin (all caught by oracle rows).** The replay helper applied a row's options to the
+root instead of the imported level (22 non-root rows, T8); value equality at `NodePromotion.java:541` (eight rows never
+terminated) and `Tarjan.java:86` (three sweep cases on models with more than 127 nodes): E2a above; the 7a
+`Tarjan.test.ts` twin carried the same mistranslation and was re-anchored.
+
+### 8.6 Runbook {#part-b-runbook}
+
+```bash
+tools/vectors/layered-phase-vectors.sh test/golden/refs/java     # layered-phases.json; byte-stable, cached by salted input hash
+git status --short test/golden/refs/java                         # must show nothing for a same-JDK re-record
+tools/oracle/phase-sweep.sh [--force]                            # test/corpus/.phase-sweep/results.jsonl (8–9 min, gitignored)
+PHASE_SWEEP_STRIDE=1 npx vitest run test/corpus/phase-sweep.test.ts   # every ok case (≈8 min; stride 2 ≈4 min)
+java -cp <classpath> tools/vectors/LayeredPhaseVectors.java --dump <case id> $ELK_MODELS_DIR <outDir>   # one full row for a mismatch
+```
+
+The recorder runs the JVM with `-XX:+UnlockExperimentalVMOptions -XX:hashCode=2` so that identity-hashed `HashSet`s
+iterate in insertion order (AD-10) — true only up to ten entries, hence the BFS source guard. Reading a refused row:
+`ACCEPTED_REFUSALS` in the recorder names the two model/target/processor combinations whose prefix leaves the 7b set;
+a new refusal is stop 5 of the mission brief, not a row to drop.
+
+| Failure                                      | Detection                                                                         | Fix                                                                                                                                                                                                  |
+| -------------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TDZ after wiring a strategy or processor arm | `Cannot access 'X' before initialization` when a layered module is imported first | a module-level read of an enum or phase class: make it lazy (8.4) and probe `import()` of every enum and the metadata provider; never add an entry-order import to a test                            |
+| A phase or processor never terminates        | a replay row or sweep case times out                                              | first check the Java: `StretchWidthLayerer` hangs on zero-height nodes and on self-loops, the SCC breakers stall past id 127 — faithful; a port-only hang is an `Integer ==` or `HashSet` order site |
+| Replay mismatch on a non-root level          | model-order strategies throw or reverse nothing on `N*` targets                   | the options belong on the imported node, not the root (`LayeredPhaseVectors.java:1299`)                                                                                                              |
