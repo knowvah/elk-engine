@@ -27,16 +27,6 @@ const factories: Factories = {
       : LayeringStrategy.valueOf(strategy).create(),
 };
 
-/** A row's last replayed entry, spelled like a prefix entry (`NAME` or `PHASE/STRATEGY`). */
-function lastEntry(row: PhaseRow): string | undefined {
-  if (row.prefix !== null) {
-    return row.prefix.at(-1);
-  }
-  const ran = row.steps!.filter(([op]) => op === 'runProcessor' || op === 'runPhase');
-  const last = ran.at(-1);
-  return last === undefined ? undefined : last.slice(1).join('/');
-}
-
 function replay(row: PhaseRow): LGraph {
   return row.steps === null ? runPrefix(row, factories) : runSteps(row, factories);
 }

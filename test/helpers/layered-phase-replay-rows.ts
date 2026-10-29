@@ -8,7 +8,6 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import type { LGraph } from '../../src/alg/layered/graph/LGraph.js';
 import { ElkGraphTransformer } from '../../src/alg/layered/graph/transform/ElkGraphTransformer.js';
-import { LayeredOptions } from '../../src/alg/layered/options/LayeredOptions.js';
 import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
 import type { ElkNode } from '../../src/graph/ElkNode.js';
 import { ElkGraphJson } from '../../src/graph/json/ElkGraphJson.js';
