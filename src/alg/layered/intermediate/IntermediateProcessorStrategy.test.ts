@@ -2,17 +2,27 @@
 import { describe, expect, it } from 'vitest';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
+import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
+import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
 import { IntermediateProcessorStrategy as Strategy } from './IntermediateProcessorStrategy.js';
 import { EdgeAndLayerConstraintEdgeReverser } from './EdgeAndLayerConstraintEdgeReverser.js';
+import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
 import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
 import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
+import { InvertedPortProcessor } from './InvertedPortProcessor.js';
 import { LayerConstraintPostprocessor } from './LayerConstraintPostprocessor.js';
 import { LayerConstraintPreprocessor } from './LayerConstraintPreprocessor.js';
+import { LongEdgeSplitter } from './LongEdgeSplitter.js';
 import { NodePromotion } from './NodePromotion.js';
+import { NorthSouthPortPreprocessor } from './NorthSouthPortPreprocessor.js';
 import { PartitionMidprocessor } from './PartitionMidprocessor.js';
 import { PartitionPostprocessor } from './PartitionPostprocessor.js';
 import { PartitionPreprocessor } from './PartitionPreprocessor.js';
+import { PortListSorter } from './PortListSorter.js';
+import { PortSideProcessor } from './PortSideProcessor.js';
 import { ReversedEdgeRestorer } from './ReversedEdgeRestorer.js';
+import { SemiInteractiveCrossMinProcessor } from './SemiInteractiveCrossMinProcessor.js';
+import { SortByInputModelProcessor } from './SortByInputModelProcessor.js';
 
 const DECLARED = [
   'DIRECTION_PREPROCESSOR',
@@ -93,15 +103,15 @@ const ARMS: Record<Name, [string, string]> = {
   NODE_PROMOTION: ['NodePromotion', '7b'],
   LAYER_CONSTRAINT_POSTPROCESSOR: ['LayerConstraintPostprocessor', '7b'],
   PARTITION_POSTPROCESSOR: ['PartitionPostprocessor', '7b'],
-  HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR: ['HierarchicalPortConstraintProcessor', '7f'],
-  SEMI_INTERACTIVE_CROSSMIN_PROCESSOR: ['SemiInteractiveCrossMinProcessor', '7f'],
+  HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR: ['HierarchicalPortConstraintProcessor', '7c'],
+  SEMI_INTERACTIVE_CROSSMIN_PROCESSOR: ['SemiInteractiveCrossMinProcessor', '7c'],
   BREAKING_POINT_INSERTER: ['BreakingPointInserter', '7g'],
-  LONG_EDGE_SPLITTER: ['LongEdgeSplitter', '7f'],
-  PORT_SIDE_PROCESSOR: ['PortSideProcessor', '7f'],
-  INVERTED_PORT_PROCESSOR: ['InvertedPortProcessor', '7f'],
-  PORT_LIST_SORTER: ['PortListSorter', '7f'],
-  SORT_BY_INPUT_ORDER_OF_MODEL: ['SortByInputModelProcessor', '7f'],
-  NORTH_SOUTH_PORT_PREPROCESSOR: ['NorthSouthPortPreprocessor', '7f'],
+  LONG_EDGE_SPLITTER: ['LongEdgeSplitter', '7c'],
+  PORT_SIDE_PROCESSOR: ['PortSideProcessor', '7c'],
+  INVERTED_PORT_PROCESSOR: ['InvertedPortProcessor', '7c'],
+  PORT_LIST_SORTER: ['PortListSorter', '7c'],
+  SORT_BY_INPUT_ORDER_OF_MODEL: ['SortByInputModelProcessor', '7c'],
+  NORTH_SOUTH_PORT_PREPROCESSOR: ['NorthSouthPortPreprocessor', '7c'],
   BREAKING_POINT_PROCESSOR: ['BreakingPointProcessor', '7g'],
   ONE_SIDED_GREEDY_SWITCH: ['LayerSweepCrossingMinimizer', '7c'],
   TWO_SIDED_GREEDY_SWITCH: ['LayerSweepCrossingMinimizer', '7c'],
@@ -141,7 +151,7 @@ const ARMS: Record<Name, [string, string]> = {
   DIRECTION_POSTPROCESSOR: ['GraphTransformer', '7f'],
 };
 
-/** The ported (mission 7b) arms: constant name to the class `create()` returns. */
+/** The ported (missions 7b and 7c) arms: constant name to the class `create()` returns. */
 const PORTED = {
   EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER: EdgeAndLayerConstraintEdgeReverser,
   INTERACTIVE_EXTERNAL_PORT_POSITIONER: InteractiveExternalPortPositioner,
@@ -153,6 +163,16 @@ const PORTED = {
   LAYER_CONSTRAINT_POSTPROCESSOR: LayerConstraintPostprocessor,
   PARTITION_POSTPROCESSOR: PartitionPostprocessor,
   REVERSED_EDGE_RESTORER: ReversedEdgeRestorer,
+  HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR: HierarchicalPortConstraintProcessor,
+  SEMI_INTERACTIVE_CROSSMIN_PROCESSOR: SemiInteractiveCrossMinProcessor,
+  LONG_EDGE_SPLITTER: LongEdgeSplitter,
+  PORT_SIDE_PROCESSOR: PortSideProcessor,
+  INVERTED_PORT_PROCESSOR: InvertedPortProcessor,
+  PORT_LIST_SORTER: PortListSorter,
+  SORT_BY_INPUT_ORDER_OF_MODEL: SortByInputModelProcessor,
+  NORTH_SOUTH_PORT_PREPROCESSOR: NorthSouthPortPreprocessor,
+  ONE_SIDED_GREEDY_SWITCH: LayerSweepCrossingMinimizer,
+  TWO_SIDED_GREEDY_SWITCH: LayerSweepCrossingMinimizer,
 } as const;
 
 const PORTED_NAMES: ReadonlySet<string> = new Set(Object.keys(PORTED));
@@ -200,16 +220,27 @@ describe('IntermediateProcessorStrategy', () => {
     );
   });
 
-  it('ports exactly the 7b members and leaves the other 49 pending', () => {
-    expect(PORTED_NAMES.size).toBe(10);
-    expect(PENDING).toHaveLength(49);
-    expect(DECLARED.filter((name) => ARMS[name][1] === '7b').sort()).toEqual([...PORTED_NAMES].sort());
+  it('ports exactly the 7b and 7c members and leaves the other 39 pending', () => {
+    expect(PORTED_NAMES.size).toBe(20);
+    expect(PENDING).toHaveLength(39);
+    expect(DECLARED.filter((name) => ARMS[name][1] === '7b' || ARMS[name][1] === '7c').sort()).toEqual(
+      [...PORTED_NAMES].sort(),
+    );
   });
 
-  it('assigns the missions per B9 (10 in 7b, 2 in 7c, 9 in 7g, 38 in 7f)', () => {
+  it('wires the greedy switch arms to a LayerSweepCrossingMinimizer of the matching CrossMinType', () => {
+    for (const name of ['ONE_SIDED_GREEDY_SWITCH', 'TWO_SIDED_GREEDY_SWITCH'] as const) {
+      const created = Strategy[name].create();
+      expect(created).toBeInstanceOf(LayerSweepCrossingMinimizer);
+      // `crossMinType` is private in the port, as in Java; read it through a structural cast.
+      expect((created as unknown as { crossMinType: unknown }).crossMinType).toBe(CrossMinType[name]);
+    }
+  });
+
+  it('assigns the missions per B9 (10 in 7b, 10 in 7c, 9 in 7g, 30 in 7f)', () => {
     const tally = new Map<string, number>();
     for (const [, mission] of Object.values(ARMS)) tally.set(mission, (tally.get(mission) ?? 0) + 1);
-    expect(Object.fromEntries(tally)).toEqual({ '7b': 10, '7c': 2, '7g': 9, '7f': 38 });
+    expect(Object.fromEntries(tally)).toEqual({ '7b': 10, '7c': 10, '7g': 9, '7f': 30 });
   });
 
   it('create() of an unknown strategy keeps the Java IllegalArgumentException text', () => {

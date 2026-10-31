@@ -1,18 +1,14 @@
 // SPDX-License-Identifier: EPL-2.0
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
+import { LGraph } from '../graph/LGraph.js';
+import { InteractiveCrossingMinimizer } from '../p3order/InteractiveCrossingMinimizer.js';
+import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
+import { NoCrossingMinimizer } from '../p3order/NoCrossingMinimizer.js';
 import { CrossingMinimizationStrategy } from './CrossingMinimizationStrategy.js';
 
 const DECLARED = ['LAYER_SWEEP', 'MEDIAN_LAYER_SWEEP', 'INTERACTIVE', 'NONE'] as const;
-
-/** Constant name to the class its `create()` arm will return, and the mission porting it. */
-const ARMS: Record<(typeof DECLARED)[number], [string, string]> = {
-  LAYER_SWEEP: ['LayerSweepCrossingMinimizer', '7c'],
-  MEDIAN_LAYER_SWEEP: ['LayerSweepCrossingMinimizer', '7c'],
-  INTERACTIVE: ['InteractiveCrossingMinimizer', '7c'],
-  NONE: ['NoCrossingMinimizer', '7c'],
-};
 
 describe('CrossingMinimizationStrategy', () => {
   it('declares the constants in Java order with matching ordinals and names', () => {
@@ -41,11 +37,32 @@ describe('CrossingMinimizationStrategy', () => {
     );
   });
 
-  it('create() of every constant throws UnsupportedOperationException naming its class and mission', () => {
+  /** The task name the layer sweep gives its monitor, which carries its CrossMinType (java:111). */
+  function crossMinTypeOf(phase: LayerSweepCrossingMinimizer): string {
+    const monitor = new NullElkProgressMonitor();
+    const begin = vi.spyOn(monitor, 'begin');
+    phase.process(new LGraph(), monitor);
+    return begin.mock.calls[0]![0];
+  }
+
+  it('create() of LAYER_SWEEP and MEDIAN_LAYER_SWEEP builds the layer sweep with BARYCENTER and MEDIAN', () => {
+    // CrossingMinimizationStrategy.java:67-71
+    const layerSweep = CrossingMinimizationStrategy.LAYER_SWEEP.create();
+    const median = CrossingMinimizationStrategy.MEDIAN_LAYER_SWEEP.create();
+    expect(layerSweep).toBeInstanceOf(LayerSweepCrossingMinimizer);
+    expect(median).toBeInstanceOf(LayerSweepCrossingMinimizer);
+    expect(crossMinTypeOf(layerSweep as LayerSweepCrossingMinimizer)).toBe('Minimize Crossings BARYCENTER');
+    expect(crossMinTypeOf(median as LayerSweepCrossingMinimizer)).toBe('Minimize Crossings MEDIAN');
+  });
+
+  it('create() of INTERACTIVE and NONE builds the interactive and the no-op minimizer', () => {
+    expect(CrossingMinimizationStrategy.INTERACTIVE.create()).toBeInstanceOf(InteractiveCrossingMinimizer);
+    expect(CrossingMinimizationStrategy.NONE.create()).toBeInstanceOf(NoCrossingMinimizer);
+  });
+
+  it('create() builds a new phase on every call', () => {
     for (const name of DECLARED) {
-      const [className, mission] = ARMS[name];
-      expect(() => CrossingMinimizationStrategy[name].create()).toThrow(UnsupportedOperationException);
-      expect(() => CrossingMinimizationStrategy[name].create()).toThrow(`${className} is ported in mission ${mission}`);
+      expect(CrossingMinimizationStrategy[name].create()).not.toBe(CrossingMinimizationStrategy[name].create());
     }
   });
 

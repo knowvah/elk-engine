@@ -2,9 +2,12 @@
 import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
 import type { ILayoutPhaseFactory } from '../../../core/alg/ILayoutPhaseFactory.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import type { LayeredPhases } from '../LayeredPhases.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { InteractiveCrossingMinimizer } from '../p3order/InteractiveCrossingMinimizer.js';
+import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
+import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
+import { NoCrossingMinimizer } from '../p3order/NoCrossingMinimizer.js';
 
 /**
  * Enumeration of and factory for the different available crossing minimization strategies.
@@ -83,28 +86,24 @@ export class CrossingMinimizationStrategy implements ILayoutPhaseFactory<Layered
   }
 
   /**
-   * Creates the phase implementation. Every arm's class is ported in a later mission (L1): until then the arm throws
-   * `UnsupportedOperationException` naming the class and the mission, with no import.
+   * Creates the phase implementation.
+   *
+   * @see CrossingMinimizationStrategy.java:65
    */
   create(): ILayoutPhase<LayeredPhases, LGraph> {
     switch (this) {
       case CrossingMinimizationStrategy.LAYER_SWEEP:
-        throw notPorted('LayerSweepCrossingMinimizer', '7c');
+        return new LayerSweepCrossingMinimizer(CrossMinType.BARYCENTER);
       case CrossingMinimizationStrategy.MEDIAN_LAYER_SWEEP:
-        throw notPorted('LayerSweepCrossingMinimizer', '7c');
+        return new LayerSweepCrossingMinimizer(CrossMinType.MEDIAN);
       case CrossingMinimizationStrategy.INTERACTIVE:
-        throw notPorted('InteractiveCrossingMinimizer', '7c');
+        return new InteractiveCrossingMinimizer();
       case CrossingMinimizationStrategy.NONE:
-        throw notPorted('NoCrossingMinimizer', '7c');
+        return new NoCrossingMinimizer();
       default:
         throw new IllegalArgumentException(
           `No implementation is available for the crossing minimizer ${this.toString()}`,
         );
     }
   }
-}
-
-/** The L1 placeholder for a `create()` arm whose class is not ported yet. */
-function notPorted(className: string, mission: string): UnsupportedOperationException {
-  return new UnsupportedOperationException(`${className} is ported in mission ${mission}`);
 }
