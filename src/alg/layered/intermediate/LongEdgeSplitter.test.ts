@@ -145,9 +145,6 @@ function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
   return actual.changed.find((entry) => entry.path === path)?.props;
 }
 
-const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
-const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
-
 describe('LongEdgeSplitter on the site rows', () => {
   it('resets a negative edge thickness to zero on both halves of the split edge', () => {
     // oracle: sites/LongEdgeSplitter/negativeThickness; LongEdgeSplitter.java:141-143

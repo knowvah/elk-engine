@@ -148,7 +148,6 @@ function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
 }
 
 const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
-const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
 
 describe('PortSideProcessor on the site rows', () => {
   it('puts an undefined-side port with an outgoing edge on the east side of a FIXED_SIDE node', () => {

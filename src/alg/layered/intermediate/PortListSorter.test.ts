@@ -167,9 +167,6 @@ function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
   return actual.changed.find((entry) => entry.path === path)?.props;
 }
 
-const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
-const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
-
 describe('PortListSorter on the site rows', () => {
   it('leaves the ports of a FREE node in input order', () => {
     // oracle: sites/PortListSorter/freePorts; PortListSorter.java:74-76 (neither order nor side fixed)

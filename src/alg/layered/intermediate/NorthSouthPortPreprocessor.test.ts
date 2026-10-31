@@ -201,7 +201,6 @@ function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
   return actual.changed.find((entry) => entry.path === path)?.props;
 }
 
-const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
 const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
 
 describe('NorthSouthPortPreprocessor on the site rows', () => {

@@ -149,14 +149,6 @@ function siteReplay(id: string): { graph: LGraph; actual: ReturnType<typeof orde
   return { graph, actual: orderDump(graph, importRow(row).importDump) };
 }
 
-/** The properties the `changed` member records for one element path. */
-function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
-  return actual.changed.find((entry) => entry.path === path)?.props;
-}
-
-const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
-const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
-
 describe('HierarchicalPortConstraintProcessor on the site rows', () => {
   it('keeps two external ports at the same position in input order', () => {
     // oracle: sites/ExternalPorts/equalPositions; HierarchicalPortConstraintProcessor.java:98-99 (NodeComparator)

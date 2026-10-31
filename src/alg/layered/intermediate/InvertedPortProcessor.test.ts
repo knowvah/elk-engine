@@ -139,9 +139,6 @@ function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
   return actual.changed.find((entry) => entry.path === path)?.props;
 }
 
-const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
-const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
-
 describe('InvertedPortProcessor on the site rows', () => {
   it('skips nodes whose port sides are not fixed', () => {
     // oracle: sites/InvertedPortProcessor/freePorts; InvertedPortProcessor.java:117-118
