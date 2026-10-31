@@ -48,6 +48,36 @@ const LAYERED_PHASE_INPUTS = [
   'tickets/layered/600_outgoingEdgeInLastSeparateNode.elkt',
   'tickets/layered/656_brokenLayoutPartitions.elkt',
 ];
+/**
+ * Inputs of the layered order vectors (mission 7c T1, `tools/vectors/LayeredOrderVectors.java`): the models the ten
+ * LayoutTestRunner tests of the crossing minimization name that the 7b set lacks, vendored byte-identical.
+ */
+const LAYERED_ORDER_INPUTS = [
+  'tests/layered/north_south_ports/linear_segments_cycle.elkt',
+  'tests/layered/north_south_ports/north_multiple.elkt',
+  'tests/layered/north_south_ports/north_south_fixed_side.elkt',
+  'tests/layered/north_south_ports/nsp1.elkt',
+  'tests/layered/north_south_ports/nsp2.elkt',
+  'tests/layered/north_south_ports/nsp3.elkt',
+  'tests/layered/north_south_ports/south_multiple.elkt',
+  'tests/layered/preserve_order/backwardsEdges.elkt',
+  'tests/layered/preserve_order/dummyNodeNoConnectedNode.elkt',
+  'tests/layered/preserve_order/dummyNodeNoConnectingNode2.elkt',
+  'tests/layered/preserve_order/longConflictingExample.elkt',
+  'tests/layered/preserve_order/noCrossings.elkt',
+  'tests/layered/preserve_order/nodeBetweenDummies.elkt',
+  'tests/layered/preserve_order/oneCrossing.elkt',
+  'tests/layered/preserve_order/sameTargetTogether.elkt',
+  'tests/layered/preserve_order/sameTargetTogether2.elkt',
+  'tests/layered/preserve_order/simpleConflictingExample.elkt',
+  'tests/layered/preserve_order/simpleLongEdges01.elkt',
+  'tests/layered/preserve_order/simpleLongEdges02.elkt',
+  'tests/layered/preserve_order/smallExample.elkt',
+  'tests/layered/preserve_order/timedAutomaton.elkt',
+  'tests/layered/preserve_order/timedAutomatonMoreEdges.elkt',
+  'tickets/layered/528_nodeEdgeOverlap.elkt',
+  'tickets/layered/528_violatedNodeOrder.elkt',
+];
 
 type Obj = Record<string, unknown>;
 
@@ -163,8 +193,8 @@ describe('vendored inputs', () => {
     expect(parsed['commit']).toBe(corpus['commit']);
   });
 
-  it('records every golden input, the four ticket models and the twelve layered phase inputs, nothing else', () => {
-    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS].sort();
+  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs, nothing else', () => {
+    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS].sort();
     expect(Object.keys(hashes).sort()).toEqual(expected);
   });
 
