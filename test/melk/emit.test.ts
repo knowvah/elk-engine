@@ -291,7 +291,7 @@ describe('option constants and registrations', () => {
     expect(text).toContain('ExampleOptions.C_DEFAULT ?? undefined, ExampleOptions.C_LOWER_BOUND, null');
     expect(text).toContain('C_LOWER_BOUND: Comparable<number> = new BoxedComparable(JavaInteger.MIN_VALUE);');
     expect(text).toContain("D_DEFAULT: string = 'x\"y';");
-    expect(text).toContain('E_DEFAULT: number[] = [1, 2];');
+    expect(text).toContain('E_DEFAULT: number[] = Object.freeze([1, 2]) as number[];');
     expect(text).toContain('F_DEFAULT: number = JavaInteger.MAX_VALUE;');
     expect(text).toContain("import * as JavaInteger from '../../../java/lang/JavaInteger.js';");
     expect(text).toContain('static readonly G: IProperty<unknown> = new Property<unknown>(');

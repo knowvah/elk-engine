@@ -97,6 +97,12 @@ describe('ElkReflect', () => {
       expect(ElkReflect.isCloneable(EnumSet.noneOf(SizeConstraint))).toBe(true);
     });
 
+    it('rejects a frozen array: Collections.unmodifiableList (an Xtend #[...] literal) is not Cloneable (C13)', () => {
+      expect(ElkReflect.isCloneable(Object.freeze([1, 2]))).toBe(false);
+      expect(ElkReflect.isCloneable(Object.freeze(new Set([1])))).toBe(false);
+      expect(ElkReflect.isCloneable([1, 2])).toBe(true);
+    });
+
     it('accepts an object with a clone() method', () => {
       expect(ElkReflect.isCloneable(new WithClone())).toBe(true);
       expect(ElkReflect.isCloneable({ clone: () => 1 })).toBe(true);

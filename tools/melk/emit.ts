@@ -169,7 +169,10 @@ function defaultConstants(option: ResolvedOption, type: string, lazy: boolean, c
   }
   const defaultType = `${type}${md.defaultValue.kind === 'null' ? ' | null' : ''}`;
   const doc = [`Default value for {@link ${entry.constantName}}.`];
-  const init = emitExpression(md.defaultValue, contextOfOption(option, context));
+  const expression = emitExpression(md.defaultValue, contextOfOption(option, context));
+  // An Xtend `#[...]` literal compiles to Collections.unmodifiableList, which is not Cloneable: a frozen array keeps
+  // MapPropertyHolder.getProperty from storing the default, as the JVM does not (mission 7c, C13; ElkReflect.isCloneable).
+  const init = md.defaultValue.kind === 'list' ? `Object.freeze(${expression}) as ${type}` : expression;
   const name = option.defaultConstantName;
   return [
     lazy

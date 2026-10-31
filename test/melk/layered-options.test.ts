@@ -102,6 +102,10 @@ describe('LayeredOptions and LayeredMetaDataProvider', () => {
     expect(LayeredOptions.CONSIDER_MODEL_ORDER_GROUP_MODEL_ORDER_CM_ENFORCED_GROUP_ORDERS.getDefault()).toEqual(
       items.items.map((item) => item.v),
     );
+    // Xtend `#[...]` compiles to Collections.unmodifiableList, which is not Cloneable, so getProperty never stores it (C13)
+    expect(
+      Object.isFrozen(LayeredOptions.CONSIDER_MODEL_ORDER_GROUP_MODEL_ORDER_CM_ENFORCED_GROUP_ORDERS.getDefault()),
+    ).toBe(true);
   });
 
   it('registers the algorithm and its option supports, with the factory and no held-back comment', () => {

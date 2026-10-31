@@ -88,13 +88,17 @@ function clone<T>(clonee: T): T | null {
  * (D6). Being registered with a clone function is deliberately not enough: Java registers
  * `IndividualSpacings`, which is not `Cloneable`, and `Property.getDefault` /
  * `MapPropertyHolder.getProperty` must keep handing out that shared default uncloned.
+ *
+ * A frozen object is not cloneable either: it stands for a `Collections.unmodifiableList` (the
+ * class an Xtend `#[...]` option default compiles to), which is not `Cloneable` in Java, so
+ * `MapPropertyHolder.getProperty` must not store it (mission 7c, C13).
  */
 function isCloneable(o: unknown): boolean {
+  if (typeof o !== 'object' || o === null || Object.isFrozen(o)) {
+    return false;
+  }
   if (Array.isArray(o) || o instanceof Set || o instanceof Map || o instanceof EnumSet) {
     return true;
-  }
-  if (typeof o !== 'object' || o === null) {
-    return false;
   }
   return typeof (o as { clone?: unknown }).clone === 'function';
 }
