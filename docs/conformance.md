@@ -10,23 +10,24 @@ The comparator is [`test/golden/compare-json.ts`](../test/golden/compare-json.ts
 this document describes what it implements. Port rules live in
 [`docs/translation-rules.md`](translation-rules.md).
 
-| #   | Section                                              | Answers                                   |
-| --- | ---------------------------------------------------- | ----------------------------------------- |
-| 1   | [Oracle](#1-oracle)                                  | What is "correct", and at which commit?   |
-| 1a  | [Conformance unit](#1a-conformance-unit)             | What is one case, and which cases exist?  |
-| 2   | [Conformance bar](#2-conformance-bar)                | What counts as equal?                     |
-| 3   | [Goldens and corpus](#3-goldens-and-corpus)          | Where do reference outputs come from?     |
-| 4   | [Seam patches](#4-seam-patches)                      | How do we change the oracle?              |
-| 5   | [Oracle operations](#5-oracle-operations-runbook)    | What do I do when it breaks?              |
-| 6   | [Gates](#6-gates)                                    | What must pass before a change lands?     |
-| 7   | [ELK Text](#elk-text-elkt)                           | How is `.elkt` proven?                    |
-| 8   | [ELK Textual JSON](#elk-textual-json-elkj)           | How is `.elkj` proven?                    |
-| -   | [Core layouts](#core-layouts-fixed-box-random)       | How are `fixed`, `box`, `random` proven?  |
-| -   | [alg.common](#alg-common)                            | How is `alg.common` part a proven?        |
-| -   | [alg.common nodespacing](#alg-common-nodespacing)    | How is `alg.common` part b proven?        |
-| -   | [alg.layered framework](#alg-layered-framework)      | How is the layered framework (7a) proven? |
-| -   | [alg.layered cycles and layers](#alg-layered-phases) | How are the first two phases (7b) proven? |
-| -   | [Temporary gaps](#temporary-gaps)                    | What differs from the Java for now?       |
+| #   | Section                                                    | Answers                                   |
+| --- | ---------------------------------------------------------- | ----------------------------------------- |
+| 1   | [Oracle](#1-oracle)                                        | What is "correct", and at which commit?   |
+| 1a  | [Conformance unit](#1a-conformance-unit)                   | What is one case, and which cases exist?  |
+| 2   | [Conformance bar](#2-conformance-bar)                      | What counts as equal?                     |
+| 3   | [Goldens and corpus](#3-goldens-and-corpus)                | Where do reference outputs come from?     |
+| 4   | [Seam patches](#4-seam-patches)                            | How do we change the oracle?              |
+| 5   | [Oracle operations](#5-oracle-operations-runbook)          | What do I do when it breaks?              |
+| 6   | [Gates](#6-gates)                                          | What must pass before a change lands?     |
+| 7   | [ELK Text](#elk-text-elkt)                                 | How is `.elkt` proven?                    |
+| 8   | [ELK Textual JSON](#elk-textual-json-elkj)                 | How is `.elkj` proven?                    |
+| -   | [Core layouts](#core-layouts-fixed-box-random)             | How are `fixed`, `box`, `random` proven?  |
+| -   | [alg.common](#alg-common)                                  | How is `alg.common` part a proven?        |
+| -   | [alg.common nodespacing](#alg-common-nodespacing)          | How is `alg.common` part b proven?        |
+| -   | [alg.layered framework](#alg-layered-framework)            | How is the layered framework (7a) proven? |
+| -   | [alg.layered cycles and layers](#alg-layered-phases)       | How are the first two phases (7b) proven? |
+| -   | [alg.layered crossing minimization](#alg-layered-ordering) | How is the third phase (7c) proven?       |
+| -   | [Temporary gaps](#temporary-gaps)                          | What differs from the Java for now?       |
 
 ## 1. Oracle
 
@@ -1032,6 +1033,70 @@ four sites — the two above, `CoffmanGrahamLayerer.java:244`, `SCCNodeTypeCycle
 - **Sweep scope:** INTERACTIVE cases replay the models with the positions they carry on disk; the Java tests' seeded
   positions are not reproduced.
 - **Label dummies:** 43 branches of the 7b classes need `LabelDummyInserter` (7f) and are measured there.
+- **Prose typos corrected:** none found in this mission.
+
+## alg.layered, part c: crossing minimization (mission 7c) {#alg-layered-ordering}
+
+Mission 7c ported the third phase (`p3order` and `p3order.counting`), the eight intermediate processors a default
+pipeline runs between P2 and P3 with their greedy-switch and preserve-order packages, and the ten
+`IntermediateProcessorStrategy` arms that create them (design, idioms and runbook in
+[alg-layered.md § 9](architecture/alg-layered.md#part-c)). The pipeline still does not run (`ElkLayered` and
+`GraphConfigurator` are 7f); every class is proven by replaying what the oracle's pipeline recorded at the P3 stop.
+Decisions: `plans/layered-crossing-min/decisions.md` (C1–C13).
+
+**Evidence.**
+
+- `test/golden/refs/java/layered-order.json` (3,761,948 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-order-vectors.sh`, JVM flag `-XX:hashCode=2`): 808 rows, byte-stable; `models` 657 (the nine
+  vendored ptolemy models at every hierarchy level and 24 `.elkt` models vendored from elk-models — `north_south_ports`,
+  `preserve_order`, ticket 528 — run through the real Java pipeline to a P3 strategy, a greedy-switch processor or one
+  of the eight processors, the processor `prefix` recorded), `scenarios` 89 (the Java tests' hand-built graphs as step
+  rows), `sites` 62 (step rows for the T9 branch scenarios). `LayeredOrderVectors.test.ts` replays all 808 at the AD-4
+  bar, with the port order of every node (`ports`) compared exactly; step rows under ten nodes also match the full 7a
+  dump.
+- Ten JUnit invariant tests (`BasicCrossingMinimizationTest`, `ForsterConstraintResolverTest`,
+  `ModelOrderBarycenterHeuristicTest`, `PortListSorterTest`, `LongEdgeSplitterTest`, `InvertedPortProcessorTest`,
+  `PortSideProcessorTest`, `NorthSouthPortPreprocessorTest`, `SortByInputModelProcessorTest`,
+  `BasicConsiderModelOrderTest`) ported verbatim over the replayed rows of their Java configurations.
+- Breadth sweep (B6, gitignored): 6,728 oracle cases at the P3 stop over the 1,682 edge-bearing hierarchy levels of
+  all 550 ptolemy models, once per `CrossingMinimizationStrategy` (6,280 ok, 448 refused, 0 throws, 0 timeouts); the
+  port's canonical order-dump hash equals the oracle's for every ok case (stride 1).
+- 88 anchored unit cases cite a site row (`// oracle: <row id>; <Java file:line>`) and six pin Java constants; after them every 7c class is at or above 90 % branches except eight whose remainder is nested-graph (7h), label-dummy (7f), dead-by-construction or unreached with a named mechanism (`plans/layered-crossing-min/unreached.md`, with the T11 and T12 corrections); whole-suite coverage 99.01 / 96.96 / 99.03 / 99.01.
+- Landed vectors, goldens and corpus are unchanged: the refs diff against `main` is the new `layered-order.json`, the
+  24 vendored `.elkt` inputs and their manifest rows, and the sweep test.
+
+**AD-10 sites.** `HyperedgeCrossingsCounter.java:216-217`, `ModelOrderNodeComparator.java:61,65,119-134,531-532`,
+`ModelOrderPortComparator.java:69,73,112-127,442-443`, `ForsterConstraintResolver.java:72` (`LinkedHashMultimap`),
+`ModelOrderBarycenterHeuristic.java:34,38`, `SweepCopy.java:97` and the greedy switch's changed-graph set are
+insertion-ordered `Map`/`Set`s used for lookups or unions only. The hyperedge and corner comparators of
+`HyperedgeCrossingsCounter` break ties on identity hashes, which the recorder's `-XX:hashCode=2` makes constant: the
+port returns 0 there.
+
+**Divergences found during the mission, fixed at origin.** A list-literal option default
+(`considerModelOrder.groupModelOrder.cmEnforcedGroupOrders`, an Xtend `#[…]` → unmodifiable list) was stored by the TS
+`getProperty` because every JS array is cloneable, so 25 `SortByInputModelProcessor` rows reported a changed root; the
+melk emitter now freezes list-literal defaults and `ElkReflect.isCloneable` is false for frozen objects (C13, approved
+by the user). Two replay-helper gaps, not port defects: the 7c order dump omitted baseline edges a processor detached
+(`NorthSouthPortPreprocessor.java:652-653`), and `java.util.HashMap`-valued dumps are compared as `Map` twins
+(`JAVA_CLASS_TWINS`, after a production `HashMap` shaped to the test convention was rejected).
+
+**Known divergences found.** None numeric. Open by design:
+
+- **Flat levels only (C3):** every row and sweep case is one hierarchy level; the nested-graph paths of the sweep
+  driver (`GraphInfoHolder` children, `sweepInHierarchicalNodes`, the hierarchical greedy switch,
+  `LayerSweepTypeDecider` past the root: 89 branches, 36 functions) are measured in 7h.
+- **Components flag (B3) and no `DefaultConfiguration` sizing (B5):** as in part b.
+- **Refused rows (C2):** prefixes naming `LABEL_DUMMY_INSERTER`, `COMMENT_PREPROCESSOR`, `DIRECTION_PREPROCESSOR`
+  (7f), `SELF_LOOP_PREPROCESSOR` or `BREAKING_POINT_INSERTER` (7g) are not recorded; the `preserve_order` models with
+  edge labels and the 448 self-loop sweep cases are among them. Three branches of the 7c classes need label dummies
+  (7f).
+- **Hand-built JUnit suites (C1):** `TestGraphCreator`, the three greedy-switch graph creators and the 16 suites built
+  on them, `ConcreteSortByInputModelTest` and `AllowNonFlowPortsToSwitchSidesTest` are the sibling brief 7c-tests.
+- **Randomness scope (C4):** INTERACTIVE and semi-interactive rows replay the seeded positions of the Java test
+  configurators; sweep cases use the positions the models carry on disk.
+- **Unreached arms with a named mechanism:** 20 arms no recorded graph reaches (`plans/layered-crossing-min/unreached.md`
+  § T11 corrections, with the scans that failed), kept as U.
+- **`Integer` cache assumption:** as in part b (`ModelOrderBarycenterHeuristic.java:90-91`).
 - **Prose typos corrected:** none found in this mission.
 
 ## Temporary gaps

@@ -325,3 +325,133 @@ a new refusal is stop 5 of the mission brief, not a row to drop.
 | TDZ after wiring a strategy or processor arm | `Cannot access 'X' before initialization` when a layered module is imported first | a module-level read of an enum or phase class: make it lazy (8.4) and probe `import()` of every enum and the metadata provider; never add an entry-order import to a test                            |
 | A phase or processor never terminates        | a replay row or sweep case times out                                              | first check the Java: `StretchWidthLayerer` hangs on zero-height nodes and on self-loops, the SCC breakers stall past id 127 — faithful; a port-only hang is an `Integer ==` or `HashSet` order site |
 | Replay mismatch on a non-root level          | model-order strategies throw or reverse nothing on `N*` targets                   | the options belong on the imported node, not the root (`LayeredPhaseVectors.java:1299`)                                                                                                              |
+
+## 9. Part c: crossing minimization (mission 7c) {#part-c}
+
+Mission 7c (`layered-crossing-min`, roadmap row 7c) ported the third phase and the processors a default pipeline runs
+between P2 and P3. Decisions cited are `plans/layered-crossing-min/decisions.md` (C1–C13); task ids T1–T13 are in that
+mission's `decision-journal.md`. The pipeline still does not run (`ElkLayered`, `GraphConfigurator` → 7f): every
+class is proven by replaying what the oracle's pipeline recorded at the P3 stop, as in § 8.
+
+### 9.1 Package map {#part-c-package-map}
+
+| Java package                 | TS directory                 | Ported in 7c (task)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `p3order`                    | `p3order`                    | all 16: `LayerSweepCrossingMinimizer` (+ `…State`, `…Sweep`, `…Hierarchical`, `…Counting`, `…SweepHelpers` sections, M15 `…CrossMinType`), `GraphInfoHolder`, `LayerSweepTypeDecider` (+ M15 `…NodeInfo`), `SweepCopy`, `BarycenterHeuristic` (+ M15 `…BarycenterState`), `ModelOrderBarycenterHeuristic` (+ `…InsertionSort` section), `MedianHeuristic`, `ForsterConstraintResolver` (+ M15 `…ConstraintGroup`), `AbstractBarycenterPortDistributor`, `LayerTotalPortDistributor`, `NodeRelativePortDistributor`, `GreedyPortDistributor`, `ISweepPortDistributor`, `ICrossingMinimizationHeuristic`, `InteractiveCrossingMinimizer`, `NoCrossingMinimizer` (T6, T7); the four `CrossingMinimizationStrategy` arms create them (T7) |
+| `p3order.counting`           | `p3order/counting`           | all 6: `CrossingsCounter` (+ `…State`, `…Convenience`, `…NorthSouth` sections), `HyperedgeCrossingsCounter` (+ M15 `…Hyperedge`, `…HyperedgeCorner`, `…HyperedgeCornerType`), `AllCrossingsCounter`, `BinaryIndexedTree`, `CrossMinUtil`, `IInitializable` (T5)                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `intermediate`               | `intermediate`               | the eight processors of C2 — `PortSideProcessor`, `PortListSorter`, `LongEdgeSplitter`, `InvertedPortProcessor` (T4a), `NorthSouthPortPreprocessor` (+ `…PortSorting`, `…Dummies` sections), `HierarchicalPortConstraintProcessor` (+ M15 `…NodeComparator`), `SemiInteractiveCrossMinProcessor`, `SortByInputModelProcessor` (T4b) — and their ten `IntermediateProcessorStrategy` arms incl. `ONE_SIDED_GREEDY_SWITCH`/`TWO_SIDED_GREEDY_SWITCH` (T8; tally now 7b 10 / 7c 10 / 7g 9 / 7f 30)                                                                                                                                                                                                                                       |
+| `intermediate.greedyswitch`  | `intermediate/greedyswitch`  | all 5: `GreedySwitchHeuristic`, `SwitchDecider` (+ M15 `…CrossingCountSide`), `CrossingMatrixFiller`, `BetweenLayerEdgeTwoNodeCrossingsCounter` (+ M15 `…AdjacencyList`, `…AdjacencyListAdjacency`), `NorthSouthEdgeNeighbouringNodeCrossingsCounter` (T7)                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `intermediate.preserveorder` | `intermediate/preserveorder` | all 3: `ModelOrderNodeComparator` (+ `…State`, `…Associations`, `…HelperDummies`, `…PreviousLayer` sections), `ModelOrderPortComparator` (+ `…State`, `…Associations`, `…Incoming`, `…Outgoing`, `…PortSideComparator` sections), `CMGroupModelOrderCalculator` (T5)                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+
+Why the eight processors (C2): an order recorded by the oracle at the P3 stop is the result of every processor the
+configuration ran after P2, so the set a 7c replay needs is what P3 declares (`PortListSorter`, `LongEdgeSplitter`),
+what runs always (`PortSideProcessor`) and what the graph properties or options add (`InvertedPortProcessor`,
+`NorthSouthPortPreprocessor`, `HierarchicalPortConstraintProcessor`, `SemiInteractiveCrossMinProcessor`,
+`SortByInputModelProcessor`). The recorder refuses a prefix naming `LABEL_DUMMY_INSERTER`, `COMMENT_PREPROCESSOR`,
+`DIRECTION_PREPROCESSOR` (7f), `SELF_LOOP_PREPROCESSOR` or `BREAKING_POINT_INSERTER` (7g); the accepted refusals are
+listed in the recorder. Section files (`…State`, `…Sweep`, …) and M15 files hold the Java class's own members and
+nested types split at Java method boundaries for the 500-line and complexity limits; nothing is reordered.
+
+### 9.2 Rows and the order dump (C3) {#part-c-rows}
+
+`test/golden/refs/java/layered-order.json` (recorder `tools/vectors/LayeredOrderVectors.java`, launcher
+`tools/vectors/layered-order-vectors.sh`; core copied from the 7b recorder with the origin cited, B7) has the 7b row
+shape with one more member, `ports: { <node path>: [<port path>] }`, the port list of every node after the stop (the
+order the sweep writes back, `SweepCopy.java:93-141`):
+
+- `models/*` (657): the nine ptolemy models at every hierarchy level and the 24 inputs vendored for this mission
+  (`tests/layered/north_south_ports/*`, `tests/layered/preserve_order/*`, two ticket-528 models), run through the real
+  Java pipeline to a P3 strategy (`LAYER_SWEEP` × greedy-switch type × thoroughness, `MEDIAN_LAYER_SWEEP`,
+  `INTERACTIVE`, `NONE`), to a greedy-switch processor or to one of the eight processors; the `prefix` is recorded
+  and replayed by name (`test/helpers/layered-order-replay-ops.ts`, 7b's prefix replay with P3 accepted).
+- `scenarios/*` (89) and `sites/*` (62): step rows of the recorder's interpreter (the 7b ops; in-layer successor
+  constraints as `{ref}` lists): the Java tests' hand-built graphs and the T9 branch scenarios. Rows under ten nodes
+  carry the full 7a dump.
+- Every hierarchy level is a flat `LGraph` (per-level `target`); the nested-graph paths of the sweep driver
+  (`GraphInfoHolder` children, `sweepInHierarchicalNodes`, the hierarchical greedy switch, `LayerSweepTypeDecider` past
+  the root) are U until 7h's nested rows. `edges` also lists baseline edges a processor detached (null ends): the
+  same-side self-loop dummies of `NorthSouthPortPreprocessor.java:652-653` are the first such case.
+
+### 9.3 The sweep driver and randomness (C4) {#part-c-sweep}
+
+`LayerSweepCrossingMinimizer` keeps the Java structure: `initialize` builds one `GraphInfoHolder` per graph (child
+holders are U), `LayerSweepTypeDecider` picks bottom-up or hierarchical sweeping, `compareDifferentRandomizedLayouts`
+runs the thoroughness loop over `SweepCopy` snapshots and `countCurrentNumberOfCrossings` sums a graph's crossings
+with its swept children (kept recursive: it recurses over child holders, bounded by hierarchy depth, C7). Everything
+random draws from `InternalProperties.RANDOM` through the JVM-exact `Random` shim: `BarycenterHeuristic`'s per-node
+jitter, the thoroughness loop (re-seeded from the graph's first `nextLong()`, so seed 1 gives a `LayerTotalPortDistributor`
+and a backward first sweep, seed 2 a `NodeRelativePortDistributor`) and `ISweepPortDistributor.create`. `normalise`
+seeds every row with 1 unless the row sets `randomSeed`; seed 0 is a stop. Under the recorder's `-XX:hashCode=2` the
+identity-hash tie-breaks of `HyperedgeCrossingsCounter`'s hyperedge and corner comparators are constant, so the port
+returns 0 there (AD-10, journaled with the Java lines).
+
+### 9.4 Java idioms the port had to reproduce {#part-c-idioms}
+
+- **Class-initialisation laziness (E1 as C5).** `CrossingMinimizationStrategy` joined melk `NON_LEAF_DEFAULT_TYPES`
+  before any arm was wired (T2), every phase class's `*_PROCESSING_CONFIGURATION` is a cached static getter, and the
+  entry-point fitness test (`test/architecture/layered-entry-points.fitness.test.ts`) imports each strategy enum and
+  the metadata provider first in a fresh process. Wiring the four P3 arms and the ten processor arms needed no further
+  lazy read.
+- **Boxed and float comparisons (E2a as C6).** `ModelOrderBarycenterHeuristic.java:90-91` compares the boxed
+  `CROSSING_MINIMIZATION_ID` by reference: `JavaInteger.sameValueOfBox` (the option is an `int` property, explicit
+  values are fresh boxes). `ForsterConstraintResolver.java:259-262` compares `floatValue()`s: `Float32.fromDouble` on
+  both sides, so a 1e-10 double difference ties as in Java. `PortListSorter.java`'s `index1 - index2` wraps through
+  `Int32.sub`.
+- **Unmodifiable list defaults (C13, found by T4b's rows).** `MapPropertyHolder.getProperty` stores a default only
+  when it is `Cloneable`; an Xtend `#[…]` default (`considerModelOrder.groupModelOrder.cmEnforcedGroupOrders`) is an
+  unmodifiable list, which a JS array is not. The melk emitter now freezes list-literal defaults and
+  `ElkReflect.isCloneable` is false for frozen objects, so the TS `changed` list matches the oracle's.
+- **Recursion (C7).** `BarycenterHeuristic.calculateBarycenter` is an explicit-stack loop proven against a verbatim
+  twin on the rows and a 5,000-node chain under `--pool=forks --execArgv=--jitless`; the resolver, distributor and
+  processor candidates are overloads, not recursion.
+- **Guava views (C8, C9).** `CrossingsCounter.java:337,354` build a `TreeSet` and copy it: `Sets.newTreeSet(elements,
+comparator)` over the same insertion sequence. `GreedyPortDistributor.java:80,123-128` sets ports through
+  `Lists.reverse(node.getPortSideView(side))`: the reversed view writes through the 7a port-side proxy (proven by a
+  case that reaches `getPorts()`).
+- **Dead by construction, reproduced.** `FIRST_TRY_WITH_INITIAL_ORDER` and `SECOND_TRY_WITH_INITIAL_ORDER` share one
+  property id (`LayerSweepCrossingMinimizer.java:257-259`), so the second block never runs; the force and non-force
+  arms of the two barycenter heuristics are chosen by `GraphInfoHolder`; `fillInUnknownBarycenters` runs before the
+  null-barycenter comparator arms.
+
+### 9.5 Evidence {#part-c-evidence}
+
+| Layer                        | What                                                                                                                                                                                                                                                                                                                         | Replay / test                                                                                                                                                                                                                                                                       |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Order rows (T1, T11)         | `layered-order.json`, 808 rows (`models` 657, `scenarios` 89, `sites` 62), 3,761,948 bytes, JDK 21.0.1, oracle `8aaa3c14`, byte-stable; every class also proven on its own rows with the class injected (T4a–T7)                                                                                                             | `src/alg/layered/LayeredOrderVectors.test.ts` replays all 808 by name in about 4.5 s (T8); the eight processor tests and the P3 tests replay their rows through their own factories                                                                                                 |
+| Ported JUnit invariants (T8) | `BasicCrossingMinimizationTest`, `ForsterConstraintResolverTest`, `ModelOrderBarycenterHeuristicTest`, `PortListSorterTest`, `LongEdgeSplitterTest`, `InvertedPortProcessorTest`, `PortSideProcessorTest`, `NorthSouthPortPreprocessorTest`, `SortByInputModelProcessorTest`, `BasicConsiderModelOrderTest`, bodies verbatim | over the replayed rows of the Java tests' configurations; `PortListSorterTest.testMonotonicalCoordinates` needs P4/P5 (7f); `SortByInputModelProcessorTest` runs on two label-free graphs authored in the test (the `preserve_order` models are refused, C2)                        |
+| Breadth sweep (T10, B6)      | `tools/oracle/order-sweep.sh`: 6,728 oracle cases at the P3 stop over the 1,682 edge-bearing levels of the 550 ptolemy models, once per strategy (6,280 ok, 448 refused — all `SELF_LOOP_PREPROCESSOR` —, 0 throws, 0 timeouts), one canonical-dump SHA-256 each, gitignored                                                 | `test/corpus/order-sweep.test.ts`: 3,140 cases at stride 2 in 48 s (all 6,280 with `ORDER_SWEEP_STRIDE=1`, 89 s), 0 mismatches                                                                                                                                                      |
+| Anchored unit tests (T12a–c) | one colocated case per S item of `plans/layered-crossing-min/unreached.md` (with its T11 corrections), `// oracle: <row id>; <Java file:line>`                                                                                                                                                                               | 88 row cases over 32 files (p3order and counting 29, greedy switch and preserve order 39, the eight processors 20) plus six structural cases (`Integer.compare` arms, the Java NPE sites as `TypeError`, side ordinals); every S row of the map is cited, the U list stays untested |
+
+**Coverage.** Replay-alone coverage of the 7c classes before the site rows (T9): 81.91 / 73.94 / 85.08 % (statements
+/ branches / functions); 388 untaken branches classified once each: 209 S (24 scenarios), 27 J, 152 U (89 need nested
+graphs, 7h; 3 need label dummies, 7f; 60 dead by construction). After the 62 site rows: 85.09 % branches
+(1,267/1,489), 88.47 % functions; of the 47 S arms no row reaches, 25 are dead by construction (Java line each), 2 are
+`TypeError` sites and 20 have a named mechanism with the scans that failed to reach them (`unreached.md` § T11
+corrections). After the anchored cases, per-directory branch coverage with the generic replay is p3order 96.85 %, greedy switch and preserve order 92.6 %, the eight processors 93.61 %; every class is at or above 90 % except eight whose remainder is nested-graph, label-dummy, dead or unreached: `MedianHeuristic` 73.1, `SwitchDecider` 77.6, `NorthSouthPortPreprocessorDummies` 80.8, `ModelOrderNodeComparatorHelperDummies` 83.3, `PortSideProcessor` 87.5, `ModelOrderPortComparatorIncoming` 88.2, `LongEdgeSplitter` 88.9, `SortByInputModelProcessor` 89.3 (`unreached.md` § T12 corrections). Whole-suite coverage after batch 8: 99.01 / 96.96 / 99.03 / 99.01 (lines / branches / functions / statements).
+
+**Divergences found and fixed at origin (all caught by oracle rows).** The stored list default above (C13, 25
+`SortByInputModelProcessor` rows). Two replay-helper gaps, not port defects: the order dump omitted detached baseline
+edges (one site row), and `{class:"java.util.HashMap"}` dumps are compared as `Map` twins in `compareOrder`
+(`JAVA_CLASS_TWINS`) after an agent had shaped a production `HashMap` to the test convention (rejected).
+
+### 9.6 Runbook {#part-c-runbook}
+
+```bash
+tools/vectors/layered-order-vectors.sh test/golden/refs/java       # layered-order.json; byte-stable, cached by salted input hash
+git status --short test/golden/refs/java                           # must show nothing for a same-JDK re-record
+tools/oracle/order-sweep.sh [--force]                              # test/corpus/.order-sweep/results.jsonl (≈40 s JVM, gitignored)
+ORDER_SWEEP_STRIDE=1 npx vitest run test/corpus/order-sweep.test.ts   # every ok case (≈90 s; stride 2 ≈50 s)
+java -cp <classpath> tools/vectors/LayeredOrderVectors.java --dump <case id> $ELK_MODELS_DIR <outDir>   # one full row for a mismatch
+```
+
+The recorder is one JDK 21 single-file launcher of at most 3,000 lines (stop 13; the `sites` group is a compact
+`id|root|nodes|edges|steps` table with macros) and runs with `-XX:+UnlockExperimentalVMOptions -XX:hashCode=2` as the
+7b one does.
+
+| Failure                                    | Detection                                                                                 | Fix                                                                                                                                                                          |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `changed g0` lists an option the row lacks | a replay diff naming a list-valued option on the root after a `getProperty` of it         | the melk default is cloneable on the TS side only: a list literal must come out of the emitter frozen (C13); never store the default by hand                                 |
+| `edges <path>: missing`                    | a processor set an edge's ends to null (same-side self loops)                             | the 7c `orderDump` lists baseline edges not met; the 7b `phaseDump` alone does not                                                                                           |
+| Full-dump mismatch on a `HashMap` property | `targetNode.modelOrder` under a hand-placed layering with `SORT_BY_INPUT_ORDER_OF_MODEL`  | `compareOrderFullDump` applies no class twins: record such rows without a hand-placed layering, or extend the twin map (follow-up in the roadmap)                            |
+| Randomized sweep differs by seed           | a row's `layers` match only for another `randomSeed`                                      | the first sweep randomizes every barycenter and re-seeds from the graph's `Random`: scan seeds on the port before suspecting the sweep (`Median/forwardFirst` needed seed 4) |
+| Greedy port distributor never runs         | `GreedyPortDistributor.ts` arms stay untaken under `p3:LAYER_SWEEP` + `greedySwitch.type` | only the `TWO_SIDED_GREEDY_SWITCH` `CrossMinType` gets it (`ISweepPortDistributor.create`); run the greedy-switch processor after `p3:NONE`                                  |
