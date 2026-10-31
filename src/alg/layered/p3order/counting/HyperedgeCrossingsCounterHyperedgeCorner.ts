@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: EPL-2.0
-import * as Int32 from '../../../../java/lang/Int32.js';
 import type { Comparable } from '../../../../java/lang/Comparable.js';
 import type { HyperedgeCrossingsCounterHyperedge } from './HyperedgeCrossingsCounterHyperedge.js';
 import { HyperedgeCrossingsCounterHyperedgeCornerType as Type } from './HyperedgeCrossingsCounterHyperedgeCornerType.js';

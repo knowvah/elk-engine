@@ -37,7 +37,7 @@ function reversesIncomingOrder(p1: LPort, p2: LPort): boolean {
 
 /** @see ModelOrderPortComparator.java:171 */
 function connectsToLongEdgesInOneLayer(sources: IncomingSources): boolean {
-  const { p1, p2, p1SourcePort, p2SourcePort, p1Node, p2Node } = sources;
+  const { p1, p1SourcePort, p2SourcePort, p1Node, p2Node } = sources;
   return (
     p1SourcePort.getNode()!.getType() === NodeType.LONG_EDGE &&
     p2SourcePort.getNode()!.getType() === NodeType.LONG_EDGE &&

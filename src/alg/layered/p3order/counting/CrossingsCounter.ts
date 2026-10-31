@@ -3,7 +3,6 @@ import { PortSide } from '../../../../core/options/PortSide.js';
 import { Pair } from '../../../../core/util/Pair.js';
 import * as Int32 from '../../../../java/lang/Int32.js';
 import { newTreeSet } from '../../../../guava/Sets.js';
-import type { LEdge } from '../../graph/LEdge.js';
 import type { LNode } from '../../graph/LNode.js';
 import type { LPort } from '../../graph/LPort.js';
 import { BinaryIndexedTree } from './BinaryIndexedTree.js';

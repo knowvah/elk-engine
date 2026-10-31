@@ -4,7 +4,6 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { format } from 'prettier';
 import { describe, expect, it, vi } from 'vitest';
-import { PENDING_TYPES } from '../../tools/melk/config.js';
 import { emitBundle } from '../../tools/melk/emit.js';
 import { DEFAULT_BUNDLES, generate, runCli } from '../../tools/melk/generate.js';
 import {
@@ -29,7 +28,7 @@ import { GraphFeature } from '../../src/graph/properties/GraphFeature.js';
 import { BoxedComparable } from '../../src/java/lang/BoxedComparable.js';
 import { JavaClass } from '../../src/java/lang/JavaClass.js';
 import { EnumSet } from '../../src/java/util/EnumSet.js';
-import { dumpCalls, MELK_NAMES, parseVendored, vendoredBundle } from './helpers.js';
+import { dumpCalls, MELK_NAMES, parseVendored } from './helpers.js';
 import { RecordingRegistry, factoryClassNames } from './recorder.js';
 
 // Nothing is written by the tests: the generator's file writes are replaced, reads stay real.

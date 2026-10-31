@@ -19,11 +19,7 @@ import { InternalProperties } from '../options/InternalProperties.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { compareOrder, compareOrderFullDump } from '../../../../test/helpers/layered-order-replay-compare.js';
 import { orderDump } from '../../../../test/helpers/layered-order-replay-dump.js';
-import {
-  loadOrderRows,
-  type OrderRow,
-  type OrderExpected,
-} from '../../../../test/helpers/layered-order-replay-rows.js';
+import { loadOrderRows, type OrderExpected } from '../../../../test/helpers/layered-order-replay-rows.js';
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
