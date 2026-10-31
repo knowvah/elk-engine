@@ -8,6 +8,15 @@ import type { LNode } from '../../graph/LNode.js';
 import type { LPort } from '../../graph/LPort.js';
 import { addNode, addPort } from '../../../../../test/helpers/lgraph-builders.js';
 import { CrossingsCounter } from './CrossingsCounter.js';
+import { repoRoot } from '../../../../../test/corpus/corpus.js';
+import { orderDump } from '../../../../../test/helpers/layered-order-replay-dump.js';
+import { loadOrderRows, type OrderExpected } from '../../../../../test/helpers/layered-order-replay-rows.js';
+import { runSteps, type Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
+import { importRow } from '../../../../../test/helpers/layered-phase-replay-rows.js';
+import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
+import { CycleBreakingStrategy } from '../../options/CycleBreakingStrategy.js';
+import { LayeringStrategy } from '../../options/LayeringStrategy.js';
+import { CrossingMinimizationStrategy } from '../../options/CrossingMinimizationStrategy.js';
 
 /** A node with the given west ports, ids assigned from `nextId` upward in creation order. */
 function westNode(graph: LGraph, count: number, nextId: number): { node: LNode; ports: LPort[] } {
@@ -104,5 +113,60 @@ describe('CrossingsCounter', () => {
     const counter = new CrossingsCounter(positions);
     counter.switchPorts(a.ports[0]!, a.ports[1]!);
     expect([...positions]).toEqual([9, 7]);
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const SITE_ROWS = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`).filter((row) =>
+  row.id.startsWith('sites/'),
+);
+
+const siteFactories: Factories = {
+  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
+  createPhase: (phase, strategy) => {
+    switch (phase) {
+      case 'P1_CYCLE_BREAKING':
+        return CycleBreakingStrategy.valueOf(strategy).create();
+      case 'P2_LAYERING':
+        return LayeringStrategy.valueOf(strategy).create();
+      default:
+        return CrossingMinimizationStrategy.valueOf(strategy).create();
+    }
+  },
+};
+
+/** Replays the site row `id` with the real processors and phases and dumps the result in the recorder's shape. */
+function replaySite(id: string): OrderExpected {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
+}
+
+describe('CrossingsCounter on the site rows', () => {
+  it('skips a self loop of a node in the layer when it collects the in-layer ports', () => {
+    // oracle: sites/NorthSouth/selfLoops/greedyInLayer; CrossingsCounter.java:341
+    const result = replaySite('sites/NorthSouth/selfLoops/greedyInLayer');
+    expect(result.layers).toEqual([['g0/n0'], ['g0/n2', 'g0/n1'], ['g0/n3']]);
+    expect(result.edges.find((edge) => edge.path === 'g0/e3')).toEqual({
+      path: 'g0/e3',
+      src: 'g0/n1/p3',
+      tgt: 'g0/n1/p2',
+      reversed: false,
+    });
+  });
+
+  it('skips a self loop on one port when it collects the ports connected to a port pair', () => {
+    // oracle: sites/NorthSouth/selfLoops/greedyPorts; CrossingsCounter.java:358
+    const result = replaySite('sites/NorthSouth/selfLoops/greedyPorts');
+    expect(result.layers).toEqual([['g0/n0'], ['g0/n1'], ['g0/n2']]);
+    expect(result.ports['g0/n1']).toEqual(['g0/n1/p1', 'g0/n1/p2', 'g0/n1/p0']);
+    expect(result.edges.find((edge) => edge.path === 'g0/e1')).toEqual({
+      path: 'g0/e1',
+      src: 'g0/n1/p1',
+      tgt: 'g0/n1/p1',
+      reversed: false,
+    });
   });
 });

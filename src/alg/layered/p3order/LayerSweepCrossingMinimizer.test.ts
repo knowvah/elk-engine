@@ -13,7 +13,11 @@ import { LGraph } from '../graph/LGraph.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { compareOrder, compareOrderFullDump } from '../../../../test/helpers/layered-order-replay-compare.js';
 import { orderDump } from '../../../../test/helpers/layered-order-replay-dump.js';
-import { loadOrderRows, type OrderRow } from '../../../../test/helpers/layered-order-replay-rows.js';
+import {
+  loadOrderRows,
+  type OrderRow,
+  type OrderExpected,
+} from '../../../../test/helpers/layered-order-replay-rows.js';
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
@@ -360,5 +364,87 @@ describe('LayerSweepCrossingMinimizer: the thoroughness loops (hand-built two-la
     graph.setProperty(LayeredOptions.CONSIDER_MODEL_ORDER_STRATEGY, OrderingStrategy.NODES_AND_EDGES);
     new LayerSweepCrossingMinimizer(CrossMinType.BARYCENTER).process(graph, new NullElkProgressMonitor());
     expect(graph.getLayers().map((layer) => layer.getNodes())).toEqual(order);
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const SITE_ROWS = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`).filter((row) =>
+  row.id.startsWith('sites/'),
+);
+
+const siteFactories: Factories = {
+  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
+  createPhase: (phase, strategy) => {
+    switch (phase) {
+      case 'P1_CYCLE_BREAKING':
+        return CycleBreakingStrategy.valueOf(strategy).create();
+      case 'P2_LAYERING':
+        return LayeringStrategy.valueOf(strategy).create();
+      default:
+        return CrossingMinimizationStrategy.valueOf(strategy).create();
+    }
+  },
+};
+
+/** Replays the site row `id` with the real processors and phases and dumps the result in the recorder's shape. */
+function replaySite(id: string): OrderExpected {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
+}
+
+/** The changed properties the dump records for the element at `path`. */
+function changedProps(result: OrderExpected, path: string): Record<string, unknown> | undefined {
+  return result.changed.find((entry) => entry.path === path)?.props;
+}
+
+describe('LayerSweepCrossingMinimizer on the site rows', () => {
+  it('returns at once on a graph of one layer holding one node', () => {
+    // oracle: sites/LayerSweep/singleNode; LayerSweepCrossingMinimizer.java:118-125
+    const result = replaySite('sites/LayerSweep/singleNode');
+    expect(result.layers).toEqual([['g0/n0']]);
+    expect(result.ports).toEqual({ 'g0/n0': [] });
+    expect(result.changed).toEqual([]);
+  });
+
+  it('returns at once on a graph without layers', () => {
+    // oracle: sites/LayerSweep/empty; LayerSweepCrossingMinimizer.java:116-125
+    const result = replaySite('sites/LayerSweep/empty');
+    expect(result.layers).toEqual([]);
+    expect(result.ports).toEqual({});
+    expect(result.changed).toEqual([]);
+  });
+
+  it('keeps a crossing-free initial order and marks the first try with the initial order', () => {
+    // oracle: sites/ModelOrder/zeroCrossings/initial; LayerSweepCrossingMinimizer.java:225,287
+    const result = replaySite('sites/ModelOrder/zeroCrossings/initial');
+    expect(result.layers).toEqual([
+      ['g0/n0', 'g0/n1'],
+      ['g0/n2', 'g0/n3'],
+    ]);
+    expect(changedProps(result, 'g0')).toEqual({ firstTryWithInitialOrder: { t: 'bool', v: true } });
+  });
+
+  it('stops the port order sweeps once a sweep removed the last crossing', () => {
+    // oracle: sites/ModelOrder/zeroCrossings/afterSweep; LayerSweepCrossingMinimizer.java:225,312
+    const result = replaySite('sites/ModelOrder/zeroCrossings/afterSweep');
+    expect(result.layers).toEqual([['g0/n0'], ['new/n0', 'g0/n1', 'g0/n2', 'new/n1'], ['g0/n3']]);
+    expect(changedProps(result, 'g0')).toEqual({
+      cyclic: { t: 'bool', v: true },
+      firstTryWithInitialOrder: { t: 'bool', v: false },
+    });
+  });
+
+  it('keeps the initial order of a graph with feedback dummies when it has no crossings', () => {
+    // oracle: sites/ModelOrder/feedback/mixed; LayerSweepCrossingMinimizer.java:225,287
+    const result = replaySite('sites/ModelOrder/feedback/mixed');
+    expect(result.layers).toEqual([
+      ['g0/n3', 'new/n0', 'g0/n4'],
+      ['new/n1', 'g0/n0', 'new/n2', 'g0/n1', 'new/n3', 'new/n4'],
+      ['g0/n2'],
+    ]);
+    expect(changedProps(result, 'g0')).toEqual({ firstTryWithInitialOrder: { t: 'bool', v: true } });
   });
 });

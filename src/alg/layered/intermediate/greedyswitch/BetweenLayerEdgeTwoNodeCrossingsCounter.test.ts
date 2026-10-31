@@ -11,6 +11,45 @@ import type { LPort } from '../../graph/LPort.js';
 import { BetweenLayerEdgeTwoNodeCrossingsCounter } from './BetweenLayerEdgeTwoNodeCrossingsCounter.js';
 import { BetweenLayerEdgeTwoNodeCrossingsCounterAdjacencyList as AdjacencyList } from './BetweenLayerEdgeTwoNodeCrossingsCounterAdjacencyList.js';
 import { BetweenLayerEdgeTwoNodeCrossingsCounterAdjacencyListAdjacency as Adjacency } from './BetweenLayerEdgeTwoNodeCrossingsCounterAdjacencyListAdjacency.js';
+import { repoRoot } from '../../../../../test/corpus/corpus.js';
+import { orderDump } from '../../../../../test/helpers/layered-order-replay-dump.js';
+import {
+  loadOrderRows,
+  type OrderExpected,
+  type OrderRow,
+} from '../../../../../test/helpers/layered-order-replay-rows.js';
+import { runSteps, type Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
+import { importRow } from '../../../../../test/helpers/layered-phase-replay-rows.js';
+import { IntermediateProcessorStrategy } from '../IntermediateProcessorStrategy.js';
+import { CrossingMinimizationStrategy } from '../../options/CrossingMinimizationStrategy.js';
+import { CycleBreakingStrategy } from '../../options/CycleBreakingStrategy.js';
+import { LayeringStrategy } from '../../options/LayeringStrategy.js';
+
+const SITE_ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
+const SITE_PHASE_CYCLE = 'P1_CYCLE_BREAKING';
+const SITE_PHASE_LAYERING = 'P2_LAYERING';
+
+const siteFactories: Factories = {
+  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
+  createPhase: (phase, strategy) =>
+    phase === SITE_PHASE_CYCLE
+      ? CycleBreakingStrategy.valueOf(strategy).create()
+      : phase === SITE_PHASE_LAYERING
+        ? LayeringStrategy.valueOf(strategy).create()
+        : CrossingMinimizationStrategy.valueOf(strategy).create(),
+};
+
+let siteRows: OrderRow[] | undefined;
+
+/** Replays a T11 site row through the 7c classes and dumps the layers and ports (the order replay's dump). */
+function replaySite(id: string): OrderExpected {
+  siteRows ??= loadOrderRows(SITE_ROWS_FILE);
+  const row = siteRows.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`site row ${id} is not in layered-order.json`);
+  }
+  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
+}
 
 interface Fixture {
   order: LNode[][];
@@ -237,5 +276,19 @@ describe('BetweenLayerEdgeTwoNodeCrossingsCounter.AdjacencyList', () => {
     expect(list.toString()).toMatch(
       /^AdjacencyList \[node=.*, adjacencies= \[Adjacency \[position=4, cardinality=1, currentCardinality=1\]\]\]$/,
     );
+  });
+});
+
+describe('BetweenLayerEdgeTwoNodeCrossingsCounter on the site rows', () => {
+  it('merges parallel edges into one adjacency and keeps the order the counts decide', () => {
+    // oracle: sites/GreedySwitch/parallelEdges; BetweenLayerEdgeTwoNodeCrossingsCounter.java:281 addAdjacencyOf, :310 removeFirst
+    const result = replaySite('sites/GreedySwitch/parallelEdges');
+    expect(result.layers).toEqual([
+      ['g0/n1', 'g0/n0'],
+      ['g0/n3', 'g0/n2'],
+    ]);
+    expect(result.ports['g0/n1']).toEqual(['g0/n1/p0', 'g0/n1/p1']);
+    expect(result.ports['g0/n0']).toEqual(['g0/n0/p0', 'g0/n0/p1']);
+    expect(result.ports['g0/n2']).toEqual(['g0/n2/p0', 'g0/n2/p1']);
   });
 });

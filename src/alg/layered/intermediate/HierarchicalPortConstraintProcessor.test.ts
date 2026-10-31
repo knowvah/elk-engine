@@ -18,6 +18,7 @@ import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
@@ -126,5 +127,55 @@ describe('HierarchicalPortConstraintProcessorNodeComparator (from the Java text)
     expect(comparator.compare(dummy(2), dummy(2))).toBe(0);
     expect(comparator.compare(dummy(1), dummy(2))).toBe(-1);
     expect(comparator.compare(dummy(2), dummy(1))).toBe(1);
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11), replayed through P3. */
+const SITE_ROWS = loadOrderRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+const SITE_FACTORIES: Factories = {
+  ...factories,
+  createPhase: (phase, strategy) =>
+    phase === 'P3_NODE_ORDERING'
+      ? CrossingMinimizationStrategy.valueOf(strategy).create()
+      : factories.createPhase(phase, strategy),
+};
+
+function siteReplay(id: string): { graph: LGraph; actual: ReturnType<typeof orderDump> } {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  const graph = runSteps(row, SITE_FACTORIES);
+  return { graph, actual: orderDump(graph, importRow(row).importDump) };
+}
+
+/** The properties the `changed` member records for one element path. */
+function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
+  return actual.changed.find((entry) => entry.path === path)?.props;
+}
+
+const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
+const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
+
+describe('HierarchicalPortConstraintProcessor on the site rows', () => {
+  it('keeps two external ports at the same position in input order', () => {
+    // oracle: sites/ExternalPorts/equalPositions; HierarchicalPortConstraintProcessor.java:98-99 (NodeComparator)
+    const { actual } = siteReplay('sites/ExternalPorts/equalPositions');
+    expect(actual.layers[0]).toEqual(['g0/n0', 'g0/n1']);
+    expect(actual.layers.at(-1)).toEqual(['g0/n2']);
+  });
+
+  it('sorts a normal node in the dummies layer behind the external port dummies', () => {
+    // oracle: sites/ExternalPorts/normalNodeInLayer; HierarchicalPortConstraintProcessor.java:93-94 (NodeComparator)
+    const { actual } = siteReplay('sites/ExternalPorts/normalNodeInLayer');
+    expect(actual.layers).toEqual([['g0/n2', 'g0/n0'], ['g0/n3'], ['g0/n1']]);
+  });
+
+  it('adds a new first and a new last layer for dummies no existing layer can hold', () => {
+    // oracle: sites/ExternalPorts/newFirstLastLayer; HierarchicalPortConstraintProcessor.java:314, 318
+    const { actual } = siteReplay('sites/ExternalPorts/newFirstLastLayer');
+    expect(actual.layers).toEqual([['new/n0'], ['g0/n2'], ['g0/n3'], ['new/n1']]);
+    expect(actual.ports['new/n0']).toEqual(['new/p0', 'new/p1']);
+    expect(actual.ports['new/n1']).toEqual(['new/p2', 'new/p3']);
   });
 });

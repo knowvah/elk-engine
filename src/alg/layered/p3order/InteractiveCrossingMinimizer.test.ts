@@ -19,7 +19,11 @@ import { InternalProperties } from '../options/InternalProperties.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { compareOrder, compareOrderFullDump } from '../../../../test/helpers/layered-order-replay-compare.js';
 import { orderDump } from '../../../../test/helpers/layered-order-replay-dump.js';
-import { loadOrderRows, type OrderRow } from '../../../../test/helpers/layered-order-replay-rows.js';
+import {
+  loadOrderRows,
+  type OrderRow,
+  type OrderExpected,
+} from '../../../../test/helpers/layered-order-replay-rows.js';
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
@@ -358,5 +362,73 @@ describe('InteractiveCrossingMinimizer: the position of a long edge dummy (hand-
     // chain (10,0) (0,0) (110,60): point1 = (10,0), point2 = (0,0): 0 < 50 and more points, so point1 = (0,0), point2 =
     // (110,60): 0 + (50 - 0) / (110 - 0) * (60 - 0) = 27.27...
     expect(dummy.getProperty(InternalProperties.ORIGINAL_DUMMY_NODE_POSITION)).toBeCloseTo(300 / 11, 12);
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const SITE_ROWS = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`).filter((row) =>
+  row.id.startsWith('sites/'),
+);
+
+const siteFactories: Factories = {
+  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
+  createPhase: (phase, strategy) => {
+    switch (phase) {
+      case 'P1_CYCLE_BREAKING':
+        return CycleBreakingStrategy.valueOf(strategy).create();
+      case 'P2_LAYERING':
+        return LayeringStrategy.valueOf(strategy).create();
+      default:
+        return CrossingMinimizationStrategy.valueOf(strategy).create();
+    }
+  },
+};
+
+/** Replays the site row `id` with the real processors and phases and dumps the result in the recorder's shape. */
+function replaySite(id: string): OrderExpected {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
+}
+
+/** The changed properties the dump records for the element at `path`. */
+function changedProps(result: OrderExpected, path: string): Record<string, unknown> | undefined {
+  return result.changed.find((entry) => entry.path === path)?.props;
+}
+
+/** The recorded `ORIGINAL_DUMMY_NODE_POSITION` of the long edge dummy `new/n0`. */
+function dummyPosition(result: OrderExpected): number {
+  const value = changedProps(result, 'new/n0')?.originalDummyNodePosition as { t: 'double'; v: string };
+  return Number(value.v);
+}
+
+describe('InteractiveCrossingMinimizer on the site rows', () => {
+  it('orders two nodes of equal vertical position by the in-layer successor constraint', () => {
+    // oracle: sites/InLayerConstraints/interactive; InteractiveCrossingMinimizer.java:131-136
+    const result = replaySite('sites/InLayerConstraints/interactive');
+    expect(result.layers).toEqual([['g0/n0'], ['g0/n2', 'g0/n1']]);
+  });
+
+  it('interpolates a long edge dummy along the recorded bend points', () => {
+    // oracle: sites/Interactive/bendpoints/long; InteractiveCrossingMinimizer.java:166-204
+    const result = replaySite('sites/Interactive/bendpoints/long');
+    expect(result.layers[1]).toEqual(['new/n0', 'g0/n1']);
+    expect(dummyPosition(result)).toBeCloseTo(30.833333333333336, 9);
+  });
+
+  it('reverses the bend points of a reversed edge before interpolating', () => {
+    // oracle: sites/Interactive/bendpoints/reversed; InteractiveCrossingMinimizer.java:168-171
+    const result = replaySite('sites/Interactive/bendpoints/reversed');
+    expect(result.layers[1]).toEqual(['new/n0', 'g0/n1']);
+    expect(dummyPosition(result)).toBeCloseTo(30.833333333333336, 9);
+  });
+
+  it('interpolates between the last bend points when the dummy lies beyond them', () => {
+    // oracle: sites/Interactive/bendpoints/beyond; InteractiveCrossingMinimizer.java:197-204
+    const result = replaySite('sites/Interactive/bendpoints/beyond');
+    expect(result.layers[1]).toEqual(['new/n0', 'g0/n1']);
+    expect(dummyPosition(result)).toBeCloseTo(36.25, 9);
   });
 });

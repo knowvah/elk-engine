@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { elementAt } from '../../../../test/helpers/layered-phase-replay-dump.js';
-import { loadOrderRows } from '../../../../test/helpers/layered-order-replay-rows.js';
+import { loadOrderRows, type OrderExpected } from '../../../../test/helpers/layered-order-replay-rows.js';
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { addLayer, addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';
 import { PortSide } from '../../../core/options/PortSide.js';
@@ -22,6 +22,10 @@ import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { MedianHeuristic } from './MedianHeuristic.js';
+import { orderDump } from '../../../../test/helpers/layered-order-replay-dump.js';
+import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
+import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
+import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 
 const ROW_ID = 'scenarios/MedianLayerSweep/crossing';
 const SEED = 1;
@@ -207,5 +211,42 @@ describe('MedianHeuristic', () => {
     ])('answers for %s', (_name, n1, n2, expected) => {
       expect(probe.compareWeights(n1, n2)).toBe(expected);
     });
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const SITE_ROWS = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`).filter((row) =>
+  row.id.startsWith('sites/'),
+);
+
+const siteFactories: Factories = {
+  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
+  createPhase: (phase, strategy) => {
+    switch (phase) {
+      case 'P1_CYCLE_BREAKING':
+        return CycleBreakingStrategy.valueOf(strategy).create();
+      case 'P2_LAYERING':
+        return LayeringStrategy.valueOf(strategy).create();
+      default:
+        return CrossingMinimizationStrategy.valueOf(strategy).create();
+    }
+  },
+};
+
+/** Replays the site row `id` with the real processors and phases and dumps the result in the recorder's shape. */
+function replaySite(id: string): OrderExpected {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
+}
+
+describe('MedianHeuristic on the site rows', () => {
+  it('sweeps forward first when the first draw of the sweep stream is true', () => {
+    // oracle: sites/Median/forwardFirst; MedianHeuristic.java:63
+    const result = replaySite('sites/Median/forwardFirst');
+    expect(result.layers).toEqual([['g0/n1', 'g0/n0'], ['g0/n3', 'g0/n2'], ['g0/n4']]);
+    expect(result.ports['g0/n1']).toEqual(['g0/n1/p1', 'g0/n1/p0']);
   });
 });

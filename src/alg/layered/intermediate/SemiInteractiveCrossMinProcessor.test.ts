@@ -13,6 +13,7 @@ import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
@@ -121,5 +122,41 @@ describe('SemiInteractiveCrossMinProcessor (oracle rows)', () => {
     const actual = orderDump(graph, importRow(row).importDump);
     expect(compareOrder(actual, row.expected)).toEqual([]);
     expect(compareOrderFullDump({ ...actual, dump: dumpWithPropertyValues(graph) }, row.expected)).toEqual([]);
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11), replayed through P3. */
+const SITE_ROWS = loadOrderRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+const SITE_FACTORIES: Factories = {
+  ...factories,
+  createPhase: (phase, strategy) =>
+    phase === 'P3_NODE_ORDERING'
+      ? CrossingMinimizationStrategy.valueOf(strategy).create()
+      : factories.createPhase(phase, strategy),
+};
+
+function siteReplay(id: string): { graph: LGraph; actual: ReturnType<typeof orderDump> } {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  const graph = runSteps(row, SITE_FACTORIES);
+  return { graph, actual: orderDump(graph, importRow(row).importDump) };
+}
+
+/** The properties the `changed` member records for one element path. */
+function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
+  return actual.changed.find((entry) => entry.path === path)?.props;
+}
+
+const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
+const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
+
+describe('SemiInteractiveCrossMinProcessor on the site rows', () => {
+  it('adds no constraints when no normal node has a position', () => {
+    // oracle: sites/SemiInteractive/noConstraints; SemiInteractiveCrossMinProcessor.java (addedConstraints false)
+    const { actual } = siteReplay('sites/SemiInteractive/noConstraints');
+    expect(actual.layers).toEqual([['g0/n0'], ['g0/n1'], ['g0/n2']]);
+    expect(actual.changed).toEqual([]);
   });
 });

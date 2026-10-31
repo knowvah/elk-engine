@@ -13,6 +13,7 @@ import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
@@ -139,5 +140,64 @@ describe('PortListSorter (Java throw site)', () => {
     node.setLayer(addLayer(graph));
     expect(() => new PortListSorter().process(graph, new NullElkProgressMonitor())).toThrow(IllegalStateException);
     expect(() => new PortListSorter().process(graph, new NullElkProgressMonitor())).toThrow('Port side is undefined');
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11), replayed through P3. */
+const SITE_ROWS = loadOrderRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+const SITE_FACTORIES: Factories = {
+  ...factories,
+  createPhase: (phase, strategy) =>
+    phase === 'P3_NODE_ORDERING'
+      ? CrossingMinimizationStrategy.valueOf(strategy).create()
+      : factories.createPhase(phase, strategy),
+};
+
+function siteReplay(id: string): { graph: LGraph; actual: ReturnType<typeof orderDump> } {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  const graph = runSteps(row, SITE_FACTORIES);
+  return { graph, actual: orderDump(graph, importRow(row).importDump) };
+}
+
+/** The properties the `changed` member records for one element path. */
+function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
+  return actual.changed.find((entry) => entry.path === path)?.props;
+}
+
+const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
+const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
+
+describe('PortListSorter on the site rows', () => {
+  it('leaves the ports of a FREE node in input order', () => {
+    // oracle: sites/PortListSorter/freePorts; PortListSorter.java:74-76 (neither order nor side fixed)
+    const { actual } = siteReplay('sites/PortListSorter/freePorts');
+    expect(actual.ports['g0/n0']).toEqual(['g0/n0/p0', 'g0/n0/p1', 'g0/n0/p2']);
+    expect(actual.changed).toEqual([]);
+  });
+
+  it('sorts the east and west ports of a FIXED_SIDE node by port degree', () => {
+    // oracle: sites/PortListSorter/portDegree; PortListSorter.java:81-83, CMP_PORT_DEGREE_EAST_WEST :181
+    const { actual } = siteReplay('sites/PortListSorter/portDegree');
+    expect(actual.ports['g0/n1']).toEqual(['g0/n1/p3', 'g0/n1/p0', 'g0/n1/p1', 'g0/n1/p2']);
+    expect(actual.ports['g0/n0']).toEqual(['g0/n0/p0', 'g0/n0/p1', 'g0/n0/p2']);
+    expect(propsOf(actual, 'g0/e3')).toEqual({ reversed: { t: 'bool', v: true } });
+  });
+
+  it('orders FIXED_POS ports clockwise by position on all four sides', () => {
+    // oracle: sites/PortListSorter/fixedPosAllSides; PortListSorter.java:240-258 (CMP_FIXED_ORDER_AND_FIXED_POS)
+    const { actual } = siteReplay('sites/PortListSorter/fixedPosAllSides');
+    expect(actual.ports['g0/n0']).toEqual([
+      'g0/n0/p4',
+      'g0/n0/p5',
+      'g0/n0/p0',
+      'g0/n0/p1',
+      'g0/n0/p7',
+      'g0/n0/p6',
+      'g0/n0/p3',
+      'g0/n0/p2',
+    ]);
   });
 });

@@ -13,6 +13,7 @@ import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
@@ -111,5 +112,80 @@ describe('InvertedPortProcessor (oracle rows)', () => {
       expect(row.expected.dump).toBeDefined();
     }
     expect(compareOrderFullDump({ ...actual, dump: dumpWithPropertyValues(graph) }, row.expected)).toEqual([]);
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11), replayed through P3. */
+const SITE_ROWS = loadOrderRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+const SITE_FACTORIES: Factories = {
+  ...factories,
+  createPhase: (phase, strategy) =>
+    phase === 'P3_NODE_ORDERING'
+      ? CrossingMinimizationStrategy.valueOf(strategy).create()
+      : factories.createPhase(phase, strategy),
+};
+
+function siteReplay(id: string): { graph: LGraph; actual: ReturnType<typeof orderDump> } {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  const graph = runSteps(row, SITE_FACTORIES);
+  return { graph, actual: orderDump(graph, importRow(row).importDump) };
+}
+
+/** The properties the `changed` member records for one element path. */
+function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
+  return actual.changed.find((entry) => entry.path === path)?.props;
+}
+
+const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
+const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
+
+describe('InvertedPortProcessor on the site rows', () => {
+  it('skips nodes whose port sides are not fixed', () => {
+    // oracle: sites/InvertedPortProcessor/freePorts; InvertedPortProcessor.java:117-118
+    const { actual } = siteReplay('sites/InvertedPortProcessor/freePorts');
+    expect(actual.edges.find((edge) => edge.path === 'g0/e5')).toEqual({
+      path: 'g0/e5',
+      src: 'g0/n2/p1',
+      tgt: 'g0/n3/p0',
+      reversed: false,
+    });
+    expect(actual.ports['g0/n2']).toEqual(['g0/n2/p0', 'g0/n2/p1']);
+    expect(actual.ports['g0/n3']).toEqual(['g0/n3/p0', 'g0/n3/p1', 'g0/n3/p2']);
+  });
+
+  it('sets END_LABEL_EDGE on the HEAD label of an edge into an east input port', () => {
+    // oracle: sites/HeadLabels/invertedPort/short; InvertedPortProcessor.java:213-218
+    const { actual } = siteReplay('sites/HeadLabels/invertedPort/short');
+    expect(propsOf(actual, 'g0/e0/l0')).toEqual({ 'endLabel.origin': { ref: 'g0/e0' } });
+    expect(actual.layers).toEqual([['g0/n1'], ['g0/n0', 'new/n0']]);
+  });
+
+  it('keeps the END_LABEL_EDGE a long-edge split already set', () => {
+    // oracle: sites/HeadLabels/invertedPort/both; InvertedPortProcessor.java:217 (hasProperty true)
+    const { actual } = siteReplay('sites/HeadLabels/invertedPort/both');
+    expect(propsOf(actual, 'g0/e0/l0')).toEqual({ 'endLabel.origin': { ref: 'g0/e0' } });
+    expect(actual.layers).toEqual([['g0/n1'], ['g0/n2', 'new/n0'], ['g0/n3', 'new/n1'], ['g0/n0', 'new/n2']]);
+  });
+
+  it('sets END_LABEL_EDGE on the HEAD label of an edge leaving a west output port', () => {
+    // oracle: sites/HeadLabels/westOutput; InvertedPortProcessor.java:282-285
+    const { actual } = siteReplay('sites/HeadLabels/westOutput');
+    expect(propsOf(actual, 'g0/e0/l0')).toEqual({ 'endLabel.origin': { ref: 'g0/e0' } });
+    expect(actual.layers).toEqual([['g0/n0', 'new/n0'], ['g0/n1']]);
+  });
+
+  it('creates no dummy for a west-to-east self loop', () => {
+    // oracle: sites/NorthSouth/selfLoops/inverted; InvertedPortProcessor.java (self loops are left alone, class comment)
+    const { actual } = siteReplay('sites/NorthSouth/selfLoops/inverted');
+    expect(actual.edges.find((edge) => edge.path === 'g0/e1')).toEqual({
+      path: 'g0/e1',
+      src: 'g0/n1/p1',
+      tgt: 'g0/n1/p0',
+      reversed: false,
+    });
+    expect(actual.ports['g0/n1']).toEqual(['g0/n1/p0', 'g0/n1/p1']);
   });
 });

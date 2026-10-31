@@ -8,6 +8,15 @@ import { NodeType } from '../../graph/LNodeNodeType.js';
 import { addLayer, addNode, addPort, connect } from '../../../../../test/helpers/lgraph-builders.js';
 import { AllCrossingsCounter } from './AllCrossingsCounter.js';
 import { init } from './IInitializable.js';
+import { repoRoot } from '../../../../../test/corpus/corpus.js';
+import { orderDump } from '../../../../../test/helpers/layered-order-replay-dump.js';
+import { loadOrderRows, type OrderExpected } from '../../../../../test/helpers/layered-order-replay-rows.js';
+import { runSteps, type Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
+import { importRow } from '../../../../../test/helpers/layered-phase-replay-rows.js';
+import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
+import { CycleBreakingStrategy } from '../../options/CycleBreakingStrategy.js';
+import { LayeringStrategy } from '../../options/LayeringStrategy.js';
+import { CrossingMinimizationStrategy } from '../../options/CrossingMinimizationStrategy.js';
 
 /** Two layers of `leftCount` and `rightCount` nodes, each with one east respectively west port, no edges. */
 function edgelessLayers(leftCount: number, rightCount: number): LNode[][] {
@@ -64,5 +73,49 @@ describe('AllCrossingsCounter', () => {
     counter.initAtEdgeLevel(0, 0, 0, 0, edge, order);
     counter.initAtEdgeLevel(1, 0, 0, 0, edge, order);
     expect(Reflect.get(counter, 'inLayerEdgeCounts')).toEqual(Int32Array.of(0, 0));
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const SITE_ROWS = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`).filter((row) =>
+  row.id.startsWith('sites/'),
+);
+
+const siteFactories: Factories = {
+  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
+  createPhase: (phase, strategy) => {
+    switch (phase) {
+      case 'P1_CYCLE_BREAKING':
+        return CycleBreakingStrategy.valueOf(strategy).create();
+      case 'P2_LAYERING':
+        return LayeringStrategy.valueOf(strategy).create();
+      default:
+        return CrossingMinimizationStrategy.valueOf(strategy).create();
+    }
+  },
+};
+
+/** Replays the site row `id` with the real processors and phases and dumps the result in the recorder's shape. */
+function replaySite(id: string): OrderExpected {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
+}
+
+describe('AllCrossingsCounter on the site rows', () => {
+  it('records no hyperedge flag for a north port with several edges (seed 1)', () => {
+    // oracle: sites/NorthSouth/inputRanks/seed1; AllCrossingsCounter.java:105-108
+    const result = replaySite('sites/NorthSouth/inputRanks/seed1');
+    expect(result.layers).toEqual([['g0/n0'], ['g0/n3', 'g0/n1', 'g0/n2']]);
+    expect(result.ports['g0/n1']).toEqual(['g0/n1/p0', 'g0/n1/p1', 'g0/n1/p2']);
+  });
+
+  it('records no hyperedge flag for a north port with several edges (seed 2)', () => {
+    // oracle: sites/NorthSouth/inputRanks/seed2; AllCrossingsCounter.java:105-108
+    const result = replaySite('sites/NorthSouth/inputRanks/seed2');
+    expect(result.layers).toEqual([['g0/n0'], ['g0/n3', 'g0/n2', 'g0/n1']]);
+    expect(result.ports['g0/n1']).toEqual(['g0/n1/p0', 'g0/n1/p1', 'g0/n1/p2']);
   });
 });

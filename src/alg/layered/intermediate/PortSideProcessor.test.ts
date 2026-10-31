@@ -11,8 +11,10 @@ import { loadOrderRows, type OrderRow } from '../../../../test/helpers/layered-o
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
+import { PortSide } from '../../../core/options/PortSide.js';
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
@@ -118,5 +120,44 @@ describe('PortSideProcessor (oracle rows)', () => {
       expect(row.expected.dump).toBeDefined();
     }
     expect(compareOrderFullDump({ ...actual, dump: dumpWithPropertyValues(graph) }, row.expected)).toEqual([]);
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11), replayed through P3. */
+const SITE_ROWS = loadOrderRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+const SITE_FACTORIES: Factories = {
+  ...factories,
+  createPhase: (phase, strategy) =>
+    phase === 'P3_NODE_ORDERING'
+      ? CrossingMinimizationStrategy.valueOf(strategy).create()
+      : factories.createPhase(phase, strategy),
+};
+
+function siteReplay(id: string): { graph: LGraph; actual: ReturnType<typeof orderDump> } {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  const graph = runSteps(row, SITE_FACTORIES);
+  return { graph, actual: orderDump(graph, importRow(row).importDump) };
+}
+
+/** The properties the `changed` member records for one element path. */
+function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
+  return actual.changed.find((entry) => entry.path === path)?.props;
+}
+
+const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
+const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
+
+describe('PortSideProcessor on the site rows', () => {
+  it('puts an undefined-side port with an outgoing edge on the east side of a FIXED_SIDE node', () => {
+    // oracle: sites/PortSideProcessor/undefinedSide; PortSideProcessor.java:81-82 (setPortSide :103, net flow < 0)
+    const { graph, actual } = siteReplay('sites/PortSideProcessor/undefinedSide');
+    const port = graph.getLayers()[0]!.getNodes()[0]!.getPorts()[0]!;
+    expect(port.getSide()).toBe(PortSide.EAST);
+    expect(actual.layers).toEqual([['g0/n0'], ['g0/n1']]);
+    expect(propsOf(actual, 'g0/n0')).toEqual({ 'org.eclipse.elk.portConstraints': FIXED_SIDE });
+    expect(propsOf(actual, 'g0/n1')).toEqual({ 'org.eclipse.elk.portConstraints': FIXED_SIDE });
   });
 });

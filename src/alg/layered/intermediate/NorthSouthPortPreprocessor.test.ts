@@ -22,6 +22,7 @@ import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
@@ -173,5 +174,94 @@ describe('NorthSouthPortPreprocessor (self-loop dummies, from the Java text)', (
     expect(edge.getTarget()).toBeNull();
     expect(dummy!.getProperty(InternalProperties.CROSSING_HINT)).toBe(2);
     expect(dummy!.getProperty(InternalProperties.IN_LAYER_SUCCESSOR_CONSTRAINTS)).toEqual([node]);
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11), replayed through P3. */
+const SITE_ROWS = loadOrderRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
+const SITE_FACTORIES: Factories = {
+  ...factories,
+  createPhase: (phase, strategy) =>
+    phase === 'P3_NODE_ORDERING'
+      ? CrossingMinimizationStrategy.valueOf(strategy).create()
+      : factories.createPhase(phase, strategy),
+};
+
+function siteReplay(id: string): { graph: LGraph; actual: ReturnType<typeof orderDump> } {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  const graph = runSteps(row, SITE_FACTORIES);
+  return { graph, actual: orderDump(graph, importRow(row).importDump) };
+}
+
+/** The properties the `changed` member records for one element path. */
+function propsOf(actual: ReturnType<typeof orderDump>, path: string): unknown {
+  return actual.changed.find((entry) => entry.path === path)?.props;
+}
+
+const FIXED_SIDE = { c: 'PortConstraints', n: 'FIXED_SIDE', t: 'enum' } as const;
+const FIXED_POS = { c: 'PortConstraints', n: 'FIXED_POS', t: 'enum' } as const;
+
+describe('NorthSouthPortPreprocessor on the site rows', () => {
+  // Integer and double property values are encoded `{ t: 'number', v }` by the TS dump (the row spells `int`/`double`).
+  it('detaches a same-side self loop and gives it one dummy with a west and an east port', () => {
+    // oracle: sites/NorthSouth/selfLoops/sameSide; NorthSouthPortPreprocessor.java:627-660 (createSameSideSelfLoopDummyNode)
+    const { actual } = siteReplay('sites/NorthSouth/selfLoops/sameSide');
+    expect(actual.edges.find((edge) => edge.path === 'g0/e1')).toEqual({
+      path: 'g0/e1',
+      src: null,
+      tgt: null,
+      reversed: false,
+    });
+    expect(actual.ports['new/n0']).toEqual(['new/p0', 'new/p1']);
+    expect(propsOf(actual, 'new/n0')).toMatchObject({
+      crossingHint: { t: 'number', v: 2 },
+      origin: { ref: 'g0/e1' },
+      'org.eclipse.elk.portConstraints': FIXED_POS,
+    });
+    expect(propsOf(actual, 'g0/n1/p1')).toEqual({ portDummy: { ref: 'new/n0' } });
+    expect(propsOf(actual, 'g0/n1/p2')).toEqual({ portDummy: { ref: 'new/n0' } });
+  });
+
+  it('reroutes a north-south self loop between a northern and a southern dummy', () => {
+    // oracle: sites/NorthSouth/selfLoops/northSouth; NorthSouthPortPreprocessor.java:677-715
+    const { actual } = siteReplay('sites/NorthSouth/selfLoops/northSouth');
+    expect(actual.edges.find((edge) => edge.path === 'g0/e1')).toEqual({
+      path: 'g0/e1',
+      src: 'new/p0',
+      tgt: 'new/p1',
+      reversed: false,
+    });
+    expect(actual.layers[1]).toEqual(['new/n0', 'g0/n1', 'new/n1']);
+    expect(propsOf(actual, 'new/n0')).toMatchObject({ crossingHint: { t: 'number', v: 1 }, origin: { ref: 'g0/n1' } });
+    expect(propsOf(actual, 'new/n1')).toMatchObject({ crossingHint: { t: 'number', v: 1 }, origin: { ref: 'g0/n1' } });
+  });
+
+  it('lets the input-order reversal put the north output port first and the north input port second', () => {
+    // oracle: sites/ModelOrder/northSouth; NorthSouthPortPreprocessor.java:198-199, 377-392
+    const { actual } = siteReplay('sites/ModelOrder/northSouth');
+    expect(actual.layers[1]).toEqual(['new/n0', 'new/n1', 'g0/n1', 'new/n2', 'new/n3', 'new/n4']);
+    expect(propsOf(actual, 'g0/n1/p1')).toEqual({ portDummy: { ref: 'new/n1' } });
+    expect(propsOf(actual, 'g0/n1/p2')).toMatchObject({ portDummy: { ref: 'new/n0' } });
+  });
+
+  it('adds no successor constraints for ports with explicit anchors that stay on their side', () => {
+    // oracle: sites/NorthSouth/portOptions/portAnchors; NorthSouthPortPreprocessor.java:236, 283 (flag false)
+    const { actual } = siteReplay('sites/NorthSouth/portOptions/portAnchors');
+    expect(propsOf(actual, 'new/n1')).toMatchObject({ inLayerSuccessorConstraint: [{ ref: 'g0/n1' }] });
+    expect(propsOf(actual, 'g0/n1')).toMatchObject({
+      inLayerSuccessorConstraint: [{ ref: 'new/n3' }, { ref: 'new/n4' }],
+    });
+  });
+
+  it('adds no successor constraints for ports that may switch sides', () => {
+    // oracle: sites/NorthSouth/portOptions/allowNonFlow; NorthSouthPortPreprocessor.java:236, 283 (flag true)
+    const { actual } = siteReplay('sites/NorthSouth/portOptions/allowNonFlow');
+    const empty = { c: 'ArrayList', items: [], t: 'list' };
+    expect(propsOf(actual, 'new/n0')).toMatchObject({ inLayerSuccessorConstraint: empty });
+    expect(propsOf(actual, 'new/n1')).toMatchObject({ inLayerSuccessorConstraint: empty });
+    expect(propsOf(actual, 'g0/n1')).toMatchObject({ inLayerSuccessorConstraint: empty });
   });
 });

@@ -19,6 +19,45 @@ import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../../p
 import { CrossingMatrixFiller } from './CrossingMatrixFiller.js';
 import { SwitchDecider } from './SwitchDecider.js';
 import { SwitchDeciderCrossingCountSide as CrossingCountSide } from './SwitchDeciderCrossingCountSide.js';
+import { repoRoot } from '../../../../../test/corpus/corpus.js';
+import { orderDump } from '../../../../../test/helpers/layered-order-replay-dump.js';
+import {
+  loadOrderRows,
+  type OrderExpected,
+  type OrderRow,
+} from '../../../../../test/helpers/layered-order-replay-rows.js';
+import { runSteps, type Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
+import { importRow } from '../../../../../test/helpers/layered-phase-replay-rows.js';
+import { IntermediateProcessorStrategy } from '../IntermediateProcessorStrategy.js';
+import { CrossingMinimizationStrategy } from '../../options/CrossingMinimizationStrategy.js';
+import { CycleBreakingStrategy } from '../../options/CycleBreakingStrategy.js';
+import { LayeringStrategy } from '../../options/LayeringStrategy.js';
+
+const SITE_ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
+const SITE_PHASE_CYCLE = 'P1_CYCLE_BREAKING';
+const SITE_PHASE_LAYERING = 'P2_LAYERING';
+
+const siteFactories: Factories = {
+  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
+  createPhase: (phase, strategy) =>
+    phase === SITE_PHASE_CYCLE
+      ? CycleBreakingStrategy.valueOf(strategy).create()
+      : phase === SITE_PHASE_LAYERING
+        ? LayeringStrategy.valueOf(strategy).create()
+        : CrossingMinimizationStrategy.valueOf(strategy).create(),
+};
+
+let siteRows: OrderRow[] | undefined;
+
+/** Replays a T11 site row through the 7c classes and dumps the layers and ports (the order replay's dump). */
+function replaySite(id: string): OrderExpected {
+  siteRows ??= loadOrderRows(SITE_ROWS_FILE);
+  const row = siteRows.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`site row ${id} is not in layered-order.json`);
+  }
+  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
+}
 
 interface Fixture {
   decider: SwitchDecider;
@@ -138,5 +177,32 @@ describe('SwitchDecider', () => {
     order[1]!.reverse();
     // after the switch l is index 0: l above u does not cross
     expect(decider.doesSwitchReduceCrossings(0, 1)).toBe(false);
+  });
+});
+
+describe('SwitchDecider on the site rows', () => {
+  it('notifies the in-layer counters of switches with a self loop on a node sharing its layer', () => {
+    // oracle: sites/NorthSouth/selfLoops/greedyInLayer; SwitchDecider.java:111 notifyOfSwitch, :124 doesSwitchReduceCrossings
+    const result = replaySite('sites/NorthSouth/selfLoops/greedyInLayer');
+    expect(result.layers).toEqual([['g0/n0'], ['g0/n2', 'g0/n1'], ['g0/n3']]);
+    expect(result.ports['g0/n0']).toEqual(['g0/n0/p1', 'g0/n0/p0']);
+    expect(result.ports['g0/n2']).toEqual(['g0/n2/p1', 'g0/n2/p0']);
+    expect(result.ports['g0/n1']).toEqual(['g0/n1/p1', 'g0/n1/p2', 'g0/n1/p3', 'g0/n1/p0']);
+    expect(result.ports['g0/n3']).toEqual(['g0/n3/p0', 'g0/n3/p1']);
+  });
+
+  it('decides with a same-port self loop under the two-sided switch', () => {
+    // oracle: sites/NorthSouth/selfLoops/greedyPorts; SwitchDecider.java:124 doesSwitchReduceCrossings
+    const result = replaySite('sites/NorthSouth/selfLoops/greedyPorts');
+    expect(result.layers).toEqual([['g0/n0'], ['g0/n1'], ['g0/n2']]);
+    expect(result.ports['g0/n1']).toEqual(['g0/n1/p1', 'g0/n1/p2', 'g0/n1/p0']);
+  });
+
+  it('decides with a north-to-east self loop under the one-sided switch', () => {
+    // oracle: sites/NorthSouth/selfLoops/northEast; SwitchDecider.java:124 doesSwitchReduceCrossings
+    const result = replaySite('sites/NorthSouth/selfLoops/northEast');
+    expect(result.layers).toEqual([['g0/n0'], ['new/n0', 'g0/n1'], ['g0/n2'], ['g0/n3']]);
+    expect(result.ports['g0/n1']).toEqual(['g0/n1/p1', 'g0/n1/p2', 'g0/n1/p0']);
+    expect(result.ports['g0/n2']).toEqual(['g0/n2/p1', 'g0/n2/p0']);
   });
 });

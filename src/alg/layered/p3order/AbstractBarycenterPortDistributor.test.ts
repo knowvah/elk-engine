@@ -5,7 +5,7 @@
 // arithmetic through the Float32 shim). The oracle port orders are proven by T7's replay of the sweep.
 import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
-import { loadOrderRows } from '../../../../test/helpers/layered-order-replay-rows.js';
+import { loadOrderRows, type OrderExpected } from '../../../../test/helpers/layered-order-replay-rows.js';
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { addLayer, addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
@@ -30,6 +30,10 @@ import type { AbstractBarycenterPortDistributor } from './AbstractBarycenterPort
 import { init } from './counting/IInitializable.js';
 import { LayerTotalPortDistributor } from './LayerTotalPortDistributor.js';
 import { NodeRelativePortDistributor } from './NodeRelativePortDistributor.js';
+import { orderDump } from '../../../../test/helpers/layered-order-replay-dump.js';
+import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
+import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
+import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 
 const rows = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`);
 
@@ -469,5 +473,48 @@ describe('AbstractBarycenterPortDistributor: distributePortsWhileSweeping', () =
     distributor.distributePortsWhileSweeping(order, 0, true);
     const named = (port: LPort): string => Object.entries(ports).find(([, p]) => p === port)?.[0] ?? 'plain';
     expect(x.getPorts().map(named)).toEqual(['plain', 'output', 'both', 'input']);
+  });
+});
+
+/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
+const SITE_ROWS = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`).filter((row) =>
+  row.id.startsWith('sites/'),
+);
+
+const siteFactories: Factories = {
+  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
+  createPhase: (phase, strategy) => {
+    switch (phase) {
+      case 'P1_CYCLE_BREAKING':
+        return CycleBreakingStrategy.valueOf(strategy).create();
+      case 'P2_LAYERING':
+        return LayeringStrategy.valueOf(strategy).create();
+      default:
+        return CrossingMinimizationStrategy.valueOf(strategy).create();
+    }
+  },
+};
+
+/** Replays the site row `id` with the real processors and phases and dumps the result in the recorder's shape. */
+function replaySite(id: string): OrderExpected {
+  const row = SITE_ROWS.find((candidate) => candidate.id === id);
+  if (row === undefined) {
+    throw new Error(`no site row ${id}`);
+  }
+  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
+}
+
+describe('AbstractBarycenterPortDistributor on the site rows', () => {
+  it('keeps the dummy ports of a same-side self loop at the neutral sort key', () => {
+    // oracle: sites/NorthSouth/selfLoops/sameSide; AbstractBarycenterPortDistributor.java:288-309
+    const result = replaySite('sites/NorthSouth/selfLoops/sameSide');
+    expect(result.ports['g0/n1']).toEqual(['g0/n1/p1', 'g0/n1/p2', 'g0/n1/p3', 'g0/n1/p0']);
+    expect(result.ports['new/n0']).toEqual(['new/p0', 'new/p1']);
+    expect(result.edges.find((edge) => edge.path === 'g0/e1')).toEqual({
+      path: 'g0/e1',
+      src: null,
+      tgt: null,
+      reversed: false,
+    });
   });
 });
