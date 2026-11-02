@@ -8,12 +8,17 @@ import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimi
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
 import { EdgeAndLayerConstraintEdgeReverser } from './EdgeAndLayerConstraintEdgeReverser.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
+import { HierarchicalPortDummySizeProcessor } from './HierarchicalPortDummySizeProcessor.js';
 import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
+import { InLayerConstraintProcessor } from './InLayerConstraintProcessor.js';
+import { InnermostNodeMarginCalculator } from './InnermostNodeMarginCalculator.js';
 import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
 import { InvertedPortProcessor } from './InvertedPortProcessor.js';
+import { LabelAndNodeSizeProcessor } from './LabelAndNodeSizeProcessor.js';
 import { LayerConstraintPostprocessor } from './LayerConstraintPostprocessor.js';
 import { LayerConstraintPreprocessor } from './LayerConstraintPreprocessor.js';
 import { LongEdgeSplitter } from './LongEdgeSplitter.js';
+import { NodePlacementRepeater } from './NodePlacementRepeater.js';
 import { NodePromotion } from './NodePromotion.js';
 import { NorthSouthPortPreprocessor } from './NorthSouthPortPreprocessor.js';
 import { PartitionMidprocessor } from './PartitionMidprocessor.js';
@@ -388,11 +393,11 @@ function createBeforePhase4(strategy: IntermediateProcessorStrategy): ILayoutPro
     case IntermediateProcessorStrategy.SINGLE_EDGE_GRAPH_WRAPPER:
       throw notPorted('SingleEdgeGraphWrapper', '7g');
     case IntermediateProcessorStrategy.IN_LAYER_CONSTRAINT_PROCESSOR:
-      throw notPorted('InLayerConstraintProcessor', '7f');
+      return new InLayerConstraintProcessor();
     case IntermediateProcessorStrategy.END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR:
       throw notPorted('LabelManagementProcessor', '7f');
     case IntermediateProcessorStrategy.LABEL_AND_NODE_SIZE_PROCESSOR:
-      throw notPorted('LabelAndNodeSizeProcessor', '7f');
+      return new LabelAndNodeSizeProcessor();
     default:
       return createBeforePhase42(strategy);
   }
@@ -402,7 +407,7 @@ function createBeforePhase4(strategy: IntermediateProcessorStrategy): ILayoutPro
 function createBeforePhase42(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy) {
     case IntermediateProcessorStrategy.INNERMOST_NODE_MARGIN_CALCULATOR:
-      throw notPorted('InnermostNodeMarginCalculator', '7f');
+      return new InnermostNodeMarginCalculator();
     case IntermediateProcessorStrategy.SELF_LOOP_ROUTER:
       throw notPorted('SelfLoopRouter', '7g');
     case IntermediateProcessorStrategy.COMMENT_NODE_MARGIN_CALCULATOR:
@@ -418,7 +423,7 @@ function createBeforePhase42(strategy: IntermediateProcessorStrategy): ILayoutPr
     case IntermediateProcessorStrategy.HYPEREDGE_DUMMY_MERGER:
       throw notPorted('HyperedgeDummyMerger', '7f');
     case IntermediateProcessorStrategy.HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR:
-      throw notPorted('HierarchicalPortDummySizeProcessor', '7f');
+      return new HierarchicalPortDummySizeProcessor();
     default:
       return createBeforePhase5(strategy);
   }
@@ -428,7 +433,7 @@ function createBeforePhase42(strategy: IntermediateProcessorStrategy): ILayoutPr
 function createBeforePhase5(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy) {
     case IntermediateProcessorStrategy.NODE_PLACEMENT_REPEATER:
-      throw notPorted('NodePlacementRepeater', '7f');
+      return new NodePlacementRepeater();
     case IntermediateProcessorStrategy.LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR:
       throw notPorted('LayerSizeAndGraphHeightCalculator', '7f');
     case IntermediateProcessorStrategy.HIERARCHICAL_PORT_POSITION_PROCESSOR:

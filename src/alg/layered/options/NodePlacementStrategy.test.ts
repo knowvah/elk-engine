@@ -1,19 +1,23 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
+import { InteractiveNodePlacer } from '../p4nodes/InteractiveNodePlacer.js';
+import { LinearSegmentsNodePlacer } from '../p4nodes/LinearSegmentsNodePlacer.js';
+import { NetworkSimplexPlacer } from '../p4nodes/NetworkSimplexPlacer.js';
+import { SimpleNodePlacer } from '../p4nodes/SimpleNodePlacer.js';
+import { BKNodePlacer } from '../p4nodes/bk/BKNodePlacer.js';
 import { NodePlacementStrategy } from './NodePlacementStrategy.js';
 
 const DECLARED = ['SIMPLE', 'INTERACTIVE', 'LINEAR_SEGMENTS', 'BRANDES_KOEPF', 'NETWORK_SIMPLEX'] as const;
 
-/** Constant name to the class its `create()` arm will return, and the mission porting it. */
-const ARMS: Record<(typeof DECLARED)[number], [string, string]> = {
-  SIMPLE: ['SimpleNodePlacer', '7d'],
-  INTERACTIVE: ['InteractiveNodePlacer', '7d'],
-  LINEAR_SEGMENTS: ['LinearSegmentsNodePlacer', '7d'],
-  BRANDES_KOEPF: ['BKNodePlacer', '7d'],
-  NETWORK_SIMPLEX: ['NetworkSimplexPlacer', '7d'],
-};
+/** Constant name to the class its `create()` arm returns. */
+const ARMS = {
+  SIMPLE: SimpleNodePlacer,
+  INTERACTIVE: InteractiveNodePlacer,
+  LINEAR_SEGMENTS: LinearSegmentsNodePlacer,
+  BRANDES_KOEPF: BKNodePlacer,
+  NETWORK_SIMPLEX: NetworkSimplexPlacer,
+} as const;
 
 describe('NodePlacementStrategy', () => {
   it('declares the constants in Java order with matching ordinals and names', () => {
@@ -42,12 +46,10 @@ describe('NodePlacementStrategy', () => {
     );
   });
 
-  it('create() of every constant throws UnsupportedOperationException naming its class and mission', () => {
-    for (const name of DECLARED) {
-      const [className, mission] = ARMS[name];
-      expect(() => NodePlacementStrategy[name].create()).toThrow(UnsupportedOperationException);
-      expect(() => NodePlacementStrategy[name].create()).toThrow(`${className} is ported in mission ${mission}`);
-    }
+  it.each(DECLARED)('create() of %s returns a new instance of its placer class', (name) => {
+    const created = NodePlacementStrategy[name].create();
+    expect(created).toBeInstanceOf(ARMS[name]);
+    expect(NodePlacementStrategy[name].create()).not.toBe(created);
   });
 
   it('create() of an unknown strategy keeps the Java IllegalArgumentException text', () => {

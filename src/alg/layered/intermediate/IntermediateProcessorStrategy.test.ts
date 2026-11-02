@@ -4,15 +4,20 @@ import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentExce
 import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
-import { IntermediateProcessorStrategy as Strategy } from './IntermediateProcessorStrategy.js';
 import { EdgeAndLayerConstraintEdgeReverser } from './EdgeAndLayerConstraintEdgeReverser.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
+import { HierarchicalPortDummySizeProcessor } from './HierarchicalPortDummySizeProcessor.js';
 import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
+import { InLayerConstraintProcessor } from './InLayerConstraintProcessor.js';
+import { InnermostNodeMarginCalculator } from './InnermostNodeMarginCalculator.js';
 import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
+import { IntermediateProcessorStrategy as Strategy } from './IntermediateProcessorStrategy.js';
 import { InvertedPortProcessor } from './InvertedPortProcessor.js';
+import { LabelAndNodeSizeProcessor } from './LabelAndNodeSizeProcessor.js';
 import { LayerConstraintPostprocessor } from './LayerConstraintPostprocessor.js';
 import { LayerConstraintPreprocessor } from './LayerConstraintPreprocessor.js';
 import { LongEdgeSplitter } from './LongEdgeSplitter.js';
+import { NodePlacementRepeater } from './NodePlacementRepeater.js';
 import { NodePromotion } from './NodePromotion.js';
 import { NorthSouthPortPreprocessor } from './NorthSouthPortPreprocessor.js';
 import { PartitionMidprocessor } from './PartitionMidprocessor.js';
@@ -118,10 +123,10 @@ const ARMS: Record<Name, [string, string]> = {
   SELF_LOOP_PORT_RESTORER: ['SelfLoopPortRestorer', '7g'],
   ALTERNATING_LAYER_UNZIPPER: ['AlternatingLayerUnzipper', '7f'],
   SINGLE_EDGE_GRAPH_WRAPPER: ['SingleEdgeGraphWrapper', '7g'],
-  IN_LAYER_CONSTRAINT_PROCESSOR: ['InLayerConstraintProcessor', '7f'],
+  IN_LAYER_CONSTRAINT_PROCESSOR: ['InLayerConstraintProcessor', '7d'],
   END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR: ['LabelManagementProcessor', '7f'],
-  LABEL_AND_NODE_SIZE_PROCESSOR: ['LabelAndNodeSizeProcessor', '7f'],
-  INNERMOST_NODE_MARGIN_CALCULATOR: ['InnermostNodeMarginCalculator', '7f'],
+  LABEL_AND_NODE_SIZE_PROCESSOR: ['LabelAndNodeSizeProcessor', '7d'],
+  INNERMOST_NODE_MARGIN_CALCULATOR: ['InnermostNodeMarginCalculator', '7d'],
   SELF_LOOP_ROUTER: ['SelfLoopRouter', '7g'],
   COMMENT_NODE_MARGIN_CALCULATOR: ['CommentNodeMarginCalculator', '7f'],
   END_LABEL_PREPROCESSOR: ['EndLabelPreprocessor', '7f'],
@@ -129,8 +134,8 @@ const ARMS: Record<Name, [string, string]> = {
   CENTER_LABEL_MANAGEMENT_PROCESSOR: ['LabelManagementProcessor', '7f'],
   LABEL_SIDE_SELECTOR: ['LabelSideSelector', '7f'],
   HYPEREDGE_DUMMY_MERGER: ['HyperedgeDummyMerger', '7f'],
-  HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR: ['HierarchicalPortDummySizeProcessor', '7f'],
-  NODE_PLACEMENT_REPEATER: ['NodePlacementRepeater', '7f'],
+  HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR: ['HierarchicalPortDummySizeProcessor', '7d'],
+  NODE_PLACEMENT_REPEATER: ['NodePlacementRepeater', '7d'],
   LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR: ['LayerSizeAndGraphHeightCalculator', '7f'],
   HIERARCHICAL_PORT_POSITION_PROCESSOR: ['HierarchicalPortPositionProcessor', '7f'],
   CONSTRAINTS_POSTPROCESSOR: ['ConstraintsPostprocessor', '7f'],
@@ -151,7 +156,7 @@ const ARMS: Record<Name, [string, string]> = {
   DIRECTION_POSTPROCESSOR: ['GraphTransformer', '7f'],
 };
 
-/** The ported (missions 7b and 7c) arms: constant name to the class `create()` returns. */
+/** The ported (missions 7b, 7c and 7d) arms: constant name to the class `create()` returns. */
 const PORTED = {
   EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER: EdgeAndLayerConstraintEdgeReverser,
   INTERACTIVE_EXTERNAL_PORT_POSITIONER: InteractiveExternalPortPositioner,
@@ -173,6 +178,11 @@ const PORTED = {
   NORTH_SOUTH_PORT_PREPROCESSOR: NorthSouthPortPreprocessor,
   ONE_SIDED_GREEDY_SWITCH: LayerSweepCrossingMinimizer,
   TWO_SIDED_GREEDY_SWITCH: LayerSweepCrossingMinimizer,
+  IN_LAYER_CONSTRAINT_PROCESSOR: InLayerConstraintProcessor,
+  LABEL_AND_NODE_SIZE_PROCESSOR: LabelAndNodeSizeProcessor,
+  INNERMOST_NODE_MARGIN_CALCULATOR: InnermostNodeMarginCalculator,
+  HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR: HierarchicalPortDummySizeProcessor,
+  NODE_PLACEMENT_REPEATER: NodePlacementRepeater,
 } as const;
 
 const PORTED_NAMES: ReadonlySet<string> = new Set(Object.keys(PORTED));
@@ -220,12 +230,12 @@ describe('IntermediateProcessorStrategy', () => {
     );
   });
 
-  it('ports exactly the 7b and 7c members and leaves the other 39 pending', () => {
-    expect(PORTED_NAMES.size).toBe(20);
-    expect(PENDING).toHaveLength(39);
-    expect(DECLARED.filter((name) => ARMS[name][1] === '7b' || ARMS[name][1] === '7c').sort()).toEqual(
-      [...PORTED_NAMES].sort(),
-    );
+  it('ports exactly the 7b, 7c and 7d members and leaves the other 34 pending', () => {
+    expect(PORTED_NAMES.size).toBe(25);
+    expect(PENDING).toHaveLength(34);
+    expect(
+      DECLARED.filter((name) => ARMS[name][1] === '7b' || ARMS[name][1] === '7c' || ARMS[name][1] === '7d').sort(),
+    ).toEqual([...PORTED_NAMES].sort());
   });
 
   it('wires the greedy switch arms to a LayerSweepCrossingMinimizer of the matching CrossMinType', () => {
@@ -237,10 +247,10 @@ describe('IntermediateProcessorStrategy', () => {
     }
   });
 
-  it('assigns the missions per B9 (10 in 7b, 10 in 7c, 9 in 7g, 30 in 7f)', () => {
+  it('assigns the missions per B9 (10 in 7b, 10 in 7c, 5 in 7d, 9 in 7g, 25 in 7f)', () => {
     const tally = new Map<string, number>();
     for (const [, mission] of Object.values(ARMS)) tally.set(mission, (tally.get(mission) ?? 0) + 1);
-    expect(Object.fromEntries(tally)).toEqual({ '7b': 10, '7c': 10, '7g': 9, '7f': 30 });
+    expect(Object.fromEntries(tally)).toEqual({ '7b': 10, '7c': 10, '7d': 5, '7g': 9, '7f': 25 });
   });
 
   it('create() of an unknown strategy keeps the Java IllegalArgumentException text', () => {

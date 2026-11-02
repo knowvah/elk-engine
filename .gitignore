@@ -47,3 +47,4 @@ docs-site/.vitepress/i18n-hashes.json
 test/corpus/.json-sweep/
 test/corpus/.phase-sweep/
 test/corpus/.order-sweep/
+test/corpus/.placement-sweep/

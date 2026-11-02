@@ -10,16 +10,18 @@ cited are `plans/layered-framework/decisions.md` (L1–L7, S1–S4, X1–X6); ta
 `plans/alg-common/decisions.md`. Nothing here is exported from `src/index.ts` (AD-14), and no layout runs yet: the
 algorithm classes land in 7b–7h. Counts of oracle rows live in [conformance.md](../conformance.md#alg-layered-framework).
 
-| Section                                   | Answers                                                              |
-| ----------------------------------------- | -------------------------------------------------------------------- |
-| [1. Package map](#package-map)            | What 7a ported, where it lives, what is staged                       |
-| [2. LGraph model](#lgraph-model)          | The 13 graph classes and the Java idioms they keep                   |
-| [3. Transform](#transform)                | Importer and transferrer sections, hash sites, quirks kept           |
-| [4. Staged classes (L1)](#staged-classes) | Marker, registry, fitness test, how a mission replaces a staged file |
-| [5. Options and registration](#options)   | Generated `LayeredOptions`, `Spacings`, L5 registration              |
-| [6. Evidence](#evidence)                  | The three replays, the site rows, coverage                           |
-| [7. Runbook](#runbook)                    | Re-recording, regenerating, reading a staged throw                   |
-| [8. Part b: cycles and layers](#part-b)   | Mission 7b: p1cycles, p2layers, ten processors, phase rows, sweep    |
+| Section                                     | Answers                                                                     |
+| ------------------------------------------- | --------------------------------------------------------------------------- |
+| [1. Package map](#package-map)              | What 7a ported, where it lives, what is staged                              |
+| [2. LGraph model](#lgraph-model)            | The 13 graph classes and the Java idioms they keep                          |
+| [3. Transform](#transform)                  | Importer and transferrer sections, hash sites, quirks kept                  |
+| [4. Staged classes (L1)](#staged-classes)   | Marker, registry, fitness test, how a mission replaces a staged file        |
+| [5. Options and registration](#options)     | Generated `LayeredOptions`, `Spacings`, L5 registration                     |
+| [6. Evidence](#evidence)                    | The three replays, the site rows, coverage                                  |
+| [7. Runbook](#runbook)                      | Re-recording, regenerating, reading a staged throw                          |
+| [8. Part b: cycles and layers](#part-b)     | Mission 7b: p1cycles, p2layers, ten processors, phase rows, sweep           |
+| [9. Part c: crossing minimization](#part-c) | Mission 7c: p3order, counting, greedy switch, model order, eight processors |
+| [10. Part d: node placement](#part-d)       | Mission 7d: see [alg-layered-placement.md](alg-layered-placement.md)        |
 
 ## 1. Package map {#package-map}
 
@@ -458,3 +460,10 @@ The recorder is one JDK 21 single-file launcher of at most 3,000 lines (stop 13;
 | Randomized sweep differs by seed           | a row's `layers` match only for another `randomSeed`                                             | the first sweep randomizes every barycenter and re-seeds from the graph's `Random`: scan seeds on the port before suspecting the sweep (`Median/forwardFirst` needed seed 4)                                                                                               |
 | Greedy port distributor never runs         | `GreedyPortDistributor.ts` arms stay untaken under `p3:LAYER_SWEEP` + `greedySwitch.type`        | only the `TWO_SIDED_GREEDY_SWITCH` `CrossMinType` gets it (`ISweepPortDistributor.create`); run the greedy-switch processor after `p3:NONE`                                                                                                                                |
 | `java-tests.sh` exits before any class     | `error: bundle <bsn> not in p2 cache …`, `test bundle classes missing`, or `oracle built from …` | the classpath needs the oracle jars, both test bundles' `target/classes`, the p2 bundles of its `THIRD_PARTY` list (log4j 1.2 and `org.eclipse.equinox.common` included) and junit 4.13.2 from `~/.m2`; rebuild with `tools/oracle/build.sh` or set `P2_BUNDLES`/`M2_REPO` |
+
+## 10. Part d: node placement (mission 7d) {#part-d}
+
+Mission 7d (`layered-node-placement`, roadmap row 7d) ported the fourth phase (`p4nodes`, `p4nodes.bk`) and the five
+processors a P4 stop needs. This file is at its 500-line limit, so part d lives in the sibling
+[alg-layered-placement.md](alg-layered-placement.md) (package map, geometry rows, recursion rewrites, idioms,
+evidence, runbook).

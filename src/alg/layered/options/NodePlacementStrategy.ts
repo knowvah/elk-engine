@@ -2,9 +2,13 @@
 import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
 import type { ILayoutPhaseFactory } from '../../../core/alg/ILayoutPhaseFactory.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import type { LayeredPhases } from '../LayeredPhases.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { InteractiveNodePlacer } from '../p4nodes/InteractiveNodePlacer.js';
+import { LinearSegmentsNodePlacer } from '../p4nodes/LinearSegmentsNodePlacer.js';
+import { NetworkSimplexPlacer } from '../p4nodes/NetworkSimplexPlacer.js';
+import { SimpleNodePlacer } from '../p4nodes/SimpleNodePlacer.js';
+import { BKNodePlacer } from '../p4nodes/bk/BKNodePlacer.js';
 
 /**
  * Definition of the available node placement strategies for the layered layout approach.
@@ -76,28 +80,22 @@ export class NodePlacementStrategy implements ILayoutPhaseFactory<LayeredPhases,
   }
 
   /**
-   * Creates the phase implementation. Every arm's class is ported in a later mission (L1): until then the arm throws
-   * `UnsupportedOperationException` naming the class and the mission, with no import.
+   * Creates the phase implementation.
    */
   create(): ILayoutPhase<LayeredPhases, LGraph> {
     switch (this) {
       case NodePlacementStrategy.SIMPLE:
-        throw notPorted('SimpleNodePlacer', '7d');
+        return new SimpleNodePlacer();
       case NodePlacementStrategy.INTERACTIVE:
-        throw notPorted('InteractiveNodePlacer', '7d');
+        return new InteractiveNodePlacer();
       case NodePlacementStrategy.LINEAR_SEGMENTS:
-        throw notPorted('LinearSegmentsNodePlacer', '7d');
+        return new LinearSegmentsNodePlacer();
       case NodePlacementStrategy.BRANDES_KOEPF:
-        throw notPorted('BKNodePlacer', '7d');
+        return new BKNodePlacer();
       case NodePlacementStrategy.NETWORK_SIMPLEX:
-        throw notPorted('NetworkSimplexPlacer', '7d');
+        return new NetworkSimplexPlacer();
       default:
         throw new IllegalArgumentException(`No implementation is available for the node placer ${this.toString()}`);
     }
   }
-}
-
-/** The L1 placeholder for a `create()` arm whose class is not ported yet. */
-function notPorted(className: string, mission: string): UnsupportedOperationException {
-  return new UnsupportedOperationException(`${className} is ported in mission ${mission}`);
 }
