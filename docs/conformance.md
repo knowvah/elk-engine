@@ -1064,6 +1064,15 @@ Decisions: `plans/layered-crossing-min/decisions.md` (C1–C13).
 - 88 anchored unit cases cite a site row (`// oracle: <row id>; <Java file:line>`) and six pin Java constants; after them every 7c class is at or above 90 % branches except eight whose remainder is nested-graph (7h), label-dummy (7f), dead-by-construction or unreached with a named mechanism (`plans/layered-crossing-min/unreached.md`, with the T11 and T12 corrections); whole-suite coverage 99.01 / 96.96 / 99.03 / 99.01.
 - Landed vectors, goldens and corpus are unchanged: the refs diff against `main` is the new `layered-order.json`, the
   24 vendored `.elkt` inputs and their manifest rows, and the sweep test.
+- The hand-built JUnit suites (mission 7c-tests, T1–T9 of `plans/layered-crossing-min-tests/`): the three greedy-switch
+  graph creators (`test/helpers/TestGraphCreator.ts` with `MockRandom`, `InLayerEdgeTestGraphCreator.ts`,
+  `NorthSouthEdgeTestGraphCreator.ts`, 2,697 Java lines) and fourteen unit-level suites (p3order 6, counting 3,
+  greedyswitch 5; 211 tests, 280 runs with parameters, 8 `@Ignore` methods kept as `it.skip`) ported verbatim with the
+  Java tests' own literals as expectations (AD-13, decision T1). `tools/oracle/java-tests.sh` runs the same fourteen
+  classes against the oracle build: 280 runs, 0 failures, per suite equal to the TS counts
+  (`plans/layered-crossing-min-tests/coverage.md`). No port defect surfaced; the nested-graph cases are the first
+  Java-derived check of the hierarchical sweep and the hierarchical greedy switch, and reach three of 7c's "U nested"
+  arms (`LayerSweepCrossingMinimizer.ts:163 if[1]`, `SwitchDecider.ts:94,97 cond-expr[0]`).
 
 **AD-10 sites.** `HyperedgeCrossingsCounter.java:216-217`, `ModelOrderNodeComparator.java:61,65,119-134,531-532`,
 `ModelOrderPortComparator.java:69,73,112-127,442-443`, `ForsterConstraintResolver.java:72` (`LinkedHashMultimap`),
@@ -1092,6 +1101,10 @@ by the user). Two replay-helper gaps, not port defects: the 7c order dump omitte
   (7f).
 - **Hand-built JUnit suites (C1):** `TestGraphCreator`, the three greedy-switch graph creators and the 16 suites built
   on them, `ConcreteSortByInputModelTest` and `AllowNonFlowPortsToSwitchSidesTest` are the sibling brief 7c-tests.
+- **Full-layout JUnit suites (7c-tests T8):** `ConcreteSortByInputModelTest` (32) and
+  `AllowNonFlowPortsToSwitchSidesTest` (6) call `LayeredLayoutProvider.layout` and assert coordinates and edge
+  intersections; both pass on the oracle and move to 7f. The root `org.eclipse.elk.alg.layered.TestGraphCreator`
+  (1,217 lines) is referenced by no Java file and stays unported.
 - **Randomness scope (C4):** INTERACTIVE and semi-interactive rows replay the seeded positions of the Java test
   configurators; sweep cases use the positions the models carry on disk.
 - **Unreached arms with a named mechanism:** 20 arms no recorded graph reaches (`plans/layered-crossing-min/unreached.md`
