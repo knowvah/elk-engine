@@ -79,6 +79,35 @@ const LAYERED_ORDER_INPUTS = [
   'tickets/layered/528_violatedNodeOrder.elkt',
 ];
 
+/**
+ * Inputs of the layered placement vectors (mission 7d T1, `tools/vectors/LayeredPlacementVectors.java`): the 22 models
+ * of the node placement LayoutTestRunner suite, vendored byte-identical.
+ */
+const LAYERED_PLACEMENT_INPUTS = [
+  'tests/layered/node_placement/KIPRA-1426/demo2-KIPRA-1426.elkt',
+  'tests/layered/node_placement/bk/classes/classes.elkt',
+  'tests/layered/node_placement/bk/classes/classes_leftdown.elkt',
+  'tests/layered/node_placement/bk/classes/classes_leftup.elkt',
+  'tests/layered/node_placement/bk/classes/classes_rightdown.elkt',
+  'tests/layered/node_placement/bk/classes/classes_rightup.elkt',
+  'tests/layered/node_placement/bk/classes/classes_two_leftdown.elkt',
+  'tests/layered/node_placement/bk/classes/classes_two_leftup.elkt',
+  'tests/layered/node_placement/bk/classes/classes_two_rightdown.elkt',
+  'tests/layered/node_placement/bk/classes/classes_two_rightdown_surrounded.elkt',
+  'tests/layered/node_placement/bk/classes/classes_two_rightup.elkt',
+  'tests/layered/node_placement/bk/classes/classes_two_samesize.elkt',
+  'tests/layered/node_placement/bk/edge_length/edge_length_space_above.elkt',
+  'tests/layered/node_placement/bk/edge_length/edge_length_space_below.elkt',
+  'tests/layered/node_placement/bk/straightness/severalEdges.elkt',
+  'tests/layered/node_placement/bk/straightness/straightEdgesLeft.elkt',
+  'tests/layered/node_placement/bk/straightness/straightEdgesRight.elkt',
+  'tests/layered/node_placement/compact/unbalanced.elkt',
+  'tests/layered/node_placement/flexible_ports/graph01.elkt',
+  'tests/layered/node_placement/flexible_ports/graph02.elkt',
+  'tests/layered/node_placement/flexible_ports/graph03.elkt',
+  'tests/layered/node_placement/flexible_ports/graph04.elkt',
+];
+
 type Obj = Record<string, unknown>;
 
 function readJson(file: string): unknown {
@@ -193,8 +222,8 @@ describe('vendored inputs', () => {
     expect(parsed['commit']).toBe(corpus['commit']);
   });
 
-  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs, nothing else', () => {
-    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS].sort();
+  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs, nothing else', () => {
+    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS].sort();
     expect(Object.keys(hashes).sort()).toEqual(expected);
   });
 
