@@ -711,3 +711,68 @@ run (`ElkLayered`, `GraphConfigurator` → 7f).
   of graph elements needs the same bound. `LayeredPhaseVectors.java` is a 2,730-line single-file launcher (JDK 21's
   source launcher takes one file); a `javac` multi-file launcher is still a follow-up. The TS sweep test is stride-2
   sampled to stay near four minutes; `PHASE_SWEEP_STRIDE=1` runs every case.
+
+## Revision 2026-10-30 (layered-crossing-min)
+
+Appended; no earlier line is edited. Source: C1–C13 in `plans/layered-crossing-min/decisions.md`; the journal is
+`plans/layered-crossing-min/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+
+**Row 7c is done.** `p3order` (16 classes) and `p3order.counting` (6), the eight intermediate processors a default
+pipeline runs between P2 and P3, `greedyswitch` (5) and `preserveorder` (3), the four `CrossingMinimizationStrategy`
+arms and ten `IntermediateProcessorStrategy` arms are ported and proven by `layered-order.json` (808 oracle rows: 657
+pipeline rows recorded through `ElkLayered.runLayoutTestUntil` at the P3 stop, 89 scenario rows, 62 site rows), ten
+ported JUnit invariant tests, a 6,728-case hash sweep over all ptolemy models and 88 anchored unit cases; design, idioms
+and runbook in `docs/architecture/alg-layered.md` § 9, counts in `docs/conformance.md#alg-layered-ordering`. The
+pipeline still does not run (`ElkLayered`, `GraphConfigurator` → 7f). The enum tally is now 7b 10 / 7c 10 / 7g 9 /
+7f 30 (B9 table amended by C2).
+
+**New row 7c-tests (before 7d; C1).** The hand-built JUnit suites of P3 are a sibling brief: `TestGraphCreator`
+(1,217 lines; SC3 amended), `greedyswitch/{TestGraphCreator, InLayerEdgeTestGraphCreator,
+NorthSouthEdgeTestGraphCreator}` and the 16 suites built on them (p3order 6, counting 4, greedyswitch 6, about 9,000
+lines), `ConcreteSortByInputModelTest` and `AllowNonFlowPortsToSwitchSidesTest`; the sibling brief decides how their
+expectations are derived (Java literals or recorded rows).
+
+**Scope moves (binding for 7d–7h).**
+
+- **C2:** the eight processors and the two greedy-switch arms moved from 7f/pending to 7c (done); `LabelDummyInserter`,
+  `CommentPreprocessor`, `DirectionPreprocessor` stay 7f, `SelfLoopPreprocessor`, `BreakingPointInserter` 7g.
+- **C3 (7h):** every 7c row and sweep case is a flat hierarchy level; 7h records nested rows
+  (`HierarchyHandling.INCLUDE_CHILDREN`) and re-measures the 89 branches / 36 functions of the sweep driver's
+  hierarchical paths (`GraphInfoHolder` children, `sweepInHierarchicalNodes`, `sortPortsByDummyPositionsInLastLayer`,
+  the hierarchical greedy switch, `LayerSweepTypeDecider` past `rootNode()`), and re-evaluates the recursion of
+  `countCurrentNumberOfCrossings` (kept recursive: bounded by hierarchy depth, C7).
+- **7f:** three branches of the 7c classes need label dummies (`LongEdgeSplitter.ts:166,169`, `SortByInputModelProcessor.ts:159`); the
+  `preserve_order` models with edge labels are refused by the 7c recorder, so 7f re-runs
+  `SortByInputModelProcessorTest` over them (it runs on two authored label-free graphs now) and
+  `PortListSorterTest.testMonotonicalCoordinates` (needs P4/P5 and `LongEdgeJoiner`).
+
+**Hand-offs found during the run.**
+
+- **Every phase mission (7d, 7e):** the E1 recipe held without a new lazy read: enum into `NON_LEAF_DEFAULT_TYPES`
+  and regenerate first (T2), cached static getters for every `*_PROCESSING_CONFIGURATION`, the entry-point fitness
+  test after wiring; no entry-order import.
+- **Every mission (C6):** two boxed/float sites this time — `ModelOrderBarycenterHeuristic.java:90-91` (`Integer !=`
+  → `JavaInteger.sameValueOfBox`) and `ForsterConstraintResolver.java:259-262` (`floatValue() ==` → `Float32`
+  on both sides); `int` differences in comparators go through `Int32.sub`.
+- **Every mission (C13):** a melk list-literal default (`#[…]`) is unmodifiable in Java; the emitter freezes it and
+  `ElkReflect.isCloneable` rejects frozen objects, so `getProperty` does not store it. Any option with a list default
+  added later inherits this; a `Cloneable` Java default (e.g. `KVector`) is still stored.
+- **Recorder identity hashes (AD-10):** under `-XX:hashCode=2` every identity hash is the same value, so comparators
+  that break ties on `hashCode()` (`HyperedgeCrossingsCounter`'s hyperedge and corner comparators) tie: the port
+  returns 0 there and a later mission that meets such a tie-break must keep the recorder flag or record the hashes.
+- **Replay helpers:** the 7c order dump lists baseline edges a processor detached (null ends); the 7b `phaseDump`
+  alone does not. `compareOrderFullDump` applies no class twins (`JAVA_CLASS_TWINS` is `compareOrder`'s), so a full
+  dump with a `HashMap`-valued property under a hand-placed layering mismatches: extend the twin map when a later
+  mission needs such a row.
+- **Sweep conventions:** INTERACTIVE cases run on the on-disk positions (7b convention); edgeless levels are skipped;
+  the oracle sweep runs in about 40 s and the TS replay in 48 s at stride 2 (`ORDER_SWEEP_STRIDE=1` ≈ 90 s).
+- **Follow-ups:** the `devAssert` helper named in the translation rules was never created (Java `assert`s are
+  omitted, as every mission so far); crossing-count sums in `SwitchDecider`, `LayerSweepTypeDecider` and the
+  thoroughness loops use plain `+` while `Counting`/`GraphInfoHolder` use `Int32.add` (unreachable wrap, inconsistent
+  style); `PortListSorterTest`'s `@Configurator` (per-node `FIXED_ORDER` + `PORT_INDEX`) is not expressible as row
+  options; `InvertedPortProcessorTest.testValidNodeOrder` is vacuous on the 13 ptolemy rows; the recorder is at 2,995
+  of its 3,000-line cap, so 7d's recorder starts a new launcher (B7); the recorded full dump of a post-P3 row holds no
+  port sides or anchors for layered nodes, so `SweepCopy`'s N/S side switch is visible only through the port order (a
+  later recorder should dump layered node bodies); the site-row replay block (`replaySite`/`siteFactories`) is
+  duplicated across the anchored test files and belongs in `test/helpers/` (cleanup); parallel agent briefs must name
+  a private scratchpad subdirectory (two T12 agents overwrote each other's scratch script).

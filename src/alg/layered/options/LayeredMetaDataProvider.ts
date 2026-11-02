@@ -432,22 +432,29 @@ export class LayeredMetaDataProvider implements ILayoutMetaDataProvider {
     null,
   );
 
+  static #CROSSING_MINIMIZATION_STRATEGY_DEFAULT: CrossingMinimizationStrategy | undefined;
+
   /**
    * Default value for {@link CROSSING_MINIMIZATION_STRATEGY}.
    */
-  private static readonly CROSSING_MINIMIZATION_STRATEGY_DEFAULT: CrossingMinimizationStrategy =
-    CrossingMinimizationStrategy.LAYER_SWEEP;
+  private static get CROSSING_MINIMIZATION_STRATEGY_DEFAULT(): CrossingMinimizationStrategy {
+    return (LayeredMetaDataProvider.#CROSSING_MINIMIZATION_STRATEGY_DEFAULT ??=
+      CrossingMinimizationStrategy.LAYER_SWEEP);
+  }
+
+  static #CROSSING_MINIMIZATION_STRATEGY: IProperty<CrossingMinimizationStrategy> | undefined;
 
   /**
    * Strategy for crossing minimization.
    */
-  static readonly CROSSING_MINIMIZATION_STRATEGY: IProperty<CrossingMinimizationStrategy> =
-    new Property<CrossingMinimizationStrategy>(
+  static get CROSSING_MINIMIZATION_STRATEGY(): IProperty<CrossingMinimizationStrategy> {
+    return (LayeredMetaDataProvider.#CROSSING_MINIMIZATION_STRATEGY ??= new Property<CrossingMinimizationStrategy>(
       'org.eclipse.elk.layered.crossingMinimization.strategy',
       LayeredMetaDataProvider.CROSSING_MINIMIZATION_STRATEGY_DEFAULT,
       null,
       null,
-    );
+    ));
+  }
 
   /**
    * Default value for {@link CROSSING_MINIMIZATION_FORCE_NODE_MODEL_ORDER}.
@@ -1618,9 +1625,8 @@ export class LayeredMetaDataProvider implements ILayoutMetaDataProvider {
   /**
    * Default value for {@link CONSIDER_MODEL_ORDER_GROUP_MODEL_ORDER_CM_ENFORCED_GROUP_ORDERS}.
    */
-  private static readonly CONSIDER_MODEL_ORDER_GROUP_MODEL_ORDER_CM_ENFORCED_GROUP_ORDERS_DEFAULT: number[] = [
-    1, 2, 6, 7, 10, 11,
-  ];
+  private static readonly CONSIDER_MODEL_ORDER_GROUP_MODEL_ORDER_CM_ENFORCED_GROUP_ORDERS_DEFAULT: number[] =
+    Object.freeze([1, 2, 6, 7, 10, 11]) as number[];
 
   /**
    * Holds all group ids which are enforcing their order during crossing minimization strategies.

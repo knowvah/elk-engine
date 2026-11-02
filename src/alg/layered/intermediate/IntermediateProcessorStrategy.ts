@@ -4,16 +4,26 @@ import type { ILayoutProcessorFactory } from '../../../core/alg/ILayoutProcessor
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import type { LGraph } from '../graph/LGraph.js';
+import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
+import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
 import { EdgeAndLayerConstraintEdgeReverser } from './EdgeAndLayerConstraintEdgeReverser.js';
+import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
 import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
 import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
+import { InvertedPortProcessor } from './InvertedPortProcessor.js';
 import { LayerConstraintPostprocessor } from './LayerConstraintPostprocessor.js';
 import { LayerConstraintPreprocessor } from './LayerConstraintPreprocessor.js';
+import { LongEdgeSplitter } from './LongEdgeSplitter.js';
 import { NodePromotion } from './NodePromotion.js';
+import { NorthSouthPortPreprocessor } from './NorthSouthPortPreprocessor.js';
 import { PartitionMidprocessor } from './PartitionMidprocessor.js';
 import { PartitionPostprocessor } from './PartitionPostprocessor.js';
 import { PartitionPreprocessor } from './PartitionPreprocessor.js';
+import { PortListSorter } from './PortListSorter.js';
+import { PortSideProcessor } from './PortSideProcessor.js';
 import { ReversedEdgeRestorer } from './ReversedEdgeRestorer.js';
+import { SemiInteractiveCrossMinProcessor } from './SemiInteractiveCrossMinProcessor.js';
+import { SortByInputModelProcessor } from './SortByInputModelProcessor.js';
 
 /** Local alias that keeps the constant declarations within the line width. */
 type Strategy = IntermediateProcessorStrategy;
@@ -332,15 +342,15 @@ function createBeforePhase3(strategy: IntermediateProcessorStrategy): ILayoutPro
     case IntermediateProcessorStrategy.PARTITION_POSTPROCESSOR:
       return new PartitionPostprocessor();
     case IntermediateProcessorStrategy.HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR:
-      throw notPorted('HierarchicalPortConstraintProcessor', '7f');
+      return new HierarchicalPortConstraintProcessor();
     case IntermediateProcessorStrategy.SEMI_INTERACTIVE_CROSSMIN_PROCESSOR:
-      throw notPorted('SemiInteractiveCrossMinProcessor', '7f');
+      return new SemiInteractiveCrossMinProcessor();
     case IntermediateProcessorStrategy.BREAKING_POINT_INSERTER:
       throw notPorted('BreakingPointInserter', '7g');
     case IntermediateProcessorStrategy.LONG_EDGE_SPLITTER:
-      throw notPorted('LongEdgeSplitter', '7f');
+      return new LongEdgeSplitter();
     case IntermediateProcessorStrategy.PORT_SIDE_PROCESSOR:
-      throw notPorted('PortSideProcessor', '7f');
+      return new PortSideProcessor();
     default:
       return createBeforePhase32(strategy);
   }
@@ -350,13 +360,13 @@ function createBeforePhase3(strategy: IntermediateProcessorStrategy): ILayoutPro
 function createBeforePhase32(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy) {
     case IntermediateProcessorStrategy.INVERTED_PORT_PROCESSOR:
-      throw notPorted('InvertedPortProcessor', '7f');
+      return new InvertedPortProcessor();
     case IntermediateProcessorStrategy.PORT_LIST_SORTER:
-      throw notPorted('PortListSorter', '7f');
+      return new PortListSorter();
     case IntermediateProcessorStrategy.SORT_BY_INPUT_ORDER_OF_MODEL:
-      throw notPorted('SortByInputModelProcessor', '7f');
+      return new SortByInputModelProcessor();
     case IntermediateProcessorStrategy.NORTH_SOUTH_PORT_PREPROCESSOR:
-      throw notPorted('NorthSouthPortPreprocessor', '7f');
+      return new NorthSouthPortPreprocessor();
     default:
       return createBeforePhase4(strategy);
   }
@@ -368,9 +378,9 @@ function createBeforePhase4(strategy: IntermediateProcessorStrategy): ILayoutPro
     case IntermediateProcessorStrategy.BREAKING_POINT_PROCESSOR:
       throw notPorted('BreakingPointProcessor', '7g');
     case IntermediateProcessorStrategy.ONE_SIDED_GREEDY_SWITCH:
-      throw notPorted('LayerSweepCrossingMinimizer', '7c');
+      return new LayerSweepCrossingMinimizer(CrossMinType.ONE_SIDED_GREEDY_SWITCH);
     case IntermediateProcessorStrategy.TWO_SIDED_GREEDY_SWITCH:
-      throw notPorted('LayerSweepCrossingMinimizer', '7c');
+      return new LayerSweepCrossingMinimizer(CrossMinType.TWO_SIDED_GREEDY_SWITCH);
     case IntermediateProcessorStrategy.SELF_LOOP_PORT_RESTORER:
       throw notPorted('SelfLoopPortRestorer', '7g');
     case IntermediateProcessorStrategy.ALTERNATING_LAYER_UNZIPPER:

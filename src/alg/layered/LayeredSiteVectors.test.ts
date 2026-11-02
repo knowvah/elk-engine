@@ -52,11 +52,9 @@ describe('layered-sites.json replay', () => {
       expect(hierarchyAwareClasses()).toEqual(recorded.filter(isPorted));
     });
 
-    it('has no TS source yet for the recorded classes it leaves out (7d)', () => {
+    it('leaves out no recorded class any more: LayerSweepCrossingMinimizer landed in 7c (sentinel closed, C10)', () => {
       const recorded = file.rows.find((row) => row.id === HIERARCHY_AWARE_ROW)!.expected.classes as string[];
-      expect(recorded.filter((name) => !isPorted(name))).toEqual([
-        'org.eclipse.elk.alg.layered.p3order.LayerSweepCrossingMinimizer',
-      ]);
+      expect(recorded.filter((name) => !isPorted(name))).toEqual([]);
     });
   });
 

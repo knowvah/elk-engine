@@ -6,6 +6,10 @@ import { describe, expect, it } from 'vitest';
 import { loadSiteRow } from '../../../test/helpers/transform-site-rows.js';
 import { ElkLayered } from './ElkLayered.js';
 import { LayeredLayoutProvider } from './LayeredLayoutProvider.js';
+import { InteractiveCrossingMinimizer } from './p3order/InteractiveCrossingMinimizer.js';
+import { LayerSweepCrossingMinimizer } from './p3order/LayerSweepCrossingMinimizer.js';
+import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from './p3order/LayerSweepCrossingMinimizerCrossMinType.js';
+import { NoCrossingMinimizer } from './p3order/NoCrossingMinimizer.js';
 import {
   HIERARCHY_AWARE,
   type IHierarchyAwareLayoutProcessor,
@@ -49,8 +53,9 @@ describe('isHierarchyAwareLayoutProcessor (oracle site row)', () => {
     expect(isHierarchyAwareLayoutProcessor(new ElkLayered())).toBe(false);
   });
 
-  it('lists only LayerSweepCrossingMinimizer as implementor, which no 7a source file defines (sentinel for 7c)', () => {
-    // oracle: site/strings/hierarchyAware; IHierarchyAwareLayoutProcessor.java:23 (marker interface)
+  it('lists only LayerSweepCrossingMinimizer as implementor, and its instances carry the brand (C10; flipped in 7c)', () => {
+    // oracle: site/strings/hierarchyAware; IHierarchyAwareLayoutProcessor.java:23 (marker interface). The 7a sentinel
+    // asserted that no 7a source file defined the class (plans/layered-framework/decision-journal.md); 7c ports it.
     expect(expected.classes).toEqual(['org.eclipse.elk.alg.layered.p3order.LayerSweepCrossingMinimizer']);
     const sources = new Set(
       readdirSync(layeredDir, { recursive: true, encoding: 'utf8' })
@@ -58,8 +63,16 @@ describe('isHierarchyAwareLayoutProcessor (oracle site row)', () => {
         .map((path) => basename(path, '.ts')),
     );
     for (const binaryName of expected.classes) {
-      expect(sources.has(binaryName.slice(binaryName.lastIndexOf('.') + 1))).toBe(false);
+      expect(sources.has(binaryName.slice(binaryName.lastIndexOf('.') + 1))).toBe(true);
     }
     expect(sources.has('ElkLayered')).toBe(true);
+    for (const type of CrossMinType.values()) {
+      expect(isHierarchyAwareLayoutProcessor(new LayerSweepCrossingMinimizer(type))).toBe(true);
+    }
+  });
+
+  it('is false for the other P3 phases, as the Java instances are', () => {
+    expect(isHierarchyAwareLayoutProcessor(new InteractiveCrossingMinimizer())).toBe(false);
+    expect(isHierarchyAwareLayoutProcessor(new NoCrossingMinimizer())).toBe(false);
   });
 });

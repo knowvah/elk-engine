@@ -97,3 +97,18 @@ JUnit: `BasicCycleBreakerTest`, `BasicLayerAssignmentTest`, `BasicModelOrderTest
 `NodePromotionTest`, `PartitionPostProcessorTest` ported as invariant tests over oracle rows;
 `ModelOrderLayerAssignmentTest`, `PartitionTest`, `Issue871Test` → 7f (SC2, their graphs recorded as rows);
 `TestGraphCreator` → 7c (SC3). The staged list is unchanged.
+
+## Status after mission 7c (2026-10-30) {#status-7c}
+
+Ported (design in [alg-layered.md § 9](alg-layered.md#part-c)): `alg.layered.p3order` — all 16 (+ section and M15
+files); `alg.layered.p3order.counting` — all 6; `alg.layered.intermediate.greedyswitch` — all 5;
+`alg.layered.intermediate.preserveorder` — all 3; `alg.layered.intermediate` — the eight processors
+`PortSideProcessor`, `PortListSorter`, `LongEdgeSplitter`, `InvertedPortProcessor`, `NorthSouthPortPreprocessor`,
+`HierarchicalPortConstraintProcessor`, `SemiInteractiveCrossMinProcessor`, `SortByInputModelProcessor` (+ section and
+M15 files), with 20 of 59 `IntermediateProcessorStrategy` arms now live. JUnit: `BasicCrossingMinimizationTest`,
+`ForsterConstraintResolverTest`, `ModelOrderBarycenterHeuristicTest`, `PortListSorterTest`, `LongEdgeSplitterTest`,
+`InvertedPortProcessorTest`, `PortSideProcessorTest`, `NorthSouthPortPreprocessorTest`, `SortByInputModelProcessorTest`,
+`BasicConsiderModelOrderTest` ported as invariant tests over oracle rows (`PortListSorterTest.testMonotonicalCoordinates`
+→ 7f); `TestGraphCreator`, the three greedy-switch graph creators, the 16 suites built on them,
+`ConcreteSortByInputModelTest` and `AllowNonFlowPortsToSwitchSidesTest` → the sibling brief 7c-tests (C1, before 7d).
+The staged list is unchanged.
