@@ -2,8 +2,9 @@
 // Proof of LabelAndNodeSizeProcessor: every row of layered-placement.json whose last replayed entry is LABEL_AND_NODE_SIZE_PROCESSOR (mission 7d, T4), with
 // the class injected through `createProcessor` (the enum arm is wired by T8). Expectations come only from the rows and
 // the Java (L4).
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
+import { decodeHex } from '../../../../test/helpers/layered-framework-replay.js';
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
@@ -15,6 +16,7 @@ import { placementDump } from '../../../../test/helpers/layered-placement-replay
 import { runPlacementPrefix } from '../../../../test/helpers/layered-placement-replay-ops.js';
 import { loadPlacementRows, type PlacementRow } from '../../../../test/helpers/layered-placement-replay-rows.js';
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
+import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
@@ -162,4 +164,133 @@ describe('LabelAndNodeSizeProcessor (oracle rows)', () => {
       expect(comparePlacementFullDump({ ...actual, dump: dumpWithPropertyValues(graph) }, row.expected)).toEqual([]);
     }
   });
+});
+
+/** Port label positions of the seven labels on the external port dummies (west n0 n4, east n1 n5, north n2, south n3). */
+type LabelPoints = Readonly<Record<string, readonly [number, number]>>;
+
+/** `[width, height]` of the six external port dummies: the same in all six rows (a dummy is sized by its port). */
+const DUMMY_SIZES: Readonly<Record<string, readonly [number, number]>> = {
+  'g0/n0': [4, 4],
+  'g0/n1': [0, 4],
+  'g0/n2': [4, 4],
+  'g0/n3': [4, 0],
+  'g0/n4': [4, 4],
+  'g0/n5': [0, 4],
+};
+
+const SITE_LABELS: ReadonlyArray<readonly [string, string, LabelPoints]> = [
+  [
+    // the OUTSIDE arm, next-to-port off: LabelAndNodeSizeProcessor.java:154-166 (below the port on E/W, beside it on N/S)
+    // oracle: sites/LabelAndNodeSize/externalPortLabels/outside; LabelAndNodeSizeProcessor.java:154-173
+    'sites/LabelAndNodeSize/externalPortLabels/outside',
+    'LabelAndNodeSizeProcessor.java:154-173',
+    {
+      'g0/n0/p0/l0': [0, 3],
+      'g0/n1/p0/l0': [0, 3],
+      'g0/n2/p0/l0': [3, 0],
+      'g0/n2/p0/l1': [3, 0],
+      'g0/n3/p0/l0': [3, 0],
+      'g0/n4/p0/l0': [0, 3],
+      'g0/n5/p0/l0': [0, 3],
+    },
+  ],
+  [
+    // portLabels.placement=[]: neither INSIDE nor OUTSIDE, the TODO arm leaves the box at the origin
+    // oracle: sites/LabelAndNodeSize/externalPortLabels/fixed; LabelAndNodeSizeProcessor.java:115-117,175-184
+    'sites/LabelAndNodeSize/externalPortLabels/fixed',
+    'LabelAndNodeSizeProcessor.java:115-117,175-184',
+    {
+      'g0/n0/p0/l0': [0, 0],
+      'g0/n1/p0/l0': [0, 0],
+      'g0/n2/p0/l0': [0, 0],
+      'g0/n2/p0/l1': [0, 6],
+      'g0/n3/p0/l0': [0, 0],
+      'g0/n4/p0/l0': [0, 0],
+      'g0/n5/p0/l0': [0, 0],
+    },
+  ],
+  [
+    // OUTSIDE + NEXT_TO_PORT_IF_POSSIBLE, grouped: the E/W labels centre on the dummy (unconnected ports)
+    // oracle: sites/LabelAndNodeSize/externalPortLabels/outsideNext; LabelAndNodeSizeProcessor.java:161-169,214-226
+    'sites/LabelAndNodeSize/externalPortLabels/outsideNext',
+    'LabelAndNodeSizeProcessor.java:161-169,214-226',
+    {
+      'g0/n0/p0/l0': [0, -5],
+      'g0/n1/p0/l0': [0, -5],
+      'g0/n2/p0/l0': [3, 0],
+      'g0/n2/p0/l1': [3, 0],
+      'g0/n3/p0/l0': [3, 0],
+      'g0/n4/p0/l0': [0, -5],
+      'g0/n5/p0/l0': [0, -5],
+    },
+  ],
+  [
+    // INSIDE + NEXT_TO_PORT_IF_POSSIBLE, grouped: the four side arms of the inside box
+    // oracle: sites/LabelAndNodeSize/externalPortLabels/insideNext; LabelAndNodeSizeProcessor.java:117-153
+    'sites/LabelAndNodeSize/externalPortLabels/insideNext',
+    'LabelAndNodeSizeProcessor.java:117-153',
+    {
+      'g0/n0/p0/l0': [1, 3],
+      'g0/n1/p0/l0': [-31, 3],
+      'g0/n2/p0/l0': [-10, 1],
+      'g0/n2/p0/l1': [-10, 11],
+      'g0/n3/p0/l0': [-9, -11],
+      'g0/n4/p0/l0': [1, -5],
+      'g0/n5/p0/l0': [-27, -5],
+    },
+  ],
+  [
+    // treatAsGroup=false: the label height of the first label centres the box (the ternary's other arm)
+    // oracle: sites/LabelAndNodeSize/externalPortLabels/outsideNextUngrouped; LabelAndNodeSizeProcessor.java:163-168
+    'sites/LabelAndNodeSize/externalPortLabels/outsideNextUngrouped',
+    'LabelAndNodeSizeProcessor.java:163-168',
+    {
+      'g0/n0/p0/l0': [0, -5],
+      'g0/n1/p0/l0': [0, -5],
+      'g0/n2/p0/l0': [3, 0],
+      'g0/n2/p0/l1': [3, 0],
+      'g0/n3/p0/l0': [3, 0],
+      'g0/n4/p0/l0': [0, -5],
+      'g0/n5/p0/l0': [0, -5],
+    },
+  ],
+  [
+    // oracle: sites/LabelAndNodeSize/externalPortLabels/insideNextUngrouped; LabelAndNodeSizeProcessor.java:131-148
+    'sites/LabelAndNodeSize/externalPortLabels/insideNextUngrouped',
+    'LabelAndNodeSizeProcessor.java:131-148',
+    {
+      'g0/n0/p0/l0': [1, 3],
+      'g0/n1/p0/l0': [-31, 3],
+      'g0/n2/p0/l0': [-10, 1],
+      'g0/n2/p0/l1': [-10, 11],
+      'g0/n3/p0/l0': [-9, -11],
+      'g0/n4/p0/l0': [1, -5],
+      'g0/n5/p0/l0': [-27, -5],
+    },
+  ],
+];
+
+describe('LabelAndNodeSizeProcessor (anchored site cases, S1)', () => {
+  beforeAll(() => {
+    LayoutMetaDataService.initElkReflect();
+  });
+
+  it.each(SITE_LABELS.map(([id, java, labels]) => ({ id, java, labels })))(
+    'places the port labels of the external port dummies: $id ($java)',
+    ({ id, labels }) => {
+      const row = rows.find((candidate) => candidate.id === id)!;
+      const { geometry } = placementDump(replay(row), importRow(row).importDump);
+      const actualLabels = Object.fromEntries(
+        Object.keys(labels).map((path) => [path, geometry.labels![path]!.pos.map(decodeHex)]),
+      );
+      Object.entries(labels).forEach(([path, [x, y]]) => {
+        expect(actualLabels[path]![0], `${path}.x`).toBeCloseTo(x, 6);
+        expect(actualLabels[path]![1], `${path}.y`).toBeCloseTo(y, 6);
+      });
+      Object.entries(DUMMY_SIZES).forEach(([path, [width, height]]) => {
+        expect(geometry.nodes[path]!.size.map(decodeHex)).toEqual([width, height]);
+      });
+    },
+  );
 });

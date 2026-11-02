@@ -5,6 +5,7 @@
 // arm) and the 7d processors injected through `createProcessor`. Expectations come only from the rows and the Java (L4).
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
+import { decodeHex } from '../../../../test/helpers/layered-framework-replay.js';
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
@@ -172,5 +173,17 @@ describe('InteractiveNodePlacer.getLayoutProcessorConfiguration', () => {
     expect([...configuration.processorsBefore(LayeredPhases.P4_NODE_PLACEMENT)]).toEqual([]);
     expect([...configuration.processorsAfter(LayeredPhases.P5_EDGE_ROUTING)]).toEqual([]);
     expect(new InteractiveNodePlacer().getLayoutProcessorConfiguration(graph)).toBe(configuration);
+  });
+});
+
+describe('InteractiveNodePlacer (anchored site cases)', () => {
+  // oracle: sites/Interactive/originalDummyPosition; InteractiveNodePlacer.java:107-117 (a dummy with ORIGINAL_DUMMY_NODE_POSITION)
+  it('places a long-edge dummy at the original position the interactive minimizer stored (S2)', () => {
+    const row = rows.find((candidate) => candidate.id === 'sites/Interactive/originalDummyPosition')!;
+    const { geometry } = placementDump(replay(row), importRow(row).importDump);
+    expect(decodeHex(geometry.nodes['new/n0']!.pos[1])).toBeCloseTo(50, 6);
+    // the real nodes keep their seeded y: n0 40, n1 10, n3 100, n2 40
+    const ys = ['g0/n0', 'g0/n1', 'g0/n3', 'g0/n2'].map((path) => decodeHex(geometry.nodes[path]!.pos[1]));
+    expect(ys).toEqual([40, 10, 100, 40]);
   });
 });
