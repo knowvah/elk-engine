@@ -117,8 +117,8 @@ recursive twin in the test file on every row graph and on a 5,000-deep chain und
   test pins them on recorded rows. `LinearSegmentsNodePlacer.java:450` calls the staged `DebugUtil` behind
   `monitor.isLoggingEnabled()`; the throw is pinned, no replay enables logging.
 - **Quirks kept.** `createDependencyGraphEdges` skips `layerIndex++` on an empty layer and `mergeRegions` then
-  calls `next()` unguarded (the placer throws `NoSuchElementException` on an empty layer, pinned); `ThresholdStrategy.java:313`
-  repeats an operand (`su[x] || su[x]`); `NetworkSimplexPlacer.markCrossingEdges` removes the matched open edge only
+  calls `next()` unguarded (the placer throws `NoSuchElementException` on an empty layer, pinned); `ThresholdStrategy.java:253`
+  reads the same `su` entry twice (`X || X`; collapsed to one read in the port, equivalent, after a CodeQL finding); `NetworkSimplexPlacer.markCrossingEdges` removes the matched open edge only
   when `hasPrevious()`, so a match at index 0 stays; `NEdge.of(origin)` discards its argument in Java and in 6a;
   `NodePlacementRepeater` is in the plan whenever `recomputeNodePlacement` is set (the `anyMatch` is always true).
 

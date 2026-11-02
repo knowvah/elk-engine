@@ -93,8 +93,8 @@
 
 - **Context**: T5–T7 ports.
 - **Finding**: `LinearSegmentsNodePlacer.java:361-436` `continue` on an empty layer skips `layerIndex++`;
-  `mergeRegions` (`:782`) calls `next()` unguarded on an empty layer; `ThresholdStrategy.java:313` repeats an operand
-  (`su[x] || su[x]`); `NetworkSimplexPlacer.markCrossingEdges` removes the matched edge only when `hasPrevious()`,
+  `mergeRegions` (`:782`) calls `next()` unguarded on an empty layer; `ThresholdStrategy.java:253` reads the same `su` entry twice
+  (`X || X`; collapsed to one read in the port, equivalent, after a CodeQL finding on PR 27); `NetworkSimplexPlacer.markCrossingEdges` removes the matched edge only when `hasPrevious()`,
   so a match at index 0 stays; `BasicProgressMonitor.getLogs()` is `null` with logging off.
 - **Impact**: none is a bug to fix.
 - **Confidence**: High

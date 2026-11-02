@@ -92,7 +92,8 @@ export class ThresholdStrategySimpleThresholdStrategy extends ThresholdStrategy 
       // in order to straighten 'e' the block represented by 'pp.free'
       // would have to be moved. However, since that block is already
       // part of a straightened edge, it cannot be moved again
-      if (this.bal.su[this.bal.root[pp.free.id]!.id]! || this.bal.su[this.bal.root[pp.free.id]!.id]!) {
+      // ThresholdStrategy.java:253 reads the same `su` entry twice (`X || X`); one read is equivalent.
+      if (this.bal.su[this.bal.root[pp.free.id]!.id]!) {
         continue;
       }
 
