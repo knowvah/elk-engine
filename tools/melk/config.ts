@@ -16,13 +16,15 @@ export const PENDING_TYPES: readonly string[] = [];
  * entering through that class would otherwise evaluate the default in the class's temporal dead zone. Mission 7a:
  * `NodeFlexibility.getNodeFlexibility` reads `LayeredOptions` (decision journal, T3). Mission 7b: the strategy enums
  * `CycleBreakingStrategy` and `LayeringStrategy` create the phase classes, which read `LayeredOptions` (stop 1).
- * Mission 7c (C5): `CrossingMinimizationStrategy` does the same for the crossing-minimization phases.
+ * Mission 7c (C5): `CrossingMinimizationStrategy` does the same for the crossing-minimization phases. Mission 7d (N4):
+ * `NodePlacementStrategy` does the same for the node placement phases.
  */
 export const NON_LEAF_DEFAULT_TYPES: readonly string[] = [
   'org.eclipse.elk.alg.layered.options.CrossingMinimizationStrategy',
   'org.eclipse.elk.alg.layered.options.CycleBreakingStrategy',
   'org.eclipse.elk.alg.layered.options.LayeringStrategy',
   'org.eclipse.elk.alg.layered.options.NodeFlexibility',
+  'org.eclipse.elk.alg.layered.options.NodePlacementStrategy',
 ];
 
 /** Where the vendored sources and their manifest live. */

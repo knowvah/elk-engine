@@ -653,20 +653,28 @@ export class LayeredMetaDataProvider implements ILayoutMetaDataProvider {
       null,
     );
 
+  static #NODE_PLACEMENT_STRATEGY_DEFAULT: NodePlacementStrategy | undefined;
+
   /**
    * Default value for {@link NODE_PLACEMENT_STRATEGY}.
    */
-  private static readonly NODE_PLACEMENT_STRATEGY_DEFAULT: NodePlacementStrategy = NodePlacementStrategy.BRANDES_KOEPF;
+  private static get NODE_PLACEMENT_STRATEGY_DEFAULT(): NodePlacementStrategy {
+    return (LayeredMetaDataProvider.#NODE_PLACEMENT_STRATEGY_DEFAULT ??= NodePlacementStrategy.BRANDES_KOEPF);
+  }
+
+  static #NODE_PLACEMENT_STRATEGY: IProperty<NodePlacementStrategy> | undefined;
 
   /**
    * Strategy for node placement.
    */
-  static readonly NODE_PLACEMENT_STRATEGY: IProperty<NodePlacementStrategy> = new Property<NodePlacementStrategy>(
-    'org.eclipse.elk.layered.nodePlacement.strategy',
-    LayeredMetaDataProvider.NODE_PLACEMENT_STRATEGY_DEFAULT,
-    null,
-    null,
-  );
+  static get NODE_PLACEMENT_STRATEGY(): IProperty<NodePlacementStrategy> {
+    return (LayeredMetaDataProvider.#NODE_PLACEMENT_STRATEGY ??= new Property<NodePlacementStrategy>(
+      'org.eclipse.elk.layered.nodePlacement.strategy',
+      LayeredMetaDataProvider.NODE_PLACEMENT_STRATEGY_DEFAULT,
+      null,
+      null,
+    ));
+  }
 
   /**
    * Favor straight edges over a balanced node placement.
