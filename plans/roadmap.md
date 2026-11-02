@@ -812,3 +812,67 @@ runbook in `docs/architecture/alg-layered.md` § 9.6.
   recorded rows, starting from the 61 branch arms and 3 functions `coverage.md` lists as untaken.
 - **Agent rule for ported suites:** an agent may add no assertion the Java lacks (T4 added eight count checks that the
   orchestrator removed before committing); the review step checks the port against the Java before the commit.
+
+## Revision 2026-11-02 (layered-node-placement)
+
+Appended; no earlier line is edited. Source: N1–N12 in `plans/layered-node-placement/decisions.md`; the journal is
+`plans/layered-node-placement/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+
+**Row 7d is done.** `p4nodes` (4 placers, 22 files with sections and nested types), `p4nodes.bk` (7 classes, 19
+files), the five intermediate processors a P4 stop needs and the 5 + 5 enum arms that create them are ported and
+proven by `layered-placement.json` (604 oracle rows with geometry: 494 pipeline rows recorded through
+`ElkLayered.runLayoutTestStep` at the P4 stop and at each processor, 84 scenario rows, 26 site rows), the ported
+`BasicNodePlacementTest` invariant over 15 runs (the Java suite `runs=8008 failures=0` on the oracle at start and end),
+an 8,410-case hash sweep over all ptolemy models (1,970 reach P4 before 7e/7g; all match) and 27 anchored unit cases;
+design, idioms and runbook in `docs/architecture/alg-layered-placement.md`, counts in
+`docs/conformance.md#alg-layered-placement`. The pipeline still does not run (`ElkLayered`, `GraphConfigurator` →
+7f). The enum tally is now 7b 10 / 7c 10 / 7d 5 / 7f 25 / 7g 9 (B9 table amended by N1).
+
+**Scope moves (binding for 7e–7h).**
+
+- **N1:** `InnermostNodeMarginCalculator`, `LabelAndNodeSizeProcessor`, `InLayerConstraintProcessor`,
+  `HierarchicalPortDummySizeProcessor`, `NodePlacementRepeater` moved from 7f to 7d (done). Refusal categories fixed
+  by the 7d recorder: `HYPEREDGE_DUMMY_MERGER` → **7e**; `LABEL_DUMMY_SWITCHER`, `LABEL_SIDE_SELECTOR`,
+  `END_LABEL_PREPROCESSOR`, `CENTER_LABEL_MANAGEMENT_PROCESSOR`, `END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR`,
+  `COMMENT_NODE_MARGIN_CALCULATOR`, `ALTERNATING_LAYER_UNZIPPER` → **7f**; `SELF_LOOP_PORT_RESTORER`,
+  `SELF_LOOP_ROUTER`, `SINGLE_EDGE_GRAPH_WRAPPER`, `BREAKING_POINT_PROCESSOR` → **7g**.
+- **7e:** `HIERARCHICAL_PORT_POSITION_PROCESSOR` (every placer's `HIERARCHY_PROCESSING_ADDITIONS`, before P5) and
+  `LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR` stay 7e; `HYPEREDGE_DUMMY_MERGER` refuses most ptolemy P4 levels (5,880
+  sweep cases and 14 model levels), so 7e re-sweeps at the P4 and P5 stops. A P5 recorder starts from the 7d recorder's
+  geometry core (`geometry` field, N3 presence rule, `PLACEMENT_CROSSCHECK`) in a new launcher (B7: the 7d one is at
+  2,972 of 3,000 lines).
+- **7f:** `DotDebugUtil` and `JsonDebugUtil` replace the staged `src/alg/layered/DebugUtil.ts` (`staged-classes.json`);
+  the label processors unlock the `LABEL_DUMMY_INSERTER` models (16 accepted refusals); `GraphConfigurator`'s
+  `NODE_PLACEMENT_REPEATER` rule needs only the `recomputeNodePlacement` property check (the `anyMatch` is always true).
+- **7h:** no untaken 7d site needs nested graphs; the hierarchical additions are measured at P5.
+
+**Hand-offs found during the run.**
+
+- **Every phase mission (7e):** the E1 recipe held again without a new lazy read (enum into `NON_LEAF_DEFAULT_TYPES`
+  and regenerate first, cached static configuration getters, the entry-point fitness test after wiring).
+  `IntermediateProcessorStrategy.ts` is at 499 of 500 lines: the next arm wired there needs a split of the enum file
+  (a section file for the `create` switch, Java order kept).
+- **Row format and the 5 MiB cap (N3):** a 7c-shaped row is two thirds `changed`; a P4 variant family costs 20–95 KB
+  per level, a full-dump site row 6–15 KB. `layered-placement.json` is 644 bytes under the cap after a variant-set
+  trim and six unrecorded variant rows. **Decision needed before the next recording that touches it:** a higher cap, a
+  second ref file per group, or a compacter `changed` encoding (a journal flag).
+- **L4 in agent briefs:** three agents wrote hand-built tests whose behavioural expectations came from reading the
+  Java; all were removed before commit and routed through T9 → T11 → T12. Briefs for ported classes should state the
+  rule in the agent prompt ("every behavioural literal is an oracle row or a twin comparison").
+- **Row inventories and site rows:** a class test that pins its row ids by selector must list the `sites/*` rows of
+  its class once T11 lands (six inventories failed the batch-5 coverage gate until listed, in recorded order).
+- **Scenario design (T1, T11):** a port with two or more edges puts `HYPEREDGE_DUMMY_MERGER` in the plan; the plan
+  after P3 is `TWO_SIDED_GREEDY_SWITCH`, `IN_LAYER_CONSTRAINT_PROCESSOR`, `LABEL_AND_NODE_SIZE_PROCESSOR`,
+  `INNERMOST_NODE_MARGIN_CALCULATOR`, then `HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR`; a labelled N/S external dummy is
+  replaced by a label-less copy under `FIXED_SIDE` or higher, so those label arms need a chain-forced row; a forced
+  mid-gap crossing needs `CROSSING_MINIMIZATION_STRATEGY=INTERACTIVE` with positions and `layerConstraint=FIRST`;
+  `EdgeAndLayerConstraintEdgeReverser` reverses every edge of a node whose ports are all inverted; the string `FIXED`
+  is not a `PortLabelPlacement` (pass the empty set).
+- **Recursion twins (N6):** the verbatim twins overflow at depth 5,000 with and without `--jitless` (the generator-based
+  list iterators' frames); loops are proven on the rows and at depth 200, the deep case proves no overflow.
+- **Follow-ups:** `BKNodePlacerFeasibility`'s infeasible arms are unreachable by construction (52,000 random graphs),
+  as is `improveTwoPath`'s "neither case" arm (by reading); the `HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR` rows hold at
+  most one N/S dummy per layer, so its `delta`/`step` values are proven by reading only (a two-dummy site row is a
+  7e candidate); the per-file factories object is duplicated across every anchored test file (the 7c cleanup, still
+  open); `ThresholdStrategySimpleThresholdStrategy.ts:88` is executed by a row but anchorable by no position; the
+  `devAssert` helper is still unwritten (five Java `assert` lines omitted this mission).

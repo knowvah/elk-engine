@@ -27,6 +27,7 @@ this document describes what it implements. Port rules live in
 | -   | [alg.layered framework](#alg-layered-framework)            | How is the layered framework (7a) proven? |
 | -   | [alg.layered cycles and layers](#alg-layered-phases)       | How are the first two phases (7b) proven? |
 | -   | [alg.layered crossing minimization](#alg-layered-ordering) | How is the third phase (7c) proven?       |
+| -   | [alg.layered node placement](#alg-layered-placement)       | How is the fourth phase (7d) proven?      |
 | -   | [Temporary gaps](#temporary-gaps)                          | What differs from the Java for now?       |
 
 ## 1. Oracle
@@ -1110,6 +1111,77 @@ by the user). Two replay-helper gaps, not port defects: the 7c order dump omitte
 - **Unreached arms with a named mechanism:** 20 arms no recorded graph reaches (`plans/layered-crossing-min/unreached.md`
   § T11 corrections, with the scans that failed), kept as U.
 - **`Integer` cache assumption:** as in part b (`ModelOrderBarycenterHeuristic.java:90-91`).
+- **Prose typos corrected:** none found in this mission.
+
+## alg.layered, part d: node placement (mission 7d) {#alg-layered-placement}
+
+Mission 7d ported the fourth phase (`p4nodes`: `SimpleNodePlacer`, `InteractiveNodePlacer`, `LinearSegmentsNodePlacer`,
+`NetworkSimplexPlacer`; `p4nodes.bk`: the seven Brandes-Köpf classes), the five intermediate processors a P4 stop needs
+(`InnermostNodeMarginCalculator`, `LabelAndNodeSizeProcessor`, `InLayerConstraintProcessor`,
+`HierarchicalPortDummySizeProcessor`, `NodePlacementRepeater`; N1 moved them from 7f) and the 5 + 5 enum arms that
+create them (design, idioms and runbook in [alg-layered-placement.md](architecture/alg-layered-placement.md)). The
+pipeline still does not run (`ElkLayered` and `GraphConfigurator` are 7f); every class is proven by replaying what the
+oracle's pipeline recorded at the P4 stop and at each processor. Decisions: `plans/layered-node-placement/decisions.md`
+(N1–N12).
+
+**Evidence.**
+
+- `test/golden/refs/java/layered-placement.json` (5,242,236 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-placement-vectors.sh`, JVM flag `-XX:hashCode=2`): 604 rows, byte-stable; `models` 494 (the
+  vendored ptolemy models and `.elkt` inputs at every edge-bearing hierarchy level, the 22 `tests/layered/node_placement`
+  `.elkt` newly vendored, run through the real Java pipeline to the P4 class per `NodePlacementStrategy`, to each of the
+  five processors, and on the variant set to the BK straightening × alignment matrix, `favorStraightEdges`,
+  `deflectionDampening` and the three flexibility defaults with and without `recomputeNodePlacement`), `scenarios` 84
+  (step rows: two or more small graphs per strategy, BK configuration, flexibility value and processor), `sites` 26
+  (step rows for the T9 branch scenarios). Every row carries `geometry` (node position, size and margin; layer sizes;
+  port and label positions where the stop moves them or a node is flexible, N3). `LayeredPlacementVectors.test.ts`
+  replays all 604 at the AD-4 bar (coordinates within 1e-6, orders exact); step rows under ten nodes also match the
+  full 7a dump.
+- The JUnit invariant `BasicNodePlacementTest.testProperCoordinates` ported verbatim over the `models` P4 rows of its
+  15 runs (14 configurator providers and the default; 236 row cases); the Java suite runs on the oracle with
+  `MODELS_REPO=$ELK_MODELS_DIR bash tools/oracle/java-tests.sh …BasicNodePlacementTest`: `runs=8008 failures=0` at
+  mission start and end.
+- Breadth sweep (N10, gitignored): 8,410 oracle cases at the P4 stop over the edge-bearing hierarchy levels of all 550
+  ptolemy models, once per `NodePlacementStrategy` (1,970 ok, 6,440 refused — 5,880 `HYPEREDGE_DUMMY_MERGER` (7e),
+  560 `SELF_LOOP_PREPROCESSOR` (7g) —, 0 throws, 0 timeouts); the port's canonical dump hash, geometry included, equals
+  the oracle's for every ok case (stride 1 and stride 2).
+- 27 anchored unit cases cite a site row (`// oracle: <row id>; <Java file:line>`); after them every 7d class is at
+  100 % branches with the generic replay except seven whose remainder is dead by construction or unreachable with a
+  named mechanism, two of them below 90 % (`LinearSegmentsNodePlacer` 83.3, `BKNodePlacerFeasibility` 60;
+  `plans/layered-node-placement/unreached.md` with the T11 and T12 corrections); whole-suite coverage
+  99.02 / 96.99 / 99.05 / 99.02.
+- Landed vectors, goldens and corpus are unchanged: the refs diff against `main` is the new `layered-placement.json`,
+  the 22 vendored `.elkt` inputs and their manifest rows, and the sweep test. The 7a/7b/7c vector scripts reproduce
+  their refs byte for byte.
+
+**AD-10 sites.** `BKCompactor.java:55` (`sinkNodes`, iterated at `:341,378`) is an insertion-ordered `Map`, the order
+the recorder's `-XX:hashCode=2` gives the Java up to 10 entries; `BKNodePlacer.java:140` (`markedEdges`),
+`ThresholdStrategy.java:55` (`blockFinished`), `NetworkSimplexPlacer.java:175,190` (`portMap`,
+`flexibleWhereSpacePermitsEdges`) are membership-only; `BKNodePlacer.java:517-548` keep their `LinkedHash*` order.
+
+**Divergences found during the mission, fixed at origin.** None reached the oracle rows: a draft chained
+`.origin(lEdge)` on two network-simplex auxiliary edges where the Java (`NEdge.java:59-61`) discards the argument
+(removed before commit); hand-built tests with Java-derived behavioural literals were removed under L4 and routed
+through site rows. No numeric divergence between the port and the oracle in 604 rows and 1,970 sweep cases.
+
+**Known divergences found.** None numeric. Open by design:
+
+- **Flat levels only (C3) and the components flag (B3):** as in parts b and c; no untaken 7d site needs nested graphs.
+- **Refused rows (N1):** prefixes naming the label processors, `COMMENT_NODE_MARGIN_CALCULATOR`,
+  `ALTERNATING_LAYER_UNZIPPER` (7f), `HYPEREDGE_DUMMY_MERGER` (7e), the self-loop, wrapping and breaking-point
+  processors (7g) and 7c's five before-P3 categories are not recorded: 32 accepted refusals in the recorder, most
+  ptolemy P4 levels (a port with two or more edges) among them; the sweep proves them after 7e.
+- **The 5 MiB cap:** the ref is 644 bytes under it after the variant-set trim (one ptolemy model plus three `.elkt`;
+  the BK matrix on two of them) and six unrecorded variant rows whose arms other rows reach; a later row needs a cap
+  decision (roadmap).
+- **Chain-forced site rows:** the six `externalPortLabels` rows omit `HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR` and the
+  greedy switch (a real plan replaces labelled N/S external dummies by label-less copies), and `inLayerEdges/westOutput`
+  omits `INVERTED_PORT_PROCESSOR`; every other site row equals its pipeline twin.
+- **Unreached arms with a named mechanism:** `plans/layered-node-placement/unreached.md` § T11 and T12 corrections
+  (the BK infeasible-layout arms, proven unreachable on 52,000 random graphs; the `improveTwoPath` "neither case" arm;
+  three dead-by-construction confirmations).
+- **Randomness scope:** INTERACTIVE rows replay the 7c seeded positions; sweep cases use the on-disk positions; no 7d
+  class draws from `Random`.
 - **Prose typos corrected:** none found in this mission.
 
 ## Temporary gaps
