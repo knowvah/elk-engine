@@ -776,3 +776,39 @@ expectations are derived (Java literals or recorded rows).
   later recorder should dump layered node bodies); the site-row replay block (`replaySite`/`siteFactories`) is
   duplicated across the anchored test files and belongs in `test/helpers/` (cleanup); parallel agent briefs must name
   a private scratchpad subdirectory (two T12 agents overwrote each other's scratch script).
+
+## Revision 2026-11-03 (layered-crossing-min-tests)
+
+Appended; no earlier line is edited. Source: T1–T9 in `plans/layered-crossing-min-tests/decisions.md`; the journal is
+`plans/layered-crossing-min-tests/decision-journal.md`. Where this section conflicts with the text above, this section
+wins.
+
+**Row 7c-tests is done.** The three greedy-switch graph creators (`test/helpers/TestGraphCreator.ts` with
+`MockRandom`, `InLayerEdgeTestGraphCreator.ts`, `NorthSouthEdgeTestGraphCreator.ts`) and the fourteen unit-level
+suites of P3 (p3order 6, counting 3, greedyswitch 5: 211 tests, 280 runs, 8 `@Ignore` methods as `it.skip`) are
+ported with the Java tests' own literals as expectations (T1, AD-13); `tools/oracle/java-tests.sh` (T2) proves the
+same 280 runs on the oracle build. No port defect surfaced (no T7 fix); the suites newly reach three of 7c's
+"U nested" arms (`plans/layered-crossing-min-tests/coverage.md`). Counts in `docs/conformance.md#alg-layered-ordering`,
+runbook in `docs/architecture/alg-layered.md` § 9.6.
+
+**Scope moves (T8, amends 7c C1).**
+
+- The root `org.eclipse.elk.alg.layered.TestGraphCreator` (1,217 lines) is referenced by no Java file: unported.
+- `ConcreteSortByInputModelTest` (32) and `AllowNonFlowPortsToSwitchSidesTest` (6) call `LayeredLayoutProvider.layout`
+  and assert coordinates and edge intersections: they pass on the oracle and move to **7f**.
+
+**Hand-offs.**
+
+- **7d (`BasicNodePlacementTest`), 7e (`BasicEdgeRouterTest`), later rows (`InLayerConstraintProcessorTest`,
+  `Issue726Test`, `Issue734Test`):** build on `test/helpers/TestGraphCreator.ts`; its header lists the overload
+  mapping, the public fields `graph`/`random`, and that north/south or fixed-order builders need
+  `LayoutMetaDataService.initElkReflect()` first. The 7g self-loop suites use their own `SelfLoopTestGraphCreator`.
+- **Every later mission's JUnit baseline:** `bash tools/oracle/java-tests.sh <fqcn…>` (one JVM per class, `-XX:hashCode=2`,
+  one `runs= failures=` line each; a class that cannot load counts as `runs=1 failures=1`); run it at mission start
+  and end and cite the counts in the conformance doc. Expected values come from the Java literals when the suite is
+  unit-level (T1); a full-layout suite needs recorded rows.
+- **7h:** the hierarchical sweep and greedy switch now carry a Java-derived check (17 nested cases in the p3order
+  suites, `switchingDummyNodesNotifiesPortSwitch` in `SwitchDeciderTest`); 7h still re-measures the nested group with
+  recorded rows, starting from the 61 branch arms and 3 functions `coverage.md` lists as untaken.
+- **Agent rule for ported suites:** an agent may add no assertion the Java lacks (T4 added eight count checks that the
+  orchestrator removed before committing); the review step checks the port against the Java before the commit.
