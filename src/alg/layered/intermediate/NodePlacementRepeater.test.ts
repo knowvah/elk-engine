@@ -103,8 +103,8 @@ describe('NodePlacementRepeater (oracle rows)', () => {
     expect(rows.map((row) => row.id)).toEqual(ROW_NAMES);
   });
 
-  // arms wired in T8: the replay reaches P4_NODE_PLACEMENT, whose NodePlacementStrategy arms throw until then.
-  it.skip.each(ROW_NAMES.map((id) => [id] as const))('replays %s', (id) => {
+  // the replay reaches P4_NODE_PLACEMENT through the real NodePlacementStrategy arms (wired in T8)
+  it.each(ROW_NAMES.map((id) => [id] as const))('replays %s', (id) => {
     const row = rows.find((candidate) => candidate.id === id)!;
     const graph = replay(row);
     const actual = placementDump(graph, importRow(row).importDump);
