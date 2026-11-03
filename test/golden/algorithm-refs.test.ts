@@ -108,6 +108,46 @@ const LAYERED_PLACEMENT_INPUTS = [
   'tests/layered/node_placement/flexible_ports/graph04.elkt',
 ];
 
+/**
+ * Inputs of the layered routing vectors (mission 7e T1, `tools/vectors/LayeredRoutingVectors.java`): the 29 models of
+ * the splines, hyperedge merging and hierarchical ports LayoutTestRunner suites and the three routing tickets (726,
+ * 341, 371), vendored byte-identical.
+ */
+const LAYERED_ROUTING_INPUTS = [
+  'tests/layered/splines/hyperedges/hyperedges_1.elkt',
+  'tests/layered/splines/hyperedges/hyperedges_2.elkt',
+  'tests/layered/splines/north_south_ports_1.elkt',
+  'tests/layered/splines/north_south_ports_2.elkt',
+  'tests/layered/splines/north_south_ports_3.elkt',
+  'tests/layered/splines/sloppy_curvature.elkt',
+  'tests/layered/splines/sloppy_overlaps_1.elkt',
+  'tests/layered/splines/sloppy_overlaps_2.elkt',
+  'tests/layered/splines/sloppy_overlaps_3.elkt',
+  'tests/layered/splines/three_edges_inverted_ports.elkt',
+  'tests/layered/splines/three_edges_inverted_ports_2.elkt',
+  'tests/layered/splines/three_nodes_two_edges.elkt',
+  'tests/layered/hyperedge_merging/hyperedge_labels.elkt',
+  'tests/layered/hyperedge_merging/hyperedges01.elkt',
+  'tests/layered/hyperedge_merging/inverted_ports.elkt',
+  'tests/layered/hyperedge_merging/north_south_ports_01.elkt',
+  'tests/layered/hyperedge_merging/north_south_ports_02.elkt',
+  'tests/layered/hyperedge_merging/north_south_ports_03.elkt',
+  'tests/layered/hyperedge_merging/unequal_src_tgt.elkt',
+  'tests/layered/hyperedge_merging/unequal_src_tgt_with_labels.elkt',
+  'tests/layered/hierarchical_ports/hierarchy01.elkt',
+  'tests/layered/hierarchical_ports/hierarchy02.elkt',
+  'tests/layered/hierarchical_ports/hierarchy03.elkt',
+  'tests/layered/hierarchical_ports/hierarchy04.elkt',
+  'tests/layered/hierarchical_ports/hierarchy05.elkt',
+  'tests/layered/hierarchical_ports/hierarchy06.elkt',
+  'tests/layered/hierarchical_ports/hierarchy07.elkt',
+  'tests/layered/hierarchical_ports/hierarchy08.elkt',
+  'tests/layered/hierarchical_ports/hierarchy09.elkt',
+  'tickets/layered/726_edgesMissingBendPoints.elkt',
+  'tickets/layered/341_polylineUnnecessaryBendpoints.elkt',
+  'tickets/layered/371_strangeSplineSpacing.elkt',
+];
+
 type Obj = Record<string, unknown>;
 
 function readJson(file: string): unknown {
@@ -222,8 +262,8 @@ describe('vendored inputs', () => {
     expect(parsed['commit']).toBe(corpus['commit']);
   });
 
-  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs, nothing else', () => {
-    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS].sort();
+  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs and the 32 layered routing inputs, nothing else', () => {
+    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS, ...LAYERED_ROUTING_INPUTS].sort();
     expect(Object.keys(hashes).sort()).toEqual(expected);
   });
 
