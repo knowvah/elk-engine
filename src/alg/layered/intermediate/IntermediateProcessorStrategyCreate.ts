@@ -6,9 +6,12 @@ import type { LGraph } from '../graph/LGraph.js';
 import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
 import { EdgeAndLayerConstraintEdgeReverser } from './EdgeAndLayerConstraintEdgeReverser.js';
+import { FinalSplineBendpointsCalculator } from './FinalSplineBendpointsCalculator.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
 import { HierarchicalPortDummySizeProcessor } from './HierarchicalPortDummySizeProcessor.js';
+import { HierarchicalPortPositionProcessor } from './HierarchicalPortPositionProcessor.js';
 import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
+import { HyperedgeDummyMerger } from './HyperedgeDummyMerger.js';
 import { InLayerConstraintProcessor } from './InLayerConstraintProcessor.js';
 import { InnermostNodeMarginCalculator } from './InnermostNodeMarginCalculator.js';
 import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
@@ -17,9 +20,12 @@ import { InvertedPortProcessor } from './InvertedPortProcessor.js';
 import { LabelAndNodeSizeProcessor } from './LabelAndNodeSizeProcessor.js';
 import { LayerConstraintPostprocessor } from './LayerConstraintPostprocessor.js';
 import { LayerConstraintPreprocessor } from './LayerConstraintPreprocessor.js';
+import { LayerSizeAndGraphHeightCalculator } from './LayerSizeAndGraphHeightCalculator.js';
+import { LongEdgeJoiner } from './LongEdgeJoiner.js';
 import { LongEdgeSplitter } from './LongEdgeSplitter.js';
 import { NodePlacementRepeater } from './NodePlacementRepeater.js';
 import { NodePromotion } from './NodePromotion.js';
+import { NorthSouthPortPostprocessor } from './NorthSouthPortPostprocessor.js';
 import { NorthSouthPortPreprocessor } from './NorthSouthPortPreprocessor.js';
 import { PartitionMidprocessor } from './PartitionMidprocessor.js';
 import { PartitionPostprocessor } from './PartitionPostprocessor.js';
@@ -166,7 +172,7 @@ function createBeforePhase42(strategy: IntermediateProcessorStrategy): ILayoutPr
     case 'LABEL_SIDE_SELECTOR':
       throw notPorted('LabelSideSelector', '7f');
     case 'HYPEREDGE_DUMMY_MERGER':
-      throw notPorted('HyperedgeDummyMerger', '7e');
+      return new HyperedgeDummyMerger();
     case 'HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR':
       return new HierarchicalPortDummySizeProcessor();
     default:
@@ -180,9 +186,9 @@ function createBeforePhase5(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'NODE_PLACEMENT_REPEATER':
       return new NodePlacementRepeater();
     case 'LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR':
-      throw notPorted('LayerSizeAndGraphHeightCalculator', '7e');
+      return new LayerSizeAndGraphHeightCalculator();
     case 'HIERARCHICAL_PORT_POSITION_PROCESSOR':
-      throw notPorted('HierarchicalPortPositionProcessor', '7e');
+      return new HierarchicalPortPositionProcessor();
     default:
       return createAfterPhase5(strategy);
   }
@@ -200,13 +206,13 @@ function createAfterPhase5(strategy: IntermediateProcessorStrategy): ILayoutProc
     case 'HIERARCHICAL_PORT_ORTHOGONAL_EDGE_ROUTER':
       throw notPorted('HierarchicalPortOrthogonalEdgeRouter', '7f');
     case 'LONG_EDGE_JOINER':
-      throw notPorted('LongEdgeJoiner', '7e');
+      return new LongEdgeJoiner();
     case 'SELF_LOOP_POSTPROCESSOR':
       throw notPorted('SelfLoopPostProcessor', '7g');
     case 'BREAKING_POINT_REMOVER':
       throw notPorted('BreakingPointRemover', '7g');
     case 'NORTH_SOUTH_PORT_POSTPROCESSOR':
-      throw notPorted('NorthSouthPortPostprocessor', '7e');
+      return new NorthSouthPortPostprocessor();
     case 'HORIZONTAL_COMPACTOR':
       throw notPorted('HorizontalGraphCompactor', '7g');
     default:
@@ -220,7 +226,7 @@ function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'LABEL_DUMMY_REMOVER':
       throw notPorted('LabelDummyRemover', '7f');
     case 'FINAL_SPLINE_BENDPOINTS_CALCULATOR':
-      throw notPorted('FinalSplineBendpointsCalculator', '7e');
+      return new FinalSplineBendpointsCalculator();
     case 'END_LABEL_SORTER':
       throw notPorted('EndLabelSorter', '7f');
     case 'REVERSED_EDGE_RESTORER':
