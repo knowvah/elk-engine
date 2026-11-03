@@ -6,7 +6,9 @@ import { describe, expect, it } from 'vitest';
 import { PortSide } from '../../../../core/options/PortSide.js';
 import { LEdge } from '../../graph/LEdge.js';
 import { LGraph } from '../../graph/LGraph.js';
+import { Layer } from '../../graph/Layer.js';
 import { LNode } from '../../graph/LNode.js';
+import { LLabel } from '../../graph/LLabel.js';
 import { LPort } from '../../graph/LPort.js';
 import { WestToEastRoutingStrategy } from './direction/WestToEastRoutingStrategy.js';
 import { HyperEdgeSegment } from './HyperEdgeSegment.js';
@@ -96,5 +98,63 @@ describe('HyperEdgeSegment.addPortPositions', () => {
     const segment = new HyperEdgeSegment(new WestToEastRoutingStrategy());
     segment.addPortPositions(ports[0]!, new Map());
     expect(segment.getPorts()).toHaveLength(2 * rungs);
+  });
+});
+
+/** A node whose designation is null, which `LNode.getDesignation` never is (it falls back to the index): the null arm of `toString`. */
+class UndesignatedNode extends LNode {
+  override getDesignation(): string | null {
+    return null;
+  }
+}
+
+/** A segment over one port on each of the nodes, in this order. */
+function segmentOver(...nodes: LNode[]): HyperEdgeSegment {
+  const segment = new HyperEdgeSegment(null);
+  nodes.forEach((node) => segment.getPorts().push(portOn(node, PortSide.EAST)));
+  return segment;
+}
+
+function labelled(graph: LGraph, text: string): LNode {
+  const node = new LNode(graph);
+  node.getLabels().push(new LLabel(text));
+  return node;
+}
+
+describe('HyperEdgeSegment.toString', () => {
+  // HyperEdgeSegment.java:455-471: "{" + the node designations joined by "," + "}"
+  it('lists a single port as its node designation in braces', () => {
+    expect(segmentOver(labelled(new LGraph(), 'alpha')).toString()).toBe('{alpha}');
+  });
+
+  it('separates the designations of two ports with a comma and no trailing comma', () => {
+    const graph = new LGraph();
+    expect(segmentOver(labelled(graph, 'alpha'), labelled(graph, 'beta')).toString()).toBe('{alpha,beta}');
+  });
+
+  it('is an empty pair of braces for a segment without ports', () => {
+    expect(new HyperEdgeSegment(null).toString()).toBe('{}');
+  });
+
+  it('names a node without label or origin by its layer index (LNode.getDesignation falls back to it)', () => {
+    const graph = new LGraph();
+    const layer = new Layer(graph);
+    const first = new LNode(graph);
+    const second = new LNode(graph);
+    first.setLayer(layer);
+    second.setLayer(layer);
+    expect(segmentOver(first, second).toString()).toBe('{0,1}');
+    expect(segmentOver(new LNode(graph)).toString()).toBe('{-1}');
+  });
+
+  it('falls back to "n" plus the layer index for a node whose designation is null', () => {
+    const graph = new LGraph();
+    const layer = new Layer(graph);
+    const filler = new LNode(graph);
+    const undesignated = new UndesignatedNode(graph);
+    filler.setLayer(layer);
+    undesignated.setLayer(layer);
+    expect(segmentOver(undesignated).toString()).toBe('{n1}');
+    expect(segmentOver(filler, undesignated).toString()).toBe('{0,n1}');
   });
 });
