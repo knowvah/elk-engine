@@ -876,3 +876,70 @@ design, idioms and runbook in `docs/architecture/alg-layered-placement.md`, coun
   7e candidate); the per-file factories object is duplicated across every anchored test file (the 7c cleanup, still
   open); `ThresholdStrategySimpleThresholdStrategy.ts:88` is executed by a row but anchorable by no position; the
   `devAssert` helper is still unwritten (five Java `assert` lines omitted this mission).
+
+## Revision 2026-11-03 (layered-edge-routing)
+
+Appended; no earlier line is edited. Source: R1–R14 in `plans/layered-edge-routing/decisions.md`; the journal is
+`plans/layered-edge-routing/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+
+**Row 7e is done.** `p5edges` (3 classes), `p5edges.orthogonal` with `direction` (11 classes, 17 files with sections
+and nested types), `p5edges.splines` (6 classes, 15 files), the six intermediate processors a routed result needs (9
+files) and the 3 + 6 arms that create them are ported and proven by `layered-routing.json` and
+`layered-routing-steps.json` (943 oracle rows with edge geometry: 666 pipeline rows recorded through
+`ElkLayered.runLayoutTestStep` at the P5 stop of each router and at each processor, 94 scenario rows, 25 site rows,
+158 direct-call rows), the three ported JUnit invariants (`BasicEdgeRouterTest`, `Issue726Test`,
+`LayerSizeAndGraphHeigthCalculatorTest`; the Java suites `runs=550 / 550 / 1 failures=0` on the oracle at start and
+end), a 6,728-case hash sweep over all ptolemy models at the P4 and three P5 stops (6,280 ok; all match at stride 1)
+and 62 anchored unit cases; design, idioms and runbook in `docs/architecture/alg-layered-routing.md`,
+counts in `docs/conformance.md#alg-layered-routing`. The pipeline still does not run (`ElkLayered`,
+`GraphConfigurator` → 7f). The enum tally is now 7b 10 / 7c 10 / 7d 5 / 7e 6 / 7f 19 / 7g 9 (B9 table amended by R1).
+
+**Scope moves (binding for 7f–7h).**
+
+- **R1:** `HyperedgeDummyMerger`, `HierarchicalPortPositionProcessor`, `LayerSizeAndGraphHeightCalculator`,
+  `LongEdgeJoiner`, `NorthSouthPortPostprocessor`, `FinalSplineBendpointsCalculator` are 7e (done); `SplineSegment` is
+  unstaged. 7f keeps `HierarchicalPortOrthogonalEdgeRouter`, `HypernodesProcessor`, `ConstraintsPostprocessor`,
+  `EndLabelSorter`, `HierarchicalNodeResizer`, the label and comment processors and `AlternatingLayerUnzipper`; 7g keeps
+  self loops, wrapping and compaction. Refusal categories fixed by the 7e recorder: `HIERARCHICAL_PORT_ORTHOGONAL_EDGE_ROUTER`,
+  `HYPERNODE_PROCESSOR`, `CONSTRAINTS_POSTPROCESSOR`, `COMMENT_POSTPROCESSOR`, `LABEL_DUMMY_REMOVER`,
+  `END_LABEL_POSTPROCESSOR`, `END_LABEL_SORTER`, `HIERARCHICAL_NODE_RESIZER` → **7f**; `SELF_LOOP_POSTPROCESSOR`,
+  `BREAKING_POINT_REMOVER`, `HORIZONTAL_COMPACTOR` → **7g**.
+- **7f:** `ElkLayered`, `GraphConfigurator` (the plan builder must name `GraphTransformer` by position: it is both
+  `DIRECTION_PREPROCESSOR` and `DIRECTION_POSTPROCESSOR`; with `feedbackEdges=true` `PORT_SIDE_PROCESSOR` moves before
+  P1; `NODE_PLACEMENT_REPEATER` needs only the property check), the full-layout issue tests `Issue587/680/682`,
+  `DotDebugUtil`/`JsonDebugUtil` for the staged `DebugUtil` (the orthogonal generator's guarded call is in place), the
+  `NorthToSouth`/`SouthToNorth` direction strategies (ported, run only from the hierarchical router), the
+  `HyperedgeDummyMerger` label-dummy paths (13 untaken arms), the 18 `LABEL_DUMMY_INSERTER` accepted refusals.
+- **7g:** `NorthSouthPortPostprocessor.processSelfLoop` and the self-loop arms of the three routers (reached in 7e only
+  on chain-forced rows that omit `SELF_LOOP_PREPROCESSOR`; E–E/W–W loops reach the routers, N–N loops become dummies),
+  the self-loop spline router over `NubsSelfLoop` (no caller at this commit; its five factories are proven by call
+  rows), `inverseOrder`/`SPLINE_SURVIVING_EDGE` in the bend-point calculator (`BreakingPointRemover`), the compaction
+  arms (`segmentAllowsSloppyRouting`'s near arms are proven by option-only rows, the far arms are unreachable by the
+  horizontal placement), the 112 `SELF_LOOP_PREPROCESSOR` sweep levels (re-sweep then). **R9 verdict to recheck:** the
+  JVM order of the spline router's `HashSet<Pair<…>>` was unobservable in 7e; `getSplinePath` reads the first edge of a
+  hyperedge under a compaction strategy other than `NONE`.
+- **7h:** no untaken 7e site needs nested graphs.
+
+**Hand-offs found during the run.**
+
+- **Every phase mission:** the E1 recipe held again with no new lazy read (`EdgeRouting` is a core leaf enum; the
+  routers' configurations are cached getters; the enum's `create` chain is a section importing the enum as a type).
+- **Landed-helper gaps are twinned in the mission's own helpers, never by editing a landed one:** the 7a dump context
+  names a removed element as a fresh `ref` (the recorder writes `{class}`), the 7b enum registry closes its list, the
+  7b row loader closes its group list; a new ref group (`calls`) and a processor that removes elements both need the
+  mission's helper to re-apply the recorder's rule.
+- **Row inventories and `CALLERS` tables:** a new row family breaks every test that pins ids or counts by selector
+  (six files in 7e) and every callers table; update them in the same commit as the rows.
+- **Caps:** `layered-routing.json` is 52,641 bytes under 5 MiB; the recorder is at 2,998 of 3,000 lines (its sweep modes
+  are a sibling launcher `LayeredRoutingSweep.java`, compiled together); `layered-placement.json` is still 644 bytes
+  under the cap (7d flag, unchanged). **Decision needed before the next recording that touches either:** a higher cap,
+  a second ref per group, a compacter `changed` encoding, or a second launcher per recorder.
+- **Seeds:** the first `nextInt(2)` of `java.util.Random` is identical for seeds 1–40; a row that must record both
+  outcomes of a draw scans seeds with a spread (4096, 5000, 12345).
+- **Oracle throws on six hierarchical-port levels** under POLYLINE/SPLINES (`AdjacencyList` NPE: only the orthogonal
+  router adds `HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR`): candidate upstream report; the recorder's `ORACLE_THROWS` list
+  is the only skip of a throwing level.
+- **Follow-ups:** the three Medium splitter arms (`HyperEdgeSegmentSplitter.ts:220 if[1]`, `:400 if[1]`, `:406 if[1]`:
+  a 1-ulp spacing could reach the last two); the `devAssert` helper is still unwritten (nine Java `assert` lines
+  omitted this mission); the per-file factories/callers objects are duplicated across the anchored test files (the 7c
+  cleanup, still open); `HyperEdgeSegment.toString` arms and the `NubSpline` no-caller members are pinned structurally.
