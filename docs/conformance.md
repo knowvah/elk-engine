@@ -1173,8 +1173,8 @@ through site rows. No numeric divergence between the port and the oracle in 604 
   processors (7g) and 7c's five before-P3 categories are not recorded: 32 accepted refusals in the recorder, most
   ptolemy P4 levels (a port with two or more edges) among them; the sweep proves them after 7e.
 - **The 5 MiB cap:** the ref is 644 bytes under it after the variant-set trim (one ptolemy model plus three `.elkt`;
-  the BK matrix on two of them) and six unrecorded variant rows whose arms other rows reach; a later row needs a cap
-  decision (roadmap).
+  the BK matrix on two of them) and six unrecorded variant rows whose arms other rows reach. The cap was raised to
+  16 MiB on 2026-11-03 (roadmap revision "caps raised"); the trimmed rows may return when a later mission re-records.
 - **Chain-forced site rows:** the six `externalPortLabels` rows omit `HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR` and the
   greedy switch (a real plan replaces labelled N/S external dummies by label-less copies), and `inLayerEdges/westOutput`
   omits `INVERTED_PORT_PROCESSOR`; every other site row equals its pipeline twin.
@@ -1256,7 +1256,8 @@ floating point and was replaced by a twin (L4). No numeric divergence between th
   would fail the same way (candidate upstream report).
 - **The caps:** `layered-routing.json` is 52,641 bytes under 5 MiB after the R2 trimming order (a four-model variant
   set, ptolemy POLYLINE/SPLINES rows and `LONG_EDGE_JOINER` stops on the trim set); the recorder is at 2,998 of 3,000
-  lines (the sweep modes live in a sibling launcher); a later row or recorder change needs a decision.
+  lines (the sweep modes live in a sibling launcher). Both caps were raised on 2026-11-03 (16 MiB per ref, 5,000 lines
+  per recorder; roadmap revision "caps raised"), so a later row or recorder change no longer needs a cap decision.
 - **Chain-forced site rows:** the three `sites/SelfLoop/*` rows omit `SELF_LOOP_PREPROCESSOR` (7c S13 precedent) and the
   two `sites/FinalSplineBendpoints/compaction/*` rows set the compaction option without the 7g compactor; every other
   site row equals its pipeline twin.

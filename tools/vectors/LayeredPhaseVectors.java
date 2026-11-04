@@ -86,7 +86,7 @@
 //   ElkGraphElement, null. Doubles elsewhere (the full dump) are 16 lowercase hex digits of the raw bits.
 //
 // Checks: every row runs twice from scratch (input re-loaded, or exported and re-imported for elk inputs) and must
-//   agree; the whole file is built twice and must be byte-identical; the output is strict-parsed and stays under 5 MB;
+//   agree; the whole file is built twice and must be byte-identical; the output is strict-parsed and stays under 16 MiB (raised from 5 MB on 2026-11-03);
 //   the 29 phases and processors of the 7b set must each be run by some step row (the 30th class, GroupModelOrderCalculator,
 //   is run by ModelOrderCycleBreaker, and SCCModelOrderCycleBreaker by its two subclasses); every vendored input is
 //   pinned in MODEL_TABLE (the shell script checks the same lines).
@@ -170,7 +170,7 @@ public class LayeredPhaseVectors {
     static final String TICKETS = "test/golden/inputs/tickets/layered/";
     static final int MAX_DEPTH = 8;
     static final int FULL_DUMP_BELOW = 10;
-    static final long MAX_BYTES = 5L * 1024 * 1024;
+    static final long MAX_BYTES = 16L * 1024 * 1024;
     static final String BASE_GRAPH = "g0";
     static final Set<String> IGNORED_IDS = Set.of("processors", "random", "spacings");
     /**
@@ -2720,7 +2720,7 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
         }
         long bytes = text.getBytes(StandardCharsets.UTF_8).length;
         if (bytes > MAX_BYTES) {
-            throw new IllegalStateException("output is " + bytes + " bytes, over the 5 MB cap");
+            throw new IllegalStateException("output is " + bytes + " bytes, over the 16 MiB cap");
         }
         Files.createDirectories(Path.of(args[0]));
         Files.writeString(Path.of(args[0], OUTPUT), text, StandardCharsets.UTF_8);

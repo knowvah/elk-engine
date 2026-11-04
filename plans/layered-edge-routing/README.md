@@ -248,6 +248,9 @@ the 7a–7d vector scripts and the goldens reproduce, `npm test` 58.3 s against 
 3. **Caps.** The recorder is at 2,998 of 3,000 lines (sweep modes in a sibling launcher); `layered-routing.json` is
    52,641 bytes under 5 MiB; `layered-placement.json` still 644 bytes under (7d flag). The next recording or recorder
    change needs a decision.
+   _Resolved 2026-11-03 (user decision after stop 14):_ the ref cap is 16 MiB and the recorder cap 5,000 lines for
+   every layered recorder; the five recorders' `MAX_BYTES` constants were raised in a sixth commit on this branch
+   (journal row `caps`, roadmap revision 2026-11-03 "caps raised").
 4. **Write-set extensions journaled rather than stopped:** `LayeredRoutingSweep.java` (T12), the T13 inventory fixes in
    T14's test files, the orchestrator's `anchorY` edit in T6's file.
 5. **Ticket 341 has no rows** (`elk.direction: UP` puts `GraphTransformer` first); its unnecessary-bendpoint arms are

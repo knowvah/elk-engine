@@ -5,7 +5,7 @@
 //   java -cp <classes>:<classpath> LayeredRoutingSweep --sweep <modelsDir> <outDir>
 //   java -cp <classes>:<classpath> LayeredRoutingSweep --dump <case id> <modelsDir> <outDir>).
 //
-// WHY A SECOND FILE (deviation from the T12 brief): LayeredRoutingVectors.java is at 2,986 of its 3,000 lines and the
+// WHY A SECOND FILE (deviation from the T12 brief): LayeredRoutingVectors.java is at 2,986 of its 3,000 lines (cap raised to 5,000 on 2026-11-03) and the
 // sweep needs its whole pipeline (Base, Dump, Encoder, runPipeline, Spec, Refusal, the option builders). Single-file
 // launchers cannot share code (B7), so this class extends the recorder and is compiled with it (javac, one class
 // loader); it inherits the recorder's package-private statics by simple name and adds only the sweep. The recorder's

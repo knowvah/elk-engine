@@ -14,7 +14,7 @@
 // format, the C4 values, the refusal rule, the BFS guard and the re-run / build-twice / strict-parse / size checks are 7c's and
 // 7d's (see their headers); what follows is what this recorder adds or changes.
 //
-// Output: two files in <outDir> (2-space top level, one compact JSON row per line, trailing newline, each under 5 MiB):
+// Output: two files in <outDir> (2-space top level, one compact JSON row per line, trailing newline, each under 16 MiB):
 //   layered-routing.json        { jdk, oracle, rowCounts: { models }, rows }                         group models
 //   layered-routing-steps.json  { jdk, oracle, rowCounts: { scenarios, sites, calls }, rows }       groups scenarios, sites, calls
 //   row = { id, group, input, target, options, steps, prefix, expected }; ids are unique and stable across both files. steps null
@@ -162,7 +162,7 @@ public class LayeredRoutingVectors {
     static final String PTOLEMY = "test/golden/inputs/realworld/ptolemy/", LAYERED_TESTS = "test/golden/inputs/tests/layered/";
     static final String TICKETS = "test/golden/inputs/tickets/layered/";
     static final int MAX_DEPTH = 8, FULL_DUMP_BELOW = 10;
-    static final long MAX_BYTES = (System.getenv("ROUTING_CAP_MB") == null ? 5L : Long.parseLong(System.getenv("ROUTING_CAP_MB"))) * 1024 * 1024; // ROUTING_CAP_MB: diagnosis aid, the committed output stays under 5 MB
+    static final long MAX_BYTES = (System.getenv("ROUTING_CAP_MB") == null ? 16L : Long.parseLong(System.getenv("ROUTING_CAP_MB"))) * 1024 * 1024; // ROUTING_CAP_MB: diagnosis aid, the committed output stays under 16 MiB (raised from 5 MB on 2026-11-03)
     static final String P1 = "P1_CYCLE_BREAKING", P2 = "P2_LAYERING", P3 = "P3_NODE_ORDERING", P4 = "P4_NODE_PLACEMENT", P5 = "P5_EDGE_ROUTING";
     static final Set<String> IGNORED_IDS = Set.of("processors", "random", "spacings", "splines.route.start"); // T1: the spline route is recorded in geometry.splines (R3)
     /** Refusals (R1, amends N1/C2) the recorder accepts, "<model id>/<target or root>/<member>": the level's graph makes ElkLayered add a
@@ -2988,7 +2988,7 @@ b6ced8d3f6be2d7f744b6d3496d6c76167ba6ba91b2d7ab9992e5bbc160db031  repo:test/gold
         for (Map.Entry<String, String> f : files.entrySet()) {
             long bytes = f.getValue().getBytes(StandardCharsets.UTF_8).length;
             if (bytes > MAX_BYTES) {
-                throw new IllegalStateException(f.getKey() + " is " + bytes + " bytes, over the 5 MB cap");
+                throw new IllegalStateException(f.getKey() + " is " + bytes + " bytes, over the 16 MiB cap");
             }
             Files.writeString(Path.of(args[0], f.getKey()), f.getValue(), StandardCharsets.UTF_8);
             strictParse(Path.of(args[0], f.getKey()));

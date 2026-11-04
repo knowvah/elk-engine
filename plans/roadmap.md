@@ -943,3 +943,15 @@ counts in `docs/conformance.md#alg-layered-routing`. The pipeline still does not
   a 1-ulp spacing could reach the last two); the `devAssert` helper is still unwritten (nine Java `assert` lines
   omitted this mission); the per-file factories/callers objects are duplicated across the anchored test files (the 7c
   cleanup, still open); `HyperEdgeSegment.toString` arms and the `NubSpline` no-caller members are pinned structurally.
+
+## Revision 2026-11-03 (caps raised)
+
+User decision after mission 7e's stop 14, superseding the 7d and 7e "decision needed" cap hand-offs above:
+
+- **Ref cap: 16 MiB per file** under `test/golden/refs/java/` (was 5 MiB). `layered-placement.json` (644 bytes under
+  the old cap) and `layered-routing.json` (52,641 under) keep their trimmed variant sets; a later mission that touches
+  either may restore trimmed rows instead of adding a second ref per group.
+- **Recorder cap: 5,000 lines per launcher** (was 3,000). Sweep/dump modes may live in the recorder again; the sibling
+  launcher (`LayeredRoutingSweep.java`) stays as the 7e shape, not a rule.
+- The five layered recorders' `MAX_BYTES` constants and throw messages now say 16 MiB; the next brief's stop 13 uses
+  the new numbers (`plans/layered-edge-routing/decision-journal.md`, row `caps`).
