@@ -129,7 +129,7 @@
 //   (observed), hence the seed-2/-3 rows.
 //
 // Checks: every row runs twice from scratch (input re-loaded, or exported and re-imported for elk inputs) and must
-//   agree; the whole file is built twice and must be byte-identical; the output is strict-parsed and stays under 5 MB;
+//   agree; the whole file is built twice and must be byte-identical; the output is strict-parsed and stays under 16 MiB (raised from 5 MB on 2026-11-03);
 //   the 4 CrossingMinimizationStrategy phases and the ten 7c members must each be run by some step row; every vendored
 //   input is pinned in MODEL_TABLE (the shell script checks the same lines).
 //
@@ -228,7 +228,7 @@ public class LayeredOrderVectors {
     static final String TICKETS = "test/golden/inputs/tickets/layered/";
     static final int MAX_DEPTH = 8;
     static final int FULL_DUMP_BELOW = 10;
-    static final long MAX_BYTES = 5L * 1024 * 1024;
+    static final long MAX_BYTES = 16L * 1024 * 1024;
     static final String BASE_GRAPH = "g0";
     static final String P1 = "P1_CYCLE_BREAKING", P2 = "P2_LAYERING", P3 = "P3_NODE_ORDERING";
     static final Set<String> IGNORED_IDS = Set.of("processors", "random", "spacings");
@@ -2985,7 +2985,7 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
         }
         long bytes = text.getBytes(StandardCharsets.UTF_8).length;
         if (bytes > MAX_BYTES) {
-            throw new IllegalStateException("output is " + bytes + " bytes, over the 5 MB cap");
+            throw new IllegalStateException("output is " + bytes + " bytes, over the 16 MiB cap");
         }
         Files.createDirectories(Path.of(args[0]));
         Files.writeString(Path.of(args[0], OUTPUT), text, StandardCharsets.UTF_8);

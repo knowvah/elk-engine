@@ -5,20 +5,27 @@ import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOpe
 import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
 import { EdgeAndLayerConstraintEdgeReverser } from './EdgeAndLayerConstraintEdgeReverser.js';
+import { FinalSplineBendpointsCalculator } from './FinalSplineBendpointsCalculator.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
 import { HierarchicalPortDummySizeProcessor } from './HierarchicalPortDummySizeProcessor.js';
+import { HierarchicalPortPositionProcessor } from './HierarchicalPortPositionProcessor.js';
 import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
+import { HyperedgeDummyMerger } from './HyperedgeDummyMerger.js';
 import { InLayerConstraintProcessor } from './InLayerConstraintProcessor.js';
 import { InnermostNodeMarginCalculator } from './InnermostNodeMarginCalculator.js';
 import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
 import { IntermediateProcessorStrategy as Strategy } from './IntermediateProcessorStrategy.js';
+import { createIntermediateProcessor } from './IntermediateProcessorStrategyCreate.js';
 import { InvertedPortProcessor } from './InvertedPortProcessor.js';
 import { LabelAndNodeSizeProcessor } from './LabelAndNodeSizeProcessor.js';
 import { LayerConstraintPostprocessor } from './LayerConstraintPostprocessor.js';
 import { LayerConstraintPreprocessor } from './LayerConstraintPreprocessor.js';
+import { LayerSizeAndGraphHeightCalculator } from './LayerSizeAndGraphHeightCalculator.js';
+import { LongEdgeJoiner } from './LongEdgeJoiner.js';
 import { LongEdgeSplitter } from './LongEdgeSplitter.js';
 import { NodePlacementRepeater } from './NodePlacementRepeater.js';
 import { NodePromotion } from './NodePromotion.js';
+import { NorthSouthPortPostprocessor } from './NorthSouthPortPostprocessor.js';
 import { NorthSouthPortPreprocessor } from './NorthSouthPortPreprocessor.js';
 import { PartitionMidprocessor } from './PartitionMidprocessor.js';
 import { PartitionPostprocessor } from './PartitionPostprocessor.js';
@@ -133,22 +140,22 @@ const ARMS: Record<Name, [string, string]> = {
   LABEL_DUMMY_SWITCHER: ['LabelDummySwitcher', '7f'],
   CENTER_LABEL_MANAGEMENT_PROCESSOR: ['LabelManagementProcessor', '7f'],
   LABEL_SIDE_SELECTOR: ['LabelSideSelector', '7f'],
-  HYPEREDGE_DUMMY_MERGER: ['HyperedgeDummyMerger', '7f'],
+  HYPEREDGE_DUMMY_MERGER: ['HyperedgeDummyMerger', '7e'],
   HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR: ['HierarchicalPortDummySizeProcessor', '7d'],
   NODE_PLACEMENT_REPEATER: ['NodePlacementRepeater', '7d'],
-  LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR: ['LayerSizeAndGraphHeightCalculator', '7f'],
-  HIERARCHICAL_PORT_POSITION_PROCESSOR: ['HierarchicalPortPositionProcessor', '7f'],
+  LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR: ['LayerSizeAndGraphHeightCalculator', '7e'],
+  HIERARCHICAL_PORT_POSITION_PROCESSOR: ['HierarchicalPortPositionProcessor', '7e'],
   CONSTRAINTS_POSTPROCESSOR: ['ConstraintsPostprocessor', '7f'],
   COMMENT_POSTPROCESSOR: ['CommentPostprocessor', '7f'],
   HYPERNODE_PROCESSOR: ['HypernodesProcessor', '7f'],
   HIERARCHICAL_PORT_ORTHOGONAL_EDGE_ROUTER: ['HierarchicalPortOrthogonalEdgeRouter', '7f'],
-  LONG_EDGE_JOINER: ['LongEdgeJoiner', '7f'],
+  LONG_EDGE_JOINER: ['LongEdgeJoiner', '7e'],
   SELF_LOOP_POSTPROCESSOR: ['SelfLoopPostProcessor', '7g'],
   BREAKING_POINT_REMOVER: ['BreakingPointRemover', '7g'],
-  NORTH_SOUTH_PORT_POSTPROCESSOR: ['NorthSouthPortPostprocessor', '7f'],
+  NORTH_SOUTH_PORT_POSTPROCESSOR: ['NorthSouthPortPostprocessor', '7e'],
   HORIZONTAL_COMPACTOR: ['HorizontalGraphCompactor', '7g'],
   LABEL_DUMMY_REMOVER: ['LabelDummyRemover', '7f'],
-  FINAL_SPLINE_BENDPOINTS_CALCULATOR: ['FinalSplineBendpointsCalculator', '7f'],
+  FINAL_SPLINE_BENDPOINTS_CALCULATOR: ['FinalSplineBendpointsCalculator', '7e'],
   END_LABEL_SORTER: ['EndLabelSorter', '7f'],
   REVERSED_EDGE_RESTORER: ['ReversedEdgeRestorer', '7b'],
   END_LABEL_POSTPROCESSOR: ['EndLabelPostprocessor', '7f'],
@@ -156,7 +163,7 @@ const ARMS: Record<Name, [string, string]> = {
   DIRECTION_POSTPROCESSOR: ['GraphTransformer', '7f'],
 };
 
-/** The ported (missions 7b, 7c and 7d) arms: constant name to the class `create()` returns. */
+/** The ported (missions 7b, 7c, 7d and the six 7e processors of T5 and T9) arms: constant name to the class `create()` returns. */
 const PORTED = {
   EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER: EdgeAndLayerConstraintEdgeReverser,
   INTERACTIVE_EXTERNAL_PORT_POSITIONER: InteractiveExternalPortPositioner,
@@ -183,10 +190,35 @@ const PORTED = {
   INNERMOST_NODE_MARGIN_CALCULATOR: InnermostNodeMarginCalculator,
   HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR: HierarchicalPortDummySizeProcessor,
   NODE_PLACEMENT_REPEATER: NodePlacementRepeater,
+  HYPEREDGE_DUMMY_MERGER: HyperedgeDummyMerger,
+  LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR: LayerSizeAndGraphHeightCalculator,
+  HIERARCHICAL_PORT_POSITION_PROCESSOR: HierarchicalPortPositionProcessor,
+  LONG_EDGE_JOINER: LongEdgeJoiner,
+  NORTH_SOUTH_PORT_POSTPROCESSOR: NorthSouthPortPostprocessor,
+  FINAL_SPLINE_BENDPOINTS_CALCULATOR: FinalSplineBendpointsCalculator,
 } as const;
+
+/** The six 7e members ported by T5 and T9 (`FINAL_SPLINE_BENDPOINTS_CALCULATOR` is T9's). */
+const PORTED_IN_7E: ReadonlySet<string> = new Set([
+  'HYPEREDGE_DUMMY_MERGER',
+  'LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR',
+  'HIERARCHICAL_PORT_POSITION_PROCESSOR',
+  'LONG_EDGE_JOINER',
+  'NORTH_SOUTH_PORT_POSTPROCESSOR',
+  'FINAL_SPLINE_BENDPOINTS_CALCULATOR',
+]);
 
 const PORTED_NAMES: ReadonlySet<string> = new Set(Object.keys(PORTED));
 const PENDING = DECLARED.filter((name) => !PORTED_NAMES.has(name));
+
+/** The observable outcome of a factory call: the instance's class name, or the thrown error's class and message. */
+function outcome(call: () => unknown): { readonly kind: string; readonly text: string } {
+  try {
+    return { kind: 'instance', text: (call() as object).constructor.name };
+  } catch (error) {
+    return { kind: (error as object).constructor.name, text: (error as Error).message };
+  }
+}
 
 describe('IntermediateProcessorStrategy', () => {
   it('declares the 59 constants in Java order with matching ordinals and names', () => {
@@ -230,11 +262,17 @@ describe('IntermediateProcessorStrategy', () => {
     );
   });
 
-  it('ports exactly the 7b, 7c and 7d members and leaves the other 34 pending', () => {
-    expect(PORTED_NAMES.size).toBe(25);
-    expect(PENDING).toHaveLength(34);
+  it('ports exactly the 7b, 7c and 7d members and the six 7e members and leaves the other 28 pending', () => {
+    expect(PORTED_NAMES.size).toBe(31);
+    expect(PENDING).toHaveLength(28);
     expect(
-      DECLARED.filter((name) => ARMS[name][1] === '7b' || ARMS[name][1] === '7c' || ARMS[name][1] === '7d').sort(),
+      DECLARED.filter(
+        (name) =>
+          ARMS[name][1] === '7b' ||
+          ARMS[name][1] === '7c' ||
+          ARMS[name][1] === '7d' ||
+          (ARMS[name][1] === '7e' && PORTED_IN_7E.has(name)),
+      ).sort(),
     ).toEqual([...PORTED_NAMES].sort());
   });
 
@@ -247,14 +285,22 @@ describe('IntermediateProcessorStrategy', () => {
     }
   });
 
-  it('assigns the missions per B9 (10 in 7b, 10 in 7c, 5 in 7d, 9 in 7g, 25 in 7f)', () => {
+  it('assigns the missions per B9 and R1 (10 in 7b, 10 in 7c, 5 in 7d, 6 in 7e, 19 in 7f, 9 in 7g)', () => {
     const tally = new Map<string, number>();
     for (const [, mission] of Object.values(ARMS)) tally.set(mission, (tally.get(mission) ?? 0) + 1);
-    expect(Object.fromEntries(tally)).toEqual({ '7b': 10, '7c': 10, '7d': 5, '7g': 9, '7f': 25 });
+    expect(Object.fromEntries(tally)).toEqual({ '7b': 10, '7c': 10, '7d': 5, '7e': 6, '7f': 19, '7g': 9 });
+  });
+
+  it('create() and the section createIntermediateProcessor agree for every member (R5)', () => {
+    for (const constant of Strategy.values()) {
+      const viaEnum = outcome(() => constant.create());
+      const viaSection = outcome(() => createIntermediateProcessor(constant));
+      expect(viaSection).toEqual(viaEnum);
+    }
   });
 
   it('create() of an unknown strategy keeps the Java IllegalArgumentException text', () => {
-    const unknown = { toString: () => 'FAKE' } as unknown as Strategy;
+    const unknown = { name: () => 'FAKE', toString: () => 'FAKE' } as unknown as Strategy;
     expect(() => Strategy.prototype.create.call(unknown)).toThrow(IllegalArgumentException);
     expect(() => Strategy.prototype.create.call(unknown)).toThrow(
       'No implementation is available for the layout processor FAKE',

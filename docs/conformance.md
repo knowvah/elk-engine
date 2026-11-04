@@ -28,6 +28,7 @@ this document describes what it implements. Port rules live in
 | -   | [alg.layered cycles and layers](#alg-layered-phases)       | How are the first two phases (7b) proven? |
 | -   | [alg.layered crossing minimization](#alg-layered-ordering) | How is the third phase (7c) proven?       |
 | -   | [alg.layered node placement](#alg-layered-placement)       | How is the fourth phase (7d) proven?      |
+| -   | [alg.layered edge routing](#alg-layered-routing)           | How is the fifth phase (7e) proven?       |
 | -   | [Temporary gaps](#temporary-gaps)                          | What differs from the Java for now?       |
 
 ## 1. Oracle
@@ -1172,8 +1173,8 @@ through site rows. No numeric divergence between the port and the oracle in 604 
   processors (7g) and 7c's five before-P3 categories are not recorded: 32 accepted refusals in the recorder, most
   ptolemy P4 levels (a port with two or more edges) among them; the sweep proves them after 7e.
 - **The 5 MiB cap:** the ref is 644 bytes under it after the variant-set trim (one ptolemy model plus three `.elkt`;
-  the BK matrix on two of them) and six unrecorded variant rows whose arms other rows reach; a later row needs a cap
-  decision (roadmap).
+  the BK matrix on two of them) and six unrecorded variant rows whose arms other rows reach. The cap was raised to
+  16 MiB on 2026-11-03 (roadmap revision "caps raised"); the trimmed rows may return when a later mission re-records.
 - **Chain-forced site rows:** the six `externalPortLabels` rows omit `HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR` and the
   greedy switch (a real plan replaces labelled N/S external dummies by label-less copies), and `inLayerEdges/westOutput`
   omits `INVERTED_PORT_PROCESSOR`; every other site row equals its pipeline twin.
@@ -1183,6 +1184,90 @@ through site rows. No numeric divergence between the port and the oracle in 604 
 - **Randomness scope:** INTERACTIVE rows replay the 7c seeded positions; sweep cases use the on-disk positions; no 7d
   class draws from `Random`.
 - **Prose typos corrected:** none found in this mission.
+
+## alg.layered, part e: edge routing (mission 7e) {#alg-layered-routing}
+
+Mission 7e ported the fifth phase (`p5edges`: `EdgeRouterFactory`, `OrthogonalEdgeRouter`, `PolylineEdgeRouter`;
+`p5edges.orthogonal` with `direction`: the routing generator, hyperedge segments, dependencies, splitter and cycle
+detector, the three direction strategies; `p5edges.splines`: `SplineEdgeRouter`, `SplineSegment` (unstaged),
+`SplinesMath`, `Rectangle`, `NubSpline`, `NubsSelfLoop`), the six intermediate processors a routed result needs
+(`HyperedgeDummyMerger`, `HierarchicalPortPositionProcessor`, `LayerSizeAndGraphHeightCalculator`, `LongEdgeJoiner`,
+`NorthSouthPortPostprocessor`, `FinalSplineBendpointsCalculator`; R1 moved the last three from 7f) and the 3 + 6 arms that
+create them (design, idioms and runbook in [alg-layered-routing.md](architecture/alg-layered-routing.md)). The pipeline
+still does not run (`ElkLayered` and `GraphConfigurator` are 7f); every class is proven by replaying what the oracle's
+pipeline recorded at the P5 stop of each router and at each processor. Decisions: `plans/layered-edge-routing/decisions.md`
+(R1–R14).
+
+**Evidence.**
+
+- `test/golden/refs/java/layered-routing.json` (5,190,239 bytes) and `layered-routing-steps.json` (1,734,502 bytes;
+  JDK 21.0.1; oracle `8aaa3c14`; recorder `tools/vectors/layered-routing-vectors.sh`, JVM flags `-XX:hashCode=2
+-XX:-OmitStackTraceInFastThrow`): 943 rows, byte-stable; `models` 666 (the vendored models at every edge-bearing
+  hierarchy level, the 32 `tests/layered/{splines,hyperedge_merging,hierarchical_ports}` and ticket inputs newly
+  vendored, run through the real Java pipeline to `LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR`, `P5` under each of the three
+  routers, `LONG_EDGE_JOINER`, `NORTH_SOUTH_PORT_POSTPROCESSOR`, `FINAL_SPLINE_BENDPOINTS_CALCULATOR`,
+  `HIERARCHICAL_PORT_POSITION_PROCESSOR`, and `HYPEREDGE_DUMMY_MERGER` + `P4` on the hyperedge levels 7d refused; on the
+  variant set the bend-point, merge-edges, sloppy-spline, polyline-zone, spacing and feedback-edge families),
+  `scenarios` 94 (step rows: eleven graph shapes per router, the option families, the six processors), `sites` 25 (the
+  T11 branch scenarios), `calls` 158 (direct calls of the spline geometry classes and the self-loop factories). Every
+  row carries `geometry` with the graph size and offset, every edge's bend and junction points and, at a SPLINES P5
+  stop, the spline segment summaries (R3). `LayeredRoutingVectors.test.ts` replays all 943 at the AD-4 bar
+  (coordinates within 1e-6, orders exact); step rows under ten nodes also match the full 7a dump.
+- The JUnit invariants `BasicEdgeRouterTest.checkEdgeRouteIsOrthogonal` (orthogonal configurator only, as upstream),
+  `Issue726Test.testOrthogonalEdges` and `LayerSizeAndGraphHeigthCalculatorTest.testAllNodesContained` ported verbatim
+  over the `models` rows (97, 1 and 97 rows; 575 edges, 727 nodes); the Java suites run on the oracle with
+  `MODELS_REPO=$ELK_MODELS_DIR bash tools/oracle/java-tests.sh …`: `runs=550 / 550 / 1 failures=0` at mission start and
+  end.
+- Breadth sweep (R11, gitignored): 6,728 oracle cases over the 1,682 edge-bearing hierarchy levels of all 550 ptolemy
+  models at `P4` (BK), `P5/ORTHOGONAL`, `P5/POLYLINE` and `FINAL_SPLINE_BENDPOINTS_CALCULATOR/SPLINES` (6,280 ok, 448
+  refused — all `SELF_LOOP_PREPROCESSOR` (7g) —, 0 throws, 0 timeouts; the hyperedge levels 7d refused are accepted
+  now); the port's canonical dump hash, geometry included, equals the oracle's for every ok case (stride 1 and stride 2).
+- 62 anchored unit cases cite a site or call row (`// oracle: <row id>; <Java file:line>`); the
+  replay-alone coverage map `plans/layered-edge-routing/unreached.md` classifies the 309 untaken branches and 94
+  uncovered functions (170 S in 20 scenarios after T13's corrections, 164 J, 65 U, 4 X); after them 20 of the 46 7e files are at 100 % branches with the generic replay and the class tests, and every remainder below 90 % is a named 7f/7g path or a dead arm (`HyperedgeDummyMerger` 77.1, `LongEdgeJoiner` 80, `BaseRoutingDirectionStrategyForRoutingDirection` 75, `FinalSplineBendpointsCalculator.ts` 89.7, the two N/S direction strategies 0); whole-suite coverage 98.86 / 96.88 / 99.01 / 98.86.
+- Landed vectors, goldens and corpus are unchanged: the refs diff against `main` is the two new routing refs, the 32
+  vendored inputs and their manifest rows, and the sweep test. The 7a–7d vector scripts reproduce their refs byte for
+  byte.
+
+**AD-10 sites.** `SplineSegment.java:60-121` (`edges`, iterated by the bend-point calculator) and
+`SplineEdgeRouter.java:588-589` (`upEdges`/`downEdges`, a `HashSet<Pair<…>>` the segment constructor iterates) are
+insertion-ordered `Set`s; the JVM `Pair` order proved unobservable on the rows (every multi-edge segment has two edges
+and the per-edge bodies are independent; a reversal test pins it), with `getSplinePath` under compaction left to 7g.
+`BaseRoutingDirectionStrategy.java:44` and `PolylineEdgeRouter.java:188` (`createdJunctionPoints`) use `KVector.equals`
+semantics, membership only; `HyperEdgeCycleDetector.java:152` keeps its `TreeSet` order by `mark`;
+`OrthogonalRoutingGenerator.java:164`, `SplineEdgeRouter.java:156-159` are lookup maps.
+
+**Divergences found during the mission, fixed at origin.** None reached the oracle rows: `SplineSegment.anchorY` let a
+null `SPLINE_NS_PORT_Y_COORD` flow where the Java unboxes and throws (explicit `TypeError`, AD-16); the landed 7a dump
+context named a removed node as a fresh `ref` and the enum registry lacked `EdgeRouting` (both twinned in the 7e
+helpers, the landed helpers untouched); one hand-derived test expectation (`isStraight(10, 10.2)`) was wrong in
+floating point and was replaced by a twin (L4). No numeric divergence between the port and the oracle in 943 rows and
+6,280 sweep cases.
+
+**Known divergences found.** None numeric. Open by design:
+
+- **Flat levels only (C3) and the components flag (B3):** as in parts b–d.
+- **Refused rows (R1):** prefixes naming the label and comment processors, the hierarchical orthogonal router, the
+  hypernode and constraints processors (7f), the self-loop, wrapping and compaction processors (7g) and 7c's before-P3
+  categories are not recorded: 23 accepted refusals; ticket 341 (`elk.direction: UP`) has no rows.
+- **Oracle throws:** six `hierarchical_ports` levels (hierarchy03–07, 09 / `Compound`) throw a `NullPointerException`
+  in `BetweenLayerEdgeTwoNodeCrossingsCounter` under POLYLINE and SPLINES because only the orthogonal router adds
+  `HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR`; the recorder skips them (`ORACLE_THROWS`), the port has no rows for them and
+  would fail the same way (candidate upstream report).
+- **The caps:** `layered-routing.json` is 52,641 bytes under 5 MiB after the R2 trimming order (a four-model variant
+  set, ptolemy POLYLINE/SPLINES rows and `LONG_EDGE_JOINER` stops on the trim set); the recorder is at 2,998 of 3,000
+  lines (the sweep modes live in a sibling launcher). Both caps were raised on 2026-11-03 (16 MiB per ref, 5,000 lines
+  per recorder; roadmap revision "caps raised"), so a later row or recorder change no longer needs a cap decision.
+- **Chain-forced site rows:** the three `sites/SelfLoop/*` rows omit `SELF_LOOP_PREPROCESSOR` (7c S13 precedent) and the
+  two `sites/FinalSplineBendpoints/compaction/*` rows set the compaction option without the 7g compactor; every other
+  site row equals its pipeline twin.
+- **Unreached arms with a named mechanism:** `plans/layered-edge-routing/unreached.md` § T13 corrections (the far arms of
+  `segmentAllowsSloppyRouting`, provably unreachable by the horizontal placement; three Medium splitter arms).
+- **Randomness scope:** the two draws (`HyperEdgeCycleDetector`, `SplineEdgeRouter.breakCycles`) come from the graph's
+  `Random`; rows replay the recorded prefix under seed 1, the `tie` rows under seeds 1 and 4096; no 7e class creates a
+  `Random`.
+- **Prose typos corrected:** none found in this mission (`QUATER_PI` and `LayerSizeAndGraphHeigthCalculatorTest` are
+  identifiers, kept).
 
 ## Temporary gaps
 

@@ -2,21 +2,22 @@
 
 # elk-engine architecture overview
 
-| Document                                             | Content                                                                                             |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [inventory.md](inventory.md)                         | Every ELK bundle: purpose, LOC, generated sources, scope                                            |
-| [port-map.md](port-map.md)                           | Java packages to `src/` modules mapping                                                             |
-| [component-map.md](component-map.md)                 | In-scope bundle dependencies; core runtime pieces                                                   |
-| [../translation-rules.md](../translation-rules.md)   | Java to TypeScript rules                                                                            |
-| [../conformance.md](../conformance.md)               | Oracle comparison bar and procedure (arrives later in this mission)                                 |
-| [elk-text.md](elk-text.md)                           | ELK Text (`.elkt`) port, the Xtext subset, runbook and deferrals                                    |
-| [elk-json-text.md](elk-json-text.md)                 | ELK Textual JSON (`.elkj`) port, lazy linking, runbook and deferrals                                |
-| [grandom.md](grandom.md)                             | grandom (`.elkr`) random graph generator port, evidence and runbook                                 |
-| [core-engine.md](core-engine.md)                     | Layout engine and the fixed, box and random providers (mission 5a)                                  |
-| [melk-codegen.md](melk-codegen.md)                   | The `.melk` generator, pending types, lazy constants, regeneration                                  |
-| [complexity.md](complexity.md)                       | The complexity gate that measures every function (`npm run complexity`)                             |
-| [alg-layered.md](alg-layered.md)                     | Layered framework (mission 7a): LGraph model, transform, staged classes, runbook                    |
-| [alg-layered-placement.md](alg-layered-placement.md) | Layered node placement (mission 7d): p4nodes, Brandes-Köpf, five processors, geometry rows, runbook |
+| Document                                             | Content                                                                                                         |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| [inventory.md](inventory.md)                         | Every ELK bundle: purpose, LOC, generated sources, scope                                                        |
+| [port-map.md](port-map.md)                           | Java packages to `src/` modules mapping                                                                         |
+| [component-map.md](component-map.md)                 | In-scope bundle dependencies; core runtime pieces                                                               |
+| [../translation-rules.md](../translation-rules.md)   | Java to TypeScript rules                                                                                        |
+| [../conformance.md](../conformance.md)               | Oracle comparison bar and procedure (arrives later in this mission)                                             |
+| [elk-text.md](elk-text.md)                           | ELK Text (`.elkt`) port, the Xtext subset, runbook and deferrals                                                |
+| [elk-json-text.md](elk-json-text.md)                 | ELK Textual JSON (`.elkj`) port, lazy linking, runbook and deferrals                                            |
+| [grandom.md](grandom.md)                             | grandom (`.elkr`) random graph generator port, evidence and runbook                                             |
+| [core-engine.md](core-engine.md)                     | Layout engine and the fixed, box and random providers (mission 5a)                                              |
+| [melk-codegen.md](melk-codegen.md)                   | The `.melk` generator, pending types, lazy constants, regeneration                                              |
+| [complexity.md](complexity.md)                       | The complexity gate that measures every function (`npm run complexity`)                                         |
+| [alg-layered.md](alg-layered.md)                     | Layered framework (mission 7a): LGraph model, transform, staged classes, runbook                                |
+| [alg-layered-placement.md](alg-layered-placement.md) | Layered node placement (mission 7d): p4nodes, Brandes-Köpf, five processors, geometry rows, runbook             |
+| [alg-layered-routing.md](alg-layered-routing.md)     | Layered edge routing (mission 7e): p5edges orthogonal, polyline, splines, six processors, routing rows, runbook |
 
 ## What elk-engine is
 
@@ -29,7 +30,7 @@ the layout engine (`RecursiveGraphLayoutEngine`, `LayoutAlgorithmResolver`, `Gra
 three core providers `fixed`, `box` and `random` are ported and equal the oracle on the curated goldens
 (mission 5a, [core-engine.md](core-engine.md)). The rest of `core` is ported too (mission 5b: processor pipeline, `LayoutConfigurator`, `ElkSpacings`, `ElkMath`, splines,
 comment attachment; see [core-engine.md](core-engine.md#mission-5b)). The shared `alg.common` bundle is fully ported (mission 6a: geometry, network simplex, 1D compaction, overlaps, spore, polyomino; mission 6b: `nodespacing` and `NodeMicroLayout`, proven by a 326-row oracle replay; see [alg-common.md](alg-common.md)).
-The layered framework is ported (mission 7a: the options package, the LGraph model, the ElkGraph ↔ LGraph transform and the provider shell, proven by two oracle vector files of 272 and 330 rows; the layout phases follow in 7b–7h; see [alg-layered.md](alg-layered.md)). Its first two phases are ported (mission 7b: the eleven cycle breakers, the nine layerers and the ten processors around them, proven by 651 oracle phase rows and a 32,652-case sweep; [alg-layered.md § 8](alg-layered.md#part-b)). Its third phase is ported (mission 7c: crossing minimization with its counters, the greedy switch, the model-order comparators and the eight processors between P2 and P3, proven by 808 oracle order rows and a 6,728-case sweep; [alg-layered.md § 9](alg-layered.md#part-c)). Its fourth phase is ported (mission 7d: the four node placers with Brandes-Köpf and the five processors a P4 stop needs, proven by 604 oracle placement rows with geometry and a 8,410-case sweep; [alg-layered-placement.md](alg-layered-placement.md)). No layout algorithm runs yet (layered phases, mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex).
+The layered framework is ported (mission 7a: the options package, the LGraph model, the ElkGraph ↔ LGraph transform and the provider shell, proven by two oracle vector files of 272 and 330 rows; the layout phases follow in 7b–7h; see [alg-layered.md](alg-layered.md)). Its first two phases are ported (mission 7b: the eleven cycle breakers, the nine layerers and the ten processors around them, proven by 651 oracle phase rows and a 32,652-case sweep; [alg-layered.md § 8](alg-layered.md#part-b)). Its third phase is ported (mission 7c: crossing minimization with its counters, the greedy switch, the model-order comparators and the eight processors between P2 and P3, proven by 808 oracle order rows and a 6,728-case sweep; [alg-layered.md § 9](alg-layered.md#part-c)). Its fourth phase is ported (mission 7d: the four node placers with Brandes-Köpf and the five processors a P4 stop needs, proven by 604 oracle placement rows with geometry and a 8,410-case sweep; [alg-layered-placement.md](alg-layered-placement.md)). Its fifth phase is ported (mission 7e: the orthogonal, polyline and spline routers with the six processors a routed result needs, proven by 943 oracle routing rows with edge geometry and a 6,728-case sweep; [alg-layered-routing.md](alg-layered-routing.md)). No layout algorithm runs yet (layered phases, mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex).
 
 ## Relation to ELK Java and the oracle
 

@@ -211,7 +211,7 @@
 //   re-imported with ElkGraphJson.forGraph(String).toElk() and the steps (re-read from their serialised JSON, so a replay
 //   sees exactly what the file holds) run on it: that outcome is the recorded expected, (3) the steps also run on a freshly
 //   prepared original and the row fails if its outcome differs byte for byte. The whole row is built twice from scratch
-//   and the two serialisations must be byte-identical. The output must stay under 5 MB (L3).
+//   and the two serialisations must be byte-identical. The output must stay under 16 MiB (L3; raised from 5 MB on 2026-11-03).
 //
 // Code copied from tools/vectors/LayeredFrameworkVectors.java (single-file launchers cannot share code): lines 636-871 (the LGraph Dump
 //   class, pair/quad/margin/single), lines 873-1020 (the C4 Encoder and its helpers; adapted: an optional `namer` hook
@@ -315,7 +315,7 @@ public class LayeredSiteVectors {
     static final String ELK_ROOT = "elk", FIRST_GRAPH = "g0", AUTO = "x/";
     static final String NO_SUCH_CONSTANT = "NO_SUCH_CONSTANT";
     static final String HASH_MARK = "@<hash>";
-    static final long MAX_BYTES = 5L * 1024 * 1024;
+    static final long MAX_BYTES = 16L * 1024 * 1024;
 
     // SHA-256 of every curated model read (group S15), "<sha256>  repo:<path under the repo root>". Keep these lines:
     // the shell script parses them.
@@ -2546,7 +2546,7 @@ fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd  repo:test/corp
         out.append("  ]\n}\n");
         long bytes = out.toString().getBytes(StandardCharsets.UTF_8).length;
         if (bytes > MAX_BYTES) {
-            throw new IllegalStateException("output is " + bytes + " bytes, over the 5 MB cap (L3)");
+            throw new IllegalStateException("output is " + bytes + " bytes, over the 16 MiB cap (L3)");
         }
         Files.createDirectories(Path.of(args[0]));
         Files.writeString(Path.of(args[0], OUTPUT), out, StandardCharsets.UTF_8);

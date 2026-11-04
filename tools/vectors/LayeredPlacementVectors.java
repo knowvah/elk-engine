@@ -173,7 +173,7 @@ public class LayeredPlacementVectors {
     static final String TICKETS = "test/golden/inputs/tickets/layered/";
     static final int MAX_DEPTH = 8;
     static final int FULL_DUMP_BELOW = 10;
-    static final long MAX_BYTES = (System.getenv("PLACEMENT_CAP_MB") == null ? 5L : Long.parseLong(System.getenv("PLACEMENT_CAP_MB"))) * 1024 * 1024; // PLACEMENT_CAP_MB: diagnosis aid, the committed output stays under 5 MB
+    static final long MAX_BYTES = (System.getenv("PLACEMENT_CAP_MB") == null ? 16L : Long.parseLong(System.getenv("PLACEMENT_CAP_MB"))) * 1024 * 1024; // PLACEMENT_CAP_MB: diagnosis aid, the committed output stays under 16 MiB (raised from 5 MB on 2026-11-03)
     static final String BASE_GRAPH = "g0";
     static final String P1 = "P1_CYCLE_BREAKING", P2 = "P2_LAYERING", P3 = "P3_NODE_ORDERING", P4 = "P4_NODE_PLACEMENT";
     static final Set<String> IGNORED_IDS = Set.of("processors", "random", "spacings");
@@ -2962,7 +2962,7 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
         }
         long bytes = text.getBytes(StandardCharsets.UTF_8).length;
         if (bytes > MAX_BYTES) {
-            throw new IllegalStateException("output is " + bytes + " bytes, over the 5 MB cap");
+            throw new IllegalStateException("output is " + bytes + " bytes, over the 16 MiB cap");
         }
         Files.createDirectories(Path.of(args[0]));
         Files.writeString(Path.of(args[0], OUTPUT), text, StandardCharsets.UTF_8);

@@ -22,6 +22,7 @@ algorithm classes land in 7b–7h. Counts of oracle rows live in [conformance.md
 | [8. Part b: cycles and layers](#part-b)     | Mission 7b: p1cycles, p2layers, ten processors, phase rows, sweep           |
 | [9. Part c: crossing minimization](#part-c) | Mission 7c: p3order, counting, greedy switch, model order, eight processors |
 | [10. Part d: node placement](#part-d)       | Mission 7d: see [alg-layered-placement.md](alg-layered-placement.md)        |
+| [11. Part e: edge routing](#part-e)         | Mission 7e: see [alg-layered-routing.md](alg-layered-routing.md)            |
 
 ## 1. Package map {#package-map}
 
@@ -467,3 +468,10 @@ Mission 7d (`layered-node-placement`, roadmap row 7d) ported the fourth phase (`
 processors a P4 stop needs. This file is at its 500-line limit, so part d lives in the sibling
 [alg-layered-placement.md](alg-layered-placement.md) (package map, geometry rows, recursion rewrites, idioms,
 evidence, runbook).
+
+## 11. Part e: edge routing (mission 7e) {#part-e}
+
+Mission 7e (`layered-edge-routing`, roadmap row 7e) ported the fifth phase (`p5edges`, `p5edges.orthogonal`,
+`p5edges.splines`) and the six processors a routed result needs. Part e lives in the sibling
+[alg-layered-routing.md](alg-layered-routing.md) (package map, routing rows, recursion rewrites, idioms, evidence,
+runbook).

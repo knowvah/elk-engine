@@ -16,13 +16,14 @@ const TDZ_PATTERN = /ReferenceError|before initialization/;
 
 /**
  * Entry points, relative to the repo root. Later missions append their strategy enums here as they wire them:
- * 7e `EdgeRouterFactory`, and so on (7d added `NodePlacementStrategy`, N4).
+ * 7f appends the next entry, and so on (7d added `NodePlacementStrategy`, N4; 7e added `EdgeRouterFactory`, R4).
  */
 const ENTRY_POINTS: readonly string[] = [
   'src/alg/layered/options/CycleBreakingStrategy.ts',
   'src/alg/layered/options/LayeringStrategy.ts',
   'src/alg/layered/options/CrossingMinimizationStrategy.ts',
   'src/alg/layered/options/NodePlacementStrategy.ts',
+  'src/alg/layered/p5edges/EdgeRouterFactory.ts',
   'src/alg/layered/options/LayeredMetaDataProvider.ts',
   'src/alg/layered/options/LayeredOptions.ts',
   'src/alg/layered/intermediate/IntermediateProcessorStrategy.ts',
