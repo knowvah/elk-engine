@@ -24,7 +24,7 @@ import {
   type NubSplineParts,
   type NubSplineState,
 } from './NubSplineKnots.js';
-import { NubSplinePolarCP, polarCPsToString } from './NubSplinePolarCP.js';
+import { polarCPsToString } from './NubSplinePolarCP.js';
 import { Rectangle } from './Rectangle.js';
 
 /** A `List<KVector>` argument of the constructor: the Java list is mutated (padded at the front) in place. */

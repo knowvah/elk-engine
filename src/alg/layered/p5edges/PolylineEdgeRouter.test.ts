@@ -37,14 +37,6 @@ const STEPS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing-steps.js
 const ROUTING_PHASE = 'P5_EDGE_ROUTING';
 const POLYLINE = 'POLYLINE';
 
-/** The strategy names of a `P5_EDGE_ROUTING` phase in a row's prefix or steps (`[]`: the plan stops before P5). */
-function routersOf(row: RoutingRow): string[] {
-  if (row.steps === null) {
-    return (row.prefix ?? []).filter((entry) => entry.startsWith(`${ROUTING_PHASE}/`)).map((e) => e.split('/')[1]!);
-  }
-  return row.steps.filter(([op, phase]) => op === 'runPhase' && phase === ROUTING_PHASE).map((step) => String(step[2]));
-}
-
 const factories: Factories = {
   createProcessor(name): ILayoutProcessor<LGraph> {
     return IntermediateProcessorStrategy.valueOf(name).create();

@@ -27,7 +27,6 @@ import { NodePlacementStrategy } from '../options/NodePlacementStrategy.js';
 import { HyperedgeDummyMerger } from './HyperedgeDummyMerger.js';
 
 const STEPS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing-steps.json`;
-const COORDINATE_DIGITS = 6;
 
 /** The row-replaying factories: the real enums, `HyperedgeDummyMerger` injected for HYPEREDGE_DUMMY_MERGER. */
 const factories: Factories = {

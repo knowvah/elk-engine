@@ -3,7 +3,6 @@ import type { ILayoutPhase } from '../../../../core/alg/ILayoutPhase.js';
 import { LayoutProcessorConfiguration } from '../../../../core/alg/LayoutProcessorConfiguration.js';
 import type { IElkProgressMonitor } from '../../../../core/util/IElkProgressMonitor.js';
 import * as Iterables from '../../../../guava/Iterables.js';
-import { add as int32Add } from '../../../../java/lang/Int32.js';
 import { ArrayListIterator } from '../../../../java/util/ListIterator.js';
 import { LayeredPhases } from '../../LayeredPhases.js';
 import type { LEdge } from '../../graph/LEdge.js';

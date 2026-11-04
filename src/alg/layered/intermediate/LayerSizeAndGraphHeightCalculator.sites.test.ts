@@ -28,7 +28,6 @@ import { NodePlacementStrategy } from '../options/NodePlacementStrategy.js';
 import { LayerSizeAndGraphHeightCalculator } from './LayerSizeAndGraphHeightCalculator.js';
 
 const STEPS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing-steps.json`;
-const COORDINATE_DIGITS = 6;
 
 /** The row-replaying factories: the real enums, `LayerSizeAndGraphHeightCalculator` injected for LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR. */
 const factories: Factories = {

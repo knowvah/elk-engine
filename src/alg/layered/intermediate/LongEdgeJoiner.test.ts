@@ -43,9 +43,6 @@ function runsProcessor(row: RoutingRow, name: string): boolean {
     : row.steps.some(([op, arg]) => op === 'runProcessor' && arg === name);
 }
 
-/** The stop of a `models` row id `models/<model>/<level>/<stop>/<variant>`. */
-const stopOf = (row: RoutingRow): string | undefined => row.id.split('/')[3];
-
 const factories: Factories = {
   createProcessor(name): ILayoutProcessor<LGraph> {
     return IntermediateProcessorStrategy.valueOf(name).create();
