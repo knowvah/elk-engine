@@ -23,6 +23,7 @@ algorithm classes land in 7b–7h. Counts of oracle rows live in [conformance.md
 | [9. Part c: crossing minimization](#part-c) | Mission 7c: p3order, counting, greedy switch, model order, eight processors |
 | [10. Part d: node placement](#part-d)       | Mission 7d: see [alg-layered-placement.md](alg-layered-placement.md)        |
 | [11. Part e: edge routing](#part-e)         | Mission 7e: see [alg-layered-routing.md](alg-layered-routing.md)            |
+| [12. Part f: the running pipeline](#part-f) | Mission 7f: see [alg-layered-pipeline.md](alg-layered-pipeline.md)          |
 
 ## 1. Package map {#package-map}
 
@@ -475,3 +476,10 @@ Mission 7e (`layered-edge-routing`, roadmap row 7e) ported the fifth phase (`p5e
 `p5edges.splines`) and the six processors a routed result needs. Part e lives in the sibling
 [alg-layered-routing.md](alg-layered-routing.md) (package map, routing rows, recursion rewrites, idioms, evidence,
 runbook).
+
+## 12. Part f: the running pipeline (mission 7f) {#part-f}
+
+Mission 7f (`layered-pipeline`, the first brief of roadmap row 7f) ported the driver (`ElkLayered`, `GraphConfigurator`),
+`components` and four processors; `LayeredLayoutProvider.layout` runs from here. Part f lives in the sibling
+[alg-layered-pipeline.md](alg-layered-pipeline.md) (package map, rows, the SC4 re-replay, the runner subset, idioms,
+evidence, runbook).

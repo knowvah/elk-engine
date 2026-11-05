@@ -10,26 +10,27 @@ The comparator is [`test/golden/compare-json.ts`](../test/golden/compare-json.ts
 this document describes what it implements. Port rules live in
 [`docs/translation-rules.md`](translation-rules.md).
 
-| #   | Section                                                    | Answers                                   |
-| --- | ---------------------------------------------------------- | ----------------------------------------- |
-| 1   | [Oracle](#1-oracle)                                        | What is "correct", and at which commit?   |
-| 1a  | [Conformance unit](#1a-conformance-unit)                   | What is one case, and which cases exist?  |
-| 2   | [Conformance bar](#2-conformance-bar)                      | What counts as equal?                     |
-| 3   | [Goldens and corpus](#3-goldens-and-corpus)                | Where do reference outputs come from?     |
-| 4   | [Seam patches](#4-seam-patches)                            | How do we change the oracle?              |
-| 5   | [Oracle operations](#5-oracle-operations-runbook)          | What do I do when it breaks?              |
-| 6   | [Gates](#6-gates)                                          | What must pass before a change lands?     |
-| 7   | [ELK Text](#elk-text-elkt)                                 | How is `.elkt` proven?                    |
-| 8   | [ELK Textual JSON](#elk-textual-json-elkj)                 | How is `.elkj` proven?                    |
-| -   | [Core layouts](#core-layouts-fixed-box-random)             | How are `fixed`, `box`, `random` proven?  |
-| -   | [alg.common](#alg-common)                                  | How is `alg.common` part a proven?        |
-| -   | [alg.common nodespacing](#alg-common-nodespacing)          | How is `alg.common` part b proven?        |
-| -   | [alg.layered framework](#alg-layered-framework)            | How is the layered framework (7a) proven? |
-| -   | [alg.layered cycles and layers](#alg-layered-phases)       | How are the first two phases (7b) proven? |
-| -   | [alg.layered crossing minimization](#alg-layered-ordering) | How is the third phase (7c) proven?       |
-| -   | [alg.layered node placement](#alg-layered-placement)       | How is the fourth phase (7d) proven?      |
-| -   | [alg.layered edge routing](#alg-layered-routing)           | How is the fifth phase (7e) proven?       |
-| -   | [Temporary gaps](#temporary-gaps)                          | What differs from the Java for now?       |
+| #   | Section                                                    | Answers                                      |
+| --- | ---------------------------------------------------------- | -------------------------------------------- |
+| 1   | [Oracle](#1-oracle)                                        | What is "correct", and at which commit?      |
+| 1a  | [Conformance unit](#1a-conformance-unit)                   | What is one case, and which cases exist?     |
+| 2   | [Conformance bar](#2-conformance-bar)                      | What counts as equal?                        |
+| 3   | [Goldens and corpus](#3-goldens-and-corpus)                | Where do reference outputs come from?        |
+| 4   | [Seam patches](#4-seam-patches)                            | How do we change the oracle?                 |
+| 5   | [Oracle operations](#5-oracle-operations-runbook)          | What do I do when it breaks?                 |
+| 6   | [Gates](#6-gates)                                          | What must pass before a change lands?        |
+| 7   | [ELK Text](#elk-text-elkt)                                 | How is `.elkt` proven?                       |
+| 8   | [ELK Textual JSON](#elk-textual-json-elkj)                 | How is `.elkj` proven?                       |
+| -   | [Core layouts](#core-layouts-fixed-box-random)             | How are `fixed`, `box`, `random` proven?     |
+| -   | [alg.common](#alg-common)                                  | How is `alg.common` part a proven?           |
+| -   | [alg.common nodespacing](#alg-common-nodespacing)          | How is `alg.common` part b proven?           |
+| -   | [alg.layered framework](#alg-layered-framework)            | How is the layered framework (7a) proven?    |
+| -   | [alg.layered cycles and layers](#alg-layered-phases)       | How are the first two phases (7b) proven?    |
+| -   | [alg.layered crossing minimization](#alg-layered-ordering) | How is the third phase (7c) proven?          |
+| -   | [alg.layered node placement](#alg-layered-placement)       | How is the fourth phase (7d) proven?         |
+| -   | [alg.layered edge routing](#alg-layered-routing)           | How is the fifth phase (7e) proven?          |
+| -   | [alg.layered running pipeline](#alg-layered-pipeline)      | How is the whole layered layout (7f) proven? |
+| -   | [Temporary gaps](#temporary-gaps)                          | What differs from the Java for now?          |
 
 ## 1. Oracle
 
@@ -1268,6 +1269,46 @@ floating point and was replaced by a twin (L4). No numeric divergence between th
   `Random`.
 - **Prose typos corrected:** none found in this mission (`QUATER_PI` and `LayerSizeAndGraphHeigthCalculatorTest` are
   identifiers, kept).
+
+## alg.layered, part f: the running pipeline (mission 7f) {#alg-layered-pipeline}
+
+Mission 7f ported the driver (`ElkLayered`, `GraphConfigurator`), the connected-components package except
+`ComponentsCompactor` (staged, 7g), `GraphTransformer`, `HierarchicalPortOrthogonalEdgeRouter`, `EndLabelSorter`,
+`HypernodesProcessor` and `ConstraintsPostprocessor`, and the six arms that create them; `LayeredLayoutProvider.layout`
+now runs whole layouts (design, idioms and runbook in [alg-layered-pipeline.md](architecture/alg-layered-pipeline.md)).
+Decisions: `plans/layered-pipeline/decisions.md` (F1–F16, FX1–FX8).
+
+**Evidence.**
+
+- `test/golden/refs/java/layered-pipeline.json` (9,182,521 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-pipeline-vectors.sh`, `-XX:hashCode=2`): 1,239 rows, byte-stable; `full` 199 (whole layouts
+  through `RecursiveGraphLayoutEngine` with every level's plan: the 4 goldens, 79 vendored models, routing × direction,
+  components, options and 20 issue rows), `models` 905 (stops at the six new arms through `ElkLayered`'s test API),
+  `scenarios` 93, `sites` 42. `LayeredPipelineVectors.test.ts` replays 1,181 of them at the AD-4 bar and pins 58 to the
+  throw of a later mission's stage (FX7). The four `refs/elk/ptolemy-*` goldens equal the flagged recorder byte for byte
+  and the TS layout at AD-4.
+- SC4: the 2,351 `models` rows of the 7b–7e refs replay through the real driver with plan equality, 2 pinned (FX6);
+  `normalise` and the real configurator are state-equal on all of them.
+- 28 Java suites ported with their own assertions (allocation in `plans/layered-pipeline/suite-allocation.md`: 7f 28,
+  7f2 11, 7g 10, 7h 9), on a runner subset that applies the JVM's label metrics (`layered-label-metrics.json`, 1,380
+  texts, FX8). The oracle runs of this brief's 24 baseline suites and the four S1 suites equal
+  `plans/layered-pipeline/java-baseline.md` at mission start and end (`failures=0`).
+- Breadth sweep (F6, gitignored): 7,246 oracle cases over every edge-bearing ptolemy level × three routers and every
+  whole model × four directions; 6,646 `ok` cases hash-match exactly at stride 1; 600 refused, all self loops (7g); 0
+  throws. Cross-check against an unflagged JVM: 4,902 layered cases equal, 21 mismatches none of which is a layout, 0
+  nondeterministic.
+- 58 anchored unit cases cite a site row; the replay-alone coverage map `plans/layered-pipeline/unreached.md` partitions
+  169 untaken branches and 46 uncovered functions (S 73, J 44, U 92, X 6; 7 S moved to U by T15).
+- Landed vectors, goldens and corpus are unchanged; the refs diff adds `layered-pipeline.json`,
+  `layered-label-metrics.json`, the sweep test, 26 vendored inputs and their manifest rows.
+
+**What still throws, and which mission lifts it.** Edge labels, comment boxes, `layerUnzipping`, a monitor with logging
+enabled (`DebugUtil`): 7f2. Self loops, wrapping, post compaction, `compaction.connectedComponents`: 7g.
+`INCLUDE_CHILDREN`: 7h. Each throws `UnsupportedOperationException` naming the class and mission, at plan build.
+
+**Known divergences.** None numeric. Open by design: the pinned rows (FX6, FX7); the `ComponentGroup` key order follows
+the oracle's flag (FX3) and is unobservable in final layouts on the corpus; `EndLabelSorter`'s map order is insertion
+order pending 7f2's scenario (FX2); the label metrics are a macOS JVM snapshot (FX8).
 
 ## Temporary gaps
 
