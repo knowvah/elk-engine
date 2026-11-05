@@ -49,3 +49,4 @@ test/corpus/.phase-sweep/
 test/corpus/.order-sweep/
 test/corpus/.placement-sweep/
 test/corpus/.routing-sweep/
+test/corpus/.pipeline-sweep/

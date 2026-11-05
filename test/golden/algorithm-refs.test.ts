@@ -255,6 +255,42 @@ describe('committed algorithm oracle refs', () => {
   });
 });
 
+/**
+ * Inputs of the layered pipeline vectors (mission 7f T1, `tools/vectors/LayeredPipelineVectors.java`): the four layered golden ptolemy
+ * models (their unflagged refs are `refs/elk/ptolemy-*`) and the 18 tickets of the issue suites allocated to 7f
+ * (`plans/layered-pipeline/suite-allocation.md`), vendored byte-identical. The four models live under `pipeline/`, not
+ * `realworld/`: `LayeredFrameworkVectors.java` walks `realworld/` and requires an exact match with its pinned table.
+ */
+const LAYERED_PIPELINE_INPUTS = [
+  'pipeline/realworld/ptolemy/hierarchical/comm_scrambler_Scrambler.json',
+  'pipeline/realworld/ptolemy/hierarchical/de_clockdrift_ClockDriftHierarchy.json',
+  'pipeline/realworld/ptolemy/hierarchical/de_afdx_AFDXMulticastSimple.json',
+  'pipeline/realworld/ptolemy/hierarchical/de_switch_CrossbarSwitch.json',
+  'tickets/layered/143_smallVerticalEdgeSegmentSpacing.elkt',
+  'tickets/layered/318_overlappingHorizontalEdgeSegments.elkt',
+  'tickets/layered/405_differentPortLabelPositionsNSWEInside.elkt',
+  'tickets/layered/405_differentPortLabelPositionsNSWEOutsideNextToPort.elkt',
+  'tickets/layered/405_differentPortLabelPositionsTwoWestOutside.elkt',
+  'tickets/layered/405_differentPortLabelPositionsNSWEOutside.elkt',
+  'tickets/layered/405_differentPortLabelPositionsTwoWestOutsideNextToPort.elkt',
+  'tickets/layered/447_hierarchicalPortAnchors.elkt',
+  'tickets/layered/476_multiLabelInHorizontalLayout.elkt',
+  'tickets/layered/476_multiLabelInVerticalLayout.elkt',
+  'tickets/layered/502_collapsingCompoundNode.elkt',
+  'tickets/layered/515_polylineOverNodeIncOut.elkt',
+  'tickets/layered/515_polylineOverNodeIncoming.elkt',
+  'tickets/layered/515_polylineOverNodeOutgoing.elkt',
+  'tickets/layered/546_borderGaps.elkt',
+  'tickets/layered/548_NPEWithInsideSelfLoops.elkt',
+  'tickets/layered/587_polylineSplinesNPE.elkt',
+  'tickets/layered/603_labelOverlaps.elkt',
+  // the S1 suites of T12c, read only by those suites
+  'tests/core/node_size/inside_port_labels.elkt',
+  'tests/core/label_placement/port_labels/variants.elkt',
+  'tests/core/label_placement/port_labels/next_to_port_if_possible_inside.elkt',
+  'tests/core/label_placement/port_labels/next_to_port_if_possible_outside.elkt',
+];
+
 describe('vendored inputs', () => {
   it('records the pinned models commit', () => {
     const parsed = readJson(INPUTS_MANIFEST) as Obj;
@@ -262,8 +298,8 @@ describe('vendored inputs', () => {
     expect(parsed['commit']).toBe(corpus['commit']);
   });
 
-  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs and the 32 layered routing inputs, nothing else', () => {
-    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS, ...LAYERED_ROUTING_INPUTS].sort();
+  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs and the 32 layered routing inputs and the 26 layered pipeline inputs, nothing else', () => {
+    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS, ...LAYERED_ROUTING_INPUTS, ...LAYERED_PIPELINE_INPUTS].sort();
     expect(Object.keys(hashes).sort()).toEqual(expected);
   });
 

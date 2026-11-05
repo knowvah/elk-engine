@@ -7,6 +7,8 @@ import type { ElkNode } from '../../graph/ElkNode.js';
 import type { IProperty } from '../../graph/properties/IProperty.js';
 import { Property } from '../../graph/properties/Property.js';
 import { ElkGraphUtil } from '../../graph/util/ElkGraphUtil.js';
+import { BasicProgressMonitor } from '../../core/util/BasicProgressMonitor.js';
+import { LayeredLayoutProvider } from './LayeredLayoutProvider.js';
 import { LayeredMetaDataProvider } from './options/LayeredMetaDataProvider.js';
 import { LayeredOptions } from './options/LayeredOptions.js';
 import { LayeredSpacings } from './options/LayeredSpacings.js';
@@ -30,7 +32,7 @@ function assertEquals(expected: number, actual: number, delta: number): void {
   expect(Math.abs(actual - expected)).toBeLessThanOrEqual(delta);
 }
 
-// Java lines 57-61; used only by AfterLayoutTest (skipped), kept for the 7f un-skip.
+// Java lines 57-61; used by AfterLayoutTest.
 function createAndConfigureTestGraph(configurator: IGraphElementVisitor): ElkNode {
   const simpleGraph = createSimpleGraph();
   ElkUtil.applyVisitors(simpleGraph, configurator);
@@ -100,16 +102,16 @@ describe('LayeredSpacingTest', () => {
    * TODO only SPACING_NODE_NODE_BETWEEN_LAYERS is tested so far - add tests for the others!
    */
   describe('AfterLayoutTest', () => {
-    // S1 (decisions.md): runs a layered layout (LayeredLayoutProvider, Java lines 116-117); no pipeline exists
-    // until mission 7f, which un-skips this test. Java lines 109-125.
-    it.skip('testSpacingNodeNodeBetweenLayers', () => {
+    // S1 (decisions.md): runs a layered layout (LayeredLayoutProvider, Java lines 116-117). Java lines 109-125.
+    it('testSpacingNodeNodeBetweenLayers', () => {
       const graph = createAndConfigureTestGraph(
         LayeredSpacings.withBaseValue(33.0)
           .withFactor(LayeredOptions.SPACING_NODE_NODE_BETWEEN_LAYERS, 2.0)
           .toVisitor(),
       );
 
-      // layoutProvider = new LayeredLayoutProvider(); layoutProvider.layout(graph, new BasicProgressMonitor());
+      const layoutProvider = new LayeredLayoutProvider();
+      layoutProvider.layout(graph, new BasicProgressMonitor());
 
       for (const edge of graph.getContainedEdges()) {
         const source = ElkGraphUtil.getSourceNode(edge) as ElkNode;

@@ -955,3 +955,66 @@ User decision after mission 7e's stop 14, superseding the 7d and 7e "decision ne
   launcher (`LayeredRoutingSweep.java`) stays as the 7e shape, not a rule.
 - The five layered recorders' `MAX_BYTES` constants and throw messages now say 16 MiB; the next brief's stop 13 uses
   the new numbers (`plans/layered-edge-routing/decision-journal.md`, row `caps`).
+
+
+## Revision 2026-11-05 (layered-pipeline)
+
+Appended; no earlier line is edited. Source: F1–F16 and FX1–FX8 in `plans/layered-pipeline/decisions.md`; the journal is
+`plans/layered-pipeline/decision-journal.md`. Where this section conflicts with the text above, this section wins. It is
+the binding input of the 7f2 brief.
+
+**Row 7f's first brief is done.** `ElkLayered` (with two section files), `GraphConfigurator`, the eight `components`
+classes, `GraphTransformer`, `HierarchicalPortOrthogonalEdgeRouter`, `EndLabelSorter`, `HypernodesProcessor`,
+`ConstraintsPostprocessor` and their six arms are ported; `LayeredLayoutProvider.layout` runs. Evidence:
+`layered-pipeline.json` (1,239 rows: `full` 199, `models` 905, `scenarios` 93, `sites` 42; 1,181 replayed at AD-4, 58
+pinned), the four ptolemy goldens equal, the 2,351 landed `models` rows re-replayed through the real driver (2 pinned),
+28 Java suites ported with oracle `failures=0` at start and end, a 6,646-case sweep matching exactly at stride 1, and 58
+anchored cases. No numeric divergence from the oracle.
+
+**Scope moves, binding for 7f2–7h (F1).** Row 7f is split into 7f (`layered-pipeline`, done) and 7f2
+(`layered-labels`). `components` moved from 7h to 7f, except `ComponentsCompactor` (staged, 7g).
+`HierarchicalNodeResizingProcessor` moved from 7f to 7h. The processor enum's tally is 7b 10, 7c 10, 7d 5, 7e 6, 7f 6,
+7f2 12, 7g 9, 7h 1; the stage marker accepts `7f2`.
+
+**Hand-offs to 7f2 (`layered-labels`).**
+
+- Port `LabelDummyInserter`, `LabelDummySwitcher` (staged), `LabelDummyRemover`, `LabelSideSelector`,
+  `EndLabelPreprocessor`, `EndLabelPostprocessor`, `LabelManagementProcessor` (both arms), `CommentPreprocessor`,
+  `CommentNodeMarginCalculator`, `CommentPostprocessor`, `AlternatingLayerUnzipper`, `InteractiveLayeredGraphVisitor`,
+  `DotDebugUtil`, `JsonDebugUtil` and `DebugUtil` (staged).
+- **FX5:** flip `site/provider/flat` and `site/provider/cancelled` (`test/helpers/layered-site-replay.ts`) from the 7f2
+  throw to comparing their recorded layout.
+- **FX6, FX7:** delete the 2 `layered-phases.json` and 57 `layered-pipeline.json` entries naming 7f2 in
+  `test/helpers/layered-pipeline-pinned-rows.ts`; the rows must then replay their recorded expectations.
+- **FX2:** record a scenario with end labels on parallel edges that share source port, target node and target port,
+  compared with the oracle; a mismatch in `EndLabelSorter`'s map order is stop 17 with evidence.
+- Accepted label and comment refusals of `layered-pipeline.json` (19 `full` rows, 114 `models` rows) and of the earlier
+  refs become recordable; the label arms of `HyperedgeDummyMerger` (13 untaken) and the label arms carried from 7c–7e.
+- `NodeMarginCalculatorTest` gains its `CommentNodeMarginCalculator` and `EndLabelPreprocessor` hooks; `Issue871Test`
+  (one test has edge labels) and the 11 suites `suite-allocation.md` assigns to 7f2 are ported then.
+- `EndLabelSorter`'s sort body and `ConstraintsPostprocessor`'s logging arms (U in `unreached.md`) become reachable.
+
+**Hand-offs to 7g.** Port `ComponentsCompactor` (staged) and `compaction/*`; the self-loop family: 600 sweep cases (112
+levels × 3 routers, 66 whole models × 4 directions) are refused today, the `PIPELINE_SUITES_FULL=1` corpus suites fail
+195 cases (3 × 65 models) on `SelfLoopPreProcessor`, and one `layered-pipeline.json` row is pinned to it (FX7);
+`NodeMarginCalculatorTest` gains its `SelfLoopRouter` hook; R9's recheck of `getSplinePath` under compaction; the 10
+suites allocated to 7g.
+
+**Hand-offs to 7h.** Port `HierarchicalNodeResizingProcessor`, `CompoundGraphPreprocessor` and
+`CompoundGraphPostprocessor` (staged); the hierarchical driver path (`doCompoundLayout`, `hierarchicalLayout`,
+`ElkLayeredHierarchy.ts`, U in `unreached.md`); the `include-children*` provider rows, which expect the 7h throw today;
+the 9 suites allocated to 7h.
+
+**Flags for the user.**
+
+- The label metrics (FX8) are a macOS JVM snapshot; a different JDK or OS may measure differently, so a re-record on
+  another platform is a decision, as for any vector.
+- `../elk` HEAD is 22 commits past the pin with no change in the layered, core, common or test bundles; recheck the diff
+  in each mission.
+
+**Follow-ups (cleanup, outside this mission's write-sets).** `ElkLayered.test.ts`'s 199-row loop duplicates
+`LayeredPipelineVectors.test.ts`'s `full` group; `tools/corpus/ts-layout-compare.ts` registers no layered algorithm;
+`src/java/util/LinkedList.ts`'s header claims identity equality for every ELK element (false for `KVector`);
+`test/helpers/junit-delta.ts` and the private delta helper of `edge-route-orthogonal.ts` overlap; the older
+`test/helpers/elkt-layout-harness.ts` beside the new runner; the per-file factories objects of the anchored tests; the
+`devAssert` helper is still unwritten.

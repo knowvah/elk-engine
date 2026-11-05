@@ -2,9 +2,9 @@
 /*
  * Port of org.elk.core.test RecursiveGraphLayoutEngineTest.
  *
- * NOT PORTED (decision M6, deferred to mission 7a unchanged): `testEmptyAlgorithmId`. It lays out a graph without an
- * algorithm and asserts that the default resolves to `org.eclipse.elk.layered`, which is not registered before
- * mission 7a.
+ * `testEmptyAlgorithmId` (decision M6, deferred to mission 7a, ported in 7f/T12c) lays out a graph without an
+ * algorithm and asserts that the default resolves to `org.eclipse.elk.layered`; the Java registers it through
+ * `PlainJavaInitialization.initializePlainJavaLayout()`, here `registerLayered()`.
  *
  * `PlainJavaInitialization.initializePlainJavaLayout()` becomes `LayoutMetaDataService.getInstance()`, which registers
  * the core algorithms (fixed, box, random). The tests below the ported ones cover the Java branches the JUnit test does
@@ -52,6 +52,7 @@ import {
   scripts,
 } from '../../test/helpers/layout-provider-stubs.js';
 import type { WhiteBoxStubProvider } from '../../test/helpers/layout-provider-stubs.js';
+import { registerLayered } from '../../test/helpers/layered-framework-replay.js';
 
 class Graph {
   readonly root: ElkNode;
@@ -69,6 +70,7 @@ class Graph {
 describe('RecursiveGraphLayoutEngineTest', () => {
   beforeAll(() => {
     LayoutMetaDataService.getInstance();
+    registerLayered();
   });
 
   it('testUnresolvedGraph', () => {
@@ -97,6 +99,14 @@ describe('RecursiveGraphLayoutEngineTest', () => {
     graph.root.setProperty(CoreOptions.ALGORITHM, 'foo.Bar');
     const engine = new RecursiveGraphLayoutEngine();
     expect(() => engine.layout(graph.root, new BasicProgressMonitor())).toThrow(UnsupportedConfigurationException);
+  });
+
+  it('testEmptyAlgorithmId', () => {
+    const graph = new Graph();
+    const engine = new RecursiveGraphLayoutEngine();
+    engine.layout(graph.root, new BasicProgressMonitor());
+
+    expect(graph.root.getProperty(CoreOptions.RESOLVED_ALGORITHM)!.getId()).toBe('org.eclipse.elk.layered');
   });
 });
 

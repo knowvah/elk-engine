@@ -5,13 +5,19 @@ import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOpe
 import type { LGraph } from '../graph/LGraph.js';
 import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
+import { ConstraintsPostprocessor } from './ConstraintsPostprocessor.js';
 import { EdgeAndLayerConstraintEdgeReverser } from './EdgeAndLayerConstraintEdgeReverser.js';
+import { EndLabelSorter } from './EndLabelSorter.js';
 import { FinalSplineBendpointsCalculator } from './FinalSplineBendpointsCalculator.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
 import { HierarchicalPortDummySizeProcessor } from './HierarchicalPortDummySizeProcessor.js';
+import { GraphTransformer } from './GraphTransformer.js';
+import { Mode } from './GraphTransformerMode.js';
+import { HierarchicalPortOrthogonalEdgeRouter } from './HierarchicalPortOrthogonalEdgeRouter.js';
 import { HierarchicalPortPositionProcessor } from './HierarchicalPortPositionProcessor.js';
 import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
 import { HyperedgeDummyMerger } from './HyperedgeDummyMerger.js';
+import { HypernodesProcessor } from './HypernodesProcessor.js';
 import { InLayerConstraintProcessor } from './InLayerConstraintProcessor.js';
 import { InnermostNodeMarginCalculator } from './InnermostNodeMarginCalculator.js';
 import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
@@ -56,9 +62,10 @@ export function createIntermediateProcessor(strategy: IntermediateProcessorStrat
 function createBeforePhase1(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy.name()) {
     case 'DIRECTION_PREPROCESSOR':
-      throw notPorted('GraphTransformer', '7f');
+      // IntermediateProcessorStrategy.java:213-215: the preprocessor goes to the input direction (names swapped)
+      return new GraphTransformer(Mode.TO_INPUT_DIRECTION);
     case 'COMMENT_PREPROCESSOR':
-      throw notPorted('CommentPreprocessor', '7f');
+      throw notPorted('CommentPreprocessor', '7f2');
     case 'EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER':
       return new EdgeAndLayerConstraintEdgeReverser();
     case 'INTERACTIVE_EXTERNAL_PORT_POSITIONER':
@@ -74,7 +81,7 @@ function createBeforePhase1(strategy: IntermediateProcessorStrategy): ILayoutPro
 function createBeforePhase2(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy.name()) {
     case 'LABEL_DUMMY_INSERTER':
-      throw notPorted('LabelDummyInserter', '7f');
+      throw notPorted('LabelDummyInserter', '7f2');
     case 'SELF_LOOP_PREPROCESSOR':
       throw notPorted('SelfLoopPreProcessor', '7g');
     case 'LAYER_CONSTRAINT_PREPROCESSOR':
@@ -140,13 +147,13 @@ function createBeforePhase4(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'SELF_LOOP_PORT_RESTORER':
       throw notPorted('SelfLoopPortRestorer', '7g');
     case 'ALTERNATING_LAYER_UNZIPPER':
-      throw notPorted('AlternatingLayerUnzipper', '7f');
+      throw notPorted('AlternatingLayerUnzipper', '7f2');
     case 'SINGLE_EDGE_GRAPH_WRAPPER':
       throw notPorted('SingleEdgeGraphWrapper', '7g');
     case 'IN_LAYER_CONSTRAINT_PROCESSOR':
       return new InLayerConstraintProcessor();
     case 'END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR':
-      throw notPorted('LabelManagementProcessor', '7f');
+      throw notPorted('LabelManagementProcessor', '7f2');
     case 'LABEL_AND_NODE_SIZE_PROCESSOR':
       return new LabelAndNodeSizeProcessor();
     default:
@@ -162,15 +169,15 @@ function createBeforePhase42(strategy: IntermediateProcessorStrategy): ILayoutPr
     case 'SELF_LOOP_ROUTER':
       throw notPorted('SelfLoopRouter', '7g');
     case 'COMMENT_NODE_MARGIN_CALCULATOR':
-      throw notPorted('CommentNodeMarginCalculator', '7f');
+      throw notPorted('CommentNodeMarginCalculator', '7f2');
     case 'END_LABEL_PREPROCESSOR':
-      throw notPorted('EndLabelPreprocessor', '7f');
+      throw notPorted('EndLabelPreprocessor', '7f2');
     case 'LABEL_DUMMY_SWITCHER':
-      throw notPorted('LabelDummySwitcher', '7f');
+      throw notPorted('LabelDummySwitcher', '7f2');
     case 'CENTER_LABEL_MANAGEMENT_PROCESSOR':
-      throw notPorted('LabelManagementProcessor', '7f');
+      throw notPorted('LabelManagementProcessor', '7f2');
     case 'LABEL_SIDE_SELECTOR':
-      throw notPorted('LabelSideSelector', '7f');
+      throw notPorted('LabelSideSelector', '7f2');
     case 'HYPEREDGE_DUMMY_MERGER':
       return new HyperedgeDummyMerger();
     case 'HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR':
@@ -198,13 +205,13 @@ function createBeforePhase5(strategy: IntermediateProcessorStrategy): ILayoutPro
 function createAfterPhase5(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy.name()) {
     case 'CONSTRAINTS_POSTPROCESSOR':
-      throw notPorted('ConstraintsPostprocessor', '7f');
+      return new ConstraintsPostprocessor();
     case 'COMMENT_POSTPROCESSOR':
-      throw notPorted('CommentPostprocessor', '7f');
+      throw notPorted('CommentPostprocessor', '7f2');
     case 'HYPERNODE_PROCESSOR':
-      throw notPorted('HypernodesProcessor', '7f');
+      return new HypernodesProcessor();
     case 'HIERARCHICAL_PORT_ORTHOGONAL_EDGE_ROUTER':
-      throw notPorted('HierarchicalPortOrthogonalEdgeRouter', '7f');
+      return new HierarchicalPortOrthogonalEdgeRouter();
     case 'LONG_EDGE_JOINER':
       return new LongEdgeJoiner();
     case 'SELF_LOOP_POSTPROCESSOR':
@@ -224,19 +231,20 @@ function createAfterPhase5(strategy: IntermediateProcessorStrategy): ILayoutProc
 function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy.name()) {
     case 'LABEL_DUMMY_REMOVER':
-      throw notPorted('LabelDummyRemover', '7f');
+      throw notPorted('LabelDummyRemover', '7f2');
     case 'FINAL_SPLINE_BENDPOINTS_CALCULATOR':
       return new FinalSplineBendpointsCalculator();
     case 'END_LABEL_SORTER':
-      throw notPorted('EndLabelSorter', '7f');
+      return new EndLabelSorter();
     case 'REVERSED_EDGE_RESTORER':
       return new ReversedEdgeRestorer();
     case 'END_LABEL_POSTPROCESSOR':
-      throw notPorted('EndLabelPostprocessor', '7f');
+      throw notPorted('EndLabelPostprocessor', '7f2');
     case 'HIERARCHICAL_NODE_RESIZER':
-      throw notPorted('HierarchicalNodeResizingProcessor', '7f');
+      throw notPorted('HierarchicalNodeResizingProcessor', '7h');
     case 'DIRECTION_POSTPROCESSOR':
-      throw notPorted('GraphTransformer', '7f');
+      // IntermediateProcessorStrategy.java:211-212: the postprocessor goes back to the internal left-to-right layout
+      return new GraphTransformer(Mode.TO_INTERNAL_LTR);
     default:
       throw new IllegalArgumentException(
         `No implementation is available for the layout processor ${strategy.toString()}`,
