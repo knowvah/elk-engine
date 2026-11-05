@@ -11,22 +11,29 @@
 // carry the models' own constraints (PortSideProcessor makes free nodes FIXED_SIDE, and the sorter then orders by
 // side). The side-order invariant is asserted on those graphs.
 //
-// Not ported: `testMonotonicalCoordinates` (@TestAfterProcessor(LongEdgeJoiner)). It reads port coordinates, which only
-// exist after the label and node size processing, node placement, edge routing and LongEdgeJoiner, i.e. after phases 4
-// and 5 and processors of missions 7f and 7g that are not ported yet; no recorded row stops there.
+// `testMonotonicalCoordinates` (@TestAfterProcessor(LongEdgeJoiner)) and the Java `@Configurator configurePorts` are ported
+// in the second describe (mission 7f, T12a), through the layout test runner over the vendored ptolemy models, together
+// with `testProperPortSideOrder` under that configurator. The first two describes are the 7c replay of the recorded rows.
 //
 // @see org.eclipse.elk.alg.layered.test/src/org/eclipse/elk/alg/layered/intermediate/PortListSorterTest.java
 import { describe, expect, it } from 'vitest';
+import { defineLayoutTest } from '../../../../test/helpers/layout-test-runner.js';
+import { PTOLEMY_GRAPHS } from '../../../../test/helpers/ptolemy-suite-sources.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { runOrderPrefix } from '../../../../test/helpers/layered-order-replay-ops.js';
 import { loadOrderRows } from '../../../../test/helpers/layered-order-replay-rows.js';
 import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { PortSide } from '../../../core/options/PortSide.js';
+import type { ElkNode } from '../../../graph/ElkNode.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
+import { LayeredOptions } from '../options/LayeredOptions.js';
 import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
+import { LongEdgeJoiner } from './LongEdgeJoiner.js';
+import { PortListSorter } from './PortListSorter.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
 const STOP = 'PORT_LIST_SORTER';
@@ -90,4 +97,71 @@ describe('PortListSorterTest on the replayed rows', () => {
     expect([...graph].length).toBeGreaterThan(0);
     testProperPortSideOrder(graph);
   });
+});
+
+/** The Java `@Configurator configurePorts`: FIXED_ORDER on every node, with an index on each of its ports. */
+function configurePorts(graph: ElkNode): void {
+  const nodeQueue: ElkNode[] = [...graph.getChildren()];
+
+  while (nodeQueue.length > 0) {
+    const node = nodeQueue.shift()!;
+    nodeQueue.push(...node.getChildren());
+
+    if (node.getProperty(LayeredOptions.PORT_CONSTRAINTS) !== PortConstraints.FIXED_ORDER) {
+      node.setProperty(LayeredOptions.PORT_CONSTRAINTS, PortConstraints.FIXED_ORDER);
+
+      let index = 0;
+      for (const port of node.getPorts()) {
+        port.setProperty(LayeredOptions.PORT_INDEX, index++);
+      }
+    }
+  }
+}
+
+/** Waits until port coordinates have been assigned to check whether they reflect the port order. */
+function testMonotonicalCoordinates(lGraph: LGraph): void {
+  for (const layer of lGraph) {
+    for (const node of layer) {
+      let lastPos: number | null = null;
+      let lastSide: PortSide | null = null;
+
+      for (const port of node.getPorts()) {
+        // upon side change reset the reference position
+        if (lastSide === null || lastSide !== port.getSide()) {
+          if (port.getSide() === PortSide.NORTH || port.getSide() === PortSide.SOUTH) {
+            lastPos = port.getPosition().x;
+          } else if (port.getSide() === PortSide.EAST || port.getSide() === PortSide.WEST) {
+            lastPos = port.getPosition().y;
+          }
+
+          lastSide = port.getSide();
+          continue;
+        }
+
+        // check the positions (`lastPos` was set by the reset above: the side is one of the four)
+        const position = port.getPosition();
+        if (port.getSide() === PortSide.NORTH) {
+          expect(lastPos! <= position.x).toBe(true);
+        } else if (port.getSide() === PortSide.EAST) {
+          expect(lastPos! <= position.y).toBe(true);
+        } else if (port.getSide() === PortSide.SOUTH) {
+          expect(lastPos! >= position.x).toBe(true);
+        } else if (port.getSide() === PortSide.WEST) {
+          expect(lastPos! >= position.y).toBe(true);
+        }
+      }
+    }
+  }
+}
+
+defineLayoutTest({
+  name: 'PortListSorterTest with configurePorts over the vendored ptolemy models',
+  algorithm: LayeredOptions.ALGORITHM_ID,
+  defaultConfiguration: true,
+  graphs: PTOLEMY_GRAPHS,
+  configurators: { configurePorts },
+  afterProcessor: [
+    { name: 'testProperPortSideOrder', cls: PortListSorter, check: testProperPortSideOrder },
+    { name: 'testMonotonicalCoordinates', cls: LongEdgeJoiner, check: testMonotonicalCoordinates },
+  ],
 });
