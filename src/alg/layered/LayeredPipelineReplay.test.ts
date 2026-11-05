@@ -4,7 +4,6 @@
 // import with the row's options, `ElkLayered.prepareLayoutTest`, plan equality against the row's `prefix`
 // (`GraphConfigurator` decides the plan; no `normalise` mirror), `runLayoutTestStep` once per prefix entry, then the
 // dump and comparator of the row's own mission (full-dump twin where the row carries a `dump`).
-import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { PINNED_PHASE_ROWS } from '../../../test/helpers/layered-pipeline-pinned-rows.js';
 import { UnsupportedOperationException } from '../../java/lang/UnsupportedOperationException.js';
@@ -16,7 +15,7 @@ import { loadOrderRows } from '../../../test/helpers/layered-order-replay-rows.j
 import { compareExpected, compareFullDump } from '../../../test/helpers/layered-phase-replay-compare.js';
 import { phaseDump } from '../../../test/helpers/layered-phase-replay-dump.js';
 import { loadRows } from '../../../test/helpers/layered-phase-replay-rows.js';
-import { runStopRow, type PipelineDriver } from '../../../test/helpers/layered-pipeline-replay-ops.js';
+import { runStopRow } from '../../../test/helpers/layered-pipeline-replay-ops.js';
 import { registerPipelineEnums, type PipelineStopRow } from '../../../test/helpers/layered-pipeline-replay-rows.js';
 import { comparePlacement, comparePlacementFullDump } from '../../../test/helpers/layered-placement-replay-compare.js';
 import { placementDump } from '../../../test/helpers/layered-placement-replay-dump.js';

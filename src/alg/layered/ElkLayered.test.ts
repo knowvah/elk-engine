@@ -21,7 +21,6 @@ import { IllegalStateException } from '../../java/lang/IllegalStateException.js'
 import { UnsupportedOperationException } from '../../java/lang/UnsupportedOperationException.js';
 import { ElkLayered } from './ElkLayered.js';
 import { ElkLayeredTestExecutionState } from './ElkLayeredTestExecutionState.js';
-import { GraphConfigurator } from './GraphConfigurator.js';
 import { LGraph } from './graph/LGraph.js';
 import { CompoundGraphPostprocessor } from './compound/CompoundGraphPostprocessor.js';
 import { CompoundGraphPreprocessor } from './compound/CompoundGraphPreprocessor.js';

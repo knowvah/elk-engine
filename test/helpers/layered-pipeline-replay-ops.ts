@@ -20,7 +20,7 @@ import { ElkGraphUtil } from '../../src/graph/util/ElkGraphUtil.js';
 import type { ElkNode } from '../../src/graph/ElkNode.js';
 import { compareLayout, formatDiffs, type Diff } from '../golden/compare-json.js';
 import { exportLikeOracle } from './graph-json-oracle.js';
-import { encodeHex, type HexQuad, type LGraphDump } from './layered-framework-replay.js';
+import { encodeHex, type LGraphDump } from './layered-framework-replay.js';
 import { contextOf, importDumpOf, rebaseline } from './layered-phase-replay-dump.js';
 import { compareRouting } from './layered-routing-replay-compare.js';
 import { routingDump } from './layered-routing-replay-dump.js';

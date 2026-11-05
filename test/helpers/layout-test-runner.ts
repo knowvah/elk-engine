@@ -27,7 +27,6 @@
 // `ConfiguratorTestConfiguration` does. Left out on purpose: `@AllAlgorithms`, the random-graph providers (no ported suite
 // uses them).
 // `ensureSensibleLabelSize` is `layout-test-labels.ts` (FX8).
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { LayeredLayoutProvider } from '../../src/alg/layered/LayeredLayoutProvider.js';
 import type { LGraph } from '../../src/alg/layered/graph/LGraph.js';
