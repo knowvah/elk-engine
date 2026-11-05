@@ -16,7 +16,8 @@ const TDZ_PATTERN = /ReferenceError|before initialization/;
 
 /**
  * Entry points, relative to the repo root. Later missions append their strategy enums here as they wire them:
- * 7f appends the next entry, and so on (7d added `NodePlacementStrategy`, N4; 7e added `EdgeRouterFactory`, R4).
+ * 7d added `NodePlacementStrategy` (N4), 7e `EdgeRouterFactory` (R4), 7f the driver, its configurator and the components
+ * processor (F10); 7f2 appends the next entry.
  */
 const ENTRY_POINTS: readonly string[] = [
   'src/alg/layered/options/CycleBreakingStrategy.ts',
@@ -28,6 +29,9 @@ const ENTRY_POINTS: readonly string[] = [
   'src/alg/layered/options/LayeredOptions.ts',
   'src/alg/layered/intermediate/IntermediateProcessorStrategy.ts',
   'src/alg/layered/LayeredLayoutProvider.ts',
+  'src/alg/layered/ElkLayered.ts',
+  'src/alg/layered/GraphConfigurator.ts',
+  'src/alg/layered/components/ComponentsProcessor.ts',
 ];
 
 /** Imports `entry` in a fresh process; returns its exit status (0 on success) and captured stderr. */

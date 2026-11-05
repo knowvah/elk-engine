@@ -4,9 +4,9 @@
 // (AD-4), ids, enum names, strings and counts exactly, whole-graph labels with the T1 comparators. This replay is the
 // authority (6c D1) for the literals that the colocated unit tests re-anchor to a row id.
 //
-// Provider rows (`site/provider/*`): the TS `ElkLayered` is staged (7f), so `layout` throws
-// `UnsupportedOperationException` naming 7f at the driver method the row selects (`doLayout`, or `doCompoundLayout`
-// for INCLUDE_CHILDREN); the recorded `elk` after layout stays for 7f.
+// Provider rows (`site/provider/*`): `ElkLayered` runs for real. The flat rows hold an edge label, so the plan holds the
+// staged `LabelDummyInserter` and `layout` throws naming 7f2 from `doLayout`; the INCLUDE_CHILDREN rows reach
+// `doCompoundLayout`, where the staged `CompoundGraphPreprocessor` throws naming 7h.
 import { describe, expect, it } from 'vitest';
 import {
   OPS,
@@ -22,7 +22,7 @@ const file = loadSiteFile();
 const PROVIDER_SITE = 'LayeredLayoutProvider';
 const HIERARCHY_AWARE_ROW = 'site/strings/hierarchyAware';
 
-/** The staged `ElkLayered` method a provider row reaches (named in the test title). */
+/** The `ElkLayered` method a provider row reaches (named in the test title). */
 function stagedMethod(row: SiteRow): string {
   return row.id.includes('include-children') ? 'doCompoundLayout' : 'doLayout';
 }
@@ -60,7 +60,7 @@ describe('layered-sites.json replay', () => {
 
   it.each(
     file.rows.map((row) => {
-      const title = row.site === PROVIDER_SITE ? `${row.id} (staged ElkLayered.${stagedMethod(row)}, 7f)` : row.id;
+      const title = row.site === PROVIDER_SITE ? `${row.id} (ElkLayered.${stagedMethod(row)})` : row.id;
       return [title, row] as [string, SiteRow];
     }),
   )('%s', (_title, row) => {

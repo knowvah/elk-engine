@@ -1,6 +1,5 @@
 [
   { "path": "src/alg/layered/DebugUtil.ts", "mission": "7f2" },
-  { "path": "src/alg/layered/ElkLayered.ts", "mission": "7f" },
   { "path": "src/alg/layered/components/ComponentsCompactor.ts", "mission": "7g" },
   { "path": "src/alg/layered/compound/CompoundGraphPostprocessor.ts", "mission": "7h" },
   { "path": "src/alg/layered/compound/CompoundGraphPreprocessor.ts", "mission": "7h" },

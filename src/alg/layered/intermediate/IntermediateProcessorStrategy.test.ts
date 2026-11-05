@@ -4,13 +4,18 @@ import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentExce
 import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
+import { ConstraintsPostprocessor } from './ConstraintsPostprocessor.js';
 import { EdgeAndLayerConstraintEdgeReverser } from './EdgeAndLayerConstraintEdgeReverser.js';
+import { EndLabelSorter } from './EndLabelSorter.js';
 import { FinalSplineBendpointsCalculator } from './FinalSplineBendpointsCalculator.js';
+import { GraphTransformer } from './GraphTransformer.js';
 import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
 import { HierarchicalPortDummySizeProcessor } from './HierarchicalPortDummySizeProcessor.js';
+import { HierarchicalPortOrthogonalEdgeRouter } from './HierarchicalPortOrthogonalEdgeRouter.js';
 import { HierarchicalPortPositionProcessor } from './HierarchicalPortPositionProcessor.js';
 import { HighDegreeNodeLayeringProcessor } from './HighDegreeNodeLayeringProcessor.js';
 import { HyperedgeDummyMerger } from './HyperedgeDummyMerger.js';
+import { HypernodesProcessor } from './HypernodesProcessor.js';
 import { InLayerConstraintProcessor } from './InLayerConstraintProcessor.js';
 import { InnermostNodeMarginCalculator } from './InnermostNodeMarginCalculator.js';
 import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
@@ -163,7 +168,7 @@ const ARMS: Record<Name, [string, string]> = {
   DIRECTION_POSTPROCESSOR: ['GraphTransformer', '7f'],
 };
 
-/** The ported (missions 7b, 7c, 7d and the six 7e processors of T5 and T9) arms: constant name to the class `create()` returns. */
+/** The ported (missions 7b, 7c, 7d, the six 7e processors of T5 and T9, and the six 7f processors wired by T8) arms: constant name to the class `create()` returns. */
 const PORTED = {
   EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER: EdgeAndLayerConstraintEdgeReverser,
   INTERACTIVE_EXTERNAL_PORT_POSITIONER: InteractiveExternalPortPositioner,
@@ -196,6 +201,12 @@ const PORTED = {
   LONG_EDGE_JOINER: LongEdgeJoiner,
   NORTH_SOUTH_PORT_POSTPROCESSOR: NorthSouthPortPostprocessor,
   FINAL_SPLINE_BENDPOINTS_CALCULATOR: FinalSplineBendpointsCalculator,
+  DIRECTION_PREPROCESSOR: GraphTransformer,
+  DIRECTION_POSTPROCESSOR: GraphTransformer,
+  HIERARCHICAL_PORT_ORTHOGONAL_EDGE_ROUTER: HierarchicalPortOrthogonalEdgeRouter,
+  END_LABEL_SORTER: EndLabelSorter,
+  HYPERNODE_PROCESSOR: HypernodesProcessor,
+  CONSTRAINTS_POSTPROCESSOR: ConstraintsPostprocessor,
 } as const;
 
 /** The six 7e members ported by T5 and T9 (`FINAL_SPLINE_BENDPOINTS_CALCULATOR` is T9's). */
@@ -262,15 +273,16 @@ describe('IntermediateProcessorStrategy', () => {
     );
   });
 
-  it('ports exactly the 7b, 7c and 7d members and the six 7e members and leaves the other 28 pending', () => {
-    expect(PORTED_NAMES.size).toBe(31);
-    expect(PENDING).toHaveLength(28);
+  it('ports exactly the 7b, 7c, 7d, 7e and 7f members and leaves the other 22 pending', () => {
+    expect(PORTED_NAMES.size).toBe(37);
+    expect(PENDING).toHaveLength(22);
     expect(
       DECLARED.filter(
         (name) =>
           ARMS[name][1] === '7b' ||
           ARMS[name][1] === '7c' ||
           ARMS[name][1] === '7d' ||
+          ARMS[name][1] === '7f' ||
           (ARMS[name][1] === '7e' && PORTED_IN_7E.has(name)),
       ).sort(),
     ).toEqual([...PORTED_NAMES].sort());

@@ -205,7 +205,9 @@ const C4_OPS: ReadonlySet<string> = new Set([
 ]);
 const PROVIDER_SITE = 'LayeredLayoutProvider';
 const HIERARCHY_AWARE_ROW = 'site/strings/hierarchyAware';
-const STAGED_DRIVER_MESSAGE = 'mission 7f';
+/** The mission a provider row's `layout` must name: the staged `CompoundGraphPreprocessor` (INCLUDE_CHILDREN) or, for the flat rows, the staged `LabelDummyInserter` of the edge label in their input. */
+const COMPOUND_STAGE_MESSAGE = 'mission 7h';
+const FLAT_STAGE_MESSAGE = 'mission 7f2';
 
 function expectedException(expected: unknown): { class: string; message: string | null } | null {
   const e = (expected as { exception?: { class: string; message: string | null } } | null)?.exception;
@@ -277,22 +279,33 @@ function compareLabels(row: SiteRow, outcome: RowOutcome, skip: ReadonlySet<stri
   return diffs;
 }
 
-/** Provider rows (X6): `ElkLayered` is staged (7f), so `layout` must throw naming 7f at the driver method the row selects. */
+/**
+ * Provider rows (X6): `layout` runs `ElkLayered` for real. The INCLUDE_CHILDREN rows throw at the staged
+ * `CompoundGraphPreprocessor` (7h) in `doCompoundLayout`; the flat rows hold an edge label, whose `LabelDummyInserter`
+ * (7f2) the router configuration puts into the plan, so `prepareGraphForLayout` throws naming 7f2 inside `doLayout`.
+ * The recorded `layout` and `elk` of every provider row stay for the mission that ports the named class.
+ */
 function compareProvider(row: SiteRow, outcome: RowOutcome): string[] {
-  const root = importInput({ id: row.id, group: 'transform', input: row.input, options: {} });
-  const compound = root.getProperty(LayeredOptions.HIERARCHY_HANDLING) === HierarchyHandling.INCLUDE_CHILDREN;
+  const compound = isCompoundProviderRow(row);
   const method = compound ? 'doCompoundLayout' : 'doLayout';
+  const mission = compound ? COMPOUND_STAGE_MESSAGE : FLAT_STAGE_MESSAGE;
   const thrown = expectedException(outcome.values.layout);
   const diffs: string[] = [];
-  if (thrown?.class !== 'UnsupportedOperationException' || !(thrown.message ?? '').includes(STAGED_DRIVER_MESSAGE)) {
+  if (thrown?.class !== 'UnsupportedOperationException' || !(thrown.message ?? '').includes(mission)) {
     diffs.push(
-      `layout: expected UnsupportedOperationException naming 7f, got ${JSON.stringify(outcome.values.layout)}`,
+      `layout: expected UnsupportedOperationException naming ${mission}, got ${JSON.stringify(outcome.values.layout)}`,
     );
   }
   if (JSON.stringify(outcome.stagedCalls) !== JSON.stringify([method])) {
     diffs.push(`staged calls: expected [${method}], got ${JSON.stringify(outcome.stagedCalls)}`);
   }
   return diffs;
+}
+
+/** Whether a provider row selects the INCLUDE_CHILDREN arm (its recorded `layout` and `elk` stay for 7h). */
+function isCompoundProviderRow(row: SiteRow): boolean {
+  const root = importInput({ id: row.id, group: 'transform', input: row.input, options: {} });
+  return root.getProperty(LayeredOptions.HIERARCHY_HANDLING) === HierarchyHandling.INCLUDE_CHILDREN;
 }
 
 /** The Java classes of the recorded `classes` that the TS port has not ported yet are staged (7d-7f). */
@@ -305,7 +318,7 @@ function stagedHierarchyAware(row: SiteRow): SiteRow {
 export function compareRow(row: SiteRow, outcome: RowOutcome): string[] {
   const diffs = outcome.unlabeledErrors.map((e) => `unlabeled step: ${e}`);
   if (row.site === PROVIDER_SITE) {
-    // the recorded `elk` after layout stays for 7f, when the driver exists
+    // the recorded `layout` and `elk` stay for 7f2 (flat rows) and 7h (INCLUDE_CHILDREN rows)
     return [...diffs, ...compareProvider(row, outcome), ...compareLabels(row, outcome, new Set(['layout', 'elk']))];
   }
   const compared = row.id === HIERARCHY_AWARE_ROW ? stagedHierarchyAware(row) : row;

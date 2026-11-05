@@ -2,7 +2,7 @@
 // Proof of GraphTransformer (mission 7f, T5): the `scenarios/GraphTransformer/*` rows and every `models/*/DIRECTION_*`
 // row of test/golden/refs/java/layered-pipeline.json, replayed with the real enums building the plan and the class
 // injected for `DIRECTION_PREPROCESSOR` (`TO_INPUT_DIRECTION`, sic) and `DIRECTION_POSTPROCESSOR` (`TO_INTERNAL_LTR`, sic), whose
-// enum arm stays throwing until T8. Expectations come only from the rows and the Java (L4, AD-13, F16).
+// enum arm is wired since T8, so a later row can drop the injection. Expectations come only from the rows and the Java (L4, AD-13, F16).
 import { beforeAll, describe, expect, it } from 'vitest';
 // the enum first: tests enter through it, never through the class (E1/F10, module cycle)
 import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
@@ -21,8 +21,8 @@ import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-re
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import { EdgeRouting } from '../../../core/options/EdgeRouting.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
-import type { LGraph } from '../graph/LGraph.js';
+import { BasicProgressMonitor } from '../../../core/util/BasicProgressMonitor.js';
+import { LGraph } from '../graph/LGraph.js';
 import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { LayeringStrategy } from '../options/LayeringStrategy.js';
@@ -138,9 +138,16 @@ describe('GraphTransformer.Mode (Java enum order, `GraphTransformer.java:52-57`)
     expect(() => Mode.valueOf('NOPE')).toThrow('GraphTransformer.Mode.NOPE');
   });
 
-  it('is still staged in the enum: the arm throws until T8', () => {
-    expect(() => IntermediateProcessorStrategy.valueOf(DIRECTION_PREPROCESSOR).create()).toThrow(
-      UnsupportedOperationException,
-    );
+  // FX4 (user): replaces the temporary "the arm throws until T8". Java literals, IntermediateProcessorStrategy.java:211-215;
+  // the mode is private, and `process` names it in the monitor's task (GraphTransformer.java:73).
+  it.each([
+    [DIRECTION_PREPROCESSOR, 'Graph transformation (TO_INPUT_DIRECTION)'],
+    [DIRECTION_POSTPROCESSOR, 'Graph transformation (TO_INTERNAL_LTR)'],
+  ])('%s creates a GraphTransformer with the Java mode', (name, task) => {
+    const created = IntermediateProcessorStrategy.valueOf(name).create();
+    expect(created).toBeInstanceOf(GraphTransformer);
+    const monitor = new BasicProgressMonitor();
+    created.process(new LGraph(), monitor);
+    expect(monitor.getTaskName()).toBe(task);
   });
 });

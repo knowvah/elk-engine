@@ -15,6 +15,7 @@ import {
   levelPathOf,
   levelsOf,
   runFullRow,
+  type PlanCapture,
   runPipelineSteps,
   runStopRow,
   comparePipeline,
@@ -196,7 +197,17 @@ describe('runFullRow and compareFullRow', () => {
 
   it('lays the graph out and names each hierarchy level by its id path', () => {
     const plan = fakePlan();
-    const result = runFullRow(fullRow(LAYOUT, {}), fakeDriver(plan));
+    const driver = fakeDriver(plan);
+    const walked: PlanCapture = (_row, runLayout) => {
+      runLayout();
+      const plans: Record<string, string[]> = {};
+      for (const level of levelsOf(loadInput(INPUT))) {
+        const state = driver.prepareLayoutTest(new LGraph());
+        plans[levelPathOf(level)] = planNames(Array.from(driver.getLayoutTestConfiguration(state)));
+      }
+      return plans;
+    };
+    const result = runFullRow(fullRow(LAYOUT, {}), walked);
     expect(Object.keys(result.plans)).toEqual(['root', 'root/inner']);
     expect(result.plans.root).toEqual(planNames(plan));
     expect(result.plans['root/inner']).toEqual(planNames(plan));

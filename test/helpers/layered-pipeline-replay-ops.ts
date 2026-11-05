@@ -2,14 +2,15 @@
 // The replay of mission 7f (F4, F5). `runFullRow`/`compareFullRow` lay a whole graph out through the recursive engine
 // and compare the export and the per-level plans; `runStopRow` replays a model row through the real driver
 // (`prepareLayoutTest`, `getLayoutTestConfiguration`, `runLayoutTestStep`) rather than a hand-walked prefix; and
-// `runPipelineSteps` interprets the `componentsSplit` / `componentsCombine` step ops before the landed 7b `runSteps`
+// `runPipelineSteps` interprets the `componentsSplit` / `componentsCombine` and (T15) `layout` / `layoutCancelled` step ops before the landed 7b `runSteps`
 // sees the rest. The driver, the dump, the comparator and the components processor are parameters: `ElkLayered` is
 // staged until T8, the tests inject a fake, and T9/T10 pass `new ElkLayered()` with the 7b-7e dump and comparator of
 // the row's own family. The level path of `expected.plans` is the ELK ids from the root down, joined by `/`
 // (`levelPathOf`); a graph without an id on a level path uses the empty string for it.
+import { GraphConfigurator } from '../../src/alg/layered/GraphConfigurator.js';
+import { LayeredLayoutProvider } from '../../src/alg/layered/LayeredLayoutProvider.js';
 import { InternalProperties } from '../../src/alg/layered/options/InternalProperties.js';
 import type { LGraph } from '../../src/alg/layered/graph/LGraph.js';
-import { ElkGraphTransformer } from '../../src/alg/layered/graph/transform/ElkGraphTransformer.js';
 import type { ILayoutProcessor } from '../../src/core/alg/ILayoutProcessor.js';
 import { RecursiveGraphLayoutEngine } from '../../src/core/RecursiveGraphLayoutEngine.js';
 import { NullElkProgressMonitor } from '../../src/core/util/NullElkProgressMonitor.js';
@@ -17,10 +18,10 @@ import { BasicProgressMonitor } from '../../src/core/util/BasicProgressMonitor.j
 import { CoreOptions } from '../../src/core/options/CoreOptions.js';
 import { ElkGraphUtil } from '../../src/graph/util/ElkGraphUtil.js';
 import type { ElkNode } from '../../src/graph/ElkNode.js';
-import { compareLayout, type Diff } from '../golden/compare-json.js';
+import { compareLayout, formatDiffs, type Diff } from '../golden/compare-json.js';
 import { exportLikeOracle } from './graph-json-oracle.js';
 import { encodeHex, type HexQuad, type LGraphDump } from './layered-framework-replay.js';
-import { contextOf, importDumpOf } from './layered-phase-replay-dump.js';
+import { contextOf, importDumpOf, rebaseline } from './layered-phase-replay-dump.js';
 import { compareRouting } from './layered-routing-replay-compare.js';
 import { routingDump } from './layered-routing-replay-dump.js';
 import type { RoutingExpected } from './layered-routing-replay-rows.js';
@@ -50,6 +51,9 @@ export interface ComponentsHandler {
 
 export const COMPONENTS_SPLIT_OP = 'componentsSplit';
 export const COMPONENTS_COMBINE_OP = 'componentsCombine';
+/** T15's ops: the whole layout through `LayeredLayoutProvider`, the monitor cancelled in advance for the second. */
+export const LAYOUT_OP = 'layout';
+export const LAYOUT_CANCELLED_OP = 'layoutCancelled';
 const DUMP_OP = 'dump';
 const LEVEL_SEPARATOR = '/';
 
@@ -105,10 +109,29 @@ export function levelsOf(root: ElkNode): ElkNode[] {
   return levels;
 }
 
-function planOf<S extends DriverState>(driver: PipelineDriver<S>, level: ElkNode): string[] {
-  const state = driver.prepareLayoutTest(new ElkGraphTransformer().importGraph(level));
-  return planNames(Array.from(driver.getLayoutTestConfiguration(state)));
-}
+/** How a `full` replay obtains the plan of every level; `runLayout` runs the row's layout exactly once. */
+export type PlanCapture = (row: FullRow, runLayout: () => void) => PlanMap;
+
+/**
+ * The plan of every level as the real run builds it, as the recorder's listener sees it. A plan cannot be taken from an
+ * untouched copy of the input: laying out a child level fixes its compound node's ports, so the parent level's plan gains
+ * `INVERTED_PORT_PROCESSOR` (`NON_FREE_PORTS`) only during the run.
+ */
+export const plansFromRun: PlanCapture = (_row, runLayout) => {
+  const plans: Record<string, string[]> = {};
+  const prepare = GraphConfigurator.prototype.prepareGraphForLayout;
+  GraphConfigurator.prototype.prepareGraphForLayout = function (this: GraphConfigurator, lgraph: LGraph): void {
+    prepare.call(this, lgraph);
+    const level = lgraph.getProperty(InternalProperties.ORIGIN) as ElkNode;
+    plans[levelPathOf(level)] = planNames(lgraph.getProperty(InternalProperties.PROCESSORS));
+  };
+  try {
+    runLayout();
+  } finally {
+    GraphConfigurator.prototype.prepareGraphForLayout = prepare;
+  }
+  return plans;
+};
 
 function preparedRoot(row: FullRow): ElkNode {
   const root = loadInput(row.input);
@@ -116,16 +139,11 @@ function preparedRoot(row: FullRow): ElkNode {
   return root;
 }
 
-/**
- * Lays a `full` row out: the input with the row's options on the root, the recursive engine, the oracle's export;
- * the plans come from a second, untouched copy of the input prepared through the driver, level by level.
- */
-export function runFullRow<S extends DriverState>(row: FullRow, driver: PipelineDriver<S>): FullResult {
+/** Lays a `full` row out: the input with the row's options on the root, the recursive engine, the oracle's export. */
+export function runFullRow(row: FullRow, capture: PlanCapture = plansFromRun): FullResult {
   const graph = preparedRoot(row);
-  new RecursiveGraphLayoutEngine().layout(graph, new BasicProgressMonitor());
-  const plans: Record<string, string[]> = {};
-  levelsOf(preparedRoot(row)).forEach((level) => {
-    plans[levelPathOf(level)] = planOf(driver, level);
+  const plans = capture(row, () => {
+    new RecursiveGraphLayoutEngine().layout(graph, new BasicProgressMonitor());
   });
   return { layout: JSON.parse(exportLikeOracle(graph)) as unknown, plans };
 }
@@ -169,7 +187,7 @@ export interface StopOptions<S extends DriverState, E, D> {
 }
 
 /**
- * Replays a model row through the driver (F5): import with the row's options, `prepareLayoutTest`, check that the
+ * Replays a model row through the driver (F5): import with the row's options, `prepareLayoutTest`, rebaseline, check that the
  * names of the plan's first entries equal `row.prefix`, `runLayoutTestStep` once per prefix entry, dump the first
  * graph under test and compare it with the row's expectation. Returns the comparator's diffs.
  *
@@ -185,6 +203,9 @@ export function runStopRow<S extends DriverState, E, D>(
   const { prefix } = row;
   const { graph, importDump } = importRow(row as unknown as PhaseRow);
   const state = driver.prepareLayoutTest(graph);
+  // the `changed` baseline follows preparation, as the recorders do (`LayeredPipelineVectors.java` `runPipeline`; 7b's
+  // `normalise` ended with it): the configurator's property writes are not the effect of a step
+  rebaseline(graph);
   const plan = Array.from(driver.getLayoutTestConfiguration(state)).slice(0, prefix.length);
   const names = planNames(plan);
   const at = prefix.findIndex((entry, i) => names[i] !== entry);
@@ -212,7 +233,38 @@ export interface PipelineStepsResult {
   /** The component list `componentsSplit` produced, in list order; `null` for a row without a split. */
   readonly components: readonly LGraph[] | null;
   /** `split`: the row ends on the component list; `combine`/`dump`: on a dump of the target; `null`: no terminal op. */
-  readonly terminal: 'split' | 'combine' | 'dump' | null;
+  readonly terminal: 'split' | 'combine' | 'dump' | 'layout' | null;
+  /** The oracle's export of the ELK graph after a `layout` / `layoutCancelled` step; absent for every other row. */
+  readonly layout?: unknown;
+}
+
+/** A monitor cancelled before the layout starts (the recorder's `CancelledMonitor`). */
+class CancelledMonitor extends BasicProgressMonitor {
+  override isCanceled(): boolean {
+    return true;
+  }
+}
+
+const isLayout = ([op]: PhaseStep): boolean => op === LAYOUT_OP || op === LAYOUT_CANCELLED_OP;
+
+/**
+ * The terminal `layout` / `layoutCancelled` step (recorder: `layoutDump`): `new LayeredLayoutProvider().layout` on the ELK
+ * node the imported graph came from, then the oracle's export of it. The imported `LGraph` itself stays untouched.
+ */
+function runLayoutStep(
+  row: PipelineStopRow,
+  steps: readonly PhaseStep[],
+  at: number,
+  factories: Factories,
+): PipelineStepsResult {
+  if (at !== steps.length - 1 || steps[at]!.length !== 1) {
+    throw new Error(`row ${row.id}: op ${steps[at]![0]} takes 0 arguments and ends the row`);
+  }
+  const graph = runSteps({ ...(row as unknown as PhaseRow), steps: steps.slice(0, at) }, factories);
+  const node = graph.getProperty(InternalProperties.ORIGIN) as ElkNode;
+  const monitor = steps[at]![0] === LAYOUT_CANCELLED_OP ? new CancelledMonitor() : new BasicProgressMonitor();
+  new LayeredLayoutProvider().layout(node, monitor);
+  return { graph, components: null, terminal: 'layout', layout: JSON.parse(exportLikeOracle(node)) as unknown };
 }
 
 const PHASES: ReadonlySet<string> = new Set([
@@ -290,6 +342,10 @@ export function runPipelineSteps(
   if (steps === null) {
     throw new Error(`row ${row.id} has no steps`);
   }
+  const layoutAt = steps.findIndex(isLayout);
+  if (layoutAt >= 0) {
+    return runLayoutStep(row, steps, layoutAt, factories);
+  }
   const at = steps.findIndex(isSplit);
   if (at < 0 && steps.some(([op]) => op === COMPONENTS_COMBINE_OP)) {
     throw new Error(`row ${row.id}: ${COMPONENTS_COMBINE_OP} needs a ${COMPONENTS_SPLIT_OP} before it`);
@@ -350,7 +406,12 @@ export function pipelineDump(result: PipelineStepsResult): ComponentsExpected | 
   if (result.terminal === 'split') {
     return componentsDump(result.graph, result.components!);
   }
-  return routingDump(result.graph, importDumpOf(result.graph));
+  const dump = routingDump(result.graph, importDumpOf(result.graph));
+  if (result.terminal !== 'layout') {
+    return dump;
+  }
+  const withLayout: RoutingExpected & { readonly layout: unknown } = { ...dump, layout: result.layout };
+  return withLayout;
 }
 
 /** The comparator of `pipelineDump`: `compareComponents` for a component list, 7e's `compareRouting` for a target dump. */
@@ -364,5 +425,10 @@ export function comparePipeline(
   if ('components' in expected || 'components' in actual) {
     return [{ where: 'expected', message: 'a component list was compared with a target dump' }];
   }
-  return compareRouting(actual, expected);
+  const routing = compareRouting(actual, expected);
+  if (!('layout' in expected)) {
+    return routing;
+  }
+  const layout = compareLayout(expected.layout, (actual as { layout?: unknown }).layout).diffs;
+  return layout.length === 0 ? routing : [...routing, { where: 'layout', message: formatDiffs(layout) }];
 }
