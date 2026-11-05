@@ -19,7 +19,7 @@ interface StagedClass {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SRC = join(ROOT, 'src');
-const MARKER = /^\/\/ @staged (7[b-h])$/;
+const MARKER = /^\/\/ @staged (7f2|7[b-h])$/;
 const HEADER_WINDOW = 3;
 const STAGED: readonly StagedClass[] = JSON.parse(
   readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'staged-classes.json'), 'utf8'),

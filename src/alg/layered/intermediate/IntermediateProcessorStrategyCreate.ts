@@ -58,7 +58,7 @@ function createBeforePhase1(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'DIRECTION_PREPROCESSOR':
       throw notPorted('GraphTransformer', '7f');
     case 'COMMENT_PREPROCESSOR':
-      throw notPorted('CommentPreprocessor', '7f');
+      throw notPorted('CommentPreprocessor', '7f2');
     case 'EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER':
       return new EdgeAndLayerConstraintEdgeReverser();
     case 'INTERACTIVE_EXTERNAL_PORT_POSITIONER':
@@ -74,7 +74,7 @@ function createBeforePhase1(strategy: IntermediateProcessorStrategy): ILayoutPro
 function createBeforePhase2(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy.name()) {
     case 'LABEL_DUMMY_INSERTER':
-      throw notPorted('LabelDummyInserter', '7f');
+      throw notPorted('LabelDummyInserter', '7f2');
     case 'SELF_LOOP_PREPROCESSOR':
       throw notPorted('SelfLoopPreProcessor', '7g');
     case 'LAYER_CONSTRAINT_PREPROCESSOR':
@@ -140,13 +140,13 @@ function createBeforePhase4(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'SELF_LOOP_PORT_RESTORER':
       throw notPorted('SelfLoopPortRestorer', '7g');
     case 'ALTERNATING_LAYER_UNZIPPER':
-      throw notPorted('AlternatingLayerUnzipper', '7f');
+      throw notPorted('AlternatingLayerUnzipper', '7f2');
     case 'SINGLE_EDGE_GRAPH_WRAPPER':
       throw notPorted('SingleEdgeGraphWrapper', '7g');
     case 'IN_LAYER_CONSTRAINT_PROCESSOR':
       return new InLayerConstraintProcessor();
     case 'END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR':
-      throw notPorted('LabelManagementProcessor', '7f');
+      throw notPorted('LabelManagementProcessor', '7f2');
     case 'LABEL_AND_NODE_SIZE_PROCESSOR':
       return new LabelAndNodeSizeProcessor();
     default:
@@ -162,15 +162,15 @@ function createBeforePhase42(strategy: IntermediateProcessorStrategy): ILayoutPr
     case 'SELF_LOOP_ROUTER':
       throw notPorted('SelfLoopRouter', '7g');
     case 'COMMENT_NODE_MARGIN_CALCULATOR':
-      throw notPorted('CommentNodeMarginCalculator', '7f');
+      throw notPorted('CommentNodeMarginCalculator', '7f2');
     case 'END_LABEL_PREPROCESSOR':
-      throw notPorted('EndLabelPreprocessor', '7f');
+      throw notPorted('EndLabelPreprocessor', '7f2');
     case 'LABEL_DUMMY_SWITCHER':
-      throw notPorted('LabelDummySwitcher', '7f');
+      throw notPorted('LabelDummySwitcher', '7f2');
     case 'CENTER_LABEL_MANAGEMENT_PROCESSOR':
-      throw notPorted('LabelManagementProcessor', '7f');
+      throw notPorted('LabelManagementProcessor', '7f2');
     case 'LABEL_SIDE_SELECTOR':
-      throw notPorted('LabelSideSelector', '7f');
+      throw notPorted('LabelSideSelector', '7f2');
     case 'HYPEREDGE_DUMMY_MERGER':
       return new HyperedgeDummyMerger();
     case 'HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR':
@@ -200,7 +200,7 @@ function createAfterPhase5(strategy: IntermediateProcessorStrategy): ILayoutProc
     case 'CONSTRAINTS_POSTPROCESSOR':
       throw notPorted('ConstraintsPostprocessor', '7f');
     case 'COMMENT_POSTPROCESSOR':
-      throw notPorted('CommentPostprocessor', '7f');
+      throw notPorted('CommentPostprocessor', '7f2');
     case 'HYPERNODE_PROCESSOR':
       throw notPorted('HypernodesProcessor', '7f');
     case 'HIERARCHICAL_PORT_ORTHOGONAL_EDGE_ROUTER':
@@ -224,7 +224,7 @@ function createAfterPhase5(strategy: IntermediateProcessorStrategy): ILayoutProc
 function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy.name()) {
     case 'LABEL_DUMMY_REMOVER':
-      throw notPorted('LabelDummyRemover', '7f');
+      throw notPorted('LabelDummyRemover', '7f2');
     case 'FINAL_SPLINE_BENDPOINTS_CALCULATOR':
       return new FinalSplineBendpointsCalculator();
     case 'END_LABEL_SORTER':
@@ -232,9 +232,9 @@ function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'REVERSED_EDGE_RESTORER':
       return new ReversedEdgeRestorer();
     case 'END_LABEL_POSTPROCESSOR':
-      throw notPorted('EndLabelPostprocessor', '7f');
+      throw notPorted('EndLabelPostprocessor', '7f2');
     case 'HIERARCHICAL_NODE_RESIZER':
-      throw notPorted('HierarchicalNodeResizingProcessor', '7f');
+      throw notPorted('HierarchicalNodeResizingProcessor', '7h');
     case 'DIRECTION_POSTPROCESSOR':
       throw notPorted('GraphTransformer', '7f');
     default:

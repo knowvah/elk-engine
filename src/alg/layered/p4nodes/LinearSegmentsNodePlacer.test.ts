@@ -438,7 +438,7 @@ describe('LinearSegmentsNodePlacerCreation with the staged DebugUtil', () => {
       }
     }
     expect(() => sortLinearSegments(longEdgeChain(2), new LoggingMonitor())).toThrow(
-      new UnsupportedOperationException('DotDebugUtil is ported in mission 7f'),
+      new UnsupportedOperationException('DotDebugUtil is ported in mission 7f2'),
     );
     expect(sortLinearSegments(longEdgeChain(2), new NullElkProgressMonitor())).toHaveLength(1);
   });

@@ -103,11 +103,11 @@ type Name = (typeof DECLARED)[number];
 /** Constant name to the class its `create()` arm will return, and the mission porting it (B9). */
 const ARMS: Record<Name, [string, string]> = {
   DIRECTION_PREPROCESSOR: ['GraphTransformer', '7f'],
-  COMMENT_PREPROCESSOR: ['CommentPreprocessor', '7f'],
+  COMMENT_PREPROCESSOR: ['CommentPreprocessor', '7f2'],
   EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER: ['EdgeAndLayerConstraintEdgeReverser', '7b'],
   INTERACTIVE_EXTERNAL_PORT_POSITIONER: ['InteractiveExternalPortPositioner', '7b'],
   PARTITION_PREPROCESSOR: ['PartitionPreprocessor', '7b'],
-  LABEL_DUMMY_INSERTER: ['LabelDummyInserter', '7f'],
+  LABEL_DUMMY_INSERTER: ['LabelDummyInserter', '7f2'],
   SELF_LOOP_PREPROCESSOR: ['SelfLoopPreProcessor', '7g'],
   LAYER_CONSTRAINT_PREPROCESSOR: ['LayerConstraintPreprocessor', '7b'],
   PARTITION_MIDPROCESSOR: ['PartitionMidprocessor', '7b'],
@@ -128,25 +128,25 @@ const ARMS: Record<Name, [string, string]> = {
   ONE_SIDED_GREEDY_SWITCH: ['LayerSweepCrossingMinimizer', '7c'],
   TWO_SIDED_GREEDY_SWITCH: ['LayerSweepCrossingMinimizer', '7c'],
   SELF_LOOP_PORT_RESTORER: ['SelfLoopPortRestorer', '7g'],
-  ALTERNATING_LAYER_UNZIPPER: ['AlternatingLayerUnzipper', '7f'],
+  ALTERNATING_LAYER_UNZIPPER: ['AlternatingLayerUnzipper', '7f2'],
   SINGLE_EDGE_GRAPH_WRAPPER: ['SingleEdgeGraphWrapper', '7g'],
   IN_LAYER_CONSTRAINT_PROCESSOR: ['InLayerConstraintProcessor', '7d'],
-  END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR: ['LabelManagementProcessor', '7f'],
+  END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR: ['LabelManagementProcessor', '7f2'],
   LABEL_AND_NODE_SIZE_PROCESSOR: ['LabelAndNodeSizeProcessor', '7d'],
   INNERMOST_NODE_MARGIN_CALCULATOR: ['InnermostNodeMarginCalculator', '7d'],
   SELF_LOOP_ROUTER: ['SelfLoopRouter', '7g'],
-  COMMENT_NODE_MARGIN_CALCULATOR: ['CommentNodeMarginCalculator', '7f'],
-  END_LABEL_PREPROCESSOR: ['EndLabelPreprocessor', '7f'],
-  LABEL_DUMMY_SWITCHER: ['LabelDummySwitcher', '7f'],
-  CENTER_LABEL_MANAGEMENT_PROCESSOR: ['LabelManagementProcessor', '7f'],
-  LABEL_SIDE_SELECTOR: ['LabelSideSelector', '7f'],
+  COMMENT_NODE_MARGIN_CALCULATOR: ['CommentNodeMarginCalculator', '7f2'],
+  END_LABEL_PREPROCESSOR: ['EndLabelPreprocessor', '7f2'],
+  LABEL_DUMMY_SWITCHER: ['LabelDummySwitcher', '7f2'],
+  CENTER_LABEL_MANAGEMENT_PROCESSOR: ['LabelManagementProcessor', '7f2'],
+  LABEL_SIDE_SELECTOR: ['LabelSideSelector', '7f2'],
   HYPEREDGE_DUMMY_MERGER: ['HyperedgeDummyMerger', '7e'],
   HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR: ['HierarchicalPortDummySizeProcessor', '7d'],
   NODE_PLACEMENT_REPEATER: ['NodePlacementRepeater', '7d'],
   LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR: ['LayerSizeAndGraphHeightCalculator', '7e'],
   HIERARCHICAL_PORT_POSITION_PROCESSOR: ['HierarchicalPortPositionProcessor', '7e'],
   CONSTRAINTS_POSTPROCESSOR: ['ConstraintsPostprocessor', '7f'],
-  COMMENT_POSTPROCESSOR: ['CommentPostprocessor', '7f'],
+  COMMENT_POSTPROCESSOR: ['CommentPostprocessor', '7f2'],
   HYPERNODE_PROCESSOR: ['HypernodesProcessor', '7f'],
   HIERARCHICAL_PORT_ORTHOGONAL_EDGE_ROUTER: ['HierarchicalPortOrthogonalEdgeRouter', '7f'],
   LONG_EDGE_JOINER: ['LongEdgeJoiner', '7e'],
@@ -154,12 +154,12 @@ const ARMS: Record<Name, [string, string]> = {
   BREAKING_POINT_REMOVER: ['BreakingPointRemover', '7g'],
   NORTH_SOUTH_PORT_POSTPROCESSOR: ['NorthSouthPortPostprocessor', '7e'],
   HORIZONTAL_COMPACTOR: ['HorizontalGraphCompactor', '7g'],
-  LABEL_DUMMY_REMOVER: ['LabelDummyRemover', '7f'],
+  LABEL_DUMMY_REMOVER: ['LabelDummyRemover', '7f2'],
   FINAL_SPLINE_BENDPOINTS_CALCULATOR: ['FinalSplineBendpointsCalculator', '7e'],
   END_LABEL_SORTER: ['EndLabelSorter', '7f'],
   REVERSED_EDGE_RESTORER: ['ReversedEdgeRestorer', '7b'],
-  END_LABEL_POSTPROCESSOR: ['EndLabelPostprocessor', '7f'],
-  HIERARCHICAL_NODE_RESIZER: ['HierarchicalNodeResizingProcessor', '7f'],
+  END_LABEL_POSTPROCESSOR: ['EndLabelPostprocessor', '7f2'],
+  HIERARCHICAL_NODE_RESIZER: ['HierarchicalNodeResizingProcessor', '7h'],
   DIRECTION_POSTPROCESSOR: ['GraphTransformer', '7f'],
 };
 
@@ -285,10 +285,19 @@ describe('IntermediateProcessorStrategy', () => {
     }
   });
 
-  it('assigns the missions per B9 and R1 (10 in 7b, 10 in 7c, 5 in 7d, 6 in 7e, 19 in 7f, 9 in 7g)', () => {
+  it('assigns the missions per B9, R1 and F1 (10 in 7b, 10 in 7c, 5 in 7d, 6 in 7e, 6 in 7f, 12 in 7f2, 9 in 7g, 1 in 7h)', () => {
     const tally = new Map<string, number>();
     for (const [, mission] of Object.values(ARMS)) tally.set(mission, (tally.get(mission) ?? 0) + 1);
-    expect(Object.fromEntries(tally)).toEqual({ '7b': 10, '7c': 10, '7d': 5, '7e': 6, '7f': 19, '7g': 9 });
+    expect(Object.fromEntries(tally)).toEqual({
+      '7b': 10,
+      '7c': 10,
+      '7d': 5,
+      '7e': 6,
+      '7f': 6,
+      '7f2': 12,
+      '7g': 9,
+      '7h': 1,
+    });
   });
 
   it('create() and the section createIntermediateProcessor agree for every member (R5)', () => {

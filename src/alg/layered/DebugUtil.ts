@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-// @staged 7f
+// @staged 7f2
 import type { IElkProgressMonitor } from '../../core/util/IElkProgressMonitor.js';
 import { UnsupportedOperationException } from '../../java/lang/UnsupportedOperationException.js';
 import type { LGraph } from './graph/LGraph.js';
@@ -7,9 +7,9 @@ import type { LinearSegmentsNodePlacerLinearSegment } from './p4nodes/LinearSegm
 
 /**
  * Staged class (L1, mission 7d decision N8): the Java class delegates to `DotDebugUtil` (233 lines) and
- * `JsonDebugUtil` (653 lines), both ported in mission 7f. Mission 7d references only the segment-graph overload
+ * `JsonDebugUtil` (653 lines), both ported in mission 7f2. Mission 7d references only the segment-graph overload
  * (`LinearSegmentsNodePlacer.java:450`, behind `monitor.isLoggingEnabled()`); every overload throws
- * `UnsupportedOperationException` naming the missing helper and 7f until then.
+ * `UnsupportedOperationException` naming the missing helper and 7f2 until then.
  *
  * Java's three `logDebugGraph` overloads (translation-rules § 6.5, merged or suffixed names) are three methods here:
  * - `logDebugGraph(monitor, lgraph, slotIndex, name)` is `logDebugGraphSlot`, tag `slotIndex + "-" + name`;
@@ -34,7 +34,7 @@ export class DebugUtil {
    * @see DebugUtil.java:42
    */
   static logDebugGraphSlot(_monitor: IElkProgressMonitor, _lgraph: LGraph, _slotIndex: number, _name: string): never {
-    throw notPorted('DotDebugUtil', '7f');
+    throw notPorted('DotDebugUtil', '7f2');
   }
 
   /**
@@ -52,7 +52,7 @@ export class DebugUtil {
     _segmentList: readonly LinearSegmentsNodePlacerLinearSegment[],
     _outgoingList: readonly (readonly LinearSegmentsNodePlacerLinearSegment[])[],
   ): never {
-    throw notPorted('DotDebugUtil', '7f');
+    throw notPorted('DotDebugUtil', '7f2');
   }
 
   /**
@@ -71,7 +71,7 @@ export class DebugUtil {
     _layeredGraph: LGraph,
     ..._rest: [layerIndex: number, hypernodes: readonly unknown[], debugPrefix: string, label: string]
   ): never {
-    throw notPorted('DotDebugUtil', '7f');
+    throw notPorted('DotDebugUtil', '7f2');
   }
 }
 
