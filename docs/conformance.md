@@ -30,6 +30,7 @@ this document describes what it implements. Port rules live in
 | -   | [alg.layered node placement](#alg-layered-placement)       | How is the fourth phase (7d) proven?         |
 | -   | [alg.layered edge routing](#alg-layered-routing)           | How is the fifth phase (7e) proven?          |
 | -   | [alg.layered running pipeline](#alg-layered-pipeline)      | How is the whole layered layout (7f) proven? |
+| -   | [alg.layered labels and comments](#alg-layered-labels)     | How are labels and comments (7f2) proven?    |
 | -   | [Temporary gaps](#temporary-gaps)                          | What differs from the Java for now?          |
 
 ## 1. Oracle
@@ -1309,6 +1310,64 @@ enabled (`DebugUtil`): 7f2. Self loops, wrapping, post compaction, `compaction.c
 **Known divergences.** None numeric. Open by design: the pinned rows (FX6, FX7); the `ComponentGroup` key order follows
 the oracle's flag (FX3) and is unobservable in final layouts on the corpus; `EndLabelSorter`'s map order is insertion
 order pending 7f2's scenario (FX2); the label metrics are a macOS JVM snapshot (FX8).
+
+## alg.layered, part g: labels, comments and debug output (mission 7f2) {#alg-layered-labels}
+
+Mission 7f2 ported the label family (`LabelDummyInserter`, `LabelDummySwitcher`, `LabelDummyRemover`,
+`LabelSideSelector`, `EndLabelPreprocessor`, `EndLabelPostprocessor`, `LabelManagementProcessor`), the comment
+processors, `AlternatingLayerUnzipper`, `InteractiveLayeredGraphVisitor` and the debug utilities (`DotDebugUtil`,
+`JsonDebugUtil`, `DebugUtil`), and the 12 arms that create them. `LayeredLayoutProvider.layout` now runs labelled and
+commented layouts, layer unzipping and logging (design, idioms and runbook in
+[alg-layered-labels.md](architecture/alg-layered-labels.md)). Decisions: `plans/layered-labels/decisions.md` (G1-G12,
+G3a, G11a).
+
+**Evidence.**
+
+- `test/golden/refs/java/layered-labels.json` (14,315,720 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-labels-vectors.sh`, `-XX:hashCode=2`): 1,305 rows, byte-stable; `rowCounts` `full` 399,
+  `models` 640, `scenarios` 224, `sites` 42. `LayeredLabelsVectors.test.ts` replays 1,316 cases (journal, T16) at
+  the AD-4 bar; logged DOT and JSON graphs are compared per G3 and G3a (identity-hash tokens normalised, property lists
+  unordered, everything else exact).
+- The 59 rows pinned by 7f (57 in `layered-pipeline.json`, 2 in `layered-phases.json`) are unpinned and replay their
+  recorded expectations; one row stays pinned to 7g
+  (`models/ptolemy-sinewaveoptimization/N1/DIRECTION_PREPROCESSOR/DOWN`). `site/provider/flat` and
+  `site/provider/cancelled` compare their recorded layout (FX5). FX2's parallel-edge end-label rows equal the oracle
+  with `END_LABELS` in insertion order and reversed.
+- Java suites: the 11 of `plans/layered-labels/java-baseline.md` (12, 3, 4, 550, 551, 1, 1, 2, 2, 5 and 3 oracle runs)
+  ported with their own assertions. Oracle runs at mission start equal the baseline (`failures=0`); at mission end:
+  equal to the start run, all 11 suites `failures=0`. Corpus-wide, `LabelDummyRemoverTest` and `LabelSideSelectorTest` fail
+  132 cases, all `SelfLoopPreProcessor is ported in mission 7g`.
+- Breadth sweep (G7, gitignored): 221 label- or comment-bearing models × {`default`, `RIGHT`, `LEFT`, `DOWN`, `UP`} =
+  1,105 oracle cases; ok 935, refused 155 (7g 105: `SELF_LOOP_PREPROCESSOR` 75, `HORIZONTAL_COMPACTOR` 25,
+  `COMPACTION_CONNECTED_COMPONENTS` 5; 7h 50: `INCLUDE_CHILDREN`), throws 15 (three rectpacking models, equal on both
+  sides). TS at stride 1: 935 of 935 hashes match, 15 of 15 throws match. Final run: exit 0 in 4 s, the same 935 / 155 / 15 split; the TS comparison passes.
+- Label metrics (G8): `layered-label-metrics.json` grew append-only to 2,258 entries; the 1,380 entries of 7f are
+  proven unchanged by a test.
+- Coverage map `plans/layered-labels/unreached.md`: over the 15 classes (34 files), 131 untaken branches and 13
+  uncovered functions partitioned S 87, J 10, U 42 (7g 3, 7h 7, dead by construction 32), X 5; 42 site rows and 86
+  anchored cases (T17a 40, T17b 46) close S and J; mutation checks killed 29 of 37 flips, the survivors being equivalent.
+  Whole-suite coverage after batch 8: 99.05 / 97.17 / 99.12 / 99.06 (lines / branches / functions / statements).
+- Landed vectors and goldens are unchanged; the refs diff adds `layered-labels.json`, the sweep test, 123 vendored
+  inputs under `inputs/labels/` and their manifest rows, and appends keys to `layered-label-metrics.json`.
+
+**Upstream defects found (G10).** `EndLabelSorter.java:194` adds a list to itself (`this.labels.addAll(labels)`, a
+no-op) and its `HashMap<LEdge, LabelGroup>` order makes parallel end labels nondeterministic on an unflagged JVM
+(`h0` at y 40 or 54). Two fix branches, `fix/end-label-group-self-add` and `fix/end-label-group-order`, exist as
+worktrees of the local `../elk` checkout: local, unsigned, not pushed. An issue draft (never filed) covers
+`BF_MODEL_ORDER`/`DF_MODEL_ORDER` leaving same-layer or backward edges under the default cycle breaker. The port keeps
+the Java behaviour and the insertion order (AD-10).
+
+**Upstream typos (CLAUDE.md carve-out).** `LabelManagementProcessor.java`: the comment "edge Unand tail labels" is
+corrected to "edge head and tail labels" at the port site (T5); nothing branches on it.
+
+**What still throws, and which mission lifts it.** Self loops, `MULTI_EDGE` wrapping, post compaction and
+`compaction.connectedComponents`: 7g (9 pending arms and the staged `ComponentsCompactor`). `INCLUDE_CHILDREN`: 7h (1
+pending arm, `HierarchicalNodeResizingProcessor`, and the compound stages). The enum tally is 49 ported, 10 pending
+(7g 9, 7h 1). Each throws `UnsupportedOperationException` naming the class and mission, at plan build.
+
+**Known divergences.** None numeric. Open by design: the debug-JSON property order follows the landed `JavaHashMap`
+and is compared as a multiset (G3); identity hashes in debug strings are normalised on both sides (G3a); the group and
+`END_LABELS` orders are insertion order (G4, FX2); the label metrics remain a macOS JVM snapshot (FX8).
 
 ## Temporary gaps
 
