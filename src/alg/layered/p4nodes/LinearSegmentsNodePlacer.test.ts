@@ -23,7 +23,9 @@ import { LayeredPhases } from '../LayeredPhases.js';
 import { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
 import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
+import { BasicProgressMonitor } from '../../../core/util/BasicProgressMonitor.js';
+import { DotDebugUtil } from '../DotDebugUtil.js';
+import { JsonDebugUtil } from '../JsonDebugUtil.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
 import { GraphProperties } from '../options/GraphProperties.js';
 import { InternalProperties } from '../options/InternalProperties.js';
@@ -430,16 +432,17 @@ describe('LinearSegmentsNodePlacerMode and the private properties', () => {
   });
 });
 
-describe('LinearSegmentsNodePlacerCreation with the staged DebugUtil', () => {
-  it('calls the staged DebugUtil only when the monitor has logging enabled', () => {
-    class LoggingMonitor extends NullElkProgressMonitor {
-      override isLoggingEnabled(): boolean {
-        return true;
-      }
-    }
-    expect(() => sortLinearSegments(longEdgeChain(2), new LoggingMonitor())).toThrow(
-      new UnsupportedOperationException('DotDebugUtil is ported in mission 7f2'),
-    );
+describe('LinearSegmentsNodePlacerCreation with DebugUtil', () => {
+  it('logs the segment graph (DOT then JSON) only when the monitor has logging enabled', () => {
+    const monitor = new BasicProgressMonitor().withLogging(true);
+    const graph = longEdgeChain(2);
+    const segments = sortLinearSegments(graph, monitor);
+    expect(
+      monitor.getLoggedGraphs()!.map((logged) => [logged.getTag(), logged.getGraphType().name(), logged.getGraph()]),
+    ).toEqual([
+      ['segment graph', 'DOT', DotDebugUtil.createDebugGraphSegments(graph, segments, [[]])],
+      ['segment graph', 'JSON', JsonDebugUtil.createDebugGraphSegments(graph, segments, [[]])],
+    ]);
     expect(sortLinearSegments(longEdgeChain(2), new NullElkProgressMonitor())).toHaveLength(1);
   });
 });
