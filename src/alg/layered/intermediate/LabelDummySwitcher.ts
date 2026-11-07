@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: EPL-2.0
-// @staged 7f2
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import type { IProperty } from '../../../graph/properties/IProperty.js';

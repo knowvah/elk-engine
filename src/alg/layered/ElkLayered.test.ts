@@ -24,6 +24,7 @@ import { ElkLayeredTestExecutionState } from './ElkLayeredTestExecutionState.js'
 import { LGraph } from './graph/LGraph.js';
 import { CompoundGraphPostprocessor } from './compound/CompoundGraphPostprocessor.js';
 import { CompoundGraphPreprocessor } from './compound/CompoundGraphPreprocessor.js';
+import { CommentPreprocessor } from './intermediate/CommentPreprocessor.js';
 import { IntermediateProcessorStrategy } from './intermediate/IntermediateProcessorStrategy.js';
 import { CrossingMinimizationStrategy } from './options/CrossingMinimizationStrategy.js';
 import { HIERARCHY_AWARE, isHierarchyAwareLayoutProcessor } from './IHierarchyAwareLayoutProcessor.js';
@@ -125,12 +126,13 @@ describe('ElkLayered.doLayout (structure)', () => {
     expect(nested).not.toHaveBeenCalled();
   });
 
-  it('throws the staged message of the first unported member of the plan (F1)', () => {
+  it('lays out a comment-box graph with the CommentPreprocessor ported in the plan (F1, 7f2)', () => {
     const graph = oneNodeGraph();
     graph.getProperty(InternalProperties.GRAPH_PROPERTIES).add(GraphProperties.COMMENTS);
-    expect(() => new ElkLayered().doLayout(graph, new NullElkProgressMonitor())).toThrow(
-      new UnsupportedOperationException('CommentPreprocessor is ported in mission 7f2'),
-    );
+    new ElkLayered().doLayout(graph, new NullElkProgressMonitor());
+    const plan = graph.getProperty(InternalProperties.PROCESSORS);
+    expect(plan[0]).toBeInstanceOf(CommentPreprocessor);
+    expect(plan.map((processor) => processor.constructor.name)).toContain('CommentPostprocessor');
   });
 });
 

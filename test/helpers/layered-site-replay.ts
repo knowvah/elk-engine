@@ -205,9 +205,8 @@ const C4_OPS: ReadonlySet<string> = new Set([
 ]);
 const PROVIDER_SITE = 'LayeredLayoutProvider';
 const HIERARCHY_AWARE_ROW = 'site/strings/hierarchyAware';
-/** The mission a provider row's `layout` must name: the staged `CompoundGraphPreprocessor` (INCLUDE_CHILDREN) or, for the flat rows, the staged `LabelDummyInserter` of the edge label in their input. */
+/** The mission an INCLUDE_CHILDREN provider row's `layout` must name: the staged `CompoundGraphPreprocessor`. */
 const COMPOUND_STAGE_MESSAGE = 'mission 7h';
-const FLAT_STAGE_MESSAGE = 'mission 7f2';
 
 function expectedException(expected: unknown): { class: string; message: string | null } | null {
   const e = (expected as { exception?: { class: string; message: string | null } } | null)?.exception;
@@ -280,21 +279,21 @@ function compareLabels(row: SiteRow, outcome: RowOutcome, skip: ReadonlySet<stri
 }
 
 /**
- * Provider rows (X6): `layout` runs `ElkLayered` for real. The INCLUDE_CHILDREN rows throw at the staged
- * `CompoundGraphPreprocessor` (7h) in `doCompoundLayout`; the flat rows hold an edge label, whose `LabelDummyInserter`
- * (7f2) the router configuration puts into the plan, so `prepareGraphForLayout` throws naming 7f2 inside `doLayout`.
- * The recorded `layout` and `elk` of every provider row stay for the mission that ports the named class.
+ * Provider rows (X6, FX5): `layout` runs `ElkLayered` for real. The INCLUDE_CHILDREN rows throw at the staged
+ * `CompoundGraphPreprocessor` (7h) in `doCompoundLayout`, so their recorded `layout` and `elk` stay for 7h; the flat
+ * rows (7f2 landed) reach `doLayout` and compare their recorded `layout` and `elk` like any other label.
  */
 function compareProvider(row: SiteRow, outcome: RowOutcome): string[] {
   const compound = isCompoundProviderRow(row);
   const method = compound ? 'doCompoundLayout' : 'doLayout';
-  const mission = compound ? COMPOUND_STAGE_MESSAGE : FLAT_STAGE_MESSAGE;
-  const thrown = expectedException(outcome.values.layout);
   const diffs: string[] = [];
-  if (thrown?.class !== 'UnsupportedOperationException' || !(thrown.message ?? '').includes(mission)) {
-    diffs.push(
-      `layout: expected UnsupportedOperationException naming ${mission}, got ${JSON.stringify(outcome.values.layout)}`,
-    );
+  if (compound) {
+    const thrown = expectedException(outcome.values.layout);
+    if (thrown?.class !== 'UnsupportedOperationException' || !(thrown.message ?? '').includes(COMPOUND_STAGE_MESSAGE)) {
+      diffs.push(
+        `layout: expected UnsupportedOperationException naming ${COMPOUND_STAGE_MESSAGE}, got ${JSON.stringify(outcome.values.layout)}`,
+      );
+    }
   }
   if (JSON.stringify(outcome.stagedCalls) !== JSON.stringify([method])) {
     diffs.push(`staged calls: expected [${method}], got ${JSON.stringify(outcome.stagedCalls)}`);
@@ -318,8 +317,9 @@ function stagedHierarchyAware(row: SiteRow): SiteRow {
 export function compareRow(row: SiteRow, outcome: RowOutcome): string[] {
   const diffs = outcome.unlabeledErrors.map((e) => `unlabeled step: ${e}`);
   if (row.site === PROVIDER_SITE) {
-    // the recorded `layout` and `elk` stay for 7f2 (flat rows) and 7h (INCLUDE_CHILDREN rows)
-    return [...diffs, ...compareProvider(row, outcome), ...compareLabels(row, outcome, new Set(['layout', 'elk']))];
+    // the recorded `layout` and `elk` stay for 7h (INCLUDE_CHILDREN rows); the flat rows compare them (FX5)
+    const skip = isCompoundProviderRow(row) ? new Set(['layout', 'elk']) : new Set<string>();
+    return [...diffs, ...compareProvider(row, outcome), ...compareLabels(row, outcome, skip)];
   }
   const compared = row.id === HIERARCHY_AWARE_ROW ? stagedHierarchyAware(row) : row;
   return [...diffs, ...compareLabels(compared, outcome, new Set())];

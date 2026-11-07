@@ -37,6 +37,17 @@ import { PartitionMidprocessor } from './PartitionMidprocessor.js';
 import { PartitionPostprocessor } from './PartitionPostprocessor.js';
 import { PartitionPreprocessor } from './PartitionPreprocessor.js';
 import { PortListSorter } from './PortListSorter.js';
+import { CommentNodeMarginCalculator } from './CommentNodeMarginCalculator.js';
+import { CommentPostprocessor } from './CommentPostprocessor.js';
+import { CommentPreprocessor } from './CommentPreprocessor.js';
+import { EndLabelPostprocessor } from './EndLabelPostprocessor.js';
+import { EndLabelPreprocessor } from './EndLabelPreprocessor.js';
+import { LabelDummyInserter } from './LabelDummyInserter.js';
+import { LabelDummyRemover } from './LabelDummyRemover.js';
+import { LabelDummySwitcher } from './LabelDummySwitcher.js';
+import { LabelManagementProcessor } from './LabelManagementProcessor.js';
+import { LabelSideSelector } from './LabelSideSelector.js';
+import { AlternatingLayerUnzipper } from './unzipping/AlternatingLayerUnzipper.js';
 import { PortSideProcessor } from './PortSideProcessor.js';
 import { ReversedEdgeRestorer } from './ReversedEdgeRestorer.js';
 import { SemiInteractiveCrossMinProcessor } from './SemiInteractiveCrossMinProcessor.js';
@@ -65,7 +76,7 @@ function createBeforePhase1(strategy: IntermediateProcessorStrategy): ILayoutPro
       // IntermediateProcessorStrategy.java:213-215: the preprocessor goes to the input direction (names swapped)
       return new GraphTransformer(Mode.TO_INPUT_DIRECTION);
     case 'COMMENT_PREPROCESSOR':
-      throw notPorted('CommentPreprocessor', '7f2');
+      return new CommentPreprocessor();
     case 'EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER':
       return new EdgeAndLayerConstraintEdgeReverser();
     case 'INTERACTIVE_EXTERNAL_PORT_POSITIONER':
@@ -81,7 +92,7 @@ function createBeforePhase1(strategy: IntermediateProcessorStrategy): ILayoutPro
 function createBeforePhase2(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy.name()) {
     case 'LABEL_DUMMY_INSERTER':
-      throw notPorted('LabelDummyInserter', '7f2');
+      return new LabelDummyInserter();
     case 'SELF_LOOP_PREPROCESSOR':
       throw notPorted('SelfLoopPreProcessor', '7g');
     case 'LAYER_CONSTRAINT_PREPROCESSOR':
@@ -147,13 +158,13 @@ function createBeforePhase4(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'SELF_LOOP_PORT_RESTORER':
       throw notPorted('SelfLoopPortRestorer', '7g');
     case 'ALTERNATING_LAYER_UNZIPPER':
-      throw notPorted('AlternatingLayerUnzipper', '7f2');
+      return new AlternatingLayerUnzipper();
     case 'SINGLE_EDGE_GRAPH_WRAPPER':
       throw notPorted('SingleEdgeGraphWrapper', '7g');
     case 'IN_LAYER_CONSTRAINT_PROCESSOR':
       return new InLayerConstraintProcessor();
     case 'END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR':
-      throw notPorted('LabelManagementProcessor', '7f2');
+      return new LabelManagementProcessor(false);
     case 'LABEL_AND_NODE_SIZE_PROCESSOR':
       return new LabelAndNodeSizeProcessor();
     default:
@@ -169,15 +180,15 @@ function createBeforePhase42(strategy: IntermediateProcessorStrategy): ILayoutPr
     case 'SELF_LOOP_ROUTER':
       throw notPorted('SelfLoopRouter', '7g');
     case 'COMMENT_NODE_MARGIN_CALCULATOR':
-      throw notPorted('CommentNodeMarginCalculator', '7f2');
+      return new CommentNodeMarginCalculator();
     case 'END_LABEL_PREPROCESSOR':
-      throw notPorted('EndLabelPreprocessor', '7f2');
+      return new EndLabelPreprocessor();
     case 'LABEL_DUMMY_SWITCHER':
-      throw notPorted('LabelDummySwitcher', '7f2');
+      return new LabelDummySwitcher();
     case 'CENTER_LABEL_MANAGEMENT_PROCESSOR':
-      throw notPorted('LabelManagementProcessor', '7f2');
+      return new LabelManagementProcessor(true);
     case 'LABEL_SIDE_SELECTOR':
-      throw notPorted('LabelSideSelector', '7f2');
+      return new LabelSideSelector();
     case 'HYPEREDGE_DUMMY_MERGER':
       return new HyperedgeDummyMerger();
     case 'HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR':
@@ -207,7 +218,7 @@ function createAfterPhase5(strategy: IntermediateProcessorStrategy): ILayoutProc
     case 'CONSTRAINTS_POSTPROCESSOR':
       return new ConstraintsPostprocessor();
     case 'COMMENT_POSTPROCESSOR':
-      throw notPorted('CommentPostprocessor', '7f2');
+      return new CommentPostprocessor();
     case 'HYPERNODE_PROCESSOR':
       return new HypernodesProcessor();
     case 'HIERARCHICAL_PORT_ORTHOGONAL_EDGE_ROUTER':
@@ -231,7 +242,7 @@ function createAfterPhase5(strategy: IntermediateProcessorStrategy): ILayoutProc
 function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy.name()) {
     case 'LABEL_DUMMY_REMOVER':
-      throw notPorted('LabelDummyRemover', '7f2');
+      return new LabelDummyRemover();
     case 'FINAL_SPLINE_BENDPOINTS_CALCULATOR':
       return new FinalSplineBendpointsCalculator();
     case 'END_LABEL_SORTER':
@@ -239,7 +250,7 @@ function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'REVERSED_EDGE_RESTORER':
       return new ReversedEdgeRestorer();
     case 'END_LABEL_POSTPROCESSOR':
-      throw notPorted('EndLabelPostprocessor', '7f2');
+      return new EndLabelPostprocessor();
     case 'HIERARCHICAL_NODE_RESIZER':
       throw notPorted('HierarchicalNodeResizingProcessor', '7h');
     case 'DIRECTION_POSTPROCESSOR':

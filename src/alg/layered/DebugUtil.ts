@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: EPL-2.0
-// @staged 7f2
 import type { IElkProgressMonitor } from '../../core/util/IElkProgressMonitor.js';
 import { LoggedGraphType } from '../../core/util/LoggedGraph.js';
 import { DotDebugUtil } from './DotDebugUtil.js';

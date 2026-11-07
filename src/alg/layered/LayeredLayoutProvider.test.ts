@@ -14,7 +14,6 @@ import { LayeredLayoutProvider } from './LayeredLayoutProvider.js';
 import { LayeredOptions } from './options/LayeredOptions.js';
 
 const COMPOUND_STAGED_MESSAGE = 'CompoundGraphPreprocessor is ported in mission 7h';
-const LABEL_STAGED_MESSAGE = 'LabelDummyInserter is ported in mission 7f2';
 
 function graphWithNode(): ElkNode {
   const graph = ElkGraphUtil.createGraph();
@@ -89,26 +88,38 @@ describe('LayeredLayoutProvider', () => {
 });
 
 describe('LayeredLayoutProvider (oracle site rows)', () => {
-  // The cancelled rows (site/provider/cancelled, site/provider/include-children-cancelled) exercise the
-  // `isCanceled` arm of LayeredLayoutProvider.java:64, which follows the layout call; their inputs hold an edge label
-  // (the staged LabelDummyInserter, 7f2) or a compound graph (the staged CompoundGraphPreprocessor, 7h), so `layout`
-  // throws before that arm and it has no case here until those missions land.
-  it('imports a flat graph and hands it to doLayout, which stops at the staged label dummy inserter', () => {
-    // oracle: site/provider/flat; LayeredLayoutProvider.java:59-60 (layout, flat arm)
+  // The flat rows lay out for real since 7f2 (FX5); the INCLUDE_CHILDREN rows stop at the staged
+  // `CompoundGraphPreprocessor` (7h) before the `isCanceled` arm, so only the flat cancelled row has a case here.
+  it('imports a flat labelled graph, hands it to doLayout and applies the recorded layout', () => {
+    // oracle: site/provider/flat; LayeredLayoutProvider.java:59-60 (layout, flat arm); coordinates of the row
     const provider = new LayeredLayoutProvider();
     const doLayout = vi.spyOn(provider.getLayoutAlgorithm(), 'doLayout');
     const doCompoundLayout = vi.spyOn(provider.getLayoutAlgorithm(), 'doCompoundLayout');
     const root = importSiteInput('site/provider/flat');
     const monitor = new NullElkProgressMonitor();
     const isCanceled = vi.spyOn(monitor, 'isCanceled');
-    expect(() => provider.layout(root, monitor)).toThrow(new UnsupportedOperationException(LABEL_STAGED_MESSAGE));
+    provider.layout(root, monitor);
     expect(doLayout).toHaveBeenCalledTimes(1);
     expect(doCompoundLayout).not.toHaveBeenCalled();
-    expect(isCanceled).not.toHaveBeenCalled();
-    const imported = doLayout.mock.calls[0]?.[0];
-    expect(imported?.getLayerlessNodes().map((node) => node.getPorts().length)).toEqual([1, 2, 1]);
+    expect(isCanceled).toHaveBeenCalled();
+    expect(root.getChildren().get(0)?.getX()).toBe(12);
+    expect(root.getChildren().get(2)?.getX()).toBe(148);
+    expect(root.getWidth()).toBe(190);
+    expect(root.getHeight()).toBe(44);
+    const label = root.getContainedEdges().get(1)?.getLabels().get(0);
+    expect([label?.getX(), label?.getY()]).toEqual([116, 25]);
+  });
+
+  it('keeps the graph untouched when the monitor is cancelled', () => {
+    // oracle: site/provider/cancelled; LayeredLayoutProvider.java:64 (isCanceled arm after the layout call)
+    const provider = new LayeredLayoutProvider();
+    const root = importSiteInput('site/provider/cancelled');
+    const monitor = new NullElkProgressMonitor();
+    vi.spyOn(monitor, 'isCanceled').mockReturnValue(true);
+    provider.layout(root, monitor);
     expect(root.getChildren().get(0)?.getX()).toBe(0);
     expect(root.getWidth()).toBe(0);
+    expect(root.getHeight()).toBe(0);
   });
 
   it('imports an INCLUDE_CHILDREN hierarchy and hands it to doCompoundLayout, which stops at the staged compound preprocessor', () => {
