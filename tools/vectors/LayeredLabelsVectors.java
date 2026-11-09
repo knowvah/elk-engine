@@ -206,7 +206,7 @@ public class LayeredLabelsVectors {
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed", REPO_PREFIX = "repo:";
     static final String INPUTS = "test/golden/inputs/", LABEL_INPUTS = INPUTS + "labels/";
     static final int MAX_DEPTH = 8, FULL_DUMP_BELOW = 10;
-    static final long MAX_BYTES = (System.getenv("LABELS_CAP_MB") == null ? 16L : Long.parseLong(System.getenv("LABELS_CAP_MB"))) * 1024 * 1024; // LABELS_CAP_MB: diagnosis aid, the committed output stays under 16 MiB (G2)
+    static final long MAX_BYTES = (System.getenv("LABELS_CAP_MB") == null ? 16L : parseLongArg("LABELS_CAP_MB", System.getenv("LABELS_CAP_MB"))) * 1024 * 1024; // LABELS_CAP_MB: diagnosis aid, the committed output stays under 16 MiB (G2)
     static final String P1 = "P1_CYCLE_BREAKING", P2 = "P2_LAYERING", P3 = "P3_NODE_ORDERING", P4 = "P4_NODE_PLACEMENT", P5 = "P5_EDGE_ROUTING";
     static final Set<String> IGNORED_IDS = Set.of("processors", "random", "spacings", "splines.route.start"); // the spline route is recorded in geometry.splines (R3)
     /** The refusal categories G2 allows (the members the recorder refuses), with the owning mission. */
@@ -952,7 +952,7 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
             case "bool": return (Boolean) v;
             case "int": return ((Number) v).intValue();
             case "string": return (String) v;
-            case "double": return Double.parseDouble((String) v);
+            case "double": return parseDoubleArg("property value", (String) v);
             case "enum": for (String pkg : OPTION_PACKAGES) {
                     try {
                         return Enum.valueOf((Class<? extends Enum>) Class.forName(pkg + m.get("c")), (String) m.get("n"));
@@ -1547,6 +1547,35 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
         }
     }
 
+    static Base need(Base base) {
+        if (base == null) {
+            throw new IllegalStateException("step ran before importGraph created the Base");
+        }
+        return base;
+    }
+
+    static double parseDoubleArg(String what, String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not a number: " + s, e);
+        }
+    }
+
+    static long parseLongArg(String what, String s) {
+        try {
+            return Long.parseLong(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not an integer: " + s, e);
+        }
+    }
+
+    static void requirePairs(int length) {
+        if (length % 2 != 0) {
+            throw new IllegalArgumentException("key/value arguments come in pairs, got " + length);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     static Map<String, Object> runSteps(ElkNode root, List<Object> steps) {
         LGraph graph = null;
@@ -1578,16 +1607,16 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
                 }
                 case "normalise" -> {
                     normalise(graph);
-                    base.snapshot();
+                    need(base).snapshot();
                 }
-                case "setProperty" -> setProperty(base.element((String) s.get(1)), (String) s.get(2), s.get(3));
+                case "setProperty" -> setProperty(need(base).element((String) s.get(1)), (String) s.get(2), s.get(3));
                 case "runProcessor" -> {
                     runProcessor(graph, (String) s.get(1));
-                    base.stop = (String) s.get(1);
+                    need(base).stop = (String) s.get(1);
                 }
                 case "runPhase" -> {
                     runPhase(graph, (String) s.get(1), (String) s.get(2));
-                    base.stop = (String) s.get(1);
+                    need(base).stop = (String) s.get(1);
                 }
                 case "layout", "layoutCancelled", "interactive", "logging" -> {
                     if (i != steps.size() - 1) {
@@ -1597,7 +1626,7 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
                 }
                 case "dump" -> {
                     expected = phaseDump(base);
-                    if (base.nodes.size() < FULL_DUMP_BELOW) {
+                    if (need(base).nodes.size() < FULL_DUMP_BELOW) {
                         expected.put("dump", new Dump(graph, true).dump());
                     }
                 }
@@ -1940,7 +1969,8 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
     static TreeMap<String, Object> opts(Object... kv) {
         TreeMap<String, Object> m = new TreeMap<>();
         m.put(pid("SEPARATE_CONNECTED_COMPONENTS"), Z(false));
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             m.put(pid((String) kv[i]), kv[i + 1]);
         }
         return m;
@@ -1994,7 +2024,8 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
     /** Root layout options as JSON members: constant name, value string, ... */
     static String ropts(String... kv) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             sb.append(sb.length() == 0 ? "" : ",").append('"').append(pid(kv[i])).append("\":\"").append(kv[i + 1]).append('"');
         }
         return sb.toString();
@@ -2206,7 +2237,8 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
     /** Options of a full row: pairs of (Java constant name, C4 value); no default is added (components stay on). */
     static TreeMap<String, Object> fopts(Object... kv) {
         TreeMap<String, Object> m = new TreeMap<>();
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             m.put(pid((String) kv[i]), kv[i + 1]);
         }
         return m;
@@ -2603,7 +2635,7 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
     }
 
     /** Issue871Test: n1..n4 / n1..n3 with node labels n1.., feedback edges; padding 0, spacing 10 / 20, model order, no crossing min. */
-    static String g871(boolean feedback, int nodes, boolean edgeLabels, String... edges) {
+    static String g871(boolean feedback, int nodes, String... edges) {
         String ro = ropts("DIRECTION", "RIGHT", "CYCLE_BREAKING_STRATEGY", "MODEL_ORDER", "CONSIDER_MODEL_ORDER_STRATEGY", "PREFER_EDGES",
                 "CROSSING_MINIMIZATION_STRATEGY", "NONE", "CROSSING_MINIMIZATION_GREEDY_SWITCH_TYPE", "OFF", "PADDING",
                 "[top=0.0,left=0.0,bottom=0.0,right=0.0]", "SPACING_NODE_NODE", "10.0", "SPACING_NODE_NODE_BETWEEN_LAYERS", "20.0")
@@ -2633,10 +2665,10 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
                 out.add(full("issues", f.id, "default", f.rel, null, fopts()));
             }
         }
-        out.add(full("issues", "issue871-feedback-below", "default", null, g871(true, 4, false, "n1>n2", "n1>n3", "n2>n4", "n4>n3"), fopts()));
-        out.add(full("issues", "issue871-feedback-basic", "default", null, g871(true, 3, false, "n1>n2", "n2>n3", "n3>n2"), fopts()));
+        out.add(full("issues", "issue871-feedback-below", "default", null, g871(true, 4, "n1>n2", "n1>n3", "n2>n4", "n4>n3"), fopts()));
+        out.add(full("issues", "issue871-feedback-basic", "default", null, g871(true, 3, "n1>n2", "n2>n3", "n3>n2"), fopts()));
         out.add(full("issues", "issue871-no-feedback", "default", null,
-                g871(false, 4, true, "n1>n2:1", "n1>n4:2", "n2>n4", "n3>n2", "n3>n4"), fopts()));
+                g871(false, 4, "n1>n2:1", "n1>n4:2", "n2>n4", "n3>n2", "n3>n4"), fopts()));
         for (String d : ALL_DIRECTIONS) { // FX2 (G9): end labels on parallel edges sharing source port, target node and target port
             out.add(full("issues", "fx2-parallel-end-labels", d, null, gFx2(ropts("DIRECTION", d)), fopts()));
         }
@@ -2750,7 +2782,8 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
 
     static Map<String, java.util.function.UnaryOperator<String>> graphs(Object... nameAndBuilder) {
         Map<String, java.util.function.UnaryOperator<String>> m = new LinkedHashMap<>();
-        for (int i = 0; i < nameAndBuilder.length; i += 2) {
+        requirePairs(nameAndBuilder.length);
+        for (int i = 0; i + 1 < nameAndBuilder.length; i += 2) {
             @SuppressWarnings("unchecked")
             java.util.function.UnaryOperator<String> b = (java.util.function.UnaryOperator<String>) nameAndBuilder[i + 1];
             m.put((String) nameAndBuilder[i], b);
@@ -3221,6 +3254,9 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
         List<String> paths = new ArrayList<>();
         for (int i = 3; i < args.length; i++) {
             if (args[i].equals("-o")) {
+                if (i + 1 >= args.length) {
+                    throw new IllegalArgumentException("-o needs a CONSTANT=value argument");
+                }
                 opts.add(args[++i].split("=", 2));
             } else {
                 paths.add(args[i]);
