@@ -1307,12 +1307,19 @@ f30fac5ebbe51ef8aef7f4624e9a64e7018df5ae89d75c88e2a32961e2a5fa77  repo:test/gold
         }
     }
 
+    static void requirePairs(int length) {
+        if (length % 2 != 0) {
+            throw new IllegalArgumentException("key/value arguments come in pairs, got " + length);
+        }
+    }
+
     /** One option on one kind of element; pairs are level name, Supplier of the value; level 0 leaves it unset. */
     @SuppressWarnings("unchecked")
     static <T> Factor prop(String name, Targets t, IProperty<T> p, Object... pairs) {
         List<Level> levels = new ArrayList<>();
         levels.add(new Level(UNSET, b -> { }));
-        for (int i = 0; i < pairs.length; i += 2) {
+        requirePairs(pairs.length);
+        for (int i = 0; i + 1 < pairs.length; i += 2) {
             Supplier<T> v = (Supplier<T>) pairs[i + 1];
             levels.add(new Level((String) pairs[i], b -> put(b, t, p, v)));
         }
@@ -1323,7 +1330,8 @@ f30fac5ebbe51ef8aef7f4624e9a64e7018df5ae89d75c88e2a32961e2a5fa77  repo:test/gold
     static Factor combo(String name, Object... pairs) {
         List<Level> levels = new ArrayList<>();
         levels.add(new Level(UNSET, b -> { }));
-        for (int i = 0; i < pairs.length; i += 2) {
+        requirePairs(pairs.length);
+        for (int i = 0; i + 1 < pairs.length; i += 2) {
             @SuppressWarnings("unchecked")
             Consumer<Build> c = (Consumer<Build>) pairs[i + 1];
             levels.add(new Level((String) pairs[i], c));

@@ -173,7 +173,7 @@ public class LayeredPlacementVectors {
     static final String TICKETS = "test/golden/inputs/tickets/layered/";
     static final int MAX_DEPTH = 8;
     static final int FULL_DUMP_BELOW = 10;
-    static final long MAX_BYTES = (System.getenv("PLACEMENT_CAP_MB") == null ? 16L : Long.parseLong(System.getenv("PLACEMENT_CAP_MB"))) * 1024 * 1024; // PLACEMENT_CAP_MB: diagnosis aid, the committed output stays under 16 MiB (raised from 5 MB on 2026-11-03)
+    static final long MAX_BYTES = (System.getenv("PLACEMENT_CAP_MB") == null ? 16L : parseLongArg("PLACEMENT_CAP_MB", System.getenv("PLACEMENT_CAP_MB"))) * 1024 * 1024; // PLACEMENT_CAP_MB: diagnosis aid, the committed output stays under 16 MiB (raised from 5 MB on 2026-11-03)
     static final String BASE_GRAPH = "g0";
     static final String P1 = "P1_CYCLE_BREAKING", P2 = "P2_LAYERING", P3 = "P3_NODE_ORDERING", P4 = "P4_NODE_PLACEMENT";
     static final Set<String> IGNORED_IDS = Set.of("processors", "random", "spacings");
@@ -873,7 +873,7 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
             case "string":
                 return (String) v;
             case "double":
-                return Double.parseDouble((String) v);
+                return parseDoubleArg("property value", (String) v);
             case "enum":
                 for (String pkg : OPTION_PACKAGES) {
                     try {
@@ -1325,6 +1325,13 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
 
     record Result(Map<String, Object> expected, List<Object> prefix) { }
 
+    static Base need(Base base) {
+        if (base == null) {
+            throw new IllegalStateException("step ran before importGraph created the Base");
+        }
+        return base;
+    }
+
     @SuppressWarnings("unchecked")
     static Base CURRENT; // the Base of the step row being run (decode resolves {ref} paths against it)
     static Map<String, Object> runSteps(ElkNode root, List<Object> steps) {
@@ -1347,22 +1354,22 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
                 }
                 case "normalise" -> {
                     normalise(graph);
-                    base.snapshot();
+                    need(base).snapshot();
                 }
-                case "setProperty" -> setProperty(base.element((String) s.get(1)), (String) s.get(2), s.get(3));
+                case "setProperty" -> setProperty(need(base).element((String) s.get(1)), (String) s.get(2), s.get(3));
                 case "layers" -> layers(graph, base, (List<Object>) s.get(1));
-                case "reverseEdge" -> ((LEdge) base.element((String) s.get(1))).reverse(graph, true);
+                case "reverseEdge" -> ((LEdge) need(base).element((String) s.get(1))).reverse(graph, true);
                 case "runProcessor" -> {
                     runProcessor(graph, (String) s.get(1));
-                    base.stop = (String) s.get(1);
+                    need(base).stop = (String) s.get(1);
                 }
                 case "runPhase" -> {
                     runPhase(graph, (String) s.get(1), (String) s.get(2));
-                    base.stop = (String) s.get(1);
+                    need(base).stop = (String) s.get(1);
                 }
                 case "dump" -> {
                     expected = phaseDump(base);
-                    if (base.nodes.size() < FULL_DUMP_BELOW) {
+                    if (need(base).nodes.size() < FULL_DUMP_BELOW) {
                         expected.put("dump", new Dump(graph, true).dump());
                     }
                 }
@@ -1754,10 +1761,33 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
         return levels;
     }
 
+    static double parseDoubleArg(String what, String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not a number: " + s, e);
+        }
+    }
+
+    static long parseLongArg(String what, String s) {
+        try {
+            return Long.parseLong(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not an integer: " + s, e);
+        }
+    }
+
+    static void requirePairs(int length) {
+        if (length % 2 != 0) {
+            throw new IllegalArgumentException("key/value arguments come in pairs, got " + length);
+        }
+    }
+
     static TreeMap<String, Object> opts(Object... kv) {
         TreeMap<String, Object> m = new TreeMap<>();
         m.put(pid("SEPARATE_CONNECTED_COMPONENTS"), Z(false));
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             m.put(pid((String) kv[i]), kv[i + 1]);
         }
         return m;
@@ -1972,7 +2002,8 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
     /** Root layout options as JSON members: constant name, value string, ... */
     static String ropts(String... kv) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             sb.append(sb.length() == 0 ? "" : ",").append('"').append(pid(kv[i])).append("\":\"").append(kv[i + 1]).append('"');
         }
         return sb.toString();
@@ -2637,7 +2668,7 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
             Object tag = m.get("t");
             if ("int".equals(tag) || "double".equals(tag)) {
                 Object x = m.get("v");
-                double d = x instanceof Number n ? n.doubleValue() : Double.parseDouble((String) x);
+                double d = x instanceof Number n ? n.doubleValue() : parseDoubleArg("value", (String) x);
                 out.put("t", "number");
                 out.put("v", String.format("%016x", Double.doubleToRawLongBits(d)));
                 return out;

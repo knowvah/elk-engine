@@ -421,13 +421,21 @@ public class GraphJsonVectors {
             }
         }
 
+        static int parseIndex(String text) {
+            try {
+                return Integer.parseInt(text);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("element index is not an integer: " + text, e);
+            }
+        }
+
         static void clear(ElkNode root, String spec) {
             String[] parts = spec.split("@");
             List<Object> elements = elements(root, parts[0]);
             Set<Integer> only = new HashSet<>();
             if (parts.length > 1) {
                 for (String i : parts[1].split(",")) {
-                    only.add(Integer.parseInt(i));
+                    only.add(parseIndex(i));
                 }
             }
             for (int i = 0; i < elements.size(); i++) {
@@ -476,9 +484,9 @@ public class GraphJsonVectors {
                 rows.add(row("algorithm", a));
             }
             rows.add(row("unhandled", new ILayoutMetaData() {
-                public String getId() { return "custom.metadata"; }
-                public String getName() { return "Custom"; }
-                public String getDescription() { return "none of the three"; }
+                @Override public String getId() { return "custom.metadata"; }
+                @Override public String getName() { return "Custom"; }
+                @Override public String getDescription() { return "none of the three"; }
                 @Override public String toString() { return "CustomMetaData"; }
             }));
             rows.add(row("null", null));

@@ -771,7 +771,7 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
             case "string":
                 return (String) v;
             case "double":
-                return Double.parseDouble((String) v);
+                return parseDoubleArg("property value", (String) v);
             case "enum":
                 for (String pkg : OPTION_PACKAGES) {
                     try {
@@ -1171,6 +1171,13 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
 
     record Result(Map<String, Object> expected, List<Object> prefix) { }
 
+    static Base need(Base base) {
+        if (base == null) {
+            throw new IllegalStateException("step ran before importGraph created the Base");
+        }
+        return base;
+    }
+
     @SuppressWarnings("unchecked")
     static Map<String, Object> runSteps(ElkNode root, List<Object> steps) {
         LGraph graph = null;
@@ -1192,16 +1199,16 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
                 }
                 case "normalise" -> {
                     normalise(graph);
-                    base.snapshot();
+                    need(base).snapshot();
                 }
-                case "setProperty" -> setProperty(base.element((String) s.get(1)), (String) s.get(2), s.get(3));
+                case "setProperty" -> setProperty(need(base).element((String) s.get(1)), (String) s.get(2), s.get(3));
                 case "layers" -> layers(graph, base, (List<Object>) s.get(1));
-                case "reverseEdge" -> ((LEdge) base.element((String) s.get(1))).reverse(graph, true);
+                case "reverseEdge" -> ((LEdge) need(base).element((String) s.get(1))).reverse(graph, true);
                 case "runProcessor" -> runProcessor(graph, (String) s.get(1));
                 case "runPhase" -> runPhase(graph, (String) s.get(1), (String) s.get(2));
                 case "dump" -> {
                     expected = phaseDump(base);
-                    if (base.nodes.size() < FULL_DUMP_BELOW) {
+                    if (need(base).nodes.size() < FULL_DUMP_BELOW) {
                         expected.put("dump", new Dump(graph, true).dump());
                     }
                 }
@@ -1485,10 +1492,25 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
         return levels;
     }
 
+    static double parseDoubleArg(String what, String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not a number: " + s, e);
+        }
+    }
+
+    static void requirePairs(int length) {
+        if (length % 2 != 0) {
+            throw new IllegalArgumentException("key/value arguments come in pairs, got " + length);
+        }
+    }
+
     static TreeMap<String, Object> opts(Object... kv) {
         TreeMap<String, Object> m = new TreeMap<>();
         m.put(pid("SEPARATE_CONNECTED_COMPONENTS"), Z(false));
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             m.put(pid((String) kv[i]), kv[i + 1]);
         }
         return m;
@@ -1669,7 +1691,8 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
     /** Root layout options as JSON members: constant name, value string, ... */
     static String ropts(String... kv) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             sb.append(sb.length() == 0 ? "" : ",").append('"').append(pid(kv[i])).append("\":\"").append(kv[i + 1]).append('"');
         }
         return sb.toString();
@@ -2407,7 +2430,7 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
             Object tag = m.get(C4_TAG);
             if ("int".equals(tag) || "double".equals(tag)) {
                 Object x = m.get("v");
-                double d = x instanceof Number n ? n.doubleValue() : Double.parseDouble((String) x);
+                double d = x instanceof Number n ? n.doubleValue() : parseDoubleArg("value", (String) x);
                 out.put(C4_TAG, "number");
                 out.put("v", bitsOf(d));
                 return out;
