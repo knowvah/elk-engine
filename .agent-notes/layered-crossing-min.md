@@ -323,7 +323,7 @@
 
 - **Context**: batch 7 and 8 gates of mission 7c.
 - **Finding**: other repositories' vitest runs pushed the 1-minute load to 135–160; `npm test` took 80.5 s at load 12–22
-  and 55.9 s at 5.7; an orphaned elk-ts worker (parent launchd) had run for 29 hours at a full core. A
+  and 55.9 s at 5.7; an orphaned elk-engine worker (parent launchd) had run for 29 hours at a full core. A
   `sysctl -n vm.loadavg` wait loop until the load is below 6 makes the timing comparable.
 - **Impact**: time `npm test` and the replay only at settled load and check `ps` for orphaned vitest workers first;
   the session cannot kill processes (auto-mode classifier), so ask the user.
