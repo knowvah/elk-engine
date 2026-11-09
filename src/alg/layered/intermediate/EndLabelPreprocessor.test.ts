@@ -12,7 +12,6 @@ import { compareLabels, labelsDump, type LabelsExpected } from '../../../../test
 import { runLabelsRow, type LabelsStepsResult } from '../../../../test/helpers/layered-labels-replay-ops.js';
 import { loadLabelsRows, rowsByGroup } from '../../../../test/helpers/layered-labels-replay-rows.js';
 import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
-import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { isStopRow, type PipelineStopRow } from '../../../../test/helpers/layered-pipeline-replay-rows.js';
 import { compareRoutingFullDump } from '../../../../test/helpers/layered-routing-replay-compare.js';
 import { runRoutingPrefix } from '../../../../test/helpers/layered-routing-replay-ops.js';

@@ -111,7 +111,6 @@ export class JsonDebugUtil {
     JsonDebugUtil.beginGraph(writer, layeredGraph);
     beginChildNodeList(writer, 1);
 
-    const indent1 = indentOf(2);
     let edgeId = 0;
 
     let edges = '';

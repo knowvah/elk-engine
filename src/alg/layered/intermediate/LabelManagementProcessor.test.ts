@@ -7,7 +7,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { registerLayered } from '../../../../test/helpers/layered-framework-replay.js';
 import { compareLabels, labelsDump } from '../../../../test/helpers/layered-labels-replay-dump.js';
 import { runLabelsRow, type LabelsStepsResult } from '../../../../test/helpers/layered-labels-replay-ops.js';
-import { rowsByClass, rowsByLastPrefixEntry } from '../../../../test/helpers/layered-labels-replay-rows.js';
+import { rowsByClass } from '../../../../test/helpers/layered-labels-replay-rows.js';
 import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import {
   isStopRow,
