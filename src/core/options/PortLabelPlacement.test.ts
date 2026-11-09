@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
-import { ArrayIndexOutOfBoundsException } from '../../java/lang/ArrayIndexOutOfBoundsException.js';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
 import { EnumSet } from '../../java/util/EnumSet.js';
 

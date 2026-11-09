@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 // Shared by the .elkj entry-point replay (T13): the recorded graph and property rows of graph-json-text-parse.json
 // (ElkjParseVectors.java header) and their counterparts read off a loaded model. Same logic as the parser replay.
-import { LayoutOptionData } from '../../src/core/data/LayoutOptionData.js';
 import { LayoutOptionProxy } from '../../src/core/util/internal/LayoutOptionProxy.js';
 import type { ElkEdge } from '../../src/graph/ElkEdge.js';
 import type { ElkGraphElement } from '../../src/graph/ElkGraphElement.js';

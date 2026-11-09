@@ -22,11 +22,6 @@ const cases = (JSON.parse(readFileSync(VECTORS_PATH, 'utf8')) as { cases: Case[]
 const HEX_RADIX = 16;
 const scratch = new DataView(new ArrayBuffer(8));
 
-/** Decodes a 16-hex-digit IEEE-754 bit string to a double. */
-function fromBits(hex: string): number {
-  scratch.setBigUint64(0, BigInt(`0x${hex}`));
-  return scratch.getFloat64(0);
-}
 /** Encodes a double as its 16-hex-digit IEEE-754 bit string. */
 function toBits(x: number): string {
   scratch.setFloat64(0, x);

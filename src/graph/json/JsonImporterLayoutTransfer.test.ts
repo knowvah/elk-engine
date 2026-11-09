@@ -4,7 +4,6 @@
 // Expected values come from JsonImporter.xtend:549-864 (TransferLayoutTest itself is ported in T19).
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LayoutMetaDataService } from '../../core/data/LayoutMetaDataService.js';
-import { KVectorChain } from '../../core/math/KVectorChain.js';
 import { CoreOptions } from '../../core/options/CoreOptions.js';
 import { Gson } from '../../gson/Gson.js';
 import { JsonObject } from '../../gson/JsonObject.js';

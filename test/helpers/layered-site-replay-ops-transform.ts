@@ -202,7 +202,7 @@ export const ELK_OPS: Readonly<Record<string, Op>> = {
 
 /** The recorder's `typeName`: the simple name, "LNode.NodeType" for a nested class (binary name `...LNode$NodeType`). */
 function simpleClassName(binaryName: string): string {
-  return binaryName.slice(binaryName.lastIndexOf('.') + 1).replace('$', '.');
+  return binaryName.slice(binaryName.lastIndexOf('.') + 1).replaceAll('$', '.');
 }
 
 function valueOfMiss(k: EnumClass): unknown {
