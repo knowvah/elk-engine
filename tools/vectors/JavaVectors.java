@@ -8,7 +8,7 @@
 // CALLS the JDK and records results; it embeds no JDK implementation.
 // Encoding: double/float = 16-hex Double.doubleToRawLongBits (floats widened
 // first), long = decimal string, int = JSON number.
-// Run: java tools/vectors/JavaVectors.java test/golden/refs/java
+// Run: tools/vectors/java-vectors.sh test/golden/refs/java (pins the identity hash; see there)
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

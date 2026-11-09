@@ -61,12 +61,13 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
 
 - Counts use the `G` helper and `SRC` list in
   [collections 2.0](translation-rules-collections.md#20-how-the-inventory-was-built).
-- Proof: JVM vectors in `test/golden/refs/java/`: `tools/vectors/JavaVectors.java` (JDK 21) writes
-  all but `guava.json` (`tools/vectors/GuavaVectors.java`, Guava 33.3.0-jre). `lang.json` (`round`
-  52, `roundFloat` 28, `floorDiv` 72, `floorMod` 72, `d2i` 52, `d2l` 52, `i32` 558 with ops add
-  sub mul div rem shl shr ushr neg, `doubleCompare` 1024), `random.json` (seeds 0, 1, -1, 42,
-  2^63-1, -2^63, 25214903917 x 32 calls: nextInt, nextIntBound, nextLong, nextDouble, nextFloat,
-  nextBoolean, nextGaussian, shuffle); the other files are cited per rule.
+- Proof: JVM vectors in `test/golden/refs/java/`: `tools/vectors/JavaVectors.java` (JDK 21, run by
+  `tools/vectors/java-vectors.sh`) writes all but `guava.json` (`tools/vectors/GuavaVectors.java`,
+  Guava 33.3.0-jre). `lang.json` (`round` 52, `roundFloat` 28, `floorDiv` 72, `floorMod` 72, `d2i`
+  52, `d2l` 52, `i32` 558 with ops add sub mul div rem shl shr ushr neg, `doubleCompare` 1024),
+  `random.json` (seeds 0, 1, -1, 42, 2^63-1, -2^63, 25214903917 x 32 calls: nextInt, nextIntBound,
+  nextLong, nextDouble, nextFloat, nextBoolean, nextGaussian, shuffle); the other files are cited
+  per rule.
 - Shims live in `src/java/lang/`, `src/java/util/`, `src/guava/`; each rule below names its export.
   Javadoc base: `https://docs.oracle.com/en/java/javase/21/docs/api/java.base/`.
 - Confidence (research-sources.md): HIGH = checked this run against Javadoc/JLS/ELK source;

@@ -259,7 +259,8 @@ All frozen in `test/golden/refs/java/`; none was edited to pass (AD-13).
 | `String.hashCode`, `Double.hashCode`                                                          | `hash.json`                                      | `JavaString.hashCode`, `JavaDouble.hashCode`                                                |
 | Guava containers and helpers                                                                  | `guava.json` (`tools/vectors/GuavaVectors.java`) | `src/guava/*`                                                                               |
 
-`tools/vectors/JavaVectors.java` writes `collections.json`; do not edit it (see the runbook).
+`tools/vectors/java-vectors.sh` writes `collections.json` by running `tools/vectors/JavaVectors.java` with the
+identity hash pinned (`-XX:hashCode=2`); record it only through that script (see the runbook).
 
 ## 2.5 Runbook: JavaHashMap order mismatch in a ported site
 
@@ -270,8 +271,9 @@ counts match. Confirm the keys' `HashStrategy` matches the Java `hashCode`/`equa
 **Mitigation.**
 
 1. Add the failing key set and operation sequence as a **new** JVM vector from a separate generator
-   file under `tools/vectors/` (like `GuavaVectors.java`). Never edit `JavaVectors.java`: any byte
-   change, even a comment, changes the identity-dependent `collections.json` scripts.
+   file under `tools/vectors/` (like `GuavaVectors.java`). Record `JavaVectors.java` only through
+   `tools/vectors/java-vectors.sh`: it pins every identity hash to 1, and a plain `java` run reorders the
+   identity-dependent `collections.json` scripts.
 2. If the order depends on identity hash (equal hashes, no `compare`), it is not reproducible:
    journal the site, keep the model's tie rule, and do not spend revisions on it.
 3. Otherwise revise the `JavaHashMap` model until the new vector and every non-skipped

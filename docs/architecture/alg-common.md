@@ -119,8 +119,9 @@ generator), and an import-first test for the TDZ failure below.
 ## 6. Runbook {#runbook}
 
 Run from the repository root. `$ELK_SOURCE_DIR`, `$ELK_ORACLE_DIR` and `$ELK_MODELS_DIR` default to the repo-relative
-paths of AD-15; the oracle must be built (`tools/oracle/build.sh`). Never edit `tools/vectors/vector-cache.sh` or
-`tools/vectors/JavaVectors.java`, and never regenerate a landed ref to get a test green (AD-13).
+paths of AD-15; the oracle must be built (`tools/oracle/build.sh`). Never edit `tools/vectors/vector-cache.sh`,
+record `tools/vectors/JavaVectors.java` only through `tools/vectors/java-vectors.sh`, and never regenerate a landed
+ref to get a test green (AD-13).
 
 ### 6.1 Re-record the vectors
 
