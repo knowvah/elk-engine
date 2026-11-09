@@ -178,8 +178,9 @@ the replay compares those by class only, every other exception by class and mess
 ## 7. Runbook {#runbook}
 
 Run from the repository root. `$ELK_SOURCE_DIR` and `$ELK_ORACLE_DIR` default to the repo-relative paths of AD-15; the
-oracle must be built (`tools/oracle/build.sh`), JDK 21 on `PATH`. Never edit `tools/vectors/vector-cache.sh` or
-`tools/vectors/JavaVectors.java`, and never regenerate a landed ref to get a test green (AD-13).
+oracle must be built (`tools/oracle/build.sh`), JDK 21 on `PATH`. Never edit `tools/vectors/vector-cache.sh`,
+record `tools/vectors/JavaVectors.java` only through `tools/vectors/java-vectors.sh`, and never regenerate a landed
+ref to get a test green (AD-13).
 
 ### 7.1 Re-record the framework and site vectors
 

@@ -8,7 +8,7 @@
 // CALLS the JDK and records results; it embeds no JDK implementation.
 // Encoding: double/float = 16-hex Double.doubleToRawLongBits (floats widened
 // first), long = decimal string, int = JSON number.
-// Run: java tools/vectors/JavaVectors.java test/golden/refs/java
+// Run: tools/vectors/java-vectors.sh test/golden/refs/java (pins the identity hash; see there)
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -78,6 +78,9 @@ public class JavaVectors {
     }
 
     private static Map<String, Object> map(Object... kv) {
+        if (kv.length % 2 != 0) {
+            throw new IllegalArgumentException("map() takes key/value pairs, got " + kv.length + " arguments");
+        }
         Map<String, Object> m = new LinkedHashMap<>();
         for (int i = 0; i < kv.length; i += 2) {
             m.put((String) kv[i], kv[i + 1]);
@@ -87,6 +90,30 @@ public class JavaVectors {
 
     private static List<Object> row(Object... items) {
         return new ArrayList<>(Arrays.asList(items));
+    }
+
+    private static int parseIntArg(String what, String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not an integer: " + s, e);
+        }
+    }
+
+    private static long parseLongArg(String what, String s) {
+        try {
+            return Long.parseLong(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not a long: " + s, e);
+        }
+    }
+
+    private static double parseDoubleArg(String what, String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not a number: " + s, e);
+        }
     }
 
     // ---- random.json ----
@@ -106,11 +133,11 @@ public class JavaVectors {
 
     private static Map<String, Object> call(Random rnd, String op) {
         if (op.startsWith("b:")) {
-            int bound = Integer.parseInt(op.substring(2));
+            int bound = parseIntArg("script bound", op.substring(2));
             return map("method", "nextIntBound", "arg", bound, "value", rnd.nextInt(bound));
         }
         if (op.startsWith("s:")) {
-            return shuffle(rnd, Integer.parseInt(op.substring(2)));
+            return shuffle(rnd, parseIntArg("script shuffle size", op.substring(2)));
         }
         return switch (op) {
             case "i" -> map("method", "nextInt", "value", rnd.nextInt());
@@ -324,7 +351,29 @@ public class JavaVectors {
         try {
             return action.get();
         } catch (RuntimeException e) {
-            return map("throws", e.getClass().getSimpleName(), "message", esc(e.getMessage()));
+            return thrown(e);
+        }
+    }
+
+    private static Map<String, Object> thrown(RuntimeException e) {
+        return map("throws", e.getClass().getSimpleName(), "message", esc(e.getMessage()));
+    }
+
+    /** Double.parseDouble's value, or the NumberFormatException it throws (PARSE_INPUTS include malformed text). */
+    private static Object parseDoubleOutcome(String s) {
+        try {
+            return hex(Double.parseDouble(s));
+        } catch (NumberFormatException e) {
+            return thrown(e);
+        }
+    }
+
+    /** Integer.valueOf's value, or the NumberFormatException it throws (INTEGER_INPUTS include malformed text). */
+    private static Object integerValueOfOutcome(String s) {
+        try {
+            return Integer.valueOf(s);
+        } catch (NumberFormatException e) {
+            return thrown(e);
         }
     }
 
@@ -416,7 +465,7 @@ public class JavaVectors {
     private static List<Object> log10Rows() {
         List<Object> rows = new ArrayList<>();
         for (int n = MIN_POW10; n <= MAX_POW10; n++) {
-            double x = Double.parseDouble("1e" + n);
+            double x = parseDoubleArg("power of ten", "1e" + n);
             rows.add(row(hex(x), hex(Math.log10(x))));
         }
         for (int n = MIN_POW10; n <= MAX_POW10; n++) {
@@ -639,7 +688,7 @@ public class JavaVectors {
 
     private static void addPowers(List<Double> ds) {
         for (int n = MIN_POW10; n <= MAX_POW10; n++) {
-            ds.add(Double.parseDouble("1e" + n));
+            ds.add(parseDoubleArg("power of ten", "1e" + n));
         }
         for (int n = -1074; n <= 1023; n++) {
             ds.add(Math.scalb(1.0, n));
@@ -649,7 +698,7 @@ public class JavaVectors {
     private static void addShortDecimals(List<Double> ds) {
         for (int k = 1; k <= 99; k++) {
             for (int e = -30; e <= 30; e++) {
-                ds.add(Double.parseDouble(k + "e" + e));
+                ds.add(parseDoubleArg("short decimal", k + "e" + e));
             }
         }
     }
@@ -677,7 +726,7 @@ public class JavaVectors {
     private static List<Object> parseDoubleRows() {
         List<Object> rows = new ArrayList<>();
         for (String s : PARSE_INPUTS) {
-            rows.add(row(esc(s), outcome(() -> hex(Double.parseDouble(s)))));
+            rows.add(row(esc(s), parseDoubleOutcome(s)));
         }
         return rows;
     }
@@ -685,7 +734,7 @@ public class JavaVectors {
     private static List<Object> integerValueOfRows() {
         List<Object> rows = new ArrayList<>();
         for (String s : INTEGER_INPUTS) {
-            rows.add(row(esc(s), outcome(() -> Integer.valueOf(s))));
+            rows.add(row(esc(s), integerValueOfOutcome(s)));
         }
         return rows;
     }
@@ -713,7 +762,7 @@ public class JavaVectors {
 
     private static Map<String, Object> callSeed(Random rnd, String op) {
         if (op.startsWith("setSeed:")) {
-            long next = Long.parseLong(op.substring(8));
+            long next = parseLongArg("setSeed argument", op.substring(8));
             rnd.setSeed(next);
             return map("method", "setSeed", "arg", dec(next));
         }

@@ -14,11 +14,12 @@ const COMPARABLE_COLLIDER = 'ColliderComparable';
 /**
  * Scripts whose JVM iteration order is a function of `System.identityHashCode`, not of hash and
  * insertion history: a tree bin holds equal-hash keys without a comparison order (`ColliderPlain`,
- * KVector), which the JVM ties by identity. Evidence: `collider-ColliderPlain-same-fwd-cap64` and
- * `-same-rev-cap64` run identical constructors and operations through step 9 yet differ at step 9
- * (asserted below); regenerating `collections.json` after any byte change to
- * `tools/vectors/JavaVectors.java` (even a comment) changes exactly these scripts. They are
- * reported, not modelled, and skipped by the replay.
+ * KVector), which the JVM ties by identity. ELK runs on an unpinned JVM, so these orders are reported,
+ * not modelled, and skipped by the replay. `tools/vectors/java-vectors.sh` records `collections.json`
+ * with every identity hash pinned to 1 (`-XX:hashCode=2`), so the ref no longer shifts with the
+ * recorder's source bytes. Evidence of the identity dependence: unpinned, `collider-ColliderPlain-same-fwd-cap64`
+ * and `-same-rev-cap64` run identical constructors and operations through step 9 yet differ at step 9 (the
+ * ref before the pin, commit 9cda184); pinned, they agree (asserted below).
  */
 const IDENTITY_DEPENDENT: ReadonlySet<string> = new Set([
   'seq-kvector-grid',
@@ -53,8 +54,8 @@ function isIdentityDependent(script: Script): boolean {
   return IDENTITY_DEPENDENT.has(script.name);
 }
 
-const DIVERGENT_PAIR = ['collider-ColliderPlain-same-fwd-cap64', 'collider-ColliderPlain-same-rev-cap64'] as const;
-const DIVERGENT_STEP = 9;
+const PINNED_PAIR = ['collider-ColliderPlain-same-fwd-cap64', 'collider-ColliderPlain-same-rev-cap64'] as const;
+const PINNED_STEP = 9;
 
 type Json = unknown;
 
@@ -271,12 +272,12 @@ describe('JavaHashSet JVM replay (collections.json hashSet)', () => {
     });
   }
 
-  it('identity-dependent order: identical histories diverge on the JVM', () => {
-    const [a, b] = DIVERGENT_PAIR.map((name) => vectors.hashSet.find((s) => s.name === name) as Script);
+  it('pinned identity hash: identical histories give identical orders', () => {
+    const [a, b] = PINNED_PAIR.map((name) => vectors.hashSet.find((s) => s.name === name) as Script);
     const history = (s: Script): string =>
-      JSON.stringify([s.keyClass, s.init, s.steps.slice(0, DIVERGENT_STEP + 1).map((st) => [st.op, st.args])]);
+      JSON.stringify([s.keyClass, s.init, s.steps.slice(0, PINNED_STEP + 1).map((st) => [st.op, st.args])]);
     expect(history(a as Script)).toBe(history(b as Script));
-    expect(a?.steps[DIVERGENT_STEP]?.order).not.toEqual(b?.steps[DIVERGENT_STEP]?.order);
+    expect(a?.steps[PINNED_STEP]?.order).toEqual(b?.steps[PINNED_STEP]?.order);
   });
 });
 

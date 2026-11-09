@@ -58,6 +58,8 @@
   new probe vectors must go in a separate generator file. The regeneration
   gate is only meaningful for an unmodified `JavaVectors.java`.
 - **Confidence**: High
+- **Superseded (2026-11-09)**: `tools/vectors/java-vectors.sh` pins `-XX:hashCode=2`; see
+  `recorder-identity-hash.md`.
 
 ## Observation: JVM `HashMap` order of equal-hash keys is identity-ordered in tree bins
 
