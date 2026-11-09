@@ -41,8 +41,6 @@ import { ElkUtil } from '../../src/core/util/ElkUtil.js';
 import type { ElkEdge } from '../../src/graph/ElkEdge.js';
 import type { ElkNode } from '../../src/graph/ElkNode.js';
 import { ElkNodeImpl } from '../../src/graph/impl/ElkNodeImpl.js';
-import { ElkGraphJson } from '../../src/graph/json/ElkGraphJson.js';
-import { ElkGraphText } from '../../src/graph/text/ElkGraphText.js';
 import { ElkGraphUtil } from '../../src/graph/util/ElkGraphUtil.js';
 import { describe, it } from 'vitest';
 import { registerLayered } from './layered-framework-replay.js';

@@ -3,7 +3,8 @@
 const BITS_BYTES = 8;
 const FRACTION_BITS = 52n;
 const FRACTION_MASK = (1n << FRACTION_BITS) - 1n;
-const EXPONENT_MASK = 0x7ffn;
+// BigInt(hex), not a hex bigint literal: GitHub Code Quality reads `0x...n` operands as undefined.
+const EXPONENT_MASK = BigInt(0x7ff);
 const SUBNORMAL_EXPONENT = -1074n;
 const EXPONENT_BIAS_SHIFT = 1075n;
 const RADIX = 10n;

@@ -16,8 +16,8 @@ export class SuccessorJitter implements PolyominoSuccessor {
     const x = coords.getFirst() as number;
     const y = coords.getSecond() as number;
 
-    let newX = x;
-    let newY = y;
+    let newX: number;
+    let newY: number;
 
     const cost = Math.max(Math.abs(x), Math.abs(y));
 

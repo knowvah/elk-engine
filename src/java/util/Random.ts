@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: EPL-2.0
 
+// BigInt(hex), not a hex bigint literal: GitHub Code Quality reads `0x...n` operands as undefined.
 /** Multiplier of the 48-bit linear congruential generator. */
-const MULTIPLIER = 0x5deece66dn;
+const MULTIPLIER = BigInt(0x5deece66d);
 /** Addend of the 48-bit linear congruential generator. */
-const ADDEND = 0xbn;
+const ADDEND = BigInt(0xb);
 /** Number of state bits. */
 const STATE_BITS = 48n;
 /** Mask retaining the low 48 bits. */

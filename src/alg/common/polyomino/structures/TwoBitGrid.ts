@@ -6,7 +6,8 @@ import * as Int64 from '../../../../java/lang/Int64.js';
 import type { IThreeValueGrid } from './IThreeValueGrid.js';
 
 const LSB_MASK = 0x01n;
-const TWO_LSBS_MASK = 0x03n;
+// BigInt(hex), not a hex bigint literal: GitHub Code Quality reads `0x...n` operands as undefined.
+const TWO_LSBS_MASK = BigInt(0x03);
 const EMPTY = 0x00n;
 const BLOCKED = 0x01n;
 const WEAKLY_BLOCKED = 0x02n;

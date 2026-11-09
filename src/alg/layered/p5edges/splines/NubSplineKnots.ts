@@ -116,10 +116,9 @@ export function createPolarCPs(
  */
 export function getIndexInKnotVector(s: NubSplineState, knot: number): number {
   const iter = new ArrayListIterator(s.knotVector);
-  let currentKnot = knot - 1;
 
   while (iter.hasNext()) {
-    currentKnot = iter.next();
+    const currentKnot = iter.next();
     const diff = Math.abs(currentKnot - knot);
     if (diff < EPSILON) {
       return Int32.sub(iter.nextIndex(), 1);
