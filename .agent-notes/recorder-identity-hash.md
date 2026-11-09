@@ -1,6 +1,7 @@
 # Recorder identity-hash sensitivity (2026-11-09)
 
 ## Observation: collections.json depends on JavaVectors.java's exact source text
+
 - **Context**: Fixing GitHub Code Quality findings in `tools/vectors/*.java` (PR after #31). Every edited recorder was
   re-run cold and byte-compared against its committed ref.
 - **Finding**: Any code edit to `tools/vectors/JavaVectors.java` changes the committed
