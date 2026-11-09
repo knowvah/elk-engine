@@ -241,11 +241,24 @@ describe('OrthogonalEdgeRouter.getLayoutProcessorConfiguration', () => {
 // The guarded debug output (OrthogonalRoutingGenerator.java:176-184)
 
 describe('OrthogonalEdgeRouter debug output', () => {
-  it('reaches DebugUtil.logDebugGraph when logging is on (ported in mission 7f)', () => {
+  it('logs the full and the acyclic dependency graph of every layer gap when logging is on', () => {
     const row = rowById('scenarios/OrthogonalEdgeRouter/long-edges');
     const graph = runSteps({ ...row, steps: stepsBeforeRouter(row) }, factories);
     const monitor = new BasicProgressMonitor().withLogging(true);
-    expect(() => new OrthogonalEdgeRouter().process(graph, monitor)).toThrow(/7f/);
+    const gaps = graph.getLayers().length + 1;
+    new OrthogonalEdgeRouter().process(graph, monitor);
+    // OrthogonalEdgeRouter.java:257 routes every gap from source layer -1 on; OrthogonalRoutingGenerator.java:190-198 and
+    // :212-220 log "<debugPrefix> - <sourceLayerIndex>-full" and "-acyclic", DebugUtil.java:108-121 DOT then JSON each time
+    const tags = Array.from({ length: gaps }, (_, gap) => [
+      `phase5 - ${gap - 1}-full`,
+      `phase5 - ${gap - 1}-acyclic`,
+    ]).flat();
+    expect(monitor.getLoggedGraphs()!.map((logged) => [logged.getTag(), logged.getGraphType().name()])).toEqual(
+      tags.flatMap((tag) => [
+        [tag, 'DOT'],
+        [tag, 'JSON'],
+      ]),
+    );
   });
 
   it('does not touch DebugUtil when logging is off', () => {

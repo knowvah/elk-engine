@@ -1018,3 +1018,71 @@ the 9 suites allocated to 7h.
 `test/helpers/junit-delta.ts` and the private delta helper of `edge-route-orthogonal.ts` overlap; the older
 `test/helpers/elkt-layout-harness.ts` beside the new runner; the per-file factories objects of the anchored tests; the
 `devAssert` helper is still unwritten.
+
+## Revision 2026-11-06 (layered-labels)
+
+Appended; no earlier line is edited. Source: G1-G12, G3a and G11a in `plans/layered-labels/decisions.md`; the journal is
+`plans/layered-labels/decision-journal.md`. Where this section conflicts with the text above, this section wins. It is
+the binding input of the 7g and 7h briefs.
+
+**Row 7f's second brief is done.** `LabelDummyInserter`, `LabelDummySwitcher` (unstaged), `LabelDummyRemover`,
+`LabelSideSelector`, `EndLabelPreprocessor`, `EndLabelPostprocessor`, `LabelManagementProcessor` (both arms), the three
+comment processors, `AlternatingLayerUnzipper`, `InteractiveLayeredGraphVisitor`, `DotDebugUtil`, `JsonDebugUtil` and
+`DebugUtil` (unstaged) are ported and their 12 arms wired; `LayeredLayoutProvider.layout` runs labels, comments,
+unzipping and logging. Evidence: `layered-labels.json` (`rowCounts` `full` 399, `models` 640, `scenarios` 224, `sites`
+42; 1,316 test cases replay at AD-4 with logged graphs per G3 and G3a), the 59 rows pinned to 7f2 replay their recorded
+expectations, `site/provider/flat` and `cancelled` compare their recorded layout (FX5), FX2's parallel-end-label rows
+equal the oracle, 11 Java suites ported (oracle baseline equal at mission start; at mission end equal
+as well), a 1,105-case label sweep (935 ok hash-match at stride 1, 155 refused in 7g/7h categories, 15
+throws equal on both sides; final run identical), 86 anchored cases. No port defect
+was found by the replay; the helper fixes of T2 are in the journal.
+
+**Enum tally after 7f2.** 49 arms ported, 10 pending: 7g 9, 7h 1 (7b 10, 7c 10, 7d 5, 7e 6, 7f 6, 7f2 12).
+
+**Hand-offs to 7g.**
+
+- Port the 9 pending arms `SelfLoopPreProcessor`, `SelfLoopPortRestorer`, `SelfLoopPostProcessor`, `SelfLoopRouter`,
+  `BreakingPointInserter`, `BreakingPointProcessor`, `BreakingPointRemover`, `SingleEdgeGraphWrapper` and
+  `HorizontalGraphCompactor`, plus the staged `ComponentsCompactor`.
+- The one row still pinned: `models/ptolemy-sinewaveoptimization/N1/DIRECTION_PREPROCESSOR/DOWN`
+  (`test/helpers/layered-pipeline-pinned-rows.ts`); 7g deletes the entry and the recorded expectation then applies.
+- Accepted 7g refusals to convert into rows: in `layered-labels.json`, 1 `full` row
+  (`full/labels/ticket-213_componentsCompaction`, `COMPACTION_CONNECTED_COMPONENTS`); in the label sweep, 105 cases
+  (`SELF_LOOP_PREPROCESSOR` 75, `HORIZONTAL_COMPACTOR` 25, `COMPACTION_CONNECTED_COMPONENTS` 5); the earlier refs'
+  refusals stand as 7f's revision lists them.
+- Unreached arms that need 7g (U in `plans/layered-labels/unreached.md`): 3 items. The corpus-wide runs of
+  `LabelDummyRemoverTest` and `LabelSideSelectorTest` (`PIPELINE_SUITES_FULL=1`) fail 132 cases, all on
+  `SelfLoopPreProcessor`; `NodeMarginCalculatorTest`'s `SelfLoopRouter` hook stays 7g.
+- Suites: the 10 allocated to 7g by `plans/layered-pipeline/suite-allocation.md`; the baseline of the oracle runs is
+  taken at 7g's start.
+
+**Hand-offs to 7h.**
+
+- Port `HierarchicalNodeResizingProcessor` (the 1 pending arm) and `CompoundGraphPreprocessor` and
+  `CompoundGraphPostprocessor` (staged); the hierarchical driver path (`doCompoundLayout`, `hierarchicalLayout`,
+  `ElkLayeredHierarchy.ts`).
+- `include-children*` provider rows still expect the 7h throw (`test/helpers/layered-site-replay.ts`); 7h flips them.
+- Accepted 7h refusals: 0 in `layered-labels.json`; 50 sweep cases (`INCLUDE_CHILDREN`). Unreached arms that need 7h: 7
+  U items of `unreached.md` (hierarchical, nested-graph logging among them).
+- Suites: the 9 allocated to 7h.
+- Vendor new models outside `inputs/realworld/` (`.agent-notes/layered-pipeline.md`: `LayeredFrameworkVectors` closes
+  that tree); 7f2's are under `inputs/labels/`.
+
+**Flags for the user (open decisions).**
+
+- Upstream (G10, stop 22): `fix/end-label-group-self-add` and `fix/end-label-group-order` are local, unsigned and not
+  pushed, in worktrees `../elk-end-label-group-self-add` and `../elk-end-label-group-order`; the sign, push and PR
+  commands are in the journal's T18 rows. The issue draft on `BF_MODEL_ORDER`/`DF_MODEL_ORDER` is never filed. Later
+  candidates, each needing a judgement on intended behaviour: the visitor's `IndexOutOfBoundsException`
+  (`InteractiveLayeredGraphVisitor.java:650`), `EndLabelPreprocessor`'s dead `LabelSide.ABOVE` arms,
+  `EdgeAndLayerConstraintEdgeReverser`'s dead label checks (`:297,338`).
+- G3 as written said property order is insertion order; G3a (user) replaced it by identity-hash normalisation, and the
+  port iterates properties as the landed `JavaHashMap` does, compared as a multiset.
+- The label metrics (FX8) remain a macOS JVM snapshot, now 2,258 entries; a re-record elsewhere is a decision.
+- Upstream prose typo corrected at the port site (`LabelManagementProcessor`, "edge Unand tail labels"), listed in
+  `docs/conformance.md`.
+- `../elk` HEAD `b715fb1`; the diff to the pin over the layered, core, common and test bundles is empty; recheck in each
+  mission.
+
+**Follow-ups (outside this mission's write-sets).** Five mutation survivors in `LabelDummySwitcherSpaceEfficient.ts`
+need a new oracle graph to discriminate; 7f's cleanup follow-ups stand.

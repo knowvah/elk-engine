@@ -3,9 +3,14 @@
 // LayerSweepCrossingMinimizer), configured with CROSSING_MINIMIZATION_STRATEGY = LAYER_SWEEP and
 // CONSIDER_MODEL_ORDER_STRATEGY = NODES_AND_EDGES.
 //
-// Row selection: none of the recorded rows can carry this method. Its graph set is tests/layered/preserve_order/**, whose
-// models all have edge labels; the plans of those models run LABEL_DUMMY_INSERTER (mission 7f), so they are accepted
-// refusals without rows. The label-free replicas (`scenarios/SortByInputModelProcessor/preserve-order-{small,long}`)
+// Two describes. The second ('over the preserve_order models', mission 7f2, T13c) is the whole Java method: the 15
+// vendored tests/layered/preserve_order/** models through the layout test runner (the real LayeredLayoutProvider, labels
+// sized from layered-label-metrics.json), the Java configurator, @TestAfterProcessor(LayerSweepCrossingMinimizer) and
+// the Java assertion body, 15 cases. The first describe is the 7c stand-in, kept as landed.
+//
+// Row selection (7c): none of the recorded rows can carry this method. Its graph set is tests/layered/preserve_order/**,
+// whose models all have edge labels; their plans run LABEL_DUMMY_INSERTER, which 7c could not replay, so they were
+// accepted refusals without rows. The label-free replicas (`scenarios/SortByInputModelProcessor/preserve-order-{small,long}`)
 // stop at SORT_BY_INPUT_ORDER_OF_MODEL, and without the label dummies their layers are not the ones the model's node
 // names (`l<layer>p<position>`, the layer counted with the label-dummy layers) encode, so the name assertion cannot
 // hold on them; they are anchored by the oracle comparison of LayeredOrderVectors.test.ts instead. This test therefore
@@ -18,12 +23,20 @@
 // @see org.eclipse.elk.alg.layered.test/src/org/eclipse/elk/alg/layered/intermediate/SortByInputModelProcessorTest.java
 import { describe, expect, it } from 'vitest';
 import { runOrderPrefix } from '../../../../test/helpers/layered-order-replay-ops.js';
+import { defineLayoutTest } from '../../../../test/helpers/layout-test-runner.js';
 import type { OrderRow } from '../../../../test/helpers/layered-order-replay-rows.js';
 import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { LayoutConfigurator } from '../../../core/LayoutConfigurator.js';
+import { ElkUtil } from '../../../core/util/ElkUtil.js';
+import type { ElkNode } from '../../../graph/ElkNode.js';
+import { ElkNodeImpl } from '../../../graph/impl/ElkNodeImpl.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
 import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
+import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
+import { LayeredOptions } from '../options/LayeredOptions.js';
+import { OrderingStrategy } from '../options/OrderingStrategy.js';
 import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
 
@@ -128,4 +141,33 @@ describe('SortByInputModelProcessorTest on label-free graphs', () => {
     const normalNodes = preserveNodeAndEdgeOrder(runOrderPrefix(row, factories));
     expect(normalNodes).toBe((row.input as { elk: { children: unknown[] } }).elk.children.length);
   });
+});
+
+/** The Java `@ConfiguratorProvider preserveOrderConfigurator`, applied the way `ConfiguratorTestConfiguration` does. */
+function preserveOrderConfigurator(graph: ElkNode): void {
+  const config = new LayoutConfigurator();
+  config
+    .configure(ElkNodeImpl)
+    .setProperty(LayeredOptions.CROSSING_MINIMIZATION_STRATEGY, CrossingMinimizationStrategy.LAYER_SWEEP);
+  config
+    .configure(ElkNodeImpl)
+    .setProperty(LayeredOptions.CONSIDER_MODEL_ORDER_STRATEGY, OrderingStrategy.NODES_AND_EDGES);
+  ElkUtil.applyVisitors(graph, config);
+}
+
+defineLayoutTest({
+  name: 'SortByInputModelProcessorTest over the preserve_order models',
+  algorithm: LayeredOptions.ALGORITHM_ID,
+  defaultConfiguration: true,
+  graphs: [{ path: 'tests/layered/preserve_order/**' }],
+  configurators: { preserveOrderConfigurator },
+  afterProcessor: [
+    {
+      name: 'preserveNodeAndEdgeOrder',
+      cls: LayerSweepCrossingMinimizer,
+      check: (lGraph) => {
+        preserveNodeAndEdgeOrder(lGraph);
+      },
+    },
+  ],
 });

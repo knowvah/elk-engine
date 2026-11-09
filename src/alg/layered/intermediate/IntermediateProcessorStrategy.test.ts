@@ -26,6 +26,17 @@ import { LabelAndNodeSizeProcessor } from './LabelAndNodeSizeProcessor.js';
 import { LayerConstraintPostprocessor } from './LayerConstraintPostprocessor.js';
 import { LayerConstraintPreprocessor } from './LayerConstraintPreprocessor.js';
 import { LayerSizeAndGraphHeightCalculator } from './LayerSizeAndGraphHeightCalculator.js';
+import { AlternatingLayerUnzipper } from './unzipping/AlternatingLayerUnzipper.js';
+import { CommentNodeMarginCalculator } from './CommentNodeMarginCalculator.js';
+import { CommentPostprocessor } from './CommentPostprocessor.js';
+import { CommentPreprocessor } from './CommentPreprocessor.js';
+import { EndLabelPostprocessor } from './EndLabelPostprocessor.js';
+import { EndLabelPreprocessor } from './EndLabelPreprocessor.js';
+import { LabelDummyInserter } from './LabelDummyInserter.js';
+import { LabelDummyRemover } from './LabelDummyRemover.js';
+import { LabelDummySwitcher } from './LabelDummySwitcher.js';
+import { LabelManagementProcessor } from './LabelManagementProcessor.js';
+import { LabelSideSelector } from './LabelSideSelector.js';
 import { LongEdgeJoiner } from './LongEdgeJoiner.js';
 import { LongEdgeSplitter } from './LongEdgeSplitter.js';
 import { NodePlacementRepeater } from './NodePlacementRepeater.js';
@@ -168,7 +179,7 @@ const ARMS: Record<Name, [string, string]> = {
   DIRECTION_POSTPROCESSOR: ['GraphTransformer', '7f'],
 };
 
-/** The ported (missions 7b, 7c, 7d, the six 7e processors of T5 and T9, and the six 7f processors wired by T8) arms: constant name to the class `create()` returns. */
+/** The ported (missions 7b, 7c, 7d, the six 7e processors of T5 and T9, and the six 7f processors wired by T8, the twelve 7f2 arms wired by T11) arms: constant name to the class `create()` returns. */
 const PORTED = {
   EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER: EdgeAndLayerConstraintEdgeReverser,
   INTERACTIVE_EXTERNAL_PORT_POSITIONER: InteractiveExternalPortPositioner,
@@ -207,6 +218,18 @@ const PORTED = {
   END_LABEL_SORTER: EndLabelSorter,
   HYPERNODE_PROCESSOR: HypernodesProcessor,
   CONSTRAINTS_POSTPROCESSOR: ConstraintsPostprocessor,
+  COMMENT_PREPROCESSOR: CommentPreprocessor,
+  LABEL_DUMMY_INSERTER: LabelDummyInserter,
+  ALTERNATING_LAYER_UNZIPPER: AlternatingLayerUnzipper,
+  END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR: LabelManagementProcessor,
+  COMMENT_NODE_MARGIN_CALCULATOR: CommentNodeMarginCalculator,
+  END_LABEL_PREPROCESSOR: EndLabelPreprocessor,
+  LABEL_DUMMY_SWITCHER: LabelDummySwitcher,
+  CENTER_LABEL_MANAGEMENT_PROCESSOR: LabelManagementProcessor,
+  LABEL_SIDE_SELECTOR: LabelSideSelector,
+  COMMENT_POSTPROCESSOR: CommentPostprocessor,
+  LABEL_DUMMY_REMOVER: LabelDummyRemover,
+  END_LABEL_POSTPROCESSOR: EndLabelPostprocessor,
 } as const;
 
 /** The six 7e members ported by T5 and T9 (`FINAL_SPLINE_BENDPOINTS_CALCULATOR` is T9's). */
@@ -273,9 +296,9 @@ describe('IntermediateProcessorStrategy', () => {
     );
   });
 
-  it('ports exactly the 7b, 7c, 7d, 7e and 7f members and leaves the other 22 pending', () => {
-    expect(PORTED_NAMES.size).toBe(37);
-    expect(PENDING).toHaveLength(22);
+  it('ports exactly the 7b, 7c, 7d, 7e, 7f and 7f2 members and leaves the other 10 pending (7g 9, 7h 1)', () => {
+    expect(PORTED_NAMES.size).toBe(49);
+    expect(PENDING).toHaveLength(10);
     expect(
       DECLARED.filter(
         (name) =>
@@ -283,6 +306,7 @@ describe('IntermediateProcessorStrategy', () => {
           ARMS[name][1] === '7c' ||
           ARMS[name][1] === '7d' ||
           ARMS[name][1] === '7f' ||
+          ARMS[name][1] === '7f2' ||
           (ARMS[name][1] === '7e' && PORTED_IN_7E.has(name)),
       ).sort(),
     ).toEqual([...PORTED_NAMES].sort());

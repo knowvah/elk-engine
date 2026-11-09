@@ -13,7 +13,8 @@ import { runRoutingPrefix, runRoutingSteps } from '../../../../test/helpers/laye
 import type { RoutingRow } from '../../../../test/helpers/layered-routing-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
 import { BasicProgressMonitor } from '../../../core/util/BasicProgressMonitor.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
+import { DotDebugUtil } from '../DotDebugUtil.js';
+import { JsonDebugUtil } from '../JsonDebugUtil.js';
 import { LGraph as LGraphClass } from '../graph/LGraph.js';
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
@@ -111,17 +112,18 @@ describe('ConstraintsPostprocessor (the rows are not vacuous)', () => {
   });
 });
 
-/** A monitor with logging enabled: the Java `isLoggingEnabled()` branch reaches `DebugUtil`. */
-class LoggingMonitor extends BasicProgressMonitor {
-  override isLoggingEnabled(): boolean {
-    return true;
-  }
-}
-
-describe('ConstraintsPostprocessor (staged DebugUtil, mission 7f2)', () => {
-  it('throws UnsupportedOperationException naming 7f2 when logging is enabled', () => {
-    expect(() => new ConstraintsPostprocessor().process(new LGraphClass(), new LoggingMonitor())).toThrow(
-      UnsupportedOperationException,
-    );
+describe('ConstraintsPostprocessor (DebugUtil logging)', () => {
+  it('logs the graph before and after the processing (ConstraintsPostprocessor.java:45,71), DOT then JSON each time', () => {
+    const graph = new LGraphClass();
+    const monitor = new BasicProgressMonitor().withLogging(true);
+    new ConstraintsPostprocessor().process(graph, monitor);
+    expect(
+      monitor.getLoggedGraphs()!.map((logged) => [logged.getTag(), logged.getGraphType().name(), logged.getGraph()]),
+    ).toEqual([
+      ['0-ConstraintPostProcessor', 'DOT', DotDebugUtil.createDebugGraph(graph)],
+      ['0-ConstraintPostProcessor', 'JSON', JsonDebugUtil.createDebugGraph(graph)],
+      ['0-ConstraintPostProcessor', 'DOT', DotDebugUtil.createDebugGraph(graph)],
+      ['0-ConstraintPostProcessor', 'JSON', JsonDebugUtil.createDebugGraph(graph)],
+    ]);
   });
 });

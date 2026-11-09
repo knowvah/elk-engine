@@ -3,8 +3,8 @@
 // tools/vectors/LayeredPipelineVectors.java from the source-built oracle): `full` rows through the recursive engine and
 // the oracle's export, `models` rows through the real driver (`ElkLayered` test API) with 7e's dump and comparator,
 // `scenarios` and `sites` rows through the step interpreter with the real factories. Numbers within 1e-6 (AD-4),
-// everything else exactly. A test title is its row id, so `-t '<row id>'` isolates one row. FX7: 58 models rows are pinned
-// to a later mission's throw at plan build.
+// everything else exactly. A test title is its row id, so `-t '<row id>'` isolates one row. FX7: 1 models row (7g) is pinned
+// to a later mission's throw at plan build; the 57 rows of 7f2 replay since G9.
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { formatDiffs } from '../../../test/golden/compare-json.js';
@@ -128,11 +128,11 @@ describe('layered-pipeline replay', () => {
     expect(rows.filter((row) => row.group === group).length).toBe(rowCounts[group] ?? 0);
   });
 
-  it('pins exactly the 58 models rows of FX7', () => {
+  it('pins exactly the 1 models row of FX7', () => {
     const pinned = rows.filter((row) => PINNED_PIPELINE_ROWS.has(row.id));
-    expect(pinned).toHaveLength(58);
+    expect(pinned).toHaveLength(1);
     expect(pinned.every((row) => row.group === 'models')).toBe(true);
-    expect(PINNED_PIPELINE_ROWS.size).toBe(58);
+    expect(PINNED_PIPELINE_ROWS.size).toBe(1);
   });
 
   describe.each(

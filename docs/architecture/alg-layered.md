@@ -24,6 +24,7 @@ algorithm classes land in 7b–7h. Counts of oracle rows live in [conformance.md
 | [10. Part d: node placement](#part-d)       | Mission 7d: see [alg-layered-placement.md](alg-layered-placement.md)        |
 | [11. Part e: edge routing](#part-e)         | Mission 7e: see [alg-layered-routing.md](alg-layered-routing.md)            |
 | [12. Part f: the running pipeline](#part-f) | Mission 7f: see [alg-layered-pipeline.md](alg-layered-pipeline.md)          |
+| [13. Part g: labels and comments](#part-g)  | Mission 7f2: see [alg-layered-labels.md](alg-layered-labels.md)             |
 
 ## 1. Package map {#package-map}
 
@@ -483,3 +484,8 @@ Mission 7f (`layered-pipeline`, the first brief of roadmap row 7f) ported the dr
 `components` and four processors; `LayeredLayoutProvider.layout` runs from here. Part f lives in the sibling
 [alg-layered-pipeline.md](alg-layered-pipeline.md) (package map, rows, the SC4 re-replay, the runner subset, idioms,
 evidence, runbook).
+
+## 13. Part g: labels, comments, unzipping and debug output (mission 7f2) {#part-g}
+
+Mission 7f2 (`layered-labels`) ported the label family, the comment processors, `AlternatingLayerUnzipper`,
+`InteractiveLayeredGraphVisitor` and the debug utilities; see [alg-layered-labels.md](alg-layered-labels.md).

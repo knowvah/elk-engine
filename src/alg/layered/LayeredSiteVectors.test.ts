@@ -4,9 +4,9 @@
 // (AD-4), ids, enum names, strings and counts exactly, whole-graph labels with the T1 comparators. This replay is the
 // authority (6c D1) for the literals that the colocated unit tests re-anchor to a row id.
 //
-// Provider rows (`site/provider/*`): `ElkLayered` runs for real. The flat rows hold an edge label, so the plan holds the
-// staged `LabelDummyInserter` and `layout` throws naming 7f2 from `doLayout`; the INCLUDE_CHILDREN rows reach
-// `doCompoundLayout`, where the staged `CompoundGraphPreprocessor` throws naming 7h.
+// Provider rows (`site/provider/*`): `ElkLayered` runs for real. The flat rows lay out and compare their recorded
+// `layout` (FX5, 7f2 landed); the INCLUDE_CHILDREN rows reach `doCompoundLayout`, where the staged
+// `CompoundGraphPreprocessor` throws naming 7h.
 import { describe, expect, it } from 'vitest';
 import {
   OPS,

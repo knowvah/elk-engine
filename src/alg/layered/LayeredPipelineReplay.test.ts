@@ -140,9 +140,9 @@ beforeAll(() => {
   registerRoutingEnums();
 });
 
-it('pins exactly the 2 layered-phases.json rows of FX6', () => {
-  expect(phaseRows.filter((row) => PINNED_PHASE_ROWS.has(row.id))).toHaveLength(2);
-  expect(PINNED_PHASE_ROWS.size).toBe(2);
+it('pins exactly the 0 layered-phases.json rows of FX6', () => {
+  expect(phaseRows.filter((row) => PINNED_PHASE_ROWS.has(row.id))).toHaveLength(0);
+  expect(PINNED_PHASE_ROWS.size).toBe(0);
 });
 
 describe.each(families)('SC4 replay of $name through ElkLayered', (family) => {
