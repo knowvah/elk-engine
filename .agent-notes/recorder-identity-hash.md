@@ -15,3 +15,17 @@
   future edit to `JavaVectors.java` must re-record `collections.json` and update the TS expectations that depend on it.
   A durable fix is a driver script that pins `-XX:hashCode=2` (or compiles first) and a one-time re-record.
 - **Confidence**: High (controlled reruns: unedited x2 identical to ref; edited x2 identical to each other, not to ref).
+
+## Observation: `-XX:hashCode=2` makes collections.json independent of the recorder's source
+
+- **Context**: Fixing the 7 open Code Quality findings in `tools/vectors/JavaVectors.java` (the follow-up above).
+- **Finding**: JDK 21 accepts `-XX:hashCode` only after `-XX:+UnlockExperimentalVMOptions`; with mode 2 every
+  `System.identityHashCode` and default `Object.hashCode` is 1 (probe printed `1 1 1`). Pinned, the unedited and the
+  edited recorder wrote byte-identical output for all 7 files (two runs each); unpinned, the edited recorder's
+  `collections.json` differed. Against the old ref, pinning changed only `collections.json`: 26 `hashMap` and 26
+  `hashSet` scripts, all in the 27-name `IDENTITY_DEPENDENT` skip list; `priorityQueue` and the other 6 files were
+  unchanged. `tools/vectors/java-vectors.sh` now pins the flag.
+- **Impact**: `JavaVectors.java` may be edited; re-record through `java-vectors.sh` only. The old fwd/rev divergence
+  test now asserts the pair agrees, so a re-record without the pin fails it. The skip list stays: ELK itself runs
+  unpinned.
+- **Confidence**: High
