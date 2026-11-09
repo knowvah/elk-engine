@@ -27,7 +27,7 @@ import java.util.function.Function;
 public class GsonVectors {
     private static final Object VOID = new Object();
     private static final Map<Character, Character> ESCAPES = Map.of('n', '\n', 'r', '\r', 't', '\t', 'b', '\b', 'f', '\f');
-    private static final int INDENT = 2, FIRST_PRINTABLE = 0x20, HEX_RADIX = 16, HEX_WIDTH = 4;
+    private static final int INDENT = 2, FIRST_PRINTABLE = 0x20, HEX_RADIX = 16, DECIMAL_RADIX = 10, HEX_WIDTH = 4;
     private static final Map<String, Function<JsonElement, Object>> PRIM_OPS = new LinkedHashMap<>();
     private static final Map<String, BiFunction<JsonObject, Object[], Object>> OBJ_OPS = new HashMap<>();
     private static final Map<String, BiFunction<JsonArray, Object[], Object>> ARR_OPS = new HashMap<>();
@@ -35,9 +35,17 @@ public class GsonVectors {
     static { primitiveOps(); objectOps(); arrayOps(); }
 
     interface Action { Object get() throws Exception; }
+    static void requirePairs(int length) {
+        if (length % 2 != 0) {
+            throw new IllegalArgumentException("key/value arguments come in pairs, got " + length);
+        }
+    }
+
     static Map<String, Object> m(Object... kv) {
         Map<String, Object> map = new TreeMap<>();
-        for (int i = 0; i < kv.length; i += 2) map.put((String) kv[i], kv[i + 1]);
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2)
+            map.put((String) kv[i], kv[i + 1]);
         return map;
     }
 
@@ -112,7 +120,9 @@ public class GsonVectors {
     static JsonElement parse(String text) { return JsonParser.parseString(text); }
     static JsonObject obj(Object... kv) {
         JsonObject o = new JsonObject();
-        for (int i = 0; i < kv.length; i += 2) o.add((String) kv[i], el(kv[i + 1]));
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2)
+            o.add((String) kv[i], el(kv[i + 1]));
         return o;
     }
 
@@ -128,9 +138,43 @@ public class GsonVectors {
         return x instanceof Boolean ? new JsonPrimitive((Boolean) x) : new JsonPrimitive((String) x);
     }
 
+    static int parseIntArg(String what, String s, int radix) {
+        try {
+            return Integer.parseInt(s, radix);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not an integer: " + s, e);
+        }
+    }
+
+    static double parseDoubleArg(String what, String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not a number: " + s, e);
+        }
+    }
+
+    /** The boxed number of a "kind:text" token; bad text fails with the kind and the text, not a bare NumberFormatException. */
+    static Object number(String kind, String text) {
+        try {
+            switch (kind) {
+                case "int": return Integer.valueOf(text);
+                case "long": return Long.valueOf(text);
+                case "double": return Double.valueOf(text);
+                case "float": return Float.valueOf(text);
+                case "short": return Short.valueOf(text);
+                case "byte": return Byte.valueOf(text);
+                default: throw new IllegalArgumentException("unknown number kind " + kind);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(kind + " is not a valid number: " + text, e);
+        }
+    }
+
     // "kind:text" builds a JsonPrimitive of that Java type; anything else is JSON text parsed by JsonParser.
-    static final Map<String, Function<String, Object>> KINDS = Map.of("int", Integer::valueOf, "long", Long::valueOf,
-        "double", Double::valueOf, "float", Float::valueOf, "short", Short::valueOf, "byte", Byte::valueOf,
+    static final Map<String, Function<String, Object>> KINDS = Map.of("int", t -> number("int", t),
+        "long", t -> number("long", t), "double", t -> number("double", t), "float", t -> number("float", t),
+        "short", t -> number("short", t), "byte", t -> number("byte", t),
         "bigdecimal", java.math.BigDecimal::new, "biginteger", java.math.BigInteger::new,
         "bool", Boolean::valueOf, "str", GsonVectors::unescape);
 
@@ -157,7 +201,7 @@ public class GsonVectors {
         for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
             if (line.isEmpty() || line.startsWith("#")) continue;
             if (line.startsWith("[")) cases.put(line.substring(1, line.length() - 1), current = new ArrayList<>());
-            else current.add(line);
+            else Objects.requireNonNull(current, "case line before any [section]: " + line).add(line);
         }
         return cases;
     }
@@ -175,7 +219,7 @@ public class GsonVectors {
             char c = s.charAt(i);
             char n = c == '\\' ? s.charAt(++i) : c;
             if (c == '\\' && n == 'u') {
-                b.append((char) Integer.parseInt(s.substring(i + 1, i + 1 + HEX_WIDTH), HEX_RADIX));
+                b.append((char) parseIntArg("unicode escape", s.substring(i + 1, i + 1 + HEX_WIDTH), HEX_RADIX));
                 i += HEX_WIDTH;
             } else b.append(c == '\\' ? ESCAPES.getOrDefault(n, n) : n);
         }
@@ -367,8 +411,8 @@ public class GsonVectors {
     }
 
     static Object opArg(String op, String text) {
-        if (op.endsWith("Int")) return Integer.valueOf(text);
-        if (op.endsWith("Double")) return Double.valueOf(text);
+        if (op.endsWith("Int")) return parseIntArg("int operand", text, DECIMAL_RADIX);
+        if (op.endsWith("Double")) return parseDoubleArg("double operand", text);
         if (op.endsWith("Boolean")) return Boolean.valueOf(text);
         if (op.endsWith("String")) return text.equals("~") ? null : text;
         return parse(text);
@@ -377,7 +421,7 @@ public class GsonVectors {
     /** "name [key-or-index [arg]]"; "~" is a null key; an index is read when {@code indexed}. */
     static Object[] parseOp(String text, boolean indexed) {
         String[] p = text.trim().split(" ", 3);
-        Object key = p.length < 2 || p[1].equals("~") ? null : indexed ? (Object) Integer.valueOf(p[1]) : unescape(p[1]);
+        Object key = p.length < 2 || p[1].equals("~") ? null : indexed ? (Object) parseIntArg("index", p[1], DECIMAL_RADIX) : unescape(p[1]);
         if (p.length < 3) return new Object[] {p[0], key};
         return new Object[] {p[0], key, opArg(p[0], unescape(p[2]))};
     }

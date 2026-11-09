@@ -103,13 +103,21 @@ public class TransferVectors {
         return result;
     }
 
+    private static Integer parseSeed(String text) {
+        try {
+            return Integer.valueOf(text);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(SEED_KEY + " override is not an integer: " + text, e);
+        }
+    }
+
     /** Adds key=value tokens to the root "properties"; returns the seed token, if any. */
     private static Integer applyOverrides(final JsonObject input, final String[] tokens) {
         Integer seed = null;
         for (String token : tokens) {
             String[] kv = token.split("=", 2);
             if (SEED_KEY.equals(kv[0])) {
-                seed = Integer.valueOf(kv[1]);
+                seed = parseSeed(kv[1]);
                 continue;
             }
             if (!input.has(PROPERTIES)) {

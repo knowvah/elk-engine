@@ -196,6 +196,14 @@ public class LayeredRoutingSweep extends LayeredRoutingVectors {
         return c4Free(copy);
     }
 
+    static double parseDoubleArg(String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("recorded double is not a number: " + s, e);
+        }
+    }
+
     static String lastSegment(String name) {
         return name.substring(Math.max(name.lastIndexOf('.'), name.lastIndexOf('$')) + 1);
     }
@@ -215,7 +223,7 @@ public class LayeredRoutingSweep extends LayeredRoutingVectors {
         Object tag = m.get("t");
         if ("int".equals(tag) || "double".equals(tag)) {
             Object x = m.get("v");
-            double d = x instanceof Number n ? n.doubleValue() : Double.parseDouble((String) x);
+            double d = x instanceof Number n ? n.doubleValue() : parseDoubleArg((String) x);
             out.put("t", "number");
             out.put("v", String.format("%016x", Double.doubleToRawLongBits(d)));
             return out;

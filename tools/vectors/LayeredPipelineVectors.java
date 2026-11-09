@@ -179,7 +179,7 @@ public class LayeredPipelineVectors {
     static final String PTOLEMY = "test/golden/inputs/realworld/ptolemy/", LAYERED_TESTS = "test/golden/inputs/tests/layered/";
     static final String TICKETS = "test/golden/inputs/tickets/layered/";
     static final int MAX_DEPTH = 8, FULL_DUMP_BELOW = 10;
-    static final long MAX_BYTES = (System.getenv("PIPELINE_CAP_MB") == null ? 16L : Long.parseLong(System.getenv("PIPELINE_CAP_MB"))) * 1024 * 1024; // PIPELINE_CAP_MB: diagnosis aid, the committed output stays under 16 MiB (F3)
+    static final long MAX_BYTES = (System.getenv("PIPELINE_CAP_MB") == null ? 16L : parseLongArg("PIPELINE_CAP_MB", System.getenv("PIPELINE_CAP_MB"))) * 1024 * 1024; // PIPELINE_CAP_MB: diagnosis aid, the committed output stays under 16 MiB (F3)
     static final String P1 = "P1_CYCLE_BREAKING", P2 = "P2_LAYERING", P3 = "P3_NODE_ORDERING", P4 = "P4_NODE_PLACEMENT", P5 = "P5_EDGE_ROUTING";
     static final Set<String> IGNORED_IDS = Set.of("processors", "random", "spacings", "splines.route.start"); // T1: the spline route is recorded in geometry.splines (R3)
     /** Refusals (F1) the recorder accepts, "<family>/<model>/<member>" for full rows and "<model>/<target or root>/<member>" for models rows:
@@ -906,7 +906,7 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
             case "bool": return (Boolean) v;
             case "int": return ((Number) v).intValue();
             case "string": return (String) v;
-            case "double": return Double.parseDouble((String) v);
+            case "double": return parseDoubleArg("property value", (String) v);
             case "enum": for (String pkg : OPTION_PACKAGES) {
                     try {
                         return Enum.valueOf((Class<? extends Enum>) Class.forName(pkg + m.get("c")), (String) m.get("n"));
@@ -1394,6 +1394,13 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
 
     record Result(Map<String, Object> expected, List<Object> prefix) { }
 
+    static Base need(Base base) {
+        if (base == null) {
+            throw new IllegalStateException("step ran before importGraph created the Base");
+        }
+        return base;
+    }
+
     @SuppressWarnings("unchecked")
     static Base CURRENT; // the Base of the step row being run (decode resolves {ref} paths against it)
     static Map<String, Object> runSteps(ElkNode root, List<Object> steps) {
@@ -1418,22 +1425,22 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
                 }
                 case "normalise" -> {
                     normalise(graph);
-                    base.snapshot();
+                    need(base).snapshot();
                 }
-                case "setProperty" -> setProperty(base.element((String) s.get(1)), (String) s.get(2), s.get(3));
+                case "setProperty" -> setProperty(need(base).element((String) s.get(1)), (String) s.get(2), s.get(3));
                 case "layers" -> layers(graph, base, (List<Object>) s.get(1));
-                case "reverseEdge" -> ((LEdge) base.element((String) s.get(1))).reverse(graph, true);
+                case "reverseEdge" -> ((LEdge) need(base).element((String) s.get(1))).reverse(graph, true);
                 case "runProcessor" -> {
                     for (LGraph target : comps == null ? List.of(graph) : comps) {
                         runProcessor(target, (String) s.get(1));
                     }
-                    base.stop = (String) s.get(1);
+                    need(base).stop = (String) s.get(1);
                 }
                 case "runPhase" -> {
                     for (LGraph target : comps == null ? List.of(graph) : comps) {
                         runPhase(target, (String) s.get(1), (String) s.get(2));
                     }
-                    base.stop = (String) s.get(1);
+                    need(base).stop = (String) s.get(1);
                 }
                 case "componentsSplit" -> {
                     if (comps != null) {
@@ -1470,7 +1477,7 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
                 }
                 case "dump" -> {
                     expected = phaseDump(base);
-                    if (base.nodes.size() < FULL_DUMP_BELOW) {
+                    if (need(base).nodes.size() < FULL_DUMP_BELOW) {
                         expected.put("dump", new Dump(graph, true).dump());
                     }
                 }
@@ -1929,10 +1936,33 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
         return levels;
     }
 
+    static double parseDoubleArg(String what, String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not a number: " + s, e);
+        }
+    }
+
+    static long parseLongArg(String what, String s) {
+        try {
+            return Long.parseLong(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not an integer: " + s, e);
+        }
+    }
+
+    static void requirePairs(int length) {
+        if (length % 2 != 0) {
+            throw new IllegalArgumentException("key/value arguments come in pairs, got " + length);
+        }
+    }
+
     static TreeMap<String, Object> opts(Object... kv) {
         TreeMap<String, Object> m = new TreeMap<>();
         m.put(pid("SEPARATE_CONNECTED_COMPONENTS"), Z(false));
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             m.put(pid((String) kv[i]), kv[i + 1]);
         }
         return m;
@@ -1999,7 +2029,8 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
     /** Root layout options as JSON members: constant name, value string, ... */
     static String ropts(String... kv) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             sb.append(sb.length() == 0 ? "" : ",").append('"').append(pid(kv[i])).append("\":\"").append(kv[i + 1]).append('"');
         }
         return sb.toString();
@@ -2202,7 +2233,8 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
     /** Options of a full row: pairs of (Java constant name, C4 value); no default is added (components stay on). */
     static TreeMap<String, Object> fopts(Object... kv) {
         TreeMap<String, Object> m = new TreeMap<>();
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             m.put(pid((String) kv[i]), kv[i + 1]);
         }
         return m;
@@ -3192,6 +3224,9 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
         List<String> paths = new ArrayList<>();
         for (int i = 3; i < args.length; i++) {
             if (args[i].equals("-o")) {
+                if (i + 1 >= args.length) {
+                    throw new IllegalArgumentException("-o needs a CONSTANT=value argument");
+                }
                 opts.add(args[++i].split("=", 2));
             } else {
                 paths.add(args[i]);

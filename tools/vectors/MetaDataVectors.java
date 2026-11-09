@@ -96,18 +96,18 @@ public class MetaDataVectors {
     private static final class Recorder implements ILayoutMetaDataProvider.Registry {
         final List<Object> calls = new ArrayList<>();
 
-        public void register(LayoutAlgorithmData d) { calls.add(call("registerAlgorithm", DATA, algorithm(d))); }
-        public void register(LayoutOptionData d) { calls.add(call("registerOption", DATA, option(d))); }
-        public void register(LayoutCategoryData d) { calls.add(call("registerCategory", DATA, category(d))); }
+        @Override public void register(LayoutAlgorithmData d) { calls.add(call("registerAlgorithm", DATA, algorithm(d))); }
+        @Override public void register(LayoutOptionData d) { calls.add(call("registerOption", DATA, option(d))); }
+        @Override public void register(LayoutCategoryData d) { calls.add(call("registerCategory", DATA, category(d))); }
 
-        public void addDependency(String source, String target, Object value) {
+        @Override public void addDependency(String source, String target, Object value) {
             Map<String, Object> m = call("addDependency", SOURCE, source);
             m.put(TARGET, target);
             m.put(VALUE, encode(value));
             calls.add(m);
         }
 
-        public void addOptionSupport(String algorithm, String option, Object defaultValue) {
+        @Override public void addOptionSupport(String algorithm, String option, Object defaultValue) {
             Map<String, Object> m = call("addOptionSupport", "algorithm", algorithm);
             m.put("option", option);
             m.put(DEFAULT, encode(defaultValue));

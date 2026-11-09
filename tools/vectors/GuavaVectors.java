@@ -36,21 +36,21 @@ public class GuavaVectors {
     private static final BiPredicate<Integer, Integer> SPARSE = (i, n) -> i % SPARSE_STRIDE == 0 || i == n - 1;
     private static final String[] MAP_SPEC = ("put kv,".repeat(5) + "remove k,remove k,get k,containsKey k,size,clear").split(",");
     private static final String[] SET_SPEC = ("add k,".repeat(5) + "remove k,remove k,contains k,addEach L,size,clear").split(",");
-    private static final String[] BIMAP_SPEC = ("put kv,".repeat(3) + "forcePut kv,forcePut kv,remove k,get k,containsKey k,"
-        + "inversePut vk,inversePut vk,inverseForcePut vk,inverseRemove v,inverseGet v,inverseContainsKey v,size,clear").split(",");
+    private static final String[] BIMAP_SPEC = ("put kv,".repeat(3) + "forcePut kv,forcePut kv,remove k,get k,containsKey k"
+        + ",inversePut vk,inversePut vk,inverseForcePut vk,inverseRemove v,inverseGet v,inverseContainsKey v,size,clear").split(",");
     private static final String[] MM_SPEC = ("put kv,".repeat(6) + "remove kv,removeAll k,get k,containsKey k,putAll kM,size,"
         + "clear,holdRead h,holdAdd hv,holdRemove hv").split(",");
     private static final String VIEWS = "hold k0;holdRead k0;put k0 5;holdRead k0;holdAdd k0 6;get k0;"
         + "holdRemove k0 5;holdRead k0;removeAll k0;holdRead k0;put k0 7;holdRead k0;hold k1;put k1 1;"
         + "put k1 2;holdRead k1;clear;holdRead k0;holdRead k1;put k1 3;holdRead k1;holdAdd k0 8;"
         + "holdRead k0;size";
-    private static final String REMOVES = "removeAll k3;remove k4 4;remove k4 18;remove k4 99;put k3 99;"
-        + "removeAll k0;removeAll k150;put k0 7;remove k1 1;remove k1 15;put k1 40;clear;put k1 1";
-    private static final String ORDER = "put k0 0;put k1 1;put k0 2;remove k0 0;put k2 3;put k1 4;"
-        + "removeAll k1;put k0 5;put k1 6;put k0 2;put k2 3;removeAll k0;put k0 8;get k2";
+    private static final String REMOVES = "removeAll k3;remove k4 4;remove k4 18;remove k4 99;put k3 99"
+        + ";removeAll k0;removeAll k150;put k0 7;remove k1 1;remove k1 15;put k1 40;clear;put k1 1";
+    private static final String ORDER = "put k0 0;put k1 1;put k0 2;remove k0 0;put k2 3;put k1 4"
+        + ";removeAll k1;put k0 5;put k1 6;put k0 2;put k2 3;removeAll k0;put k0 8;get k2";
     private static final String DUPS = "put k0 1;put k0 1;put k0 2;put k0 1;remove k0 1;remove k0 1;size";
-    private static final String BI_DUP = "put k0 1;put k1 2;put k2 1;forcePut k2 1;put k1 1;put k1 2;"
-        + "put k0 5;forcePut k0 2;put k1 9;get k0;inverseGet 2";
+    private static final String BI_DUP = "put k0 1;put k1 2;put k2 1;forcePut k2 1;put k1 1;put k1 2"
+        + ";put k0 5;forcePut k0 2;put k1 9;get k0;inverseGet 2";
     private static final String BI_INV = "inversePut 7 k0;inversePut 8 k1;inversePut 7 k1;"
         + "inverseForcePut 7 k1;inverseRemove 8;inversePut 9 k2;inverseContainsKey 9;inverseGet 7;"
         + "put k0 9;size";
@@ -95,9 +95,24 @@ public class GuavaVectors {
             : open + String.join(", ", parts) + close;
     }
 
+    private static int parseIntArg(String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("script argument is not an integer: " + s, e);
+        }
+    }
+
+    static void requirePairs(int length) {
+        if (length % 2 != 0) {
+            throw new IllegalArgumentException("key/value arguments come in pairs, got " + length);
+        }
+    }
+
     private static Map<String, Object> map(Object... kv) {
         Map<String, Object> m = new LinkedHashMap<>();
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             m.put((String) kv[i], kv[i + 1]);
         }
         return m;
@@ -175,7 +190,7 @@ public class GuavaVectors {
         for (String line : text.split(";")) {
             String[] w = line.split(" ");
             Object[] args = Arrays.stream(w).skip(1).map(a -> a.startsWith("k")
-                ? key(kind, Integer.parseInt(a.substring(1))) : (Object) Integer.parseInt(a)).toArray();
+                ? key(kind, parseIntArg(a.substring(1))) : (Object) parseIntArg(a)).toArray();
             out.add(st(w[0], args));
         }
         return out;

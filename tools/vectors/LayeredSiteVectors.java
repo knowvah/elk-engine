@@ -1067,7 +1067,7 @@ fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd  repo:test/corp
                 case "bool", "int", "string":
                     return m.get("v");
                 case "double":
-                    return Double.valueOf((String) m.get("v"));
+                    return parseDoubleArg("double value", (String) m.get("v"));
                 case "enum":
                     return enumConstant((String) m.get("c"), (String) m.get("n"));
                 case "set":
@@ -1938,7 +1938,7 @@ fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd  repo:test/corp
                 while (ej < y.length() && Character.isDigit(y.charAt(ej))) {
                     ej++;
                 }
-                int cmp = Long.compare(Long.parseLong(x.substring(i, ei)), Long.parseLong(y.substring(j, ej)));
+                int cmp = Long.compare(parseLongArg("digit run", x.substring(i, ei)), parseLongArg("digit run", y.substring(j, ej)));
                 if (cmp != 0) {
                     return cmp;
                 }
@@ -2637,7 +2637,7 @@ fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd  repo:test/corp
         return m;
     }
 
-    static Map<String, Object> SET(String type, String... names) {
+    static Map<String, Object> SETOF(String type, String... names) {
         Map<String, Object> m = new TreeMap<>();
         m.put("t", "set");
         m.put("c", type);
@@ -2649,9 +2649,32 @@ fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd  repo:test/corp
         return single("ref", name);
     }
 
+    static double parseDoubleArg(String what, String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not a number: " + s, e);
+        }
+    }
+
+    static long parseLongArg(String what, String s) {
+        try {
+            return Long.parseLong(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not an integer: " + s, e);
+        }
+    }
+
+    static void requirePairs(int length) {
+        if (length % 2 != 0) {
+            throw new IllegalArgumentException("key/value arguments come in pairs, got " + length);
+        }
+    }
+
     static Map<String, Object> chain(double... xy) {
         List<Object> pts = new ArrayList<>();
-        for (int i = 0; i < xy.length; i += 2) {
+        requirePairs(xy.length);
+        for (int i = 0; i + 1 < xy.length; i += 2) {
             pts.add(List.of(xy[i], xy[i + 1]));
         }
         return tv("chain", pts);
@@ -2928,7 +2951,7 @@ fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd  repo:test/corp
             recordGraphProperties(b, "first");
             b.c("LGraphUtil.computeGraphProperties", null, "g0");
             recordGraphProperties(b, "second");
-            b.prop("g0", GRAPH_PROPERTIES, SET("GraphProperties", "HYPERNODES", "PARTITIONS", "NORTH_SOUTH_PORTS"));
+            b.prop("g0", GRAPH_PROPERTIES, SETOF("GraphProperties", "HYPERNODES", "PARTITIONS", "NORTH_SOUTH_PORTS"));
             b.c("LGraphUtil.computeGraphProperties", null, "g0");
             recordGraphProperties(b, "prefilled");
             add("site/lgraphutil/graphProperties/" + lower(direction), "LGraphUtil", b);
@@ -2982,7 +3005,7 @@ fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd  repo:test/corp
                 String tag = d[0] + (d[1] == null ? "" : "-aspect-" + d[1]);
                 b.prop("g0", DIRECTION, E(DIR, d[0]));
                 if (d[1] != null) {
-                    b.prop("g0", ASPECT_RATIO, D(Double.parseDouble(d[1])));
+                    b.prop("g0", ASPECT_RATIO, D(parseDoubleArg("aspect ratio", d[1])));
                 }
                 boolean collects = base.getKey().equals("merge-edges") || base.getKey().equals("hypernode");
                 createPorts(b, tag, null, "g0", collects);
@@ -3605,7 +3628,8 @@ fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd  repo:test/corp
     /** 'layoutOptions':{...} from (property or id, value) pairs; the values are strings. */
     static String lo(Object... kv) {
         List<String> parts = new ArrayList<>();
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             String key = kv[i] instanceof IProperty<?> p ? p.getId() : (String) kv[i];
             parts.add(js(key) + ":" + js((String) kv[i + 1]));
         }
@@ -3703,7 +3727,7 @@ fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd  repo:test/corp
             if (borderOffsets && p[0].equals("pA")) {
                 more.add(lo(CoreOptions.PORT_BORDER_OFFSET, "-3.0"));
             }
-            ports.add(port(p[0], Double.parseDouble(p[1]), Double.parseDouble(p[2]), sides ? p[3] : null,
+            ports.add(port(p[0], parseDoubleArg("port x", p[1]), parseDoubleArg("port y", p[2]), sides ? p[3] : null,
                     more.toArray(new String[0])));
         }
         List<String> inside = new ArrayList<>(), outside = new ArrayList<>();

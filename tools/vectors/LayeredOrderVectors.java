@@ -881,7 +881,7 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
             case "string":
                 return (String) v;
             case "double":
-                return Double.parseDouble((String) v);
+                return parseDoubleArg("property value", (String) v);
             case "enum":
                 for (String pkg : OPTION_PACKAGES) {
                     try {
@@ -1291,6 +1291,13 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
 
     record Result(Map<String, Object> expected, List<Object> prefix) { }
 
+    static Base need(Base base) {
+        if (base == null) {
+            throw new IllegalStateException("step ran before importGraph created the Base");
+        }
+        return base;
+    }
+
     @SuppressWarnings("unchecked")
     static Base CURRENT; // the Base of the step row being run (decode resolves {ref} paths against it)
     static Map<String, Object> runSteps(ElkNode root, List<Object> steps) {
@@ -1313,16 +1320,16 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
                 }
                 case "normalise" -> {
                     normalise(graph);
-                    base.snapshot();
+                    need(base).snapshot();
                 }
-                case "setProperty" -> setProperty(base.element((String) s.get(1)), (String) s.get(2), s.get(3));
+                case "setProperty" -> setProperty(need(base).element((String) s.get(1)), (String) s.get(2), s.get(3));
                 case "layers" -> layers(graph, base, (List<Object>) s.get(1));
-                case "reverseEdge" -> ((LEdge) base.element((String) s.get(1))).reverse(graph, true);
+                case "reverseEdge" -> ((LEdge) need(base).element((String) s.get(1))).reverse(graph, true);
                 case "runProcessor" -> runProcessor(graph, (String) s.get(1));
                 case "runPhase" -> runPhase(graph, (String) s.get(1), (String) s.get(2));
                 case "dump" -> {
                     expected = phaseDump(base);
-                    if (base.nodes.size() < FULL_DUMP_BELOW) {
+                    if (need(base).nodes.size() < FULL_DUMP_BELOW) {
                         expected.put("dump", new Dump(graph, true).dump());
                     }
                 }
@@ -1675,10 +1682,33 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
         return levels;
     }
 
+    static double parseDoubleArg(String what, String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not a number: " + s, e);
+        }
+    }
+
+    static int parseIntArg(String what, String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not an integer: " + s, e);
+        }
+    }
+
+    static void requirePairs(int length) {
+        if (length % 2 != 0) {
+            throw new IllegalArgumentException("key/value arguments come in pairs, got " + length);
+        }
+    }
+
     static TreeMap<String, Object> opts(Object... kv) {
         TreeMap<String, Object> m = new TreeMap<>();
         m.put(pid("SEPARATE_CONNECTED_COMPONENTS"), Z(false));
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             m.put(pid((String) kv[i]), kv[i + 1]);
         }
         return m;
@@ -1892,7 +1922,8 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
     /** Root layout options as JSON members: constant name, value string, ... */
     static String ropts(String... kv) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < kv.length; i += 2) {
+        requirePairs(kv.length);
+        for (int i = 0; i + 1 < kv.length; i += 2) {
             sb.append(sb.length() == 0 ? "" : ",").append('"').append(pid(kv[i])).append("\":\"").append(kv[i + 1]).append('"');
         }
         return sb.toString();
@@ -2398,7 +2429,7 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
     static final Map<String, String> ABBR = Map.of("E", E_, "W", W_, "N", N_, "S", S_, "FS", FS, "FO", FO, "FP", FP, "FR", FR);
     static final Map<String, String> PROCS = Map.of("LES", LES, "PSP", PSP, "IPP", IPP, "PLS", PLS, "NSP", NSP, "HPC", HPC, "SIC", SIC, "SBI", SBI, "OSG", OSG, "TSG", TSG);
     static String[] kv(String o) { return o.isEmpty() ? new String[0] : o.split("[=;]"); }
-    static double[] xy(String x, String y) { return x == null ? null : new double[] {Double.parseDouble(x), Double.parseDouble(y)}; }
+    static double[] xy(String x, String y) { return x == null ? null : new double[] {parseDoubleArg("x", x), parseDoubleArg("y", y)}; }
     static String node(String t) {
         java.util.regex.Matcher m = NODE.matcher(t);
         if (!m.matches()) { throw new Bug("node " + t); }
@@ -2435,7 +2466,7 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
         for (String t : steps.split(" ")) {
             String[] a = t.split(":");
             switch (a[0]) {
-                case "base" -> s.base(); case "norm" -> s.norm(); case "seed" -> s.seed(Integer.parseInt(a[1])); case "target" -> s.target(a[1]); case "p3" -> s.p3(a[1]);
+                case "base" -> s.base(); case "norm" -> s.norm(); case "seed" -> s.seed(parseIntArg("seed", a[1])); case "target" -> s.target(a[1]); case "p3" -> s.p3(a[1]);
                 case "pc" -> s.set("g0/n" + a[1], "PORT_CONSTRAINTS", E("PortConstraints", a[2]));
                 case "layers" -> s.layers(Arrays.stream(a[1].split("/")).map(g -> Arrays.stream(g.split(",")).map(k -> "g0/n" + k).toList()).toArray(List[]::new));
                 case "ics" -> s.set("g0/n" + a[1].split(">")[0], "IN_LAYER_SUCCESSOR_CONSTRAINTS", Arrays.stream(a[1].split(">")[1].split(",")).map(k -> (Object) single("ref", "g0/n" + k)).toList());
@@ -2671,7 +2702,7 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
             Object tag = m.get("t");
             if ("int".equals(tag) || "double".equals(tag)) {
                 Object x = m.get("v");
-                double d = x instanceof Number n ? n.doubleValue() : Double.parseDouble((String) x);
+                double d = x instanceof Number n ? n.doubleValue() : parseDoubleArg("value", (String) x);
                 out.put("t", "number");
                 out.put("v", String.format("%016x", Double.doubleToRawLongBits(d)));
                 return out;
