@@ -47,6 +47,32 @@ const ENTRY_POINTS: readonly string[] = [
   'src/alg/layered/intermediate/CommentNodeMarginCalculator.ts',
   'src/alg/layered/intermediate/CommentPostprocessor.ts',
   'src/alg/layered/intermediate/unzipping/AlternatingLayerUnzipper.ts',
+  'src/alg/layered/intermediate/SelfLoopPreProcessor.ts',
+  'src/alg/layered/intermediate/SelfLoopPortRestorer.ts',
+  'src/alg/layered/intermediate/SelfLoopRouter.ts',
+  'src/alg/layered/intermediate/SelfLoopPostProcessor.ts',
+  'src/alg/layered/intermediate/DummySelfLoopProcessor.ts',
+  'src/alg/layered/intermediate/wrapping/BreakingPointInserter.ts',
+  'src/alg/layered/intermediate/wrapping/BreakingPointProcessor.ts',
+  'src/alg/layered/intermediate/wrapping/BreakingPointRemover.ts',
+  'src/alg/layered/intermediate/wrapping/SingleEdgeGraphWrapper.ts',
+  'src/alg/layered/intermediate/compaction/HorizontalGraphCompactor.ts',
+  'src/alg/layered/intermediate/compaction/LGraphToCGraphTransformer.ts',
+  'src/alg/layered/intermediate/compaction/NetworkSimplexCompaction.ts',
+  'src/alg/layered/components/ComponentsCompactor.ts',
+  'src/alg/layered/compaction/components/OneDimensionalComponentsCompaction.ts',
+  'src/alg/layered/compaction/oned/OneDimensionalCompactor.ts',
+  // `OrthogonalSelfLoopRouter` and `PolylineSelfLoopRouter` are not entry points: `SplineSelfLoopRouter extends
+  // OrthogonalSelfLoopRouter` sits on the enum's import chain (enum -> `SelfLoopRouter` -> the three routers), so a
+  // process that enters at the base class reaches the subclass while the base is still evaluating. Same case as the
+  // landed base classes `GreedyCycleBreaker`, `SimpleRowGraphPlacer` or `BarycenterHeuristic` (7b decision E1, part
+  // 3: a base class is entered through the enum). The subclass on the chain is the entry.
+  'src/alg/layered/intermediate/loops/routing/SplineSelfLoopRouter.ts',
+  'src/alg/layered/intermediate/loops/routing/RoutingDirector.ts',
+  'src/alg/layered/intermediate/loops/routing/RoutingSlotAssigner.ts',
+  'src/alg/layered/intermediate/loops/routing/LabelPlacer.ts',
+  'src/alg/layered/intermediate/loops/ordering/PortRestorer.ts',
+  'src/alg/layered/intermediate/loops/ordering/PortSideAssigner.ts',
 ];
 
 /** Imports `entry` in a fresh process; returns its exit status (0 on success) and captured stderr. */

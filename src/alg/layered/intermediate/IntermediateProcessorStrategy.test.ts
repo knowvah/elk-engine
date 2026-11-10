@@ -51,6 +51,15 @@ import { PortSideProcessor } from './PortSideProcessor.js';
 import { ReversedEdgeRestorer } from './ReversedEdgeRestorer.js';
 import { SemiInteractiveCrossMinProcessor } from './SemiInteractiveCrossMinProcessor.js';
 import { SortByInputModelProcessor } from './SortByInputModelProcessor.js';
+import { SelfLoopPreProcessor } from './SelfLoopPreProcessor.js';
+import { SelfLoopPortRestorer } from './SelfLoopPortRestorer.js';
+import { SelfLoopRouter } from './SelfLoopRouter.js';
+import { SelfLoopPostProcessor } from './SelfLoopPostProcessor.js';
+import { BreakingPointInserter } from './wrapping/BreakingPointInserter.js';
+import { BreakingPointProcessor } from './wrapping/BreakingPointProcessor.js';
+import { BreakingPointRemover } from './wrapping/BreakingPointRemover.js';
+import { SingleEdgeGraphWrapper } from './wrapping/SingleEdgeGraphWrapper.js';
+import { HorizontalGraphCompactor } from './compaction/HorizontalGraphCompactor.js';
 
 const DECLARED = [
   'DIRECTION_PREPROCESSOR',
@@ -179,7 +188,7 @@ const ARMS: Record<Name, [string, string]> = {
   DIRECTION_POSTPROCESSOR: ['GraphTransformer', '7f'],
 };
 
-/** The ported (missions 7b, 7c, 7d, the six 7e processors of T5 and T9, and the six 7f processors wired by T8, the twelve 7f2 arms wired by T11) arms: constant name to the class `create()` returns. */
+/** The ported (missions 7b, 7c, 7d, the six 7e processors of T5 and T9, and the six 7f processors wired by T8, the twelve 7f2 arms wired by T11, the nine 7g arms wired by T15) arms: constant name to the class `create()` returns. */
 const PORTED = {
   EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER: EdgeAndLayerConstraintEdgeReverser,
   INTERACTIVE_EXTERNAL_PORT_POSITIONER: InteractiveExternalPortPositioner,
@@ -230,6 +239,15 @@ const PORTED = {
   COMMENT_POSTPROCESSOR: CommentPostprocessor,
   LABEL_DUMMY_REMOVER: LabelDummyRemover,
   END_LABEL_POSTPROCESSOR: EndLabelPostprocessor,
+  SELF_LOOP_PREPROCESSOR: SelfLoopPreProcessor,
+  BREAKING_POINT_INSERTER: BreakingPointInserter,
+  BREAKING_POINT_PROCESSOR: BreakingPointProcessor,
+  SELF_LOOP_PORT_RESTORER: SelfLoopPortRestorer,
+  SINGLE_EDGE_GRAPH_WRAPPER: SingleEdgeGraphWrapper,
+  SELF_LOOP_ROUTER: SelfLoopRouter,
+  SELF_LOOP_POSTPROCESSOR: SelfLoopPostProcessor,
+  BREAKING_POINT_REMOVER: BreakingPointRemover,
+  HORIZONTAL_COMPACTOR: HorizontalGraphCompactor,
 } as const;
 
 /** The six 7e members ported by T5 and T9 (`FINAL_SPLINE_BENDPOINTS_CALCULATOR` is T9's). */
@@ -296,9 +314,9 @@ describe('IntermediateProcessorStrategy', () => {
     );
   });
 
-  it('ports exactly the 7b, 7c, 7d, 7e, 7f and 7f2 members and leaves the other 10 pending (7g 9, 7h 1)', () => {
-    expect(PORTED_NAMES.size).toBe(49);
-    expect(PENDING).toHaveLength(10);
+  it('ports exactly the 7b, 7c, 7d, 7e, 7f, 7f2 and 7g members and leaves the other 1 pending (7h 1)', () => {
+    expect(PORTED_NAMES.size).toBe(58);
+    expect(PENDING).toHaveLength(1);
     expect(
       DECLARED.filter(
         (name) =>
@@ -307,6 +325,7 @@ describe('IntermediateProcessorStrategy', () => {
           ARMS[name][1] === '7d' ||
           ARMS[name][1] === '7f' ||
           ARMS[name][1] === '7f2' ||
+          ARMS[name][1] === '7g' ||
           (ARMS[name][1] === '7e' && PORTED_IN_7E.has(name)),
       ).sort(),
     ).toEqual([...PORTED_NAMES].sort());

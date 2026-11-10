@@ -51,3 +51,4 @@ test/corpus/.placement-sweep/
 test/corpus/.routing-sweep/
 test/corpus/.pipeline-sweep/
 test/corpus/.labels-sweep/
+test/corpus/.loops-sweep/

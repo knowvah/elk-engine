@@ -8,12 +8,11 @@
 import type { GraphSource } from './layout-test-runner.js';
 
 /**
- * `gt_sinewaveoptimization_SinewaveOptimization` has a self loop, which needs SELF_LOOP_PREPROCESSOR (mission 7g, N1 of
- * `plans/layered-pipeline/suite-allocation.md`); it is left out of the vendored scope. The filter is a negative lookahead.
+ * Every ptolemy model is in scope, `gt_sinewaveoptimization_SinewaveOptimization` and its self loop included: mission 7g
+ * ported SELF_LOOP_PREPROCESSOR and removed the filter that left the model out (N1 of
+ * `plans/layered-pipeline/suite-allocation.md`), so the corpus-wide case counts equal the oracle's run counts.
  */
-const WITHOUT_SELF_LOOP_MODELS = /(?!gt_sinewaveoptimization_).*/;
-
 export const PTOLEMY_GRAPHS: readonly GraphSource[] = [
-  { path: 'realworld/ptolemy/**/', filter: WITHOUT_SELF_LOOP_MODELS, extensions: ['elkg'] },
-  { path: 'pipeline/realworld/ptolemy/**/', filter: WITHOUT_SELF_LOOP_MODELS, extensions: ['elkg'] },
+  { path: 'realworld/ptolemy/**/', extensions: ['elkg'] },
+  { path: 'pipeline/realworld/ptolemy/**/', extensions: ['elkg'] },
 ];

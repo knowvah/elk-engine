@@ -424,6 +424,56 @@ const LAYERED_LABELS_INPUTS = [
   'labels/tickets/layered/905_beginLableBellowEdge.elkt',
 ];
 
+/**
+ * Inputs of the layered loop, wrapping and compaction vectors (mission 7g T1, `tools/vectors/LayeredLoopsVectors.java`): the models of
+ * the self loop, compaction, components compaction, hyperedge and issue families that no earlier recorder vendored (the 40 below),
+ * byte-identical, including the inputs of the suites allocated to 7g (tickets 433, 444, 463, 870). They live under `loops/`, never
+ * under `realworld/` (`LayeredFrameworkVectors.java` walks that tree). The models the earlier recorders vendored stay at their paths
+ * and are read from there.
+ */
+const LAYERED_LOOPS_INPUTS = [
+  'loops/realworld/ptolemy/flattened/backtrack_trialmodule_TrialModule.json',
+  'loops/realworld/ptolemy/flattened/ca_conwayrandom_ConwayRandom.json',
+  'loops/realworld/ptolemy/flattened/ddf_eratosthenes_Eratosthenes.json',
+  'loops/realworld/ptolemy/flattened/ptera_trafficlight_TrafficLight.json',
+  'loops/realworld/ptolemy/flattened/ptolemy_brewery_Brewery.json',
+  'loops/realworld/ptolemy/flattened/ptolemy_probabilisticmodels_ChannelFaultModel.json',
+  'loops/tests/layered/compaction_oned/labels/edgeLabelAndSplines.elkt',
+  'loops/tests/layered/compaction_oned/labels/edgeLabelShouldBeCentered.elkt',
+  'loops/tests/layered/compaction_oned/labels/edgeLabelSideSelection01.elkt',
+  'loops/tests/layered/compaction_oned/labels/labels1.elkt',
+  'loops/tests/layered/compaction_oned/labels/labels2.elkt',
+  'loops/tests/layered/compaction_oned/nsport/south_port.elkt',
+  'loops/tests/layered/compaction_oned/selfloop/selfloop_crash.elkt',
+  'loops/tests/layered/compaction_oned/selfloop/selfloop_orthogonal.elkt',
+  'loops/tests/layered/compaction_oned/selfloop/selfloop_spline.elkt',
+  'loops/tests/layered/compaction_oned/splines/moreThanOneStraightSegmentPath.elkt',
+  'loops/tests/layered/compaction_oned/splines/moreThanOneStraightSegmentPath2.elkt',
+  'loops/tests/layered/connected_components/all_four_port_sides.elkt',
+  'loops/tests/layered/connected_components/compound06.elkt',
+  'loops/tests/layered/self_loops/fixedSide.elkt',
+  'loops/tests/layered/self_loops/free.elkt',
+  'loops/tests/layered/self_loops/hyperLoops.elkt',
+  'loops/tests/layered/self_loops/inside_outside.elkt',
+  'loops/tests/layered/self_loops/label.elkt',
+  'loops/tests/layered/self_loops/south.elkt',
+  'loops/tickets/layered/079_selfLoopLabels.elkt',
+  'loops/tickets/layered/128_selfLoopLabelSpacing_complex.elkt',
+  'loops/tickets/layered/128_selfLoopLabelSpacing_simple.elkt',
+  'loops/tickets/layered/302_brokenSplineSelfLoops.elkt',
+  'loops/tickets/layered/340_classCastExceptionGreedySwitch.elkt',
+  'loops/tickets/layered/360_badSelfLoopLabelPlacement.elkt',
+  'loops/tickets/layered/368_selfLoopLabelsIOOBE.elkt',
+  'loops/tickets/layered/403_stackedSelfLoopLabels.elkt',
+  'loops/tickets/layered/416_longSelfLoops.elkt',
+  'loops/tickets/layered/418_northPortsWithSelfLoops.elkt',
+  'loops/tickets/layered/419_northSelfLoopsAndRegularEdges.elkt',
+  'loops/tickets/layered/433_graphSizeWithSelfLoopLabel.elkt',
+  'loops/tickets/layered/444_selfLoopsNPE.elkt',
+  'loops/tickets/layered/463_aioobe_with_self_loops.elkt',
+  'loops/tickets/layered/870_networkSimplexNodePlacer.elkt',
+];
+
 describe('vendored inputs', () => {
   it('records the pinned models commit', () => {
     const parsed = readJson(INPUTS_MANIFEST) as Obj;
@@ -431,8 +481,8 @@ describe('vendored inputs', () => {
     expect(parsed['commit']).toBe(corpus['commit']);
   });
 
-  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs and the 32 layered routing inputs and the 26 layered pipeline inputs and the 123 layered labels inputs, nothing else', () => {
-    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS, ...LAYERED_ROUTING_INPUTS, ...LAYERED_PIPELINE_INPUTS, ...LAYERED_LABELS_INPUTS].sort();
+  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs and the 32 layered routing inputs and the 26 layered pipeline inputs and the 123 layered labels inputs and the 40 layered loops inputs, nothing else', () => {
+    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS, ...LAYERED_ROUTING_INPUTS, ...LAYERED_PIPELINE_INPUTS, ...LAYERED_LABELS_INPUTS, ...LAYERED_LOOPS_INPUTS].sort();
     expect(Object.keys(hashes).sort()).toEqual(expected);
   });
 

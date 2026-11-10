@@ -98,32 +98,42 @@ const SPEC: LayoutTestSpec = {
 
 defineLayoutTest(SPEC);
 
+/**
+ * The non-vacuity case lays out every model of the suite inside one test; with `PIPELINE_SUITES_FULL=1` that is the
+ * whole corpus (about 550 models), which no longer stops early at a staged self-loop arm (mission 7g).
+ */
+const NON_VACUITY_TIMEOUT_MS = 120_000;
+
 describe('LabelSideSelectorTest (non-vacuity)', () => {
-  it('(non-vacuity) the selector ran and the checked labels are sized and assigned a side', () => {
-    const seen = { runs: 0, labels: 0, sized: 0, placed: 0 };
-    const counting: ProcessorCheck = {
-      cls: LabelSideSelector,
-      check: (lGraph) => {
-        seen.runs += 1;
-        for (const layer of lGraph) {
-          for (const edge of layer.getNodes().flatMap((node) => [...node.getOutgoingEdges()])) {
-            for (const label of edge.getLabels()) {
-              seen.labels += 1;
-              seen.sized += label.getSize().x > 0 && label.getSize().y > 0 ? 1 : 0;
-              seen.placed += label.hasProperty(InternalProperties.LABEL_SIDE) ? 1 : 0;
+  it(
+    '(non-vacuity) the selector ran and the checked labels are sized and assigned a side',
+    () => {
+      const seen = { runs: 0, labels: 0, sized: 0, placed: 0 };
+      const counting: ProcessorCheck = {
+        cls: LabelSideSelector,
+        check: (lGraph) => {
+          seen.runs += 1;
+          for (const layer of lGraph) {
+            for (const edge of layer.getNodes().flatMap((node) => [...node.getOutgoingEdges()])) {
+              for (const label of edge.getLabels()) {
+                seen.labels += 1;
+                seen.sized += label.getSize().x > 0 && label.getSize().y > 0 ? 1 : 0;
+                seen.placed += label.hasProperty(InternalProperties.LABEL_SIDE) ? 1 : 0;
+              }
             }
           }
-        }
-      },
-    };
-    const cases = buildLayoutTests({ ...SPEC, afterProcessor: [counting] });
-    for (const testCase of cases) {
-      testCase.run();
-    }
-    expect(cases.length).toBeGreaterThan(0);
-    expect(seen.runs).toBeGreaterThanOrEqual(cases.length);
-    expect(seen.labels).toBeGreaterThan(0);
-    expect(seen.sized).toBe(seen.labels);
-    expect(seen.placed).toBe(seen.labels);
-  });
+        },
+      };
+      const cases = buildLayoutTests({ ...SPEC, afterProcessor: [counting] });
+      for (const testCase of cases) {
+        testCase.run();
+      }
+      expect(cases.length).toBeGreaterThan(0);
+      expect(seen.runs).toBeGreaterThanOrEqual(cases.length);
+      expect(seen.labels).toBeGreaterThan(0);
+      expect(seen.sized).toBe(seen.labels);
+      expect(seen.placed).toBe(seen.labels);
+    },
+    NON_VACUITY_TIMEOUT_MS,
+  );
 });

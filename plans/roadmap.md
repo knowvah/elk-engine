@@ -1086,3 +1086,86 @@ was found by the replay; the helper fixes of T2 are in the journal.
 
 **Follow-ups (outside this mission's write-sets).** Five mutation survivors in `LabelDummySwitcherSpaceEfficient.ts`
 need a new oracle graph to discriminate; 7f's cleanup follow-ups stand.
+
+## Revision 2026-11-10 (layered-loops-wrapping-compaction)
+
+Appended; no earlier line is edited. Source: W1-W14 in `plans/layered-loops-wrapping-compaction/decisions.md`; the journal is
+`plans/layered-loops-wrapping-compaction/decision-journal.md`. Where this section conflicts with the text above, this section
+wins. It is the binding input of the 7h brief.
+
+**Row 7g is done (tasks T1-T22).** The self loop package (`intermediate/loops` with `ordering` and `routing`), the four self loop
+processors, `DummySelfLoopProcessor`, `intermediate/wrapping`, `intermediate/compaction`, the layered
+`compaction/{oned,components,recthull}` and `ComponentsCompactor` are ported, and the 9 pending arms are wired;
+`LayeredLayoutProvider.layout` runs self loops, `SINGLE_EDGE` and `MULTI_EDGE` wrapping, post compaction and
+`compaction.connectedComponents`. The formerly pinned row `models/ptolemy-sinewaveoptimization/N1/DIRECTION_PREPROCESSOR/DOWN`
+replays its recorded expectation, and `full/labels/ticket-213_componentsCompaction` is a row of the new ref.
+
+**Enum tally after 7g.** 58 arms ported, 1 pending: 7h `HIERARCHICAL_NODE_RESIZER` (7b 10, 7c 10, 7d 5, 7e 6, 7f 6, 7f2 12, 7g 9).
+
+**Evidence.**
+
+- `layered-loops.json` (16,358,809 bytes): `full` 731, `models` 307, `scenarios` 525, `sites` 64; `LayeredLoopsVectors.test.ts`
+  replays every row of the four groups with 0 mismatches (1,637 tests, about 8 s alone; budget 30 s);
+  `LayeredLoopsSites.test.ts` replays the 64 `sites` rows again under their scenario titles.
+- 10 Java suites ported with their own assertions (16, 2, 5, 3, 2, 1, 1, 1, 1, 1 oracle runs); the start run equals the
+  baseline; the end run equals the start run.
+- Corpus-wide runs (`PIPELINE_SUITES_FULL=1`): 550, 550, 2,200, 550 + 1, 551 + 1 and `PortListSorterTest` 1,114, 0 failures,
+  equal to the oracle's counts.
+- Loops sweep: 3,073 oracle cases (part a 600, b 105, c 2,368; 2,997 ok, 76 throws); TS at stride 1: 2,997 hash-equal, 0
+  mismatches, 76 throws on both sides.
+- Twins: every iterated identity-keyed container of W6 is order-independent on the rows that reach it; R9 holds for
+  `SplineEdgeRouter.getSplinePath` (254 rows), and one site (`collectVerticalSegmentsSplines`, 7 of 56 multi-edge rows)
+  matches only in insertion order (issue #54).
+- Coverage 98.78 / 96.75 / 98.77 / 98.79 after batch 10; coverage map `unreached.md` (372 items: S 97, J 43, U 211, X 21);
+  174 anchored cases; mutation checks killed 121 of 137 mutants (5 equivalent or dead, 11 survivors).
+- Landed vectors and goldens unchanged; the refs diff adds `layered-loops.json`, `inputs/loops/**` (40 inputs), the sweep test,
+  and appends 43 label texts (2,258 to 2,301 keys) to `layered-label-metrics.json`.
+
+**Decisions taken during the run.**
+
+- Task boundary move (batch 2): T5 ported `SelfLoopPreProcessor`, T9 `SelfLoopPortRestorer`, T13 `SelfLoopRouter` and
+  `SelfLoopPostProcessor`, so each self loop package met its oracle rows in the batch that ported it.
+- Entry-point resolution (T15 `fix`): the cycle through `SplineSelfLoopRouter`'s `extends` makes `OrthogonalSelfLoopRouter` and
+  `PolylineSelfLoopRouter` unusable as entry points; they are entered through the enum (7b decision E1, part 3), leave the
+  entry-point lists, and no `src/` change was needed.
+- NaN-canonical sweep hash (T19 `fix`): NaN is hashed as the one canonical NaN; every other value keeps its raw bits.
+- Removed ptolemy filter (T17 `fix`): `ptolemy-suite-sources.ts` no longer excludes `gt_sinewaveoptimization_*`.
+- Label-manager twin follows the row's recorder (T20 `fix`).
+- Two W9 assertion changes moved between tasks: the `ComponentsCompactor`-related pins of `ComponentsProcessor.test.ts` moved
+  from T15 to T12 (the placers construct the compactor without the enum), and `NodeMarginCalculatorTest`'s scope text and the
+  `ptolemy-suite-sources.ts` filter widened in T17 (the filter is outside T17's write-set).
+
+**Hand-offs to 7h.**
+
+- Port `HierarchicalNodeResizingProcessor` (the 1 pending arm, `HIERARCHICAL_NODE_RESIZER`) and `CompoundGraphPreprocessor`,
+  `CompoundGraphPostprocessor` and `CrossHierarchyEdge` (staged: `test/architecture/staged-classes.json` holds exactly these
+  three rows, mission `7h`).
+- The 7h refusal categories of the recorder and the sweep are `INCLUDE_CHILDREN` and `HIERARCHICAL_NODE_RESIZER`; the recorded
+  ref has 0 accepted refusals.
+- The loops sweep dropped 50 label-sweep (part b) cases refused by `INCLUDE_CHILDREN`; they belong to 7h's sweep.
+- `include-children*` site rows of earlier missions (`test/helpers/layered-site-replay.ts`) still expect a throw naming 7h; 7h
+  flips them.
+- U items of `unreached.md` owned by 7h: the `NorthToSouthRoutingStrategy`/`SouthToNorthRoutingStrategy` arms (`:54 if[1]`,
+  `:38`, `:58`, `:78`; they run only from the hierarchical port router) and the `SelfLoopPreProcessor.java:55,90,100` arms that
+  need a compound node.
+- Inputs that use `elk.stress`: `tickets/layered/665_includeChildrenDoesntStop.elkt` and
+  `examples/hierarchy/hierarchicalLayoutMixing.elkt` (both set `hierarchyHandling: INCLUDE_CHILDREN` at the root;
+  `.agent-notes/layered-pipeline.md`); the recorders' classpath registers no such algorithm, neither file is in a landed ref,
+  and the stress algorithm is not ported.
+- Suites: the 9 allocated to 7h by `plans/layered-pipeline/suite-allocation.md`.
+- Vendor new models outside `inputs/realworld/`; 7g's are under `inputs/loops/`.
+
+**Flags for the user (open decisions).**
+
+- Issue #53 (`needs-ruling`): the NaN-canonical form amends W5's raw IEEE hex for NaN only; confirm or reject, decide whether the
+  landed sweeps adopt it, and whether the NaN layouts join the upstream drafts.
+- Issue #54 (`needs-ruling`): 7 `HORIZONTAL_COMPACTOR` rows of `models/splines-hyperedges-hyperedges_1/root` match the oracle
+  only in insertion order of `SplineSegment.edges` (R9 at `collectVerticalSegmentsSplines`); the rows pass as recorded.
+- Issue #56 (`needs-ruling`): the six upstream drafts of the journal's T22 row (`GraphStats.java:295-302`,
+  `LabelPlacer.java:296`, `PortRestorer.java:180-188`, `SplineSegment.java:82`, NaN layouts, oracle throws); nothing is filed.
+- Issue #55 (`follow-up`): the mutation survivors and the graphs a discriminating oracle row needs.
+- The label metrics table grew by 43 texts (2,258 to 2,301 keys); it remains a macOS JVM snapshot (FX8).
+- `../elk` HEAD is 22 commits past the pin; the diff to the pin over the layered, core, common and layered-test bundles is empty.
+
+**Follow-ups (outside this mission's write-sets).** The survivors and unreached graphs of issue #55; `SplineEdgeRouterSegments.ts:137
+if[1]` (`SplineEdgeRouter.java:395-404`) has no graph; the cleanup follow-ups of 7f and 7f2 stand.

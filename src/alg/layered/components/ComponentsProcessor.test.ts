@@ -20,6 +20,7 @@ import {
   type PipelineStopRow,
 } from '../../../../test/helpers/layered-pipeline-replay-rows.js';
 import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { loadLoopsRowsIfPresent, replayLoopsRow } from '../../../../test/helpers/layered-loops-replay-rows.js';
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import { KVector } from '../../../core/math/KVector.js';
@@ -42,6 +43,7 @@ import { GraphProperties } from '../options/GraphProperties.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
 import { ComponentOrderingStrategy } from './ComponentOrderingStrategy.js';
+import { ComponentsCompactor } from './ComponentsCompactor.js';
 import { ComponentsProcessor } from './ComponentsProcessor.js';
 
 const REF = `${repoRoot()}/test/golden/refs/java/layered-pipeline.json`;
@@ -353,28 +355,30 @@ describe('ComponentsProcessor.split', () => {
     expect(target.getLayerlessNodes()).toEqual(components[0]!.getLayerlessNodes());
   });
 
-  it('throws the staged compactor error naming 7g when compaction of connected components is on', () => {
-    const compacting = (g: LGraph): void => {
-      g.setProperty(LayeredOptions.COMPACTION_CONNECTED_COMPONENTS, true);
-      g.setProperty(LayeredOptions.EDGE_ROUTING, EdgeRouting.ORTHOGONAL);
+  it('runs the compactor through each placer and matches the recorded rows (W9: was the staged-compactor throw)', () => {
+    // one `layered-loops.json` row per placer that constructs the compactor under COMPACTION_CONNECTED_COMPONENTS:
+    // ComponentGroupGraphPlacer (`group`), ComponentGroupModelOrderGraphPlacer (`group-model-order`), SimpleRowGraphPlacer (flat)
+    const rowIds = [
+      'scenarios/ComponentsCompactor/four-sides/group/RIGHT',
+      'scenarios/ComponentsCompactor/four-sides/group-model-order/RIGHT',
+      'scenarios/ComponentsCompactor/flat-components/ORTHOGONAL',
+    ];
+    const prototype = ComponentsCompactor.prototype;
+    const compact = prototype.compact;
+    let calls = 0;
+    prototype.compact = function (this: ComponentsCompactor, ...args: Parameters<typeof compact>): void {
+      calls++;
+      compact.apply(this, args);
     };
-    for (const setUp of [
-      compacting,
-      (g: LGraph) => {
-        compacting(g);
-        withExternalPorts(g);
-      },
-      (g: LGraph) => {
-        compacting(g);
-        withExternalPorts(g);
-        g.setProperty(LayeredOptions.CONSIDER_MODEL_ORDER_COMPONENTS, ComponentOrderingStrategy.GROUP_MODEL_ORDER);
-      },
-    ]) {
-      const processor = new ComponentsProcessor();
-      const components = processor.split(separable(2, setUp));
-      expect(() => {
-        processor.combine(components, new LGraph());
-      }).toThrow(/7g/);
+    try {
+      for (const id of rowIds) {
+        const before = calls;
+        const row = loadLoopsRowsIfPresent().find((candidate) => candidate.id === id)!;
+        expect(replayLoopsRow(row)).toEqual([]);
+        expect(calls).toBeGreaterThan(before);
+      }
+    } finally {
+      prototype.compact = compact;
     }
   });
 

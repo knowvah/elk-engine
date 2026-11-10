@@ -10,21 +10,22 @@ cited are `plans/layered-framework/decisions.md` (L1–L7, S1–S4, X1–X6); ta
 `plans/alg-common/decisions.md`. Nothing here is exported from `src/index.ts` (AD-14), and no layout runs yet: the
 algorithm classes land in 7b–7h. Counts of oracle rows live in [conformance.md](../conformance.md#alg-layered-framework).
 
-| Section                                     | Answers                                                                     |
-| ------------------------------------------- | --------------------------------------------------------------------------- |
-| [1. Package map](#package-map)              | What 7a ported, where it lives, what is staged                              |
-| [2. LGraph model](#lgraph-model)            | The 13 graph classes and the Java idioms they keep                          |
-| [3. Transform](#transform)                  | Importer and transferrer sections, hash sites, quirks kept                  |
-| [4. Staged classes (L1)](#staged-classes)   | Marker, registry, fitness test, how a mission replaces a staged file        |
-| [5. Options and registration](#options)     | Generated `LayeredOptions`, `Spacings`, L5 registration                     |
-| [6. Evidence](#evidence)                    | The three replays, the site rows, coverage                                  |
-| [7. Runbook](#runbook)                      | Re-recording, regenerating, reading a staged throw                          |
-| [8. Part b: cycles and layers](#part-b)     | Mission 7b: p1cycles, p2layers, ten processors, phase rows, sweep           |
-| [9. Part c: crossing minimization](#part-c) | Mission 7c: p3order, counting, greedy switch, model order, eight processors |
-| [10. Part d: node placement](#part-d)       | Mission 7d: see [alg-layered-placement.md](alg-layered-placement.md)        |
-| [11. Part e: edge routing](#part-e)         | Mission 7e: see [alg-layered-routing.md](alg-layered-routing.md)            |
-| [12. Part f: the running pipeline](#part-f) | Mission 7f: see [alg-layered-pipeline.md](alg-layered-pipeline.md)          |
-| [13. Part g: labels and comments](#part-g)  | Mission 7f2: see [alg-layered-labels.md](alg-layered-labels.md)             |
+| Section                                            | Answers                                                                     |
+| -------------------------------------------------- | --------------------------------------------------------------------------- |
+| [1. Package map](#package-map)                     | What 7a ported, where it lives, what is staged                              |
+| [2. LGraph model](#lgraph-model)                   | The 13 graph classes and the Java idioms they keep                          |
+| [3. Transform](#transform)                         | Importer and transferrer sections, hash sites, quirks kept                  |
+| [4. Staged classes (L1)](#staged-classes)          | Marker, registry, fitness test, how a mission replaces a staged file        |
+| [5. Options and registration](#options)            | Generated `LayeredOptions`, `Spacings`, L5 registration                     |
+| [6. Evidence](#evidence)                           | The three replays, the site rows, coverage                                  |
+| [7. Runbook](#runbook)                             | Re-recording, regenerating, reading a staged throw                          |
+| [8. Part b: cycles and layers](#part-b)            | Mission 7b: p1cycles, p2layers, ten processors, phase rows, sweep           |
+| [9. Part c: crossing minimization](#part-c)        | Mission 7c: p3order, counting, greedy switch, model order, eight processors |
+| [10. Part d: node placement](#part-d)              | Mission 7d: see [alg-layered-placement.md](alg-layered-placement.md)        |
+| [11. Part e: edge routing](#part-e)                | Mission 7e: see [alg-layered-routing.md](alg-layered-routing.md)            |
+| [12. Part f: the running pipeline](#part-f)        | Mission 7f: see [alg-layered-pipeline.md](alg-layered-pipeline.md)          |
+| [13. Part g: labels and comments](#part-g)         | Mission 7f2: see [alg-layered-labels.md](alg-layered-labels.md)             |
+| [14. Part h: loops, wrapping, compaction](#part-h) | Mission 7g: see [alg-layered-loops.md](alg-layered-loops.md)                |
 
 ## 1. Package map {#package-map}
 
@@ -490,3 +491,9 @@ evidence, runbook).
 
 Mission 7f2 (`layered-labels`) ported the label family, the comment processors, `AlternatingLayerUnzipper`,
 `InteractiveLayeredGraphVisitor` and the debug utilities; see [alg-layered-labels.md](alg-layered-labels.md).
+
+## 14. Part h: self loops, wrapping and compaction (mission 7g) {#part-h}
+
+Mission 7g (`layered-loops-wrapping-compaction`) ported the self loop package and processors, graph wrapping, horizontal
+compaction, the layered `compaction` package and `ComponentsCompactor`; see [alg-layered-loops.md](alg-layered-loops.md).
+The staged `intermediate/loops` and `intermediate/wrapping` classes listed in § 1 are real classes from there.

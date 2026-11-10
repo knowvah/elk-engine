@@ -43,30 +43,40 @@ const SPEC: LayoutTestSpec = {
 
 defineLayoutTest(SPEC);
 
+/**
+ * The non-vacuity case lays out every model of the suite inside one test; with `PIPELINE_SUITES_FULL=1` that is the
+ * whole corpus (about 550 models), which no longer stops early at a staged self-loop arm (mission 7g).
+ */
+const NON_VACUITY_TIMEOUT_MS = 120_000;
+
 describe('LabelDummyRemoverTest (non-vacuity)', () => {
-  it('(non-vacuity) the remover ran, and label dummies with sized labels existed before it', () => {
-    const seen = { removerRuns: 0, labelDummies: 0, sizedLabels: 0 };
-    const beforeRemover: ProcessorCheck = {
-      cls: LabelDummyRemover,
-      check: (lGraph) => {
-        seen.removerRuns += 1;
-        for (const layer of lGraph) {
-          for (const node of layer.getNodes().filter((n) => n.getType() === NodeType.LABEL)) {
-            seen.labelDummies += 1;
-            for (const label of node.getProperty(InternalProperties.REPRESENTED_LABELS)) {
-              seen.sizedLabels += label.getSize().x > 0 && label.getSize().y > 0 ? 1 : 0;
+  it(
+    '(non-vacuity) the remover ran, and label dummies with sized labels existed before it',
+    () => {
+      const seen = { removerRuns: 0, labelDummies: 0, sizedLabels: 0 };
+      const beforeRemover: ProcessorCheck = {
+        cls: LabelDummyRemover,
+        check: (lGraph) => {
+          seen.removerRuns += 1;
+          for (const layer of lGraph) {
+            for (const node of layer.getNodes().filter((n) => n.getType() === NodeType.LABEL)) {
+              seen.labelDummies += 1;
+              for (const label of node.getProperty(InternalProperties.REPRESENTED_LABELS)) {
+                seen.sizedLabels += label.getSize().x > 0 && label.getSize().y > 0 ? 1 : 0;
+              }
             }
           }
-        }
-      },
-    };
-    const cases = buildLayoutTests({ ...SPEC, afterProcessor: [], beforeProcessor: [beforeRemover] });
-    for (const testCase of cases) {
-      testCase.run();
-    }
-    expect(cases.length).toBeGreaterThan(0);
-    expect(seen.removerRuns).toBeGreaterThanOrEqual(cases.length);
-    expect(seen.labelDummies).toBeGreaterThan(0);
-    expect(seen.sizedLabels).toBe(seen.labelDummies);
-  });
+        },
+      };
+      const cases = buildLayoutTests({ ...SPEC, afterProcessor: [], beforeProcessor: [beforeRemover] });
+      for (const testCase of cases) {
+        testCase.run();
+      }
+      expect(cases.length).toBeGreaterThan(0);
+      expect(seen.removerRuns).toBeGreaterThanOrEqual(cases.length);
+      expect(seen.labelDummies).toBeGreaterThan(0);
+      expect(seen.sizedLabels).toBe(seen.labelDummies);
+    },
+    NON_VACUITY_TIMEOUT_MS,
+  );
 });
