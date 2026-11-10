@@ -25,13 +25,13 @@ describe('DebugUtil', () => {
       .create(graph);
     a.constraints.push(b);
     const svg = vi.spyOn(CNode.prototype, 'getDebugSVG');
-    const path = join(tmpdir(), 'elk-ts-debugutil-must-not-exist', 'out.svg');
+    const path = join(tmpdir(), 'elk-engine-debugutil-must-not-exist', 'out.svg');
 
     expect(DebugUtil.drawHitboxes(graph, path)).toBeUndefined();
 
     expect(svg).toHaveBeenCalledTimes(2);
     expect(existsSync(path)).toBe(false);
-    expect(existsSync(join(tmpdir(), 'elk-ts-debugutil-must-not-exist'))).toBe(false);
+    expect(existsSync(join(tmpdir(), 'elk-engine-debugutil-must-not-exist'))).toBe(false);
   });
 
   it('copes with an empty graph', () => {
