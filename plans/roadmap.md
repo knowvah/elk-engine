@@ -1257,3 +1257,94 @@ recorded field observes: G18, D10, D14, D15, D32 D33 D36 D39 D40 D44, the `moveE
 that need a recorder field), #62 (three p3order test titles that still say "U for the rows until 7h"), #63 (the `STRIP_KEYS`
 hand-off of `docs/architecture/elk-json.md` to 7h, which the brief did not carry and which changes landed parse refs), #55
 (7g's unobserved arms).
+
+## Revision 2026-11-11 (alg-trees)
+
+Appended; no earlier line is edited. Source: TR1-TR10 in `plans/alg-trees/decisions.md`; the journal is
+`plans/alg-trees/decision-journal.md`. Where this section conflicts with the text above, this section wins. Task ids are
+T1-T20; the base is `ab05a29bf42b0c246d18f891c64f740d21b2b9d4`.
+
+**Row 8a is done.** `alg.mrtree`, `alg.radial` and `alg.vertiflex` are ported to `src/alg/{mrtree,radial,vertiflex}/` with
+their generated options and providers (issue #37). `RecursiveGraphLayoutEngine` lays out a graph with each once its provider is
+registered. Design and runbook: `docs/architecture/alg-trees.md`; counts: `docs/conformance.md` § Tree algorithms. The final
+commit is one squashed commit `feat(trees): port mrtree, radial and vertiflex (8a)` with `Refs: #37`; the per-task history is
+under the tag `alg-trees/pre-squash`.
+
+**Evidence.**
+
+- Vector refs (oracle `8aaa3c14`, `-XX:hashCode=2`, cold re-records `cmp`-identical at mission end): `mrtree.json` 188 rows
+  (full 122, stops 54, throws 12), `mrtree-extra.json` 213 (140 / 68 / 5), `radial.json` 309 (148 / 150 / 11),
+  `vertiflex.json` 471 (247 / 216 / 8), `mrtree-units.json` 2,656 (`edgeRouter` 422, `cyrusBeck` 46, `orderBalance` 18,
+  `average` 2,170). Every row replays through the real provider with 0 mismatches except the two classified radial rows
+  (`i30/rand-chain-big`, issue #64).
+- Goldens: the `trees` set, 40 refs under `test/golden/refs/elk-trees/` (37 from T4 and 3 retargeted), equal to the TS layout at
+  AD-4; `default`, `algorithms` and `layered` regenerate byte-identically.
+- JUnit: `MrTreeGraphSizeTest` 6 of 6, `CenterOnRootTest` 2 of 2; oracle 6 / 0 and 2 / 0 at the start and at the end.
+- Sweep, 906 cases per algorithm, layered registered in a scratch driver: mrtree ok 814, mismatch 3, both-throw 89; radial ok
+  538, mismatch 3, both-throw 365; vertiflex ok 350, mismatch 2, both-throw 553, excluded 1; 0 one-sided throws. The 8
+  residual cases are 7 whose option keys belong to unported rectpacking and force providers and 1 last-ulp `Math.sin` string
+  (HotSpot ...4178, V8 ...4177).
+- Coverage: whole suite 98.87 / 96.91 / 98.82 / 98.87; mrtree 99.6 / 98.7 / 99.5 / 99.6, radial 99.3 / 96.7 / 98.8 / 99.3,
+  vertiflex 99.5 / 97.4 / 100 / 99.5. `staged-classes.json` is `[]`; `PENDING_TYPES` is `[]`.
+- Recursion kept verbatim; a 2,000-deep path and caterpillar per algorithm complete in oracle and port, with and without
+  `--jitless`.
+
+**Decisions taken during the run.**
+
+- TR5 deviated (T5): the three providers were held back with staged provider classes (`// @staged 8a`) until T11, T13 and T17,
+  not with `PENDING_TYPES`, because the landed tripwire `test/melk/model-algorithms.test.ts:121-123` asserts `PENDING_TYPES`
+  equals `[]` (AD-13; 7a hit the same line). The options were final from T5 on. Flagged for the audit.
+- Additive recorder extensions: `fix(T3)` (vertiflex, 283 to 471 rows; node-level `considerNodeModelOrder` and the BEND
+  left-pass arm were unexercised because every row set it on the root only) and `mrtree-extra.json` (213 rows beside
+  `mrtree.json`, which stays byte-identical because committed tests pin its counts).
+- A committed unit-vector recorder `tools/vectors/MrTreeUnitVectors.java` and `mrtree-units.json` replaced scratch probes whose
+  expectations sat in a 552 KB file under `src/` (AD-5).
+- `DoubleStream.average` settled by 2,170 JVM vectors: Kahan `sum - c` with the simple sum when the compensated sum is NaN and
+  the simple sum is non-finite (2,170 of 2,170); `src/alg/mrtree/p4route/DoubleStreamAverage.ts`.
+- The sweep tool `tools/corpus/ts-layout-compare.ts` registers the three providers and maps an oracle
+  `NullPointerException` to the port's `TypeError` and a `StackOverflowError` to `RangeError` in `classify` (D10, AD-16b).
+- Additive golden entries `{mrtree,radial,vertiflex}-generated-retarget`; the three earlier generated entries were recorded with
+  layered and stay as valid layered goldens.
+- The NodePlacer `DIRECTION` write (`NodePlacer.java:103-105`) is restored in `buildBeforeGraphs` for every replay after it.
+- Prose carve-out applied to two progress-monitor task names (no ref records them): "AbsolutPlacer"
+  (`AbsoluteXPlacer.java:32`) is "AbsolutePlacer" and "General 'Rotator" (`GeneralRotator.java:30`) is "General Rotator" in
+  the port; listed under "upstream typos" in `docs/conformance.md`.
+
+**Divergences fixed at origin.**
+
+- `FanProcessor.java:105` compares `String` objects by reference; the first port compared content, on a proof that assumed one
+  `(pId, index)` pair per level. `stops/bfs/cyc79n7/searchOrder=BFS` of `mrtree-extra.json` exposed it; the proof is withdrawn
+  and the port models the identity of the `String` objects (T16).
+- `NodeComparator.java:45-46` unboxes a null `NODE_MODEL_ORDER`: Java throws, the port returned 0. Found by the sweep
+  (`edge_label_placement/hierarchy01`), fixed with `src/java/lang/Unbox.ts`; the same class of site at `RelativeXPlacer.java:455-456`
+  (T8).
+- A whole-ref test loop timed out at the 5 s default under coverage (`test/helpers/mrtree-replay-state.test.ts:93`); an explicit
+  60 s timeout, now required of every whole-ref loop.
+- The `trees` golden entries without `retarget` recorded layered (T4, found by T18).
+
+**Hand-offs.**
+
+- To 8b (disco; `elk.stress`, issue #58, as the layered-compound hand-off names it), 8c (spore) and 8x: per TR9, `NodeMicroLayoutTest` still needs force,
+  stress and rectpacking (8x); `PlainJavaInitializationTest` and `ElkReflectTest` need force, stress, disco, rectpacking and
+  spore (8x, after 8c); `DepthFirstCompaction` recursion is spore's (8c); `TwoBitGridTest`, `PlanarGrid` and `PolyominoOptions`
+  registration are disco's (8b).
+- To row 9 (elkt corpus): register the remaining providers, layered included, in `tools/corpus/ts-layout-compare.ts`; with layered
+  registered the tree sweep has 8 residual cases (7 need rectpacking or force, 8x).
+
+**Flags for the maintainer (open decisions).** Open `needs-ruling` issues:
+
+- #64: radial `i30/rand-chain-big` (stops and full rows) depends on the iteration order of a treeified identity `HashSet` bin;
+  classified, not matched.
+- #65: upstream defects the ports copy (BFS two-parent trees, `edgeRoutingMode=NONE`, boxed and `String` reference comparisons,
+  `EadesRadial.java:108`, cyclic graphs that pass the tree checks); drafts only, nothing filed upstream.
+- #68: the 8 residual sweep cases and the three `*-generated` goldens recorded with layered (keep or drop).
+
+Open `follow-up` issues: #66 (recorder scenarios for unobserved mutants and unrecorded arms) and #67 (the port's recursion
+depth limit is below the oracle's for four deep-tree shapes, 2,500-3,500 against 3,500-7,000).
+
+Audit points: the TR5 deviation (above); assertion pins changed inside the mission, none of them an oracle, vector or golden
+expectation: the staging tripwires (enum-test cases that asserted `create()` throws the staged message now assert the
+instance; `*Staged.test.ts` shrunk and deleted), the vertiflex count pins (283 to 471, 150 to 247, 125 to 216) changed before
+the extended ref was committed, and the `EdgeRouter.test.ts` direction pin (`…/UNDEFINED` to `…/DOWN`, because the oracle's
+graphs hold DOWN after `NodePlacer`); the `MARKER` widening in `test/architecture/staged-classes.fitness.test.ts` (one token,
+`8a`, and its header comment). The T17 hand-derived coordinates were replaced by structural assertions before the commit.

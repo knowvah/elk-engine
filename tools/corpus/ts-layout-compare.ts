@@ -8,6 +8,14 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 // CoreOptions first: it and TopdownSizeApproximator import each other, and CoreOptions must be the entry module.
 import '../../src/core/options/CoreOptions.js';
+import { MrTreeMetaDataProvider } from '../../src/alg/mrtree/options/MrTreeMetaDataProvider.js';
+import { MrTreeOptions } from '../../src/alg/mrtree/options/MrTreeOptions.js';
+import { RadialMetaDataProvider } from '../../src/alg/radial/options/RadialMetaDataProvider.js';
+import { RadialOptions } from '../../src/alg/radial/options/RadialOptions.js';
+import { VertiFlexMetaDataProvider } from '../../src/alg/vertiflex/options/VertiFlexMetaDataProvider.js';
+import { VertiFlexOptions } from '../../src/alg/vertiflex/options/VertiFlexOptions.js';
+import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
+import type { ILayoutMetaDataProvider } from '../../src/core/data/ILayoutMetaDataProvider.js';
 import { RecursiveGraphLayoutEngine } from '../../src/core/RecursiveGraphLayoutEngine.js';
 import { BasicProgressMonitor } from '../../src/core/util/BasicProgressMonitor.js';
 import { ElkGraphJson } from '../../src/graph/json/ElkGraphJson.js';
@@ -164,12 +172,24 @@ export function simpleClassName(qualified: string): string {
   return qualified.slice(qualified.lastIndexOf('.') + 1);
 }
 
+/**
+ * Java throwables the port raises as a JavaScript built-in: a `NullPointerException` is a `TypeError` (elkgraph-model
+ * D10, AD-16b) and a `StackOverflowError` is the engine's stack-exhaustion `RangeError`. Every other class carries its
+ * Java name in the port.
+ */
+const JAVA_TO_TS_CLASS: ReadonlyMap<string, string> = new Map([
+  ['NullPointerException', 'TypeError'],
+  ['StackOverflowError', 'RangeError'],
+]);
+
 /** Pure classification of one case from the oracle's verdict row and what the TS pipeline did. */
 export function classify(row: SweepRow, ts: TsOutcome): { category: Category; detail: string } {
   if (row.verdict === VERDICT_THROWS) {
     const expected = simpleClassName(row.exception?.class ?? '');
     if (ts.kind === 'laid') return { category: 'oracle-only-throw', detail: `oracle threw ${expected}` };
-    if (ts.name === expected) return { category: 'both-throw', detail: expected };
+    if (ts.name === expected || ts.name === JAVA_TO_TS_CLASS.get(expected)) {
+      return { category: 'both-throw', detail: expected };
+    }
     return { category: 'mismatch', detail: `oracle threw ${expected}, TS threw ${ts.name}` };
   }
   if (row.verdict !== VERDICT_OK) return { category: 'excluded', detail: row.verdict };
@@ -292,8 +312,30 @@ function loadElk(source: string, text: string): ElkNode {
   return loaded.root;
 }
 
+/** An algorithm the tool registers explicitly (TR5: `getInstance()` registers core only): its id and provider. */
+interface AlgorithmRegistration {
+  readonly id: string;
+  readonly provider: () => ILayoutMetaDataProvider;
+}
+
+/** The tree algorithms of mission 8a; the other algorithms register in their own missions. */
+const REGISTRATIONS: readonly AlgorithmRegistration[] = [
+  { id: MrTreeOptions.ALGORITHM_ID, provider: () => new MrTreeMetaDataProvider() },
+  { id: RadialOptions.ALGORITHM_ID, provider: () => new RadialMetaDataProvider() },
+  { id: VertiFlexOptions.ALGORITHM_ID, provider: () => new VertiFlexMetaDataProvider() },
+];
+
+/** Registers the mrtree, radial and vertiflex metadata providers once per module registry. */
+export function registerTreeAlgorithms(): void {
+  const service = LayoutMetaDataService.getInstance();
+  for (const { id, provider } of REGISTRATIONS) {
+    if (service.getAlgorithmData(id) === null) service.registerLayoutMetaDataProviders(provider());
+  }
+}
+
 /** Mirrors `tools/oracle/harness/CaseRunner.java`: read, overlay, lay out, export. */
 export function layoutToJson(graphText: string, source: string, row: SweepRow): string {
+  registerTreeAlgorithms();
   const graph = loadElk(source, graphText);
   applyOverlay(graph, overlayAlgorithm(row), row.variant);
   new RecursiveGraphLayoutEngine().layout(graph, new BasicProgressMonitor());

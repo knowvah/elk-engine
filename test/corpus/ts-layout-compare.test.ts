@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
 import {
   type CaseDeps,
   type CaseOutcome,
@@ -18,6 +19,7 @@ import {
   overlayAlgorithm,
   execute,
   parseArgs,
+  registerTreeAlgorithms,
   resolveSweepDir,
   report,
   runComparison,
@@ -91,6 +93,23 @@ describe('classify', () => {
       category: 'excluded',
       detail: 'nondeterministic',
     });
+  });
+
+  it('pairs a Java NullPointerException with TypeError and a StackOverflowError with RangeError (D10, AD-16b)', () => {
+    const oracle = (cls: string): ReturnType<typeof row> =>
+      row({ verdict: 'throws', exception: { class: cls, message: null } });
+    const ts = (name: string): { kind: 'threw'; name: string } => ({ kind: 'threw', name });
+    expect(classify(oracle('java.lang.NullPointerException'), ts('TypeError'))).toEqual({
+      category: 'both-throw',
+      detail: 'NullPointerException',
+    });
+    expect(classify(oracle('java.lang.StackOverflowError'), ts('RangeError'))).toEqual({
+      category: 'both-throw',
+      detail: 'StackOverflowError',
+    });
+    expect(classify(oracle('java.lang.NullPointerException'), ts('RangeError')).category).toBe('mismatch');
+    expect(classify(oracle('java.lang.StackOverflowError'), ts('TypeError')).category).toBe('mismatch');
+    expect(classify(oracle('java.lang.IllegalStateException'), ts('TypeError')).category).toBe('mismatch');
   });
 
   it('keeps only the simple class name', () => {
@@ -233,6 +252,45 @@ describe('parseArgs and selectRows', () => {
   it('overlays the algorithm on every tier but native', () => {
     expect(overlayAlgorithm(row())).toBe(ALG);
     expect(overlayAlgorithm(row({ tier: 'native' }))).toBeNull();
+  });
+});
+
+const TREE_ALGORITHMS = ['mrtree', 'radial', 'vertiflex'] as const;
+const TREE_TWO_NODES = JSON.stringify({
+  id: 'root',
+  children: [
+    { id: 'a', width: 10, height: 10 },
+    { id: 'b', width: 10, height: 10 },
+  ],
+  edges: [{ id: 'e', sources: ['a'], targets: ['b'] }],
+});
+
+describe('registerTreeAlgorithms (TR5)', () => {
+  it('resolves the three tree algorithms and is idempotent', () => {
+    registerTreeAlgorithms();
+    registerTreeAlgorithms();
+    const service = LayoutMetaDataService.getInstance();
+    const ids = TREE_ALGORITHMS.map((a) => service.getAlgorithmData(`org.eclipse.elk.${a}`)?.getId());
+    expect(ids).toEqual(TREE_ALGORITHMS.map((a) => `org.eclipse.elk.${a}`));
+    expect(service.getAlgorithmData().filter((d) => d.getId() === 'org.eclipse.elk.radial')).toHaveLength(1);
+  });
+
+  it.each(TREE_ALGORITHMS)('layoutToJson lays a two-node tree out with %s', (alg) => {
+    const out = JSON.parse(
+      layoutToJson(TREE_TWO_NODES, 'json', row({ algorithm: `org.eclipse.elk.${alg}`, variant: 'default' })),
+    ) as { children: { id: string; x: number; y: number }[]; edges: { sections: { id: string }[] }[] };
+    expect(out.children.map((c) => c.id)).toEqual(['a', 'b']);
+    expect(out.children.every((c) => Number.isFinite(c.x) && Number.isFinite(c.y))).toBe(true);
+    expect(out.edges[0]?.sections).toHaveLength(1);
+  });
+
+  it('registers again after the service was unloaded', () => {
+    LayoutMetaDataService.unload();
+    expect(LayoutMetaDataService.getInstance().getAlgorithmData('org.eclipse.elk.mrtree')).toBeNull();
+    registerTreeAlgorithms();
+    expect(LayoutMetaDataService.getInstance().getAlgorithmData('org.eclipse.elk.mrtree')?.getId()).toBe(
+      'org.eclipse.elk.mrtree',
+    );
   });
 });
 

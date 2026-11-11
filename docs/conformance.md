@@ -241,6 +241,13 @@ only with `tools/oracle/regen-generated.sh` (staging directory and rename; a fai
 leaves the old files); a rerun with nothing changed is a git no-op. The TS grandom port must
 reproduce these `.json` files byte for byte; algorithm goldens never depend on it.
 
+**Tree goldens (mission 8a).** `regen-goldens.sh --set trees` adds a set the way `--set layered` does: manifest
+`test/golden/trees.json`, refs `test/golden/refs/elk-trees/` (40 refs, `-XX:hashCode=2` named in `_meta.json`), inputs read from
+`test/golden/trees-inputs/` in the repository (`NEEDS_MODELS=0` skips the elk-models checks for this set only). An entry
+without `retarget` records the default algorithm, so the generated corpus inputs have `*-generated-retarget` entries. The
+sweep tool `tools/corpus/ts-layout-compare.ts` registers the three tree providers (`registerTreeAlgorithms()`); layered is
+not registered there (row 9). See [alg-trees.md](architecture/alg-trees.md).
+
 **Sweep.** `tools/oracle/sweep.sh [--filter <substring>] [--limit <n>] [--shards <n>]
 [--out <dir>] [--plan-only]` plans every case, runs each twice in separate JVMs (shards default
 to `min(cpus, 8)` concurrent `run.sh` processes), and writes
@@ -805,7 +812,8 @@ algorithm exists.
 - `InsidePortLabelTest`: needs layered; closed by mission 7a.
 - `NextToPortLabelPlacementTest`: needs layered; closed by mission 7a.
 - `PortLabelPlacementVariantsTest`: needs layered; closed by mission 7a.
-- `NodeMicroLayoutTest`: needs layered, force, stress, mrtree, radial and rectpacking; closed by mission 8x.
+- `NodeMicroLayoutTest`: needs layered, force, stress, mrtree, radial and rectpacking; closed by mission 8x. Update after
+  mission 8a: layered, mrtree and radial are ported; it still needs force, stress and rectpacking (8x).
 
 ## alg.common, part b: nodespacing (mission 6b) {#alg-common-nodespacing}
 
@@ -1560,6 +1568,160 @@ is overwritten for every nested graph) are oddities the port keeps. Nothing is f
 
 **What still throws.** Nothing in the layered algorithm. The enum tally is 59 ported, 0 pending; the staged list is empty.
 Three cases wait for `elk.stress` (row 8b, issue #58).
+
+## Tree algorithms: mrtree, radial, vertiflex (mission 8a) {#alg-trees}
+
+Mission 8a ported the bundles `alg.mrtree`, `alg.radial` and `alg.vertiflex`, generated their option classes and providers,
+and proved them against the oracle (design, splits, shims and runbook in [alg-trees.md](architecture/alg-trees.md)).
+Decisions: `plans/alg-trees/decisions.md` (TR1-TR10). `test/architecture/staged-classes.json` is `[]` and `PENDING_TYPES`
+is `[]`. The providers are registered explicitly (`registerLayoutMetaDataProviders`), not by `getInstance()` (TR5, deviated:
+staged provider classes, not `PENDING_TYPES`, because of the tripwire `test/melk/model-algorithms.test.ts:121-123`).
+
+**Evidence.**
+
+- Vector refs under `test/golden/refs/java/` (oracle `8aaa3c14`, `-XX:hashCode=2`, two cold JVMs byte-identical; the mission-end
+  cold re-records are `cmp`-identical):
+
+  | Ref                 | Rows | full | stops | throws | Recorder                              |
+  | ------------------- | ---: | ---: | ----: | -----: | ------------------------------------- |
+  | `mrtree.json`       |  188 |  122 |    54 |     12 | `tools/vectors/MrTreeVectors.java`    |
+  | `mrtree-extra.json` |  213 |  140 |    68 |      5 | the same launcher, second output      |
+  | `radial.json`       |  309 |  148 |   150 |     11 | `tools/vectors/RadialVectors.java`    |
+  | `vertiflex.json`    |  471 |  247 |   216 |      8 | `tools/vectors/VertiFlexVectors.java` |
+
+  `mrtree-units.json` (`tools/vectors/MrTreeUnitVectors.java`): 2,656 rows: `edgeRouter` 422, `cyrusBeck` 46, `orderBalance` 18,
+  `average` 2,170. The two files beyond the three refs the brief names were added during the run (journaled; queue gate 6).
+  The recorded throws of `mrtree.json` are 9 `IllegalArgumentException` at `ElkUtil.java:938`, 2
+  `StringIndexOutOfBoundsException` at `FanProcessor.java:128` and 1 `NullPointerException` at `NodePlacer.java:219`.
+
+- Replays: `MrTreeVectors.test.ts` (both mrtree refs, 401 rows), `RadialVectors.test.ts` (309), `VertiFlexVectors.test.ts` (471)
+  run every row through the real provider: 0 mismatches except the two classified radial rows below. Isolated transitions
+  for each mrtree processor (88 each) and for every radial and vertiflex step match at 1e-6.
+- Goldens (TR2): `tools/oracle/regen-goldens.sh --set trees` writes `test/golden/refs/elk-trees/`: 40 refs (the `trees` set
+  of `test/golden/trees.json`; 37 from T4 and 3 retargeted `*-generated-retarget` entries added by T4's `fix`), equal to the
+  TS layout at AD-4 in `test/golden/tree-goldens.test.ts`. `default`, `algorithms` and `layered` regenerate byte-identically.
+- JUnit: `MrTreeGraphSizeTest` 6 of 6 and `CenterOnRootTest` 2 of 2 ported with the Java's assertions; the oracle runs at the
+  start and at the end of the mission are 6 / 0 and 2 / 0 (`plans/alg-trees/java-baseline.md`). `alg.vertiflex` has no
+  test bundle.
+- Sweep (TR6), 906 cases per algorithm (898 retarget and 8 generated); oracle throws mrtree 89, radial 365, vertiflex 553 and
+  1 timeout (`de_trilateration_Trilateration`, counted, not chased). With layered registered in a scratch driver (what row 9
+  will do): mrtree ok 814, mismatch 3, both-throw 89; radial ok 538, mismatch 3, both-throw 365; vertiflex ok 350, mismatch 2,
+  both-throw 553, excluded 1; 0 `ts-only-throw`, 0 `oracle-only-throw`. With the tool as committed (core and the three tree
+  providers): mrtree ok 657, mismatch 153, both-throw 89, ts-only 7; radial ok 417, mismatch 131, both-throw 358; vertiflex
+  ok 279, mismatch 73, both-throw 553, excluded 1. Every non-ok case is diagnosed: option keys of providers the tool does
+  not register (153 / 124 / 73), seven models that need layered as the child default, the eight residual cases listed under
+  the divergences, nothing else. A both-throw case compares the class.
+- Coverage: whole project 98.87 / 96.91 / 98.82 / 98.87 (lines / branches / functions / statements); mrtree 99.6 / 98.7 /
+  99.5 / 99.6, radial 99.3 / 96.7 / 98.8 / 99.3, vertiflex 99.5 / 97.4 / 100 / 99.5. The branches and functions no recorded
+  scenario reaches are in `plans/alg-trees/unreached.md`.
+- Hashed containers (TR3): vertiflex has none; mrtree's iterated sites are `ComponentsProcessor.java:240-262` (`JavaHashMap`,
+  `PROPERTY`) and `FanProcessor.java:39, 42, 123` (`JavaHashMap`, `STRING`; a reversed twin reproduces all 88 stops, so the
+  order is unobservable); radial's iterated identity sets are the I30 sites (`RadialUtil.java:77, 224`), whose order is
+  observable on one treeified row (see below). Two JVMs without `-XX:hashCode=2` differ from the mrtree ref on 0 of 188 rows
+  and from the radial ref on 54 rows.
+- Recursion (TR7): kept verbatim; a 2,000-deep path and caterpillar per algorithm complete in oracle and port, with and without
+  `--jitless`, with layouts equal at 1e-6.
+
+### Upstream quirks kept (mission 8a) {#alg-trees-quirks}
+
+Each is read from the Java and reproduced; all are "kept: upstream behaviour". Java paths are under
+`org.eclipse.elk.alg.<bundle>`.
+
+mrtree:
+
+- `ComponentsProcessor.java:240-262`: the doubled `!isHierarchical()` test and the never-read `broadestRow`.
+- `ElkGraphImporter.java:213`: the private `toNodeBorder`, never called.
+- `TGraph.toString`: the text starts with "null"; an empty graph returns null.
+- `TEdge.toString`: the `hashCode()` fallback prints `e_<identityHashCode>`, stable per edge and not the JVM's number (never
+  compared with the oracle).
+- `TreeUtil.java:115-116, 163-164`: `TREE_LEVEL` compared by boxed reference (the `Integer` cache boundary at 127 is visible: an
+  edge between two nodes of one level above 127 routes with bend points; the oracle and the port agree).
+- `ComponentsProcessor.java:249`: a property default compared by reference (unobservable, see alg-trees.md § 5).
+- `FanProcessor.java:105`: `String` reference comparison; the port models the identity of the `String` objects.
+- `FanProcessor.java:128`: `substring` throws `StringIndexOutOfBoundsException` (BFS two-parent rows); `CompactionProcessor.java:53-55`
+  returns after `begin` without `done`; its direction `switch` (`:78`, `:110`) has no case for `UNDEFINED`; `indexOf` by
+  `Pair.equals` can return an earlier level with equal bounds.
+- `NodeOrderer.java:116` sorts ascending although the comment says the leaves go last, so the fill-gaps loop (`:151-160`)
+  never runs.
+- `OrderBalance` is referenced by nothing at the pin and `OrderBalance.process` never calls `done()`; `NodePlacer` threads a
+  `level` through `firstWalk` and `apportion` and never reads it; `NodePlacer.java:341` recurses forever on a node that is its own
+  right sibling (`StackOverflowError`).
+- `NeighborsProcessor.java:104`: a node with two parents in one level becomes its own sibling (BFS treeifying).
+- `DirectionProcessor.java:41`: `UNDEFINED` rewrites unchanged values; `NodePlacer.java:101-105` writes `DIRECTION = DOWN` into the
+  graph.
+- `LevelProcessor.java:50` (journaled as `:48-49`): a double lookup with a fallback to 0 that no node reaches.
+- `EdgeRouter.java:215` `start.y < first.x` mixes axes; `:695` `scale(1 / 2)` is an integer division (scales by 0); `:698`
+  `i += 2*2*2*2*2`; `:648` a non-short-circuit `&`; `:368-371` the final `else` also takes `DOWN` and `UNDEFINED`; gap bend
+  placeholders stay (0, 0) when both neighbours are null; unused `root` and `nodeBendpointPadding` locals (the `getRoot` call stays,
+  it can throw); `cyrusBeck` (`:603`) is private and has no caller.
+- `MultiLevelEdgeNodeNodeGap` reads `LEVELMIN` and `LEVELMAX` from `neighborTwo` in the first-node arm.
+- `EdgeRouter.java:313-315, 328-330`: `DoubleStream.average` (a compensated sum; vector-proven, alg-trees.md § 6).
+- `edgeRoutingMode=NONE` with an edge throws `IllegalArgumentException` at `ElkUtil.java:938` (9 recorded rows).
+- `MrTree.java:77-83` and `:184-193` are `elkjs-exclude` blocks, dropped (core-engine M2). `InteractiveMrTreeGraphVisitor`
+  is referenced by no class; the `interactive` rows are inert. `TreeUtil.depth`, `rootDistance`, `getSubtree`, `turnLeft`,
+  `turnRight`, `TLabel`, `CompactionMode` and `GraphProperties` are ported and unused.
+- `GraphBoundsProcessor.java:35-41`: the `min` throw shadows the `max` arm.
+
+radial:
+
+- `EadesRadial.java:108`: operator precedence (`currentRadius / currentRadius + radius`), so `tau` is NaN for every child while
+  `RADIUS > 0` and the `tau < maxAlpha - minAlpha` arm is reached only for a negative `RADIUS`.
+- `CrossingMinimizationPosition.java:64` computes `rootY` from `root.getX()`; `:71-73, 83-85` mutate the node's `POSITION`
+  vector in place across the evaluations.
+- `GeneralRotator.java:30-45` calls `begin` and never `done`.
+- `RadiusExtensionOverlapRemoval.java:91` sorts and discards the result; `:73` cannot be false inside `:59`.
+- `RadialUtil.shiftClosestEdgeToRadi` (`:277`) and `AbstractRadiusExtensionCompaction.getCompactionStep` (`:184`) have no
+  caller; `OverlapRemovalStrategy` is unused and ported anyway (TR9).
+- The fuzzy polar comparator is not transitive, so a list of 32 or more elements could sort differently from Java's `TimSort`
+  (no recorded row is that large; the sweep is the check).
+- `PolarCoordinateSorter.java:84`: the `arc <= DEGREE_135` false arm is reachable only for a NaN arc.
+- Radial position-based options need `org.eclipse.elk.position` on every node (`NullPointerException` at `RadialUtil.java:154`
+  otherwise); `compactor=RADIAL_COMPACTION` with `sorter=POLAR_COORDINATE` throws it too.
+
+vertiflex:
+
+- `RelativeXPlacer.java`: the fall-through in `splitNodesWithModelOrder`; the `splitGroup` loop that never advances `i`; the
+  always-true `if (i < childrenSize)` (`:352`); `considerNodeModelOrder` read once on the root and once as a node property
+  (`:197`).
+- `NodeComparator.java:45-46` and `RelativeXPlacer.java:455-456` unbox `NODE_MODEL_ORDER`, null for nodes reached through
+  hierarchy-crossing edges: a `NullPointerException`, a `TypeError` in the port (the shim `src/java/lang/Unbox.ts`).
+- `BendEdgeRouter.java:70` unboxes `EDGE_BEND_HEIGHT` (null: `NullPointerException`); the BEND epsilon `1e-4` is not
+  distinguished by any recorded row.
+- The vertiflex throws at `:65` (cycle without a root), `:72` (two parents, self loop), `:151` (vertical constraints) and `:147`
+  (`ClassCastException` for an edge to a port) are reproduced by class.
+
+### Known divergences (mission 8a) {#alg-trees-divergences}
+
+- Radial `stops/i30/rand-chain-big` and `full/i30/rand-chain-big` of `radial.json` (issue #64, `needs-ruling`). The next-level
+  sets of levels 2 and 3 hold 12 identity-hashed nodes each; under `-XX:hashCode=2` they share one bin of the oracle's `HashSet`
+  and iterate in that bin's tree order, which sets the cyclic neighbour pairs `overlapLayer` tests and so the number of
+  extension steps (`n16.x` expected 299.01798935, port 305.85611690). The port keeps insertion order (AD-10). 449 of 3,000 seeded
+  permutations of the three `getNextLevelNodeSet` results reproduce the oracle stop at 1e-6. Both rows are classified in
+  `TREEIFIED_DIVERGENCES` (`RadialVectors.test.ts`), which asserts the stops row equals the oracle up to the step before
+  `RadiusExtensionOverlapRemoval` and differs at it, so the list cannot hide another defect. The other two treeified rows
+  (`shapes/binary4-sym`, `i30/four-parents-big-12`) match.
+- The last-ulp `Math.sin` case in the sweep: `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`. HotSpot's
+  `Math.sin(1.6073462520335293)` is ...4178, V8 and `StrictMath` give ...4177 (`EadesRadial.java:102`); the only difference
+  is the string `layoutOptions.childAreaHeight` ("2561.1171089266686" against "2561.117108926668"); geometry agrees within 1e-13
+  and no discrete decision flips. Known-divergences list of AD-4.
+- Seven sweep cases whose option keys belong to unported providers: `hierarchicalLayoutMixing` (mrtree) and
+  `interactiveRectpacking_{hierarchy,oneBigNode}` (each algorithm), `missing layoutOptions.desiredPosition` and
+  `desiredEdgeLength` (rectpacking and force; mission 8x). With the three mislabelled golden entries (`*-generated`,
+  recorded with layered) they are issue #68 (`needs-ruling`).
+- Stack depth: the port overflows at 2,500-3,500 deep in four of six probe shapes where the oracle overflows at 3,500-7,000
+  (issue #67, `follow-up`).
+
+**Upstream typos (CLAUDE.md carve-out).** Two progress-monitor task names, message strings nothing branches on and no ref
+records: `AbsoluteXPlacer.java:32` "AbsolutPlacer" is "AbsolutePlacer" in the port (asserted by `VertiFlexPhases.test.ts`), and
+`GeneralRotator.java:30` "General 'Rotator" (a stray quote) is "General Rotator" (asserted by `GeneralRotator.test.ts`). Each
+port site carries a comment naming the upstream text.
+
+**Upstream defects the ports copy (issue #65, `needs-ruling`).** BFS two-parent trees, `edgeRoutingMode=NONE`, the boxed and
+`String` reference comparisons, `EadesRadial.java:108`, cyclic graphs that pass the tree checks and others; drafts for upstream,
+nothing filed upstream.
+
+**What still throws.** Nothing in the three algorithms is staged. `NodeMicroLayoutTest` still needs force, stress and
+rectpacking (mission 8x).
 
 ## Temporary gaps
 
