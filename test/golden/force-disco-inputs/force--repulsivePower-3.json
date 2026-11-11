@@ -1,0 +1,369 @@
+{
+  "id": "root",
+  "layoutOptions": {
+    "org.eclipse.elk.algorithm": "org.eclipse.elk.force"
+  },
+  "children": [
+    {
+      "id": "n0",
+      "x": 40,
+      "y": 30,
+      "width": 24,
+      "height": 18,
+      "ports": [
+        {
+          "id": "p0a",
+          "x": 0,
+          "y": 6,
+          "width": 6,
+          "height": 6,
+          "layoutOptions": {
+            "org.eclipse.elk.port.side": "WEST"
+          }
+        },
+        {
+          "id": "p0b",
+          "x": 24,
+          "y": 6,
+          "width": 6,
+          "height": 6,
+          "layoutOptions": {
+            "org.eclipse.elk.port.side": "EAST"
+          }
+        }
+      ]
+    },
+    {
+      "id": "n1",
+      "x": 104,
+      "y": 41,
+      "width": 40,
+      "height": 25
+    },
+    {
+      "id": "n2",
+      "x": 168,
+      "y": 35,
+      "width": 56,
+      "height": 32
+    },
+    {
+      "id": "n3",
+      "x": 52,
+      "y": 116,
+      "width": 32,
+      "height": 39,
+      "ports": [
+        {
+          "id": "p3a",
+          "x": 10,
+          "y": 0,
+          "width": 6,
+          "height": 6,
+          "layoutOptions": {
+            "org.eclipse.elk.port.side": "NORTH"
+          }
+        }
+      ]
+    },
+    {
+      "id": "n4",
+      "x": 103,
+      "y": 110,
+      "width": 48,
+      "height": 18
+    },
+    {
+      "id": "n5",
+      "x": 167,
+      "y": 104,
+      "width": 24,
+      "height": 25
+    },
+    {
+      "id": "n6",
+      "x": 51,
+      "y": 185,
+      "width": 40,
+      "height": 32
+    },
+    {
+      "id": "n7",
+      "x": 250,
+      "y": 39,
+      "width": 56,
+      "height": 39
+    },
+    {
+      "id": "n8",
+      "x": 314,
+      "y": 33,
+      "width": 32,
+      "height": 18,
+      "ports": [
+        {
+          "id": "p8a",
+          "x": 0,
+          "y": 4,
+          "width": 6,
+          "height": 6,
+          "layoutOptions": {
+            "org.eclipse.elk.port.side": "WEST"
+          }
+        }
+      ]
+    },
+    {
+      "id": "n9",
+      "x": 378,
+      "y": 44,
+      "width": 48,
+      "height": 25
+    },
+    {
+      "id": "n10",
+      "x": 262,
+      "y": 108,
+      "width": 24,
+      "height": 32
+    },
+    {
+      "id": "n11",
+      "x": 313,
+      "y": 102,
+      "width": 40,
+      "height": 39
+    },
+    {
+      "id": "n12",
+      "x": 460,
+      "y": 43,
+      "width": 56,
+      "height": 18
+    },
+    {
+      "id": "n13",
+      "x": 524,
+      "y": 37,
+      "width": 32,
+      "height": 25
+    },
+    {
+      "id": "n14",
+      "x": 588,
+      "y": 31,
+      "width": 48,
+      "height": 32
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "sources": [
+        "p0a"
+      ],
+      "targets": [
+        "n1"
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.force.repulsivePower": 3
+      }
+    },
+    {
+      "id": "e1",
+      "sources": [
+        "n1"
+      ],
+      "targets": [
+        "n2"
+      ],
+      "labels": [
+        {
+          "id": "e1_l",
+          "text": "uses",
+          "width": 34,
+          "height": 12,
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "e2",
+      "sources": [
+        "n2"
+      ],
+      "targets": [
+        "n3"
+      ]
+    },
+    {
+      "id": "e3",
+      "sources": [
+        "n3"
+      ],
+      "targets": [
+        "n4"
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.force.repulsivePower": 3
+      }
+    },
+    {
+      "id": "e4",
+      "sources": [
+        "n4"
+      ],
+      "targets": [
+        "n5"
+      ]
+    },
+    {
+      "id": "e5",
+      "sources": [
+        "n5"
+      ],
+      "targets": [
+        "n6"
+      ],
+      "labels": [
+        {
+          "id": "e5_l",
+          "text": "depends on",
+          "width": 62,
+          "height": 12,
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "e6",
+      "sources": [
+        "n6"
+      ],
+      "targets": [
+        "p0b"
+      ]
+    },
+    {
+      "id": "e7",
+      "sources": [
+        "n0"
+      ],
+      "targets": [
+        "p3a"
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.force.repulsivePower": 3
+      }
+    },
+    {
+      "id": "e8",
+      "sources": [
+        "n2"
+      ],
+      "targets": [
+        "n5"
+      ]
+    },
+    {
+      "id": "e9",
+      "sources": [
+        "n1"
+      ],
+      "targets": [
+        "n2"
+      ]
+    },
+    {
+      "id": "e10",
+      "sources": [
+        "n7"
+      ],
+      "targets": [
+        "p8a"
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.force.repulsivePower": 3
+      }
+    },
+    {
+      "id": "e11",
+      "sources": [
+        "n8"
+      ],
+      "targets": [
+        "n9"
+      ]
+    },
+    {
+      "id": "e12",
+      "sources": [
+        "n9"
+      ],
+      "targets": [
+        "n10"
+      ],
+      "labels": [
+        {
+          "id": "e12_l",
+          "text": "x",
+          "width": 10,
+          "height": 12,
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "e13",
+      "sources": [
+        "n10"
+      ],
+      "targets": [
+        "n11"
+      ]
+    },
+    {
+      "id": "e14",
+      "sources": [
+        "n11"
+      ],
+      "targets": [
+        "n8"
+      ]
+    },
+    {
+      "id": "e15",
+      "sources": [
+        "n12"
+      ],
+      "targets": [
+        "n13"
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.force.repulsivePower": 3
+      }
+    },
+    {
+      "id": "e16",
+      "sources": [
+        "n13"
+      ],
+      "targets": [
+        "n14"
+      ],
+      "labels": [
+        {
+          "id": "e16_l",
+          "text": "long label",
+          "width": 58,
+          "height": 14,
+          "x": 0,
+          "y": 0
+        }
+      ]
+    }
+  ]
+}

@@ -248,6 +248,11 @@ without `retarget` records the default algorithm, so the generated corpus inputs
 sweep tool `tools/corpus/ts-layout-compare.ts` registers the three tree providers (`registerTreeAlgorithms()`); layered is
 not registered there (row 9). See [alg-trees.md](architecture/alg-trees.md).
 
+**Force, stress and disco goldens (mission 8b).** `regen-goldens.sh --set force-disco` is the same additive arm: manifest
+`test/golden/force-disco.json`, refs `test/golden/refs/elk-force-disco/` (45 refs, `-XX:hashCode=2` named in `_meta.json`),
+inputs under `test/golden/force-disco-inputs/`, `NEEDS_MODELS=0`. `ts-layout-compare.ts` registers force, stress and disco
+(with `PolyominoOptions`) and layered. See [alg-force-disco.md](architecture/alg-force-disco.md).
+
 **Sweep.** `tools/oracle/sweep.sh [--filter <substring>] [--limit <n>] [--shards <n>]
 [--out <dir>] [--plan-only]` plans every case, runs each twice in separate JVMs (shards default
 to `min(cpus, 8)` concurrent `run.sh` processes), and writes
@@ -1722,6 +1727,145 @@ nothing filed upstream.
 
 **What still throws.** Nothing in the three algorithms is staged. `NodeMicroLayoutTest` still needs force, stress and
 rectpacking (mission 8x).
+
+## Force, stress and disco (mission 8b) {#alg-force-disco}
+
+Mission 8b ported the bundles `alg.force` (the force layout `elk.force` and the stress layout `elk.stress`) and `alg.disco`,
+generated their option classes and providers, and proved them against the oracle (design, evidence tables, `JavaMath.log`, the
+hashed-container table and runbook in [alg-force-disco.md](architecture/alg-force-disco.md)). Decisions:
+`plans/alg-force-disco/decisions.md` (FD1-FD10). `test/architecture/staged-classes.json` is `[]` and `PENDING_TYPES` is `[]`.
+The providers are registered explicitly (`registerLayoutMetaDataProviders`), not by `getInstance()` (FD5); `PolyominoOptions` is
+registered beside `DisCoMetaDataProvider`, as `ElkOracle.java:218-221` does.
+
+**Evidence.**
+
+- Vector refs under `test/golden/refs/java/` (oracle `8aaa3c14` with patches 0001 and 0002, `-XX:hashCode=2`; three cold runs
+  by the recording agent and one by the orchestrator `cmp`-identical to each committed ref):
+
+  | Ref           |   Rows | full | stops | throws | log    | Recorder                          |
+  | ------------- | -----: | ---: | ----: | -----: | ------ | --------------------------------- |
+  | `force.json`  | 20,804 |  594 |   194 |      2 | 20,014 | `tools/vectors/ForceVectors.java` |
+  | `stress.json` |    431 |  320 |   108 |      3 |        | the same launcher, second output  |
+  | `disco.json`  |    185 |   92 |    88 |      5 |        | `tools/vectors/DiscoVectors.java` |
+
+  The recorded throws: force `UnsupportedGraphException` "Graph must not contain hyperedges." at `ElkGraphImporter.java:122`
+  (force 2 rows, stress 3); disco `IndexOutOfBoundsException` at `TwoBitGrid.java:95` and `:225`, `NullPointerException` at
+  `ElkGraphComponentsProcessor.java:108`, `IllegalArgumentException` "Passed edge is not 'simple'." at `ElkGraphUtil.java:633`
+  and `NegativeArraySizeException` "-4" at `TwoBitGrid.java:117`.
+
+- Replays: `ForceVectors.test.ts` (594 full, 194 stops, 2 throws: 259,243 hex doubles, all raw-bit identical),
+  `StressVectors.test.ts` (320, 108, 3: 135,229 hex doubles, all raw-bit identical), `DiscoVectors.test.ts` (92, 88 with all
+  seven stops, 5: 75,002 fields raw-bit identical and 32 within 1e-6 only, maximum 8.5e-14, none beyond; the known divergence
+  below). Isolated replays of the graph classes: 906 force and stress stops raw-bit identical; 518 polyominoes raw-bit
+  identical.
+- Goldens (FD2): `tools/oracle/regen-goldens.sh --set force-disco` writes `test/golden/refs/elk-force-disco/`: 45 refs (force 15,
+  stress 10, disco 20), twice byte-identically; `resolvedAlgorithm` equals the entry's algorithm in 45 of 45;
+  `test/golden/force-disco-goldens.test.ts` (51 tests) compares every entry with its ref at AD-4. `default` (4), `algorithms`
+  (9), `layered` (24) and `trees` (40) regenerate byte-identically.
+- JUnit: `ForceImportTest` 3 of 3 and `TwoBitGridTest` 3 of 3 ported with the Java's assertions; the oracle runs at mission start
+  are 3 / 0 and 3 / 0 (`plans/alg-force-disco/java-baseline.md`); at mission end:
+  3 / 0 and 3 / 0 again.
+- Sweep (FD6), oracle `sweep.sh --filter /<alg>/`, TS through `ts-layout-compare.ts` (layered registered): force planned 906,
+  ok 815, mismatch 2, both-throw 89; stress planned 898, ok 807, mismatch 2, both-throw 89; disco planned 906, ok 0, mismatch
+  819 (all `optionsOnly`), both-throw 87; 0 `ts-only-throw` and 0 `oracle-only-throw` in all three. The oracle throw counts
+  (89, 89, 87) equal `docs/parity-report.md`. 0 mismatches are without a mechanism (below).
+- Coverage: the two bundles 99.93 % statements (1,480 of 1,481), 98.67 % branches (298 of 302), 100 % functions (295 of 295),
+  99.93 % lines; the whole project at the batch 5 gate 98.9 / 96.94 / 98.86 / 98.91 (statements / branches / functions /
+  lines) over 47,912 tests; at mission end 98.9 / 96.95 / 98.86 / 98.91 over 47,913 tests.
+- Hashed containers (FD4): the one order-observable site is `ElkGraphTransformer.java:70-71` (`incoming/outgoingExtensionsMapping`,
+  read at `adjustedPorts`). A reversed-order twin changes the result in 2 of the 41 `stops` rows with extension entries
+  (`stops/extShared/default`, `stops/extSharedInOut/default`) and there differs from the oracle beyond 1e-6, so the oracle used
+  insertion order; the other 39 are bit-identical either way; no row matches neither order. The force bundle has none.
+- `Math.log` (FD3): `EadesModel.attractive` calls the fdlibm `JavaMath.log`; the 20,014 `log` rows are raw-bit equal (native V8
+  differs on 101, 0.50 %); proven on the oracle's arm64 JVM 21.0.1, unverified on x86_64.
+- Recursion (FD7): kept verbatim; a 2,000-node path completes in the oracle, in TS and under `--jitless` for force, stress and
+  disco. Beyond it TS overflows before the oracle (issue #70, `follow-up`).
+- `U` rows: `plans/alg-force-disco/unreached.md` lists the 16 `U` rows (branches proven dead from the Java, each with its Java
+  line and whether a unit test forces the arm); "neither reached nor proven dead" is empty. The four branches coverage reports
+  unreached are rows 7, 8, 12 and 16.
+
+### Upstream quirks kept (mission 8b) {#alg-force-disco-quirks}
+
+Each is read from the Java and reproduced; all are "kept: upstream behaviour". Java paths are under
+`org.eclipse.elk.alg.<bundle>`.
+
+force:
+
+- `AbstractForceModel.java:187-208` `avoidSamePosition`: `triedForBendPoints` is declared inside the `while` body, so it is
+  always `false` at its test, and `triedForBendPoints = true` (`:189-196`) is a dead write. For two coincident `FBendpoint`s
+  (antiparallel edges, `repulsivePower` > 0) the loop never ends: the port hangs on the same input (issue #69). `uVector ==
+vVector` (`:184` block) compares two distinct objects and is always false, so the `-2` arm of `:200` is dead.
+- `ComponentsProcessor.java:136-139` `dfs` lists an edge that closes a cycle twice in `component.getEdges()`, as the same
+  object; the first `rebuildGraph` of a replay creates two `FEdge`s for it unless it rebuilds by name.
+- `ComponentsProcessor.recombine` with several components returns an `FGraph` whose bend-point list is empty (`moveGraph`
+  does not fill it).
+- `ComponentsProcessor.java:227`, `:238`: `broadestRow` is written and never read. `:222` multiplies in binary32 after a
+  `(float)` narrowing, then widens into `Math.max`.
+- `ComponentsProcessor.split`'s `separate == null` arm, `ForceLayoutProvider.java:96` (`else` of `randomSeed != null`) and
+  `FBendpoint.java:53` (`"b_" + hashCode()`) cannot be reached (`U` rows 4, 5, 7).
+- `ElkGraphImporter.java:122` rejects hyperedges with `UnsupportedGraphException`.
+- `ElkGraphElement.getProperty` stores a copy of a cloneable default (`ElkPadding`, `ElkMargin`) on first read, so reading
+  `CoreOptions.PADDING` mid-run changes what `ElkGraphImporter.applyLayout` later reads for `ForceOptions.PADDING`.
+- stress: `StressMajorization.java:261` (the final `else` throw of `getOther`) is dead through the API (`U` row 15).
+
+disco:
+
+- `DisCoPolyominoCompactor.java:224` builds `new Polyominoes<>(polys, aspectRatio, fill)`, a fresh holder, so
+  `polyomino.lowLevelSort`, `highLevelSort` and `traversalStrategy` have no effect (issue #69; 12 goldens pin it).
+- `ElkGraphUtil.firstEdgeSection(edge, false, false)` creates a (0,0)-(0,0) section for an edge without one; it does not
+  throw (rows `noSection` and `corpus20` are `full` and `stops` rows).
+- `ElkGraphComponentsProcessor.java:108`: `sameHierarchyLevel` dereferences `getParent()` of a parentless layout node, so a
+  parent-port edge on a root layout node throws `NullPointerException` (port: `TypeError` with the HotSpot message; the
+  `ext*` rows nest `g` in a root).
+- `CoreOptions.ASPECT_RATIO` defaults to null, so an unset aspect ratio takes `compact()`'s null arm.
+- `DCPolyomino.fillCells` blocks only the cells that cross or contain the shape boundary: a grid-aligned component blocks none,
+  `getFilledBounds` then returns sentinels and `applyToDCGraph` wraps in 32 bits (the `extBoundary*InRange` rows), so `Int32`
+  operations are mandatory there. A negative `aspectRatio` makes `TwoBitGrid` allocate a negative-size array
+  (`NegativeArraySizeException`, `TwoBitGrid.java:117`).
+- `DEBUG_DISCO_POLYS` and `DEBUG_DISCO_GRAPH` are set on the layout node (programmatic options, recorded in the rows' `debug`
+  list) and are kept (FD9). `DisCoLayoutProvider.java:78-79` has a `default` arm with a `System.out.println` that one enum value
+  makes unreachable (`console.log` in the port). `DisCoPolyominoCompactor.java:187` `denominator == 0.0`, `JUNCTION_POINTS !=
+null` and `adjacentNodes != null` false arms are dead (`U` rows 10-14).
+- Parallel streams in `ElkGraphComponentsProcessor` rethrow a copy whose stack is the caller's; the recorded throws use the
+  root cause. The port is sequential in encounter order.
+
+### Known divergences (mission 8b) {#alg-force-disco-divergences}
+
+- Last-ulp `Math.sin` and `Math.cos` in `ElkGraphTransformer.getOrthogonalPoints` (`ElkGraphTransformer.java:627-642`), inside
+  the 1e-6 bar (AD-4 known-divergences list). 32 numeric fields, all in `import` stops of `multi6/spacing60`, `multi6/combo2`
+  and `bends/{default,thickness3,thickMixed,junctions}` (edge contours); every later stop is bit-exact. A controlled experiment
+  replayed the 491 distinct call inputs of the 88 disco runs in the oracle JVM (21.0.1, arm64): `atan2` (171 inputs) is
+  bit-identical in V8, `Math` and `StrictMath`; V8 equals `StrictMath` on all 160 `cos` and all 160 `sin` inputs; HotSpot's
+  `Math.cos` differs from it on 9 and `Math.sin` on 5, by one ulp. No tolerance was loosened; no contour cell flips in any
+  row.
+- `layoutOptions.debug.discoGraph` (issue #71 item 1, `needs-ruling`): the oracle writes the `Object.toString()` of the
+  `DCGraph` (`DisCoLayoutProvider.java:86`; no `toString`), `...DCGraph@1` under `-XX:hashCode=2`; the port writes
+  `[object Object]`. In all 20 disco goldens and every disco sweep row that lays out (819 of 906; 1,503 occurrences). The
+  goldens test asserts the ref value matches the identity pattern and neutralises that one key; geometry is compared in full.
+  The 819 disco sweep mismatches are options-only for this key; a scratch classification finds 817 equal in full, and the
+  other 2 are the rectpacking models below. A TS `toString` would add what the Java lacks.
+- Option keys that depend on the unported rectpacking provider (issue #71 item 2, `needs-ruling`; issue #68's family): golden
+  `force--iterations-50` (the ref names the option `force.iterations`, the port `iterations`, because
+  `rectpacking.packing.compaction.iterations` shares the suffix; an explicit `SUFFIX_DIFFERENCES` row with a tripwire that
+  fails once rectpacking is registered) and 6 sweep cases `retarget/{force,stress,disco}/default/examples/user-hints/
+interactive-constraints/interactiveRectpacking_{hierarchy,oneBigNode}` (`layoutOptions.desiredPosition`). Closed by 8c.
+- Upstream defects the ports copy (issue #69, `needs-ruling`): the `avoidSamePosition` hang and DisCo's no-op polyomino options,
+  as listed under the kept quirks; drafts for upstream, nothing filed upstream.
+- Stack depth: TS overflows on a path of 16,000 nodes (4,000 under `--jitless`) where the oracle completes (issue #70,
+  `follow-up`).
+- `Math.log` is bit-exact on the oracle's arm64 JVM 21.0.1 and unverified on x86_64 (FD3).
+- The held-back stress cases (issue #58, `needs-ruling`): `STRESS_PENDING` is untouched; the three cases pass from temporary
+  copies with `elk.force` and `elk.stress` registered; two further blockers are `layered-label-metrics.json` (four label texts
+  missing) and the two models that are not vendored.
+
+**Upstream typos (CLAUDE.md carve-out).** None: the journal records no prose typo in the `alg.force` and `alg.disco` sources.
+
+**Landed code fixed at the origin.** `TwoBitGrid.newWords` now throws `NegativeArraySizeException` (new shim
+`src/java/lang/NegativeArraySizeException.ts`) for a computed negative size; `JsonExporter` writes a list-valued option as
+`AbstractCollection.toString`. No landed expected value changed. See [translation-rules.md](translation-rules.md).
+
+**What still throws.** Nothing in force, stress or disco is staged. `NodeMicroLayoutTest` still needs rectpacking (mission 8x);
+`PlainJavaInitializationTest` and `ElkReflectTest` wait for the remaining algorithms (8x, after 8c).
 
 ## Temporary gaps
 

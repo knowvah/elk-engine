@@ -8,6 +8,15 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 // CoreOptions first: it and TopdownSizeApproximator import each other, and CoreOptions must be the entry module.
 import '../../src/core/options/CoreOptions.js';
+import { PolyominoOptions } from '../../src/alg/common/compaction/options/PolyominoOptions.js';
+import { DisCoMetaDataProvider } from '../../src/alg/disco/options/DisCoMetaDataProvider.js';
+import { DisCoOptions } from '../../src/alg/disco/options/DisCoOptions.js';
+import { ForceMetaDataProvider } from '../../src/alg/force/options/ForceMetaDataProvider.js';
+import { ForceOptions } from '../../src/alg/force/options/ForceOptions.js';
+import { StressMetaDataProvider } from '../../src/alg/force/options/StressMetaDataProvider.js';
+import { StressOptions } from '../../src/alg/force/options/StressOptions.js';
+import { LayeredMetaDataProvider } from '../../src/alg/layered/options/LayeredMetaDataProvider.js';
+import { LayeredOptions } from '../../src/alg/layered/options/LayeredOptions.js';
 import { MrTreeMetaDataProvider } from '../../src/alg/mrtree/options/MrTreeMetaDataProvider.js';
 import { MrTreeOptions } from '../../src/alg/mrtree/options/MrTreeOptions.js';
 import { RadialMetaDataProvider } from '../../src/alg/radial/options/RadialMetaDataProvider.js';
@@ -312,24 +321,29 @@ function loadElk(source: string, text: string): ElkNode {
   return loaded.root;
 }
 
-/** An algorithm the tool registers explicitly (TR5: `getInstance()` registers core only): its id and provider. */
+/** An algorithm the tool registers explicitly (TR5: `getInstance()` registers core only): its id and providers. */
 interface AlgorithmRegistration {
   readonly id: string;
-  readonly provider: () => ILayoutMetaDataProvider;
+  readonly providers: () => readonly ILayoutMetaDataProvider[];
 }
 
-/** The tree algorithms of mission 8a; the other algorithms register in their own missions. */
+/** The tree algorithms of mission 8a, then force, stress and disco of mission 8b; the others register in their own missions. */
 const REGISTRATIONS: readonly AlgorithmRegistration[] = [
-  { id: MrTreeOptions.ALGORITHM_ID, provider: () => new MrTreeMetaDataProvider() },
-  { id: RadialOptions.ALGORITHM_ID, provider: () => new RadialMetaDataProvider() },
-  { id: VertiFlexOptions.ALGORITHM_ID, provider: () => new VertiFlexMetaDataProvider() },
+  { id: LayeredOptions.ALGORITHM_ID, providers: () => [new LayeredMetaDataProvider()] },
+  { id: MrTreeOptions.ALGORITHM_ID, providers: () => [new MrTreeMetaDataProvider()] },
+  { id: RadialOptions.ALGORITHM_ID, providers: () => [new RadialMetaDataProvider()] },
+  { id: VertiFlexOptions.ALGORITHM_ID, providers: () => [new VertiFlexMetaDataProvider()] },
+  { id: ForceOptions.ALGORITHM_ID, providers: () => [new ForceMetaDataProvider()] },
+  { id: StressOptions.ALGORITHM_ID, providers: () => [new StressMetaDataProvider()] },
+  // PolyominoOptions beside DisCo, as the oracle harness registers it (ElkOracle.java:218-221); it owns no algorithm.
+  { id: DisCoOptions.ALGORITHM_ID, providers: () => [new PolyominoOptions(), new DisCoMetaDataProvider()] },
 ];
 
-/** Registers the mrtree, radial and vertiflex metadata providers once per module registry. */
+/** Registers the tree, force, stress and disco metadata providers once per module registry. */
 export function registerTreeAlgorithms(): void {
   const service = LayoutMetaDataService.getInstance();
-  for (const { id, provider } of REGISTRATIONS) {
-    if (service.getAlgorithmData(id) === null) service.registerLayoutMetaDataProviders(provider());
+  for (const { id, providers } of REGISTRATIONS) {
+    if (service.getAlgorithmData(id) === null) service.registerLayoutMetaDataProviders(...providers());
   }
 }
 

@@ -1,0 +1,319 @@
+{
+  "golden": [
+    {
+      "id": "force--default",
+      "path": "force--default.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x default: designed input, default options (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--model-eades",
+      "path": "force--model-eades.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x model-eades: model=EADES (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--iterations-50",
+      "path": "force--iterations-50.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x iterations-50: iterations=50 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--temperature-0.01",
+      "path": "force--temperature-0.01.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x temperature-0.01: temperature=0.01 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--repulsion-12",
+      "path": "force--repulsion-12.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x repulsion-12: repulsion=12 under EADES (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--repulsivePower-3",
+      "path": "force--repulsivePower-3.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x repulsivePower-3: repulsivePower=3 on edges (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--spacing-nodeNode-40",
+      "path": "force--spacing-nodeNode-40.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x spacing-nodeNode-40: spacing.nodeNode=40 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--aspectRatio-3",
+      "path": "force--aspectRatio-3.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x aspectRatio-3: aspectRatio=3 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--randomSeed-7",
+      "path": "force--randomSeed-7.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x randomSeed-7: randomSeed=7 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--separateConnectedComponents-false",
+      "path": "force--separateConnectedComponents-false.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x separateConnectedComponents-false: separateConnectedComponents=false (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--padding-20",
+      "path": "force--padding-20.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x padding-20: padding=20 on all sides (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--interactive-true",
+      "path": "force--interactive-true.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x interactive-true: interactive=true (preset positions) (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--edgeLabels-inline-true",
+      "path": "force--edgeLabels-inline-true.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x edgeLabels-inline-true: edgeLabels.inline=true on the edge labels (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--priority-edges",
+      "path": "force--priority-edges.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x priority-edges: priority=4 on edges (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "stress--default",
+      "path": "stress--default.json",
+      "algorithm": "org.eclipse.elk.stress",
+      "variant": "default",
+      "note": "stress x default: designed input, default options (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "stress--interactive-true",
+      "path": "stress--interactive-true.json",
+      "algorithm": "org.eclipse.elk.stress",
+      "variant": "default",
+      "note": "stress x interactive-true: interactive=true (preset positions) (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "stress--fixed-nodes",
+      "path": "stress--fixed-nodes.json",
+      "algorithm": "org.eclipse.elk.stress",
+      "variant": "default",
+      "note": "stress x fixed-nodes: fixed=true on n0, n3, n10 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "stress--desiredEdgeLength-root-60",
+      "path": "stress--desiredEdgeLength-root-60.json",
+      "algorithm": "org.eclipse.elk.stress",
+      "variant": "default",
+      "note": "stress x desiredEdgeLength-root-60: desiredEdgeLength=60 on the root (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "stress--desiredEdgeLength-edge-200",
+      "path": "stress--desiredEdgeLength-edge-200.json",
+      "algorithm": "org.eclipse.elk.stress",
+      "variant": "default",
+      "note": "stress x desiredEdgeLength-edge-200: desiredEdgeLength=200 on edges e0, e5, e11 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "stress--dimension-x",
+      "path": "stress--dimension-x.json",
+      "algorithm": "org.eclipse.elk.stress",
+      "variant": "default",
+      "note": "stress x dimension-x: dimension=X (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "stress--dimension-y",
+      "path": "stress--dimension-y.json",
+      "algorithm": "org.eclipse.elk.stress",
+      "variant": "default",
+      "note": "stress x dimension-y: dimension=Y (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "stress--epsilon-0.5",
+      "path": "stress--epsilon-0.5.json",
+      "algorithm": "org.eclipse.elk.stress",
+      "variant": "default",
+      "note": "stress x epsilon-0.5: epsilon=0.5 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "stress--iterationLimit-3",
+      "path": "stress--iterationLimit-3.json",
+      "algorithm": "org.eclipse.elk.stress",
+      "variant": "default",
+      "note": "stress x iterationLimit-3: iterationLimit=3 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "stress--edgeLabels-inline-true",
+      "path": "stress--edgeLabels-inline-true.json",
+      "algorithm": "org.eclipse.elk.stress",
+      "variant": "default",
+      "note": "stress x edgeLabels-inline-true: edgeLabels.inline=true on the edge labels (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--default",
+      "path": "disco--default.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x default: designed input, default options (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--spacing-componentComponent-40",
+      "path": "disco--spacing-componentComponent-40.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x spacing-componentComponent-40: spacing.componentComponent=40 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--edge-thickness-40",
+      "path": "disco--edge-thickness-40.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x edge-thickness-40: edge.thickness=40 on every edge (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--aspectRatio-4",
+      "path": "disco--aspectRatio-4.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x aspectRatio-4: aspectRatio=4 (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--padding-30",
+      "path": "disco--padding-30.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x padding-30: padding=30 on all sides (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--polyomino-fill-false",
+      "path": "disco--polyomino-fill-false.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x polyomino-fill-false: polyomino.fill=false (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--lowLevelSort-by-size",
+      "path": "disco--lowLevelSort-by-size.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x lowLevelSort-by-size: lowLevelSort=BY_SIZE (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--lowLevelSort-by-size-and-shape",
+      "path": "disco--lowLevelSort-by-size-and-shape.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x lowLevelSort-by-size-and-shape: lowLevelSort=BY_SIZE_AND_SHAPE explicit (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--highLevelSort-corner-cases",
+      "path": "disco--highLevelSort-corner-cases.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x highLevelSort-corner-cases: highLevelSort=CORNER_CASES_THAN_SINGLE_SIDE_LAST (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--highLevelSort-num-of-external-sides",
+      "path": "disco--highLevelSort-num-of-external-sides.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x highLevelSort-num-of-external-sides: highLevelSort=NUM_OF_EXTERNAL_SIDES_THAN_NUM_OF_EXTENSIONS_LAST explicit (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--traversalStrategy-spiral",
+      "path": "disco--traversalStrategy-spiral.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x traversalStrategy-spiral: traversalStrategy=SPIRAL (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--traversalStrategy-line-by-line",
+      "path": "disco--traversalStrategy-line-by-line.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x traversalStrategy-line-by-line: traversalStrategy=LINE_BY_LINE (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--traversalStrategy-manhattan",
+      "path": "disco--traversalStrategy-manhattan.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x traversalStrategy-manhattan: traversalStrategy=MANHATTAN (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--traversalStrategy-jitter",
+      "path": "disco--traversalStrategy-jitter.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x traversalStrategy-jitter: traversalStrategy=JITTER (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--traversalStrategy-quadrants-line-by-line",
+      "path": "disco--traversalStrategy-quadrants-line-by-line.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x traversalStrategy-quadrants-line-by-line: traversalStrategy=QUADRANTS_LINE_BY_LINE (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--traversalStrategy-quadrants-manhattan",
+      "path": "disco--traversalStrategy-quadrants-manhattan.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x traversalStrategy-quadrants-manhattan: traversalStrategy=QUADRANTS_MANHATTAN (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--traversalStrategy-quadrants-jitter",
+      "path": "disco--traversalStrategy-quadrants-jitter.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x traversalStrategy-quadrants-jitter: traversalStrategy=QUADRANTS_JITTER (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--traversalStrategy-combine-line-by-line-manhattan",
+      "path": "disco--traversalStrategy-combine-line-by-line-manhattan.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x traversalStrategy-combine-line-by-line-manhattan: traversalStrategy=COMBINE_LINE_BY_LINE_MANHATTAN (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--componentLayoutAlgorithm-force",
+      "path": "disco--componentLayoutAlgorithm-force.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x componentLayoutAlgorithm-force: componentCompaction.componentLayoutAlgorithm=org.eclipse.elk.force (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "force--corpus-force-graph-small",
+      "path": "force--corpus-force-graph-small.json",
+      "algorithm": "org.eclipse.elk.force",
+      "variant": "default",
+      "note": "force x corpus-force-graph-small: copy of test/corpus/generated/force-graph-small.json with elk.algorithm set (FD2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "disco--corpus-disco-components-small",
+      "path": "disco--corpus-disco-components-small.json",
+      "algorithm": "org.eclipse.elk.disco",
+      "variant": "default",
+      "note": "disco x corpus-disco-components-small: copy of test/corpus/generated/disco-components-small.json with elk.algorithm set (FD2); preset coordinates and one section per edge added, since disco throws without them; recorded with -XX:hashCode=2 (H4)."
+    }
+  ]
+}

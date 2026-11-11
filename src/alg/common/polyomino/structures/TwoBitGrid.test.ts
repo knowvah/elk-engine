@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
 import { IndexOutOfBoundsException } from '../../../../java/lang/IndexOutOfBoundsException.js';
+import { NegativeArraySizeException } from '../../../../java/lang/NegativeArraySizeException.js';
 import { TwoBitGrid } from './TwoBitGrid.js';
 
 const WIDTH = 35;
@@ -152,5 +153,12 @@ describe('TwoBitGrid', () => {
     expect(grid.toString()).toBe(' 012\n0X__\n1_0_');
     expect(new TwoBitGrid(11, 1).toString()).toBe(' 01234567890\n0___________');
     expect(new TwoBitGrid(0, 0).toString()).toBe(' ');
+  });
+
+  it('reinitialize with a negative height or row length throws NegativeArraySizeException carrying it (TwoBitGrid.java:117; row throws/negativeAspect of disco.json)', () => {
+    const grid = new TwoBitGrid(4, 4);
+    expect(() => grid.reinitialize(9, -4)).toThrow(new NegativeArraySizeException('-4'));
+    expect(() => grid.reinitialize(-64, 3)).toThrow(new NegativeArraySizeException('-2'));
+    expect(grid.getWidth()).toBe(4);
   });
 });

@@ -294,6 +294,48 @@ describe('registerTreeAlgorithms (TR5)', () => {
   });
 });
 
+const FORCE_ALGORITHMS = ['force', 'stress', 'disco'] as const;
+
+describe('registerTreeAlgorithms (8b: force, stress, disco)', () => {
+  it('resolves force, stress and disco with the polyomino options, once each', () => {
+    LayoutMetaDataService.unload();
+    registerTreeAlgorithms();
+    registerTreeAlgorithms();
+    const service = LayoutMetaDataService.getInstance();
+    const ids = FORCE_ALGORITHMS.map((a) => service.getAlgorithmData(`org.eclipse.elk.${a}`)?.getId());
+    expect(ids).toEqual(FORCE_ALGORITHMS.map((a) => `org.eclipse.elk.${a}`));
+    for (const a of FORCE_ALGORITHMS) {
+      expect(service.getAlgorithmData().filter((d) => d.getId() === `org.eclipse.elk.${a}`)).toHaveLength(1);
+    }
+    expect(service.getOptionData('org.eclipse.elk.polyomino.fill')?.getId()).toBe('org.eclipse.elk.polyomino.fill');
+  });
+
+  it.each(FORCE_ALGORITHMS)('layoutToJson lays a two-node graph out with %s', (alg) => {
+    const out = JSON.parse(
+      layoutToJson(TREE_TWO_NODES, 'json', row({ algorithm: `org.eclipse.elk.${alg}`, variant: 'default' })),
+    ) as { children: { id: string; x: number; y: number }[]; edges: { sections: { id: string }[] }[] };
+    expect(out.children.map((c) => c.id)).toEqual(['a', 'b']);
+    expect(out.children.every((c) => Number.isFinite(c.x) && Number.isFinite(c.y))).toBe(true);
+    expect(out.edges[0]?.sections).toHaveLength(1);
+  });
+
+  it('registers layered, so exported option keys and default algorithms resolve as in the oracle', () => {
+    LayoutMetaDataService.unload();
+    registerTreeAlgorithms();
+    expect(LayoutMetaDataService.getInstance().getAlgorithmData('org.eclipse.elk.layered')?.getId()).toBe(
+      'org.eclipse.elk.layered',
+    );
+  });
+
+  it('parseArgs selects the three algorithms by their short names', () => {
+    expect(parseArgs(['--out', 'o.json', '--algorithms', 'force,stress,disco']).algorithms).toEqual([
+      'force',
+      'stress',
+      'disco',
+    ]);
+  });
+});
+
 describe('layoutToJson', () => {
   const graph = JSON.stringify({
     id: 'root',

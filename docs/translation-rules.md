@@ -19,6 +19,9 @@ from the Javadoc/JLS only (AD-9). See also [overview](architecture/overview.md),
 | `char`                     | UTF-16 unit as `number`; math promotes           | `charCodeAt`             | 1.7  |
 | `Math.round`               | ties to +inf, NaN to 0, saturate                 | `Math.round` shim        | 1.8  |
 | `Math.sin/cos/pow/...`     | <= 1 ulp only                                    | native; divergence list  | 1.9  |
+| `Math.log`, iterated site  | V8 differs 1 ulp on ~0.5% of inputs              | `JavaMath.log` (fdlibm)  | 1.9  |
+| `new T[n]`, computed `n`   | negative `n` throws; `Array.from` gives `[]`     | explicit size check      | 6.7  |
+| `List.toString` in a value | `[a, b]`, not `a,b`                              | `collectionText`         | 7    |
 | `Double.compare`           | -0.0 < 0.0, NaN greatest                         | `Double.compare` shim    | 1.10 |
 | `Double.MIN_VALUE`         | smallest positive, not negative                  | `Number.MIN_VALUE`       | 1.10 |
 | HashMap, value keys        | reproduce Java order                             | `JavaHashMap` (AD-10)    | 2    |
@@ -193,7 +196,21 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
   bit for the transcendental ones. Use native `Math.*`; the 1e-6 tolerance (AD-4) absorbs value
   drift. If a golden difference is traced to a last-ulp flip of a discrete decision (`==`,
   comparator tie), record it in the known-divergences list (created then, AD-4). Do not hand-port
-  fdlibm.
+  fdlibm, except at an iterated site where a one-ulp difference is amplified (next bullet).
+- **`Math.log` at iterated sites (alg-force-disco FD3).** `EadesModel.attractive`
+  (`alg.force/src/.../model/EadesModel.java:100`) calls `Math.log` once per connected pair per
+  iteration, and the iteration is chaotic (a one-ulp change in 1 call of 256 moves the final
+  coordinates by 390 at 1,000 iterations). V8's `Math.log` differs from the JVM's by one ulp on
+  858 of 200,000 seeded inputs (0.43%) and on 101 of the 20,014 `log` rows of `force.json`
+  (0.50%). `JavaMath.log` (`src/java/lang/JavaMath.ts`) is the netlib fdlibm `e_log` over the
+  whole domain, written from the public algorithm and not from OpenJDK (AD-9); all 20,014 rows
+  are raw-bit equal, and `src/java/util/Random.ts` shares it. Proven on the oracle's arm64 JVM
+  21.0.1; x86_64 is unverified.
+- **`Math.sin`/`Math.cos` in `ElkGraphTransformer.getOrthogonalPoints`** (`alg.disco/src/.../transform/ElkGraphTransformer.java:627-642`):
+  native, on the known-divergence list ([conformance.md](conformance.md#alg-force-disco-divergences)).
+  V8 equals `StrictMath` on all 160 `sin` and 160 `cos` inputs of the disco runs, HotSpot's
+  intrinsics differ from it on 5 and 9 by one ulp; 32 fields differ at most 8.5e-14, inside the
+  1e-6 bar, and no contour cell flips.
 - ELK: 23 trig sites (`core/src/.../math/KVector.java:95` `cos`/`sin`,
   `alg.radial/src/.../RadialUtil.java:156` `atan2`), 11 `pow/exp/log/log10`
   (`core/src/.../options/TopdownSizeApproximatorUtil.java:66` `Math.exp`), 38 `sqrt`.
@@ -450,6 +467,16 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   `checkCast(value, guard, javaName)` (`src/java/lang/JavaCast.ts`) at the method that binds the type, so a
   wrong-typed value throws `ClassCastException` before the body runs; null passes. `Integer` and `Double` share
   `isNumber`. Evidence: 8 converter rows of `graph-text-lexer.json` (class only; the JDK text is unspecified).
+- **Array allocation with a computed negative size (alg-force-disco T9).** `new long[height][...]`
+  with a negative `height` throws `NegativeArraySizeException` whose message is the size
+  (`"-4"`); `Array.from({ length: n })` yields `[]` for a negative `n`, and `new Array(n)` throws
+  `RangeError`. `alg.common/src/.../polyomino/structures/TwoBitGrid.java:117` allocates with
+  `height` and then `(int) Math.ceil(width / 32.0)`: `TwoBitGrid.newWords` checks the height,
+  then the row length, and throws `NegativeArraySizeException`
+  (`src/java/lang/NegativeArraySizeException.ts`, parent `RuntimeException`). JVM probe (JDK
+  21.0.1): `(h, w)` = `(-4, 9)` gives "-4", `(3, -64)` gives "-2", `(-4, -64)` gives "-4",
+  `(0, -64)` gives "-2" (the height is checked first, then the row length). Reached by DisCo
+  with a negative `aspectRatio` (`throws/negativeAspect`).
 - `catch (Exception e)` that cleans up and rethrows (`core/src/.../RecursiveGraphLayoutEngine.java:463`,
   disposes the provider, `throw exception`): a plain `try/catch` rethrow in TS.
 
@@ -491,6 +518,13 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   `stringHash`). `Double.hashCode` is `(int)(v ^ (v >>> 32))` over `doubleToLongBits` (Javadoc,
   verified): `JavaDouble.hashCode` (`doubleHash`, `doubleToLongBits`); `JavaInteger.reverse` serves
   `KVector.hashCode` (`integerReverse`, `kvectorHash`).
+- **List-valued option export (alg-force-disco T11).** The JSON exporter writes `p.value.toString()`.
+  For an `ArrayList` that is `AbstractCollection.toString`: `[`, the elements joined by `", "`,
+  `]` (Javadoc), so `[p1, p2]`; `Array.prototype.toString` gives `p1,p2`. `JsonExporter.valueText`
+  routes array values through `collectionText` (recursive for nested arrays). Reached by DisCo's
+  `debug.discoPolys` (`DisCoPolyominoCompactor.java:133`); the 20 disco goldens prove it. A
+  property value without a `toString` exports the JVM's identity text
+  (`...DCGraph@1` under `-XX:hashCode=2`); the port cannot reproduce it (issue #71).
 - Parsing: `Integer.valueOf` (`core/src/.../data/LayoutOptionData.java:245`) rejects `"1.0"`:
   `JavaInteger.valueOf` (`text.json` `integerValueOf`, 33 rows); `Double.parseDouble` see 6.7.
 - JSON numbers (Gson): integral doubles print as `100.0` in Java, `100` in JS. The oracle

@@ -1348,3 +1348,113 @@ instance; `*Staged.test.ts` shrunk and deleted), the vertiflex count pins (283 t
 the extended ref was committed, and the `EdgeRouter.test.ts` direction pin (`…/UNDEFINED` to `…/DOWN`, because the oracle's
 graphs hold DOWN after `NodePlacer`); the `MARKER` widening in `test/architecture/staged-classes.fitness.test.ts` (one token,
 `8a`, and its header comment). The T17 hand-derived coordinates were replaced by structural assertions before the commit.
+
+## Revision 2026-11-11 (alg-force-disco)
+
+Appended; no earlier line is edited. Source: FD1-FD10 in `plans/alg-force-disco/decisions.md`; the journal is
+`plans/alg-force-disco/decision-journal.md`. Where this section conflicts with the text above, this section wins. Task ids are
+T1-T13; the base is `554490d4c448caf332ef4c238a9eb95661f784e0` (the 8a squash commit).
+
+**Row 8b is done.** `alg.force` (the force layout `elk.force` and the stress layout `elk.stress`) and `alg.disco` are ported to
+`src/alg/{force,disco}/` with their generated options and providers (issue #38). `RecursiveGraphLayoutEngine` lays out a graph
+with each once its provider is registered. Design and runbook: `docs/architecture/alg-force-disco.md`; counts:
+`docs/conformance.md` § Force, stress and disco. The final commit is one squashed commit
+`feat(force): port force, stress and disco (8b)` with `Refs: #38` (FD10); the per-task history is under the tag
+`alg-force-disco/pre-squash`.
+
+**Evidence.**
+
+- Vector refs (oracle `8aaa3c14` with patches 0001 and 0002, `-XX:hashCode=2`, cold re-records `cmp`-identical): `force.json`
+  20,804 rows (full 594, stops 194, throws 2, log 20,014), `stress.json` 431 (320 / 108 / 3), `disco.json` 185 (92 / 88 / 5).
+  Replays through the real providers: force 259,243 hex doubles, stress 135,229, all raw-bit identical; disco 75,002 raw-bit
+  identical and 32 within 1e-6 only (maximum 8.5e-14), none beyond.
+- Goldens: the `force-disco` set, 45 refs under `test/golden/refs/elk-force-disco/` (force 15, stress 10, disco 20), equal to
+  the TS layout at AD-4; `default`, `algorithms`, `layered` and `trees` regenerate byte-identically.
+- JUnit: `ForceImportTest` 3 of 3, `TwoBitGridTest` 3 of 3; oracle 3 / 0 and 3 / 0 at the start; at the end
+  3 / 0 and 3 / 0 again.
+- Sweep (layered registered): force planned 906, ok 815, mismatch 2, both-throw 89; stress planned 898, ok 807, mismatch 2,
+  both-throw 89; disco planned 906, ok 0, mismatch 819 (all options-only), both-throw 87; 0 one-sided throws in all three. The
+  mismatches are the rectpacking option key (issue #71 item 2) and the `debug.discoGraph` identity text (item 1).
+- Coverage: the two bundles 99.93 / 98.67 / 100 / 99.93 (statements / branches / functions / lines); 298 of 302 branches, the
+  other four are `U` rows 7, 8, 12, 16 of `plans/alg-force-disco/unreached.md` (16 `U` rows; "neither reached nor proven dead"
+  is empty). Whole suite at the batch 5 gate 98.9 / 96.94 / 98.86 / 98.91 over 47,912 tests; at mission end
+  98.9 / 96.95 / 98.86 / 98.91 over 47,913 tests. `staged-classes.json` is `[]`; `PENDING_TYPES` is `[]`.
+- Recursion kept verbatim; a 2,000-node path completes in the oracle, in TS and under `--jitless`.
+
+**Decisions taken during the run.**
+
+- FD1: two JVM recorders (`ForceVectors.java` for force and stress, `DiscoVectors.java`), rows `full`, `stops`, `throws`.
+- FD2: a new `force-disco` golden set, one golden per option value, one factor at a time.
+- FD3: `EadesModel` calls `JavaMath.log`, the fdlibm `e_log`, raw-bit equal on all 20,014 JVM rows (V8 differs on 101, 0.50 %);
+  proven on arm64, unverified on x86_64. `Random.ts` now imports it and its private copy is deleted.
+- FD4: identity-hashed containers in insertion order; the one order-observable site (`adjustedPorts`) has a reversed-order twin
+  that changes 2 of 41 rows, so the oracle used insertion order; parallel streams are sequential.
+- FD5: three staged providers until wired, `MARKER` widened by one token (`8b`, pre-approved, no expected value changed);
+  tests register providers explicitly, `PolyominoOptions` beside `DisCoMetaDataProvider`.
+- FD6: oracle sweeps per algorithm with `-XX:hashCode=2`; TS through `ts-layout-compare.ts`, which gained the registrations.
+- FD7: recursion verbatim; the 2,000-deep probe converted nothing (issue #70 records what lies beyond).
+- FD8: `ForceImportTest` and `TwoBitGridTest` ported whole.
+- FD9: issue #58 stays with the maintainer; debug properties kept; cross-bundle suites to 8x.
+- FD10: one squash commit on the base, tag `alg-force-disco/pre-squash`, footer `Refs: #38`.
+
+Deviations from the plan, all journaled: (1) write-set additions: helper files beside the planned ones rather than edits to
+landed helpers (`test/helpers/force-replay-{elk,stops,stress}.ts`, `disco-replay-{elk,stops}.ts`,
+`force-replay-dump.test.ts`, `DisCoLayoutProvider.test.ts`). (2) `layered` is registered in `tools/corpus/ts-layout-compare.ts`
+beside force, stress and disco, one registration beyond the task's wording: without it the exporter picks different option
+suffixes and nested default-algorithm nodes throw (probe on the 286-row sweep: 117 options-only mismatches and 5
+`ts-only-throw` each for force and stress, 0 and 0 with it); the registrations are the `*MetaDataProvider`s the oracle registers.
+(3) The brief's premise "disco throws in `firstEdgeSection` for an edge without a section" was wrong; the call creates a
+section, so those rows are `full` and `stops` rows. (4) The recorder skips `repulsivePower` on graphs with an antiparallel
+pair (the hang below). (5) Tests and tools register `PolyominoOptions` next to `DisCoMetaDataProvider` (FD5), which answers the roadmap note that nothing registers it before disco.
+
+**Divergences and kept quirks.** Known divergences (details in `docs/conformance.md`): last-ulp `Math.sin`/`Math.cos` in
+`ElkGraphTransformer.getOrthogonalPoints` (32 fields, at most 8.5e-14; V8 equals `StrictMath`, HotSpot's intrinsics differ on 5
+`sin` and 9 `cos` inputs of 160 each; no contour cell flips); `debug.discoGraph` identity text (#71); option keys that depend on
+the unported rectpacking provider (#71). Kept upstream quirks: the `avoidSamePosition` hang (`AbstractForceModel.java:187-208`);
+DisCo's no-op polyomino options; `ComponentsProcessor.dfs` listing a cycle-closing edge twice; `recombine`'s empty bend-point
+list for several components; `firstEdgeSection` creating a section; the `NullPointerException` for a parentless layout node
+with an edge at its own port (`ElkGraphComponentsProcessor.java:108`); `broadestRow` written and never read; `DCPolyomino`'s
+fill leaving a grid-aligned component with sentinel bounds that wrap in 32 bits. No upstream typo was found.
+
+**Landed code fixed outside the bundles (stop 15, each at its origin with a stated mechanism).**
+
+- `src/alg/common/polyomino/structures/TwoBitGrid.ts` `newWords`: `Array.from({ length })` yields `[]` for a negative length
+  where Java's `new long[h][...]` throws `NegativeArraySizeException`; the new shim `src/java/lang/NegativeArraySizeException.ts`
+  (parent `RuntimeException`, one row added to `test/architecture/exception-hierarchy.fitness.test.ts`). JVM probe: `(-4, 9)`
+  gives "-4", `(3, -64)` "-2", `(-4, -64)` "-4", `(0, -64)` "-2".
+- `src/graph/json/JsonExporter.ts`: a list-valued option was written with `Array.prototype.toString`; Java writes
+  `AbstractCollection.toString`. Array values go through `collectionText`; a unit test was added.
+- No landed expected value, ref, vector or tolerance changed. The only change to a landed test file under the gates is five new
+  cases in `test/corpus/ts-layout-compare.test.ts`.
+
+**Hand-offs.**
+
+- To 8c (rectpacking): once rectpacking is registered, remove the `SUFFIX_DIFFERENCES` row of golden `force--iterations-50`
+  (its tripwire fails until then) and re-run the sweep; the 6 sweep residuals (`interactiveRectpacking_{hierarchy,oneBigNode}`
+  for force, stress and disco) close.
+- To 8x: `NodeMicroLayoutTest` needs rectpacking; `PlainJavaInitializationTest` and `ElkReflectTest` need the remaining
+  algorithms (8x, after 8c); `alg.disco.debug` is reference only.
+- To row 9: `tools/corpus/ts-layout-compare.ts` now registers layered, the three tree algorithms, force, stress and disco; the
+  remaining registrations (rectpacking, spore, topdownpacking, the others) are row 9's. Issue #68's force keys
+  (`desiredEdgeLength`) are registered now; its rectpacking keys wait for 8c.
+- Issue #58: the evidence is posted on the issue (all three held-back cases pass with the Java's assertions from temporary
+  copies once `elk.force` and `elk.stress` are registered). Two further blockers independent of `elk.stress`:
+  `refs/java/layered-label-metrics.json` lacks four label texts (`insideOtherLayout`, `child1`, `child2`,
+  `insideOtherDirection`), and the two models are not vendored. `STRESS_PENDING` and both suites are untouched.
+- Issue #70 (`follow-up`): `ComponentsProcessor.dfs` and `ElkGraphComponentsProcessor.dfs` overflow V8's stack beyond FD7's
+  2,000 (TS completes at 4,000 and overflows at 16,000; the oracle completes at 16,000).
+
+**Flags for the maintainer (open decisions).** Open `needs-ruling` issues:
+
+- #69: the two upstream defects the ports copy (the `avoidSamePosition` hang, DisCo's no-op polyomino options), with upstream
+  drafts; nothing filed upstream. Also asks whether a browser library may loop forever on a valid input until upstream fixes it.
+- #71: the two classified option-text differences (`debug.discoGraph`, the rectpacking-dependent keys).
+- #58: the stress-case ruling (evidence posted).
+
+Open `follow-up` issue: #70 (the dfs recursion depth).
+
+Audit points: the `decisions.md` audit points, the `MARKER` widening (FD5) and the new shim behind FD3 (the Java calls
+`Math.log`, the port calls `JavaMath.log`); the `AbstractForceModel` entry-point ruling (the base class cannot be loaded first,
+resolved under the layered-cycles-layers E1 and 7g T15 precedent; eight landed base classes behave the same); the `layered`
+registration in the sweep tool; the x86_64 limit of FD3; the Row 16 argument of `unreached.md` (`ElkGraphTransformer.java:499-500`
+is dead by a reading of the Java, not by a vector); the one added exception row in the exception-hierarchy fitness test.

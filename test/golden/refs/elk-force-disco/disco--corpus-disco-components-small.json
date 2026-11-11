@@ -1,0 +1,428 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "n0",
+      "x": 14.600743145162497,
+      "y": 16.379346639787485,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n1",
+      "x": 15.490044892474998,
+      "y": 373.49376061828747,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n2",
+      "x": 142.912927688175,
+      "y": 214.6915311828,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n3",
+      "x": 371.7151571236625,
+      "y": 331.315900268825,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n4",
+      "x": 347.51367083333747,
+      "y": 174.29227432796247,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n5",
+      "x": 200.33581048387498,
+      "y": 185.98008978495,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n6",
+      "x": 188.6479950268875,
+      "y": 128.55720698925,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n7",
+      "x": 315.181576075275,
+      "y": 257.758693279575,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n8",
+      "x": 155.490044892475,
+      "y": 443.49376061828747,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n9",
+      "x": 398.6479950268875,
+      "y": 128.55720698925,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n10",
+      "x": 67.51367083333747,
+      "y": 314.29227432796245,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n11",
+      "x": 137.51367083333747,
+      "y": 314.29227432796245,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n12",
+      "x": 301.7151571236625,
+      "y": 471.315900268825,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n13",
+      "x": 277.51367083333747,
+      "y": 314.29227432796245,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n14",
+      "x": 114.201486290325,
+      "y": 157.2686483871,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n15",
+      "x": 372.604458870975,
+      "y": 229.04725188172497,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n16",
+      "x": 84.6007431451625,
+      "y": 226.37934663978749,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n17",
+      "x": 207.51367083333747,
+      "y": 384.29227432796245,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n18",
+      "x": 277.51367083333747,
+      "y": 384.29227432796245,
+      "width": 30.0,
+      "height": 30.0
+    },
+    {
+      "id": "n19",
+      "x": 214.6915311828,
+      "y": 444.3830623656,
+      "width": 30.0,
+      "height": 30.0
+    }
+  ],
+  "layoutOptions": {
+    "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.disco",
+    "debug.discoGraph": "org.eclipse.elk.alg.disco.graph.DCGraph@1",
+    "debug.discoPolys": "[ 01234567890123456789012\n0___________________XXXX\n1___________________XXXX\n2_________________XXXXXX\n3_______________XXXXXXXX\n4_____________XXXXXXX___\n5___________XXXXXXXX____\n6_________XXXXXXXX______\n7_______XXXXXXXXX_______\n8_____XXXXXXXXX_________\n9___XXXXXXXXXX__________\n0XXXXXXXXXXXXXXXXXXX____\n1XXXXXXXXXXXXXXXXXXX____\n2XXXXXXXXXXXXXXXXXXX____\n3XXXXXXXXXXXXXXXXXXX____\n4_____XXXXXXXXX_________\n5________XXXXXXXXXXX____\n6_________XXXXXXXXXX____\n7_________XXXXXXXXXX____\n8_________XXXXXXXXXX____,  012345678\n0XXXX_____\n1XXXX_____\n2XXXX_____\n3XXXX_____\n4_XXX_____\n5__XXX____\n6__XXX____\n7__XXX____\n8___XXX___\n9___XXX___\n0___XXX___\n1____XXX__\n2____XXX__\n3____XXX__\n4_____XXX_\n5_____XXXX\n6_____XXXX\n7_____XXXX\n8_____XXXX,  01234567890123\n0XXXX__________\n1XXXX__________\n2XXXXXX________\n3XXXXXXXX______\n4____XXXXXX____\n5______XXXXXXXX\n6________XXXXXX\n7__________XXXX\n8__________XXXX,  012345678\n0_____XXXX\n1_____XXXX\n2_____XXXX\n3_____XXXX\n4____XXX__\n5____XXX__\n6___XXX___\n7___XXX___\n8__XXX____\n9__XXX____\n0XXXX_____\n1XXXX_____\n2XXXX_____\n3XXXX_____,  0123456789012345678\n0XXXX___________XXXX\n1XXXXXXXXXXXXXXXXXXX\n2XXXXXXXXXXXXXXXXXXX\n3XXXX___________XXXX,  0123\n0XXXX\n1XXXX\n2XXXX\n3XXXX,  0123\n0XXXX\n1XXXX\n2XXXX\n3XXXX,  0123\n0XXXX\n1XXXX\n2XXXX\n3XXXX,  0123\n0XXXX\n1XXXX\n2XXXX\n3XXXX,  0123\n0XXXX\n1XXXX\n2XXXX\n3XXXX,  0123\n0XXXX\n1XXXX\n2XXXX\n3XXXX]",
+    "algorithm": "org.eclipse.elk.disco",
+    "hierarchyHandling": "SEPARATE_CHILDREN"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 469.027341666675,
+  "height": 540.8059451613,
+  "edges": [
+    {
+      "id": "e0",
+      "sources": [
+        "n1"
+      ],
+      "targets": [
+        "n8"
+      ],
+      "sections": [
+        {
+          "id": "e0_s",
+          "startPoint": {
+            "x": 30.490044892474998,
+            "y": 388.49376061828747
+          },
+          "endPoint": {
+            "x": 170.490044892475,
+            "y": 458.49376061828747
+          },
+          "incomingShape": "n1",
+          "outgoingShape": "n8"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e1",
+      "sources": [
+        "n1"
+      ],
+      "targets": [
+        "n8"
+      ],
+      "sections": [
+        {
+          "id": "e1_s",
+          "startPoint": {
+            "x": 30.490044892474998,
+            "y": 388.49376061828747
+          },
+          "endPoint": {
+            "x": 170.490044892475,
+            "y": 458.49376061828747
+          },
+          "incomingShape": "n1",
+          "outgoingShape": "n8"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e2",
+      "sources": [
+        "n3"
+      ],
+      "targets": [
+        "n12"
+      ],
+      "sections": [
+        {
+          "id": "e2_s",
+          "startPoint": {
+            "x": 386.7151571236625,
+            "y": 346.315900268825
+          },
+          "endPoint": {
+            "x": 316.7151571236625,
+            "y": 486.315900268825
+          },
+          "incomingShape": "n3",
+          "outgoingShape": "n12"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e3",
+      "sources": [
+        "n4"
+      ],
+      "targets": [
+        "n11"
+      ],
+      "sections": [
+        {
+          "id": "e3_s",
+          "startPoint": {
+            "x": 362.51367083333747,
+            "y": 189.29227432796247
+          },
+          "endPoint": {
+            "x": 152.51367083333747,
+            "y": 329.29227432796245
+          },
+          "incomingShape": "n4",
+          "outgoingShape": "n11"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e4",
+      "sources": [
+        "n6"
+      ],
+      "targets": [
+        "n9"
+      ],
+      "sections": [
+        {
+          "id": "e4_s",
+          "startPoint": {
+            "x": 203.6479950268875,
+            "y": 143.55720698925
+          },
+          "endPoint": {
+            "x": 413.6479950268875,
+            "y": 143.55720698925
+          },
+          "incomingShape": "n6",
+          "outgoingShape": "n9"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e5",
+      "sources": [
+        "n10"
+      ],
+      "targets": [
+        "n4"
+      ],
+      "sections": [
+        {
+          "id": "e5_s",
+          "startPoint": {
+            "x": 82.51367083333747,
+            "y": 329.29227432796245
+          },
+          "endPoint": {
+            "x": 362.51367083333747,
+            "y": 189.29227432796247
+          },
+          "incomingShape": "n10",
+          "outgoingShape": "n4"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e6",
+      "sources": [
+        "n11"
+      ],
+      "targets": [
+        "n13"
+      ],
+      "sections": [
+        {
+          "id": "e6_s",
+          "startPoint": {
+            "x": 152.51367083333747,
+            "y": 329.29227432796245
+          },
+          "endPoint": {
+            "x": 292.51367083333747,
+            "y": 329.29227432796245
+          },
+          "incomingShape": "n11",
+          "outgoingShape": "n13"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e7",
+      "sources": [
+        "n16"
+      ],
+      "targets": [
+        "n0"
+      ],
+      "sections": [
+        {
+          "id": "e7_s",
+          "startPoint": {
+            "x": 99.6007431451625,
+            "y": 241.37934663978749
+          },
+          "endPoint": {
+            "x": 29.600743145162497,
+            "y": 31.379346639787485
+          },
+          "incomingShape": "n16",
+          "outgoingShape": "n0"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e8",
+      "sources": [
+        "n17"
+      ],
+      "targets": [
+        "n11"
+      ],
+      "sections": [
+        {
+          "id": "e8_s",
+          "startPoint": {
+            "x": 222.51367083333747,
+            "y": 399.29227432796245
+          },
+          "endPoint": {
+            "x": 152.51367083333747,
+            "y": 329.29227432796245
+          },
+          "incomingShape": "n17",
+          "outgoingShape": "n11"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e9",
+      "sources": [
+        "n18"
+      ],
+      "targets": [
+        "n10"
+      ],
+      "sections": [
+        {
+          "id": "e9_s",
+          "startPoint": {
+            "x": 292.51367083333747,
+            "y": 399.29227432796245
+          },
+          "endPoint": {
+            "x": 82.51367083333747,
+            "y": 329.29227432796245
+          },
+          "incomingShape": "n18",
+          "outgoingShape": "n10"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    }
+  ]
+}

@@ -575,6 +575,18 @@ describe('JsonExporter behaviour', () => {
     );
   });
 
+  it('writes a list value as Java AbstractCollection.toString does: brackets, elements joined by ", " (JsonExporter.xtend p.value.toString)', () => {
+    // The format is the Javadoc contract of java.util.AbstractCollection.toString; the oracle rows are the
+    // "debug.discoPolys" values of test/golden/refs/elk-force-disco/disco--*.json (an ArrayList of polyominoes).
+    const root = node(null, 'r');
+    root.setProperty(new Property<unknown>('my.list.option'), ['a', 'b', ['c', 'd'], []]);
+    root.setProperty(new Property<unknown>('my.empty.list'), []);
+    const text = exportText(root, { ...COMPACT, omitUnknownLayoutOptions: false });
+    const json = JSON.parse(text) as { layoutOptions: Record<string, string> };
+    expect(json.layoutOptions['my.list.option']).toBe('[a, b, [c, d], []]');
+    expect(json.layoutOptions['my.empty.list']).toBe('[]');
+  });
+
   it('emptyIfNull returns an empty iterator for null and the iterator itself otherwise', () => {
     const exporter = new JsonExporter();
     expect(exporter.emptyIfNull<number>(null).next().done).toBe(true);
