@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
@@ -60,6 +59,7 @@ import { BreakingPointInserter } from './wrapping/BreakingPointInserter.js';
 import { BreakingPointProcessor } from './wrapping/BreakingPointProcessor.js';
 import { BreakingPointRemover } from './wrapping/BreakingPointRemover.js';
 import { SingleEdgeGraphWrapper } from './wrapping/SingleEdgeGraphWrapper.js';
+import { HierarchicalNodeResizingProcessor } from './HierarchicalNodeResizingProcessor.js';
 import { HorizontalGraphCompactor } from './compaction/HorizontalGraphCompactor.js';
 
 /**
@@ -261,7 +261,7 @@ function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'END_LABEL_POSTPROCESSOR':
       return new EndLabelPostprocessor();
     case 'HIERARCHICAL_NODE_RESIZER':
-      throw notPorted('HierarchicalNodeResizingProcessor', '7h');
+      return new HierarchicalNodeResizingProcessor();
     case 'DIRECTION_POSTPROCESSOR':
       // IntermediateProcessorStrategy.java:211-212: the postprocessor goes back to the internal left-to-right layout
       return new GraphTransformer(Mode.TO_INTERNAL_LTR);
@@ -270,9 +270,4 @@ function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutPro
         `No implementation is available for the layout processor ${strategy.toString()}`,
       );
   }
-}
-
-/** The L1 placeholder for a `create()` arm whose class is not ported yet. */
-function notPorted(className: string, mission: string): UnsupportedOperationException {
-  return new UnsupportedOperationException(`${className} is ported in mission ${mission}`);
 }

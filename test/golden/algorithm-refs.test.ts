@@ -474,6 +474,48 @@ const LAYERED_LOOPS_INPUTS = [
   'loops/tickets/layered/870_networkSimplexNodePlacer.elkt',
 ];
 
+/**
+ * Inputs of the layered compound graph vectors (mission 7h T1, `tools/vectors/LayeredCompoundVectors.java`): the 23 `.elkt` models that
+ * set `hierarchyHandling: INCLUDE_CHILDREN` and are inputs of the nine issue suites (Issue316, 455, 552, 596, 628, 700, 701, 734) or
+ * of the compound families (tests/layered, tickets/layered, examples/hierarchy), and eight more ptolemy hierarchical models with
+ * hierarchy-crossing edges, byte-identical (the 31 below). The three `elk.stress` inputs (tickets 588 and 665, examples
+ * hierarchicalLayoutMixing, H13) are never vendored. They live under `compound/`, never under `realworld/`
+ * (`LayeredFrameworkVectors.java` walks that tree).
+ */
+const LAYERED_COMPOUND_INPUTS = [
+  'compound/examples/hierarchy/hierarchicalEdges.elkt',
+  'compound/realworld/ptolemy/hierarchical/continuous_squarewave_SquareWave.json',
+  'compound/realworld/ptolemy/hierarchical/ddf_ifthenelse_IfThenElseFSM.json',
+  'compound/realworld/ptolemy/hierarchical/de_clockdrift_ClockDrift.json',
+  'compound/realworld/ptolemy/hierarchical/de_ptidesmergetomultiframe_PtidesMergeToMultiFrame.json',
+  'compound/realworld/ptolemy/hierarchical/ptera_carwash_CarWashDE.json',
+  'compound/realworld/ptolemy/hierarchical/ptides_actuatorpattern_ActuatorPattern.json',
+  'compound/realworld/ptolemy/hierarchical/ptolemy_robot_RandomWalkIntruder.json',
+  'compound/realworld/ptolemy/hierarchical/wireless_personalareanetwork_BluetoothNodes.json',
+  'compound/tests/layered/edge_label_placement/hierarchy01.elkt',
+  'compound/tests/layered/edge_label_placement/hierarchy_center_edge_label_problem.elkt',
+  'compound/tickets/layered/040_includeChildrenWithFixedOrder.elkt',
+  'compound/tickets/layered/155_greedySwitchFails.elkt',
+  'compound/tickets/layered/160_externalPortDummyNullPointer.elkt',
+  'compound/tickets/layered/288_selfLoopsCauseNPE_a.elkt',
+  'compound/tickets/layered/288_selfLoopsCauseNPE_b.elkt',
+  'compound/tickets/layered/316_wrongGraphSizeWithIncludeChildren.elkt',
+  'compound/tickets/layered/316_wrongGraphSizeWithIncludeChildren2.elkt',
+  'compound/tickets/layered/352_selfLoopNPEorAIOOBE.elkt',
+  'compound/tickets/layered/425_selfLoopInCompoundNode.elkt',
+  'compound/tickets/layered/455_longHierarchicalEdges.elkt',
+  'compound/tickets/layered/455_shortHierarchicalEdges.elkt',
+  'compound/tickets/layered/552_hierarchySelfLoopPorts.elkt',
+  'compound/tickets/layered/596_outsideHierarchicalPortLabels.elkt',
+  'compound/tickets/layered/628_hierarchyAwareLayoutProcessor.elkt',
+  'compound/tickets/layered/700_brokenHierarchyHandling.elkt',
+  'compound/tickets/layered/701_portLabels.elkt',
+  'compound/tickets/layered/724_includeChildrenModelOrder.elkt',
+  'compound/tickets/layered/734_nodeEdgeSpacingFlat.elkt',
+  'compound/tickets/layered/734_nodeEdgeSpacingFlatMoreComplex.elkt',
+  'compound/tickets/layered/734_nodeEdgeSpacingHierarchical.elkt',
+];
+
 describe('vendored inputs', () => {
   it('records the pinned models commit', () => {
     const parsed = readJson(INPUTS_MANIFEST) as Obj;
@@ -481,8 +523,8 @@ describe('vendored inputs', () => {
     expect(parsed['commit']).toBe(corpus['commit']);
   });
 
-  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs and the 32 layered routing inputs and the 26 layered pipeline inputs and the 123 layered labels inputs and the 40 layered loops inputs, nothing else', () => {
-    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS, ...LAYERED_ROUTING_INPUTS, ...LAYERED_PIPELINE_INPUTS, ...LAYERED_LABELS_INPUTS, ...LAYERED_LOOPS_INPUTS].sort();
+  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs and the 32 layered routing inputs and the 26 layered pipeline inputs and the 123 layered labels inputs and the 40 layered loops inputs and the 31 layered compound inputs, nothing else', () => {
+    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS, ...LAYERED_ROUTING_INPUTS, ...LAYERED_PIPELINE_INPUTS, ...LAYERED_LABELS_INPUTS, ...LAYERED_LOOPS_INPUTS, ...LAYERED_COMPOUND_INPUTS].sort();
     expect(Object.keys(hashes).sort()).toEqual(expected);
   });
 

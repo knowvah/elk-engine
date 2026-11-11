@@ -1,0 +1,172 @@
+{
+  "golden": [
+    {
+      "id": "ptolemy-scrambler--direction-right",
+      "path": "realworld/ptolemy/hierarchical/comm_scrambler_Scrambler.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-right",
+      "note": "ptolemy-scrambler x direction-right: layered, variant direction-right from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-scrambler--direction-left",
+      "path": "realworld/ptolemy/hierarchical/comm_scrambler_Scrambler.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-left",
+      "note": "ptolemy-scrambler x direction-left: layered, variant direction-left from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-scrambler--direction-down",
+      "path": "realworld/ptolemy/hierarchical/comm_scrambler_Scrambler.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-down",
+      "note": "ptolemy-scrambler x direction-down: layered, variant direction-down from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-scrambler--direction-up",
+      "path": "realworld/ptolemy/hierarchical/comm_scrambler_Scrambler.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-up",
+      "note": "ptolemy-scrambler x direction-up: layered, variant direction-up from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-scrambler--hierarchy-include",
+      "path": "realworld/ptolemy/hierarchical/comm_scrambler_Scrambler.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "hierarchy-include",
+      "note": "ptolemy-scrambler x hierarchy-include: layered, variant hierarchy-include from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-scrambler--hierarchy-separate",
+      "path": "realworld/ptolemy/hierarchical/comm_scrambler_Scrambler.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "hierarchy-separate",
+      "note": "ptolemy-scrambler x hierarchy-separate: layered, variant hierarchy-separate from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-clockdrift-hierarchy--direction-right",
+      "path": "realworld/ptolemy/hierarchical/de_clockdrift_ClockDriftHierarchy.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-right",
+      "note": "ptolemy-clockdrift-hierarchy x direction-right: layered, variant direction-right from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-clockdrift-hierarchy--direction-left",
+      "path": "realworld/ptolemy/hierarchical/de_clockdrift_ClockDriftHierarchy.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-left",
+      "note": "ptolemy-clockdrift-hierarchy x direction-left: layered, variant direction-left from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-clockdrift-hierarchy--direction-down",
+      "path": "realworld/ptolemy/hierarchical/de_clockdrift_ClockDriftHierarchy.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-down",
+      "note": "ptolemy-clockdrift-hierarchy x direction-down: layered, variant direction-down from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-clockdrift-hierarchy--direction-up",
+      "path": "realworld/ptolemy/hierarchical/de_clockdrift_ClockDriftHierarchy.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-up",
+      "note": "ptolemy-clockdrift-hierarchy x direction-up: layered, variant direction-up from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-clockdrift-hierarchy--hierarchy-include",
+      "path": "realworld/ptolemy/hierarchical/de_clockdrift_ClockDriftHierarchy.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "hierarchy-include",
+      "note": "ptolemy-clockdrift-hierarchy x hierarchy-include: layered, variant hierarchy-include from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-clockdrift-hierarchy--hierarchy-separate",
+      "path": "realworld/ptolemy/hierarchical/de_clockdrift_ClockDriftHierarchy.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "hierarchy-separate",
+      "note": "ptolemy-clockdrift-hierarchy x hierarchy-separate: layered, variant hierarchy-separate from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-afdx-multicast--direction-right",
+      "path": "realworld/ptolemy/hierarchical/de_afdx_AFDXMulticastSimple.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-right",
+      "note": "ptolemy-afdx-multicast x direction-right: layered, variant direction-right from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-afdx-multicast--direction-left",
+      "path": "realworld/ptolemy/hierarchical/de_afdx_AFDXMulticastSimple.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-left",
+      "note": "ptolemy-afdx-multicast x direction-left: layered, variant direction-left from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-afdx-multicast--direction-down",
+      "path": "realworld/ptolemy/hierarchical/de_afdx_AFDXMulticastSimple.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-down",
+      "note": "ptolemy-afdx-multicast x direction-down: layered, variant direction-down from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-afdx-multicast--direction-up",
+      "path": "realworld/ptolemy/hierarchical/de_afdx_AFDXMulticastSimple.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-up",
+      "note": "ptolemy-afdx-multicast x direction-up: layered, variant direction-up from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-afdx-multicast--hierarchy-include",
+      "path": "realworld/ptolemy/hierarchical/de_afdx_AFDXMulticastSimple.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "hierarchy-include",
+      "note": "ptolemy-afdx-multicast x hierarchy-include: layered, variant hierarchy-include from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-afdx-multicast--hierarchy-separate",
+      "path": "realworld/ptolemy/hierarchical/de_afdx_AFDXMulticastSimple.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "hierarchy-separate",
+      "note": "ptolemy-afdx-multicast x hierarchy-separate: layered, variant hierarchy-separate from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-crossbar-switch--direction-right",
+      "path": "realworld/ptolemy/hierarchical/de_switch_CrossbarSwitch.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-right",
+      "note": "ptolemy-crossbar-switch x direction-right: layered, variant direction-right from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-crossbar-switch--direction-left",
+      "path": "realworld/ptolemy/hierarchical/de_switch_CrossbarSwitch.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-left",
+      "note": "ptolemy-crossbar-switch x direction-left: layered, variant direction-left from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-crossbar-switch--direction-down",
+      "path": "realworld/ptolemy/hierarchical/de_switch_CrossbarSwitch.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-down",
+      "note": "ptolemy-crossbar-switch x direction-down: layered, variant direction-down from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-crossbar-switch--direction-up",
+      "path": "realworld/ptolemy/hierarchical/de_switch_CrossbarSwitch.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "direction-up",
+      "note": "ptolemy-crossbar-switch x direction-up: layered, variant direction-up from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-crossbar-switch--hierarchy-include",
+      "path": "realworld/ptolemy/hierarchical/de_switch_CrossbarSwitch.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "hierarchy-include",
+      "note": "ptolemy-crossbar-switch x hierarchy-include: layered, variant hierarchy-include from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "ptolemy-crossbar-switch--hierarchy-separate",
+      "path": "realworld/ptolemy/hierarchical/de_switch_CrossbarSwitch.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "hierarchy-separate",
+      "note": "ptolemy-crossbar-switch x hierarchy-separate: layered, variant hierarchy-separate from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    }
+  ]
+}

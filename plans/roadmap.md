@@ -1169,3 +1169,91 @@ replays its recorded expectation, and `full/labels/ticket-213_componentsCompacti
 
 **Follow-ups (outside this mission's write-sets).** The survivors and unreached graphs of issue #55; `SplineEdgeRouterSegments.ts:137
 if[1]` (`SplineEdgeRouter.java:395-404`) has no graph; the cleanup follow-ups of 7f and 7f2 stand.
+
+## Revision 2026-11-10 (layered-compound)
+
+Appended; no earlier line is edited. Source: H1-H14 in `plans/layered-compound/decisions.md`; the journal is
+`plans/layered-compound/decision-journal.md`. Where this section conflicts with the text above, this section wins. Task
+ids are T1-T16.
+
+**Row 7h is done.** The `compound` package (`CrossHierarchyEdge`, `CrossHierarchyEdgeComparator`, `CompoundGraphPreprocessor`,
+`CompoundGraphPostprocessor`) and `HierarchicalNodeResizingProcessor` are ported, the last pending arm
+(`HIERARCHICAL_NODE_RESIZER`) is wired, and the hierarchical driver of 7f (`doCompoundLayout`, `hierarchicalLayout`,
+`ElkLayeredHierarchy.ts`) is proven against the oracle with no defect found in it. `LayeredLayoutProvider.layout` runs every
+hierarchy-handling mode, `INCLUDE_CHILDREN` included. Design and runbook: `docs/architecture/alg-layered-compound.md`; counts:
+`docs/conformance.md` § alg.layered, part i.
+
+**Enum tally after 7h.** 59 arms ported, 0 pending (7b 10, 7c 10, 7d 5, 7e 6, 7f 6, 7f2 12, 7g 9, 7h 1).
+`test/architecture/staged-classes.json` is `[]`: the staged list is empty.
+
+**Evidence.**
+
+- `layered-compound.json` (12,237,513 bytes): `full` 355, `models` 73 (whole-tree stops), `scenarios` 88, `sites` 24 (19 run
+  rows, one of them logged, and 5 throw rows); `LayeredCompoundVectors.test.ts` replays every row through the real driver with 0
+  mismatches (542 tests, 5.3 s alone at batch 7; budget 30 s); `LayeredCompoundSites.test.ts` 27 tests.
+- Goldens: 24 refs under `test/golden/refs/elk-layered/` (four ptolemy hierarchical models × six direction and hierarchy
+  variants, `-XX:hashCode=2`, named in `_meta.json`), equal to the TS layout at AD-4; byte-equal to a run without the flag;
+  `refs/elk` and `refs/elk-algorithms` regenerate byte-identically.
+- Suites: 97 of 97 `alg.layered.test` Java files ported (the nine issue suites and `SelfLoopTestGraphCreator`'s helper); the
+  3 graph.json methods deferred to 7h ported (`EdgeCoordsTest`, `exportLayoutOptions`, `importIndividualSpacingsTest`); the
+  oracle runs at mission start and at mission end equal the baseline (`docs/conformance.md`).
+- Compound sweep: 1,169 oracle cases (part a 45, b 100, c 1,024; the 50 label-sweep refusals of 7g are part a's enumeration, 45
+  after the stress filter): 1,164 ok, 5 throws, 0 timeouts, 0 refusals; TS at stride 1: 1,164 hash-equal, 5 throws equal, 0
+  mismatches.
+- Twins: five of the six hashed-container sites of the 7h classes are order-independent on every row that reaches them (369,
+  297, 67, 197 and 321 rows, 0 differ); the postprocessor's `crossHierarchyMap.keySet()` order is observable in a shared port's
+  edge list in the intermediate tree (7 of 238 rows, 13 ids with the `sites` rows) and not in any export. The order a
+  treeified bucket would use is not established; the observable site has at most 6 keys.
+- Mutation checks: 206 mutants, 185 killed by the replay stage and the class tests and twins, 21 survivors (equivalent, or reached
+  and not observed by a recorded field); the anchored files alone kill 129.
+- Coverage of the 7h classes 99.6 / 98.0 / 100 / 99.6 (statements / branches / functions / lines); whole suite after batch 8
+  98.82 / 96.83 / 98.78 / 98.82, 956 files, 45,206 tests.
+- Landed vectors, goldens and refs unchanged; the refs diff adds `layered-compound.json`, `refs/elk-layered/**`,
+  `golden/layered.json`, 31 inputs under `inputs/compound/`, the sweep test, and appends 16 label texts to
+  `layered-label-metrics.json`.
+
+**Decisions taken during the run.** The task and journal rows hold each; the ones a later mission should know:
+
+- The compound `models` rows replay through `RecursiveGraphLayoutEngine`, like `full`, not through a direct `doCompoundLayout`
+  call (T1); a nested level's plan lacks the P3 sweep and the hierarchical greedy switch, which `hierarchicalLayout` skips
+  without notifying.
+- The recorder's tree dump gained `layerNodes` (T1 `fix`, before any TS existed); the first recording differs from the second
+  only by that field.
+- A throw row is a new row shape (`expected.throws` with class, message and the first ELK frame); a replay compares class and
+  the frame through a stack inspection (T14).
+- H5 part (c) selects no file as worded; `INCLUDE_CHILDREN` is applied at the root of every ptolemy hierarchical file (T13).
+- `STRESS_PENDING` lives in `test/helpers/stress-pending.ts`, not in the runner (T11).
+
+**Divergences fixed at origin.** The TS multimaps had no `toString` (`src/guava/Multimap.ts`, T14); the replay comparator's
+value-form maps and the `layerNodes` comparison were fixed in the helpers (T6, T7, T8, T9). None was a layout divergence.
+
+**Hand-offs.**
+
+- To 9 (elkt corpus): layered is ready to register for the corpus; `tools/corpus/ts-layout-compare.ts` registers no layered
+  algorithm today (a 7f follow-up), so the elkt corpus does not yet compare layered layouts.
+- To 8b (`elk.stress`, issue #58, H13): `Issue665Test` (1 case) and `Issue700Test` (2 of 4 cases) wait. Remove `STRESS_PENDING`
+  (`test/helpers/stress-pending.ts`) and its uses when stress is ported; the suites then run 1 + 2 more cases. A third stress
+  input, `tickets/layered/588_hierarchicalLayoutNPE.elkt`, is read by no 7h suite and is not vendored.
+- To 12 (docs site): `docs/architecture/alg-layered-compound.md` is new and linked from `docs/architecture/overview.md`,
+  `alg-layered.md` and `docs/conformance.md`; the site publishes `conformance.md` and `overview.md` as wrappers, and no
+  `alg-layered-*.md` page is in its `CANONICAL_PAGES` (unchanged from 7a to 7g).
+
+**Flags for the maintainer (open decisions).** Open `needs-ruling` issues (`gh issue list --label needs-ruling --state open`):
+
+- #61: the upstream drafts of this mission: U1 `SplineSegment.java:247` (`SPLINES` in `DOWN` or `UP` under `INCLUDE_CHILDREN`),
+  U2 `ElkGraphImporter.java:1146` (`425_selfLoopInCompoundNode.elkt`), U3 `LGraphUtil.java:944` (`FIXED_RATIO`, a `null`
+  `portNodeSize` from `CompoundGraphPreprocessor.java:182-185`), U4 `LayerSweepCrossingMinimizer.java:193-194` (one option
+  tested twice), U5 `HierarchicalNodeResizingProcessor.java:207-220` (`moveExternalPorts` overwritten for nested graphs).
+  Nothing is filed upstream.
+- #59: 25 handed-over arms neither reached nor proven dead (six of `NorthToSouthRoutingStrategy`/`SouthToNorthRoutingStrategy`,
+  19 of 7c's list); they stay as they are.
+- #58: the three stress cases above.
+- Earlier, still open: #56 (7g upstream drafts), #54 (spline segment edge order under compaction), #53 (NaN-canonical sweep
+  hash), #52 (platform of the label-metrics snapshot), #51 (sign and file upstream fixes).
+- The label metrics table grew by 16 texts; it remains a macOS JVM snapshot (FX8, #52).
+
+**Follow-ups (outside this mission's write-sets).** `follow-up` issues open: #60 (oracle graphs for the compound mutants no
+recorded field observes: G18, D10, D14, D15, D32 D33 D36 D39 D40 D44, the `moveExternalPorts` group, K9 and the others
+that need a recorder field), #62 (three p3order test titles that still say "U for the rows until 7h"), #63 (the `STRIP_KEYS`
+hand-off of `docs/architecture/elk-json.md` to 7h, which the brief did not carry and which changes landed parse refs), #55
+(7g's unobserved arms).

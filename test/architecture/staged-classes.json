@@ -1,5 +1,1 @@
-[
-  { "path": "src/alg/layered/compound/CompoundGraphPostprocessor.ts", "mission": "7h" },
-  { "path": "src/alg/layered/compound/CompoundGraphPreprocessor.ts", "mission": "7h" },
-  { "path": "src/alg/layered/compound/CrossHierarchyEdge.ts", "mission": "7h" }
-]
+[]

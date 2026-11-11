@@ -9,6 +9,8 @@ import {
   registerPipelineEnums,
   type FullRow,
 } from '../../../test/helpers/layered-pipeline-replay-rows.js';
+import { isCompoundFullRow, loadCompoundRowsIfPresent } from '../../../test/helpers/layered-compound-replay-rows.js';
+import { replayFull } from '../../../test/helpers/layered-compound-replay-stops.js';
 import { addNode } from '../../../test/helpers/lgraph-builders.js';
 import type { ILayoutProcessor } from '../../core/alg/ILayoutProcessor.js';
 import { UnsupportedGraphException } from '../../core/UnsupportedGraphException.js';
@@ -18,14 +20,10 @@ import { BasicProgressMonitor } from '../../core/util/BasicProgressMonitor.js';
 import { NullElkProgressMonitor } from '../../core/util/NullElkProgressMonitor.js';
 import { Pair } from '../../core/util/Pair.js';
 import { IllegalStateException } from '../../java/lang/IllegalStateException.js';
-import { UnsupportedOperationException } from '../../java/lang/UnsupportedOperationException.js';
 import { ElkLayered } from './ElkLayered.js';
 import { ElkLayeredTestExecutionState } from './ElkLayeredTestExecutionState.js';
 import { LGraph } from './graph/LGraph.js';
-import { CompoundGraphPostprocessor } from './compound/CompoundGraphPostprocessor.js';
-import { CompoundGraphPreprocessor } from './compound/CompoundGraphPreprocessor.js';
 import { CommentPreprocessor } from './intermediate/CommentPreprocessor.js';
-import { IntermediateProcessorStrategy } from './intermediate/IntermediateProcessorStrategy.js';
 import { CrossingMinimizationStrategy } from './options/CrossingMinimizationStrategy.js';
 import { HIERARCHY_AWARE, isHierarchyAwareLayoutProcessor } from './IHierarchyAwareLayoutProcessor.js';
 import { GraphProperties } from './options/GraphProperties.js';
@@ -43,6 +41,10 @@ beforeAll(() => {
 afterEach(() => {
   vi.restoreAllMocks();
 });
+
+const compoundFullRows = loadCompoundRowsIfPresent().filter(isCompoundFullRow);
+/** The `full` rows of the large Ptolemy models are left to the full-run sweeps (T9); every other `full` row is small. */
+const LARGE_COMPOUND_FULL_PREFIX = 'full/ptolemy-include/';
 
 const fullRows = loadPipelineRows(PIPELINE_REF).filter(isFullRow);
 
@@ -240,9 +242,7 @@ describe('ElkLayered.runHierarchyLevel (the hierarchical loop of ElkLayered.java
   });
 });
 
-describe('ElkLayered.doCompoundLayout (the compound classes and the node resizer stay staged until 7h)', () => {
-  const passThrough: ILayoutProcessor<LGraph> = { process: () => undefined };
-
+describe('ElkLayered.doCompoundLayout', () => {
   /** A root graph holding one node with a nested graph of one node, both laid out with INCLUDE_CHILDREN. */
   function compoundGraph(): { root: LGraph; nested: LGraph } {
     const root = new LGraph();
@@ -257,16 +257,16 @@ describe('ElkLayered.doCompoundLayout (the compound classes and the node resizer
     return { root, nested };
   }
 
-  it('stops at the staged compound graph preprocessor naming 7h', () => {
-    expect(() => new ElkLayered().doCompoundLayout(compoundGraph().root, null)).toThrow(
-      new UnsupportedOperationException('CompoundGraphPreprocessor is ported in mission 7h'),
-    );
+  it('completes a compound layout equal to its recorded full row (layered-compound.json, AD-4)', () => {
+    // the first small `full` row: INCLUDE_CHILDREN on a vendored input; every expected value is the row's
+    const row = compoundFullRows.find((candidate) => !candidate.id.startsWith(LARGE_COMPOUND_FULL_PREFIX))!;
+    const doCompoundLayout = vi.spyOn(ElkLayered.prototype, 'doCompoundLayout');
+    expect(replayFull(row).diffs).toEqual([]);
+    expect(doCompoundLayout).toHaveBeenCalledTimes(1);
+    expect(doCompoundLayout.mock.results[0]?.type).toBe('return');
   });
 
   it('runs the plan of every graph bottom up between the compound pre- and postprocessor', () => {
-    vi.spyOn(CompoundGraphPreprocessor.prototype, 'process').mockImplementation(() => undefined as never);
-    vi.spyOn(CompoundGraphPostprocessor.prototype, 'process').mockImplementation(() => undefined as never);
-    vi.spyOn(IntermediateProcessorStrategy.HIERARCHICAL_NODE_RESIZER, 'create').mockReturnValue(passThrough);
     const layered = new ElkLayered();
     const events: string[] = [];
     const controller = new TestController('org.eclipse.elk.layered');
@@ -291,7 +291,6 @@ describe('ElkLayered.doCompoundLayout (the compound classes and the node resizer
   });
 
   it('rejects a child whose crossing minimization differs from the root before preparing any graph', () => {
-    vi.spyOn(CompoundGraphPreprocessor.prototype, 'process').mockImplementation(() => undefined as never);
     const { root, nested } = compoundGraph();
     nested.setProperty(LayeredOptions.CROSSING_MINIMIZATION_STRATEGY, CrossingMinimizationStrategy.NONE);
     expect(() => new ElkLayered().doCompoundLayout(root, null)).toThrow(UnsupportedGraphException);

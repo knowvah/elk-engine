@@ -2,8 +2,8 @@
 // Proof of LayerSweepCrossingMinimizer (mission 7c, T7): every row of layered-order.json whose last step runs
 // `P3_NODE_ORDERING LAYER_SWEEP` or `MEDIAN_LAYER_SWEEP`, replayed through `CrossingMinimizationStrategy.<S>.create()`,
 // with the greedy-switch processors injected by name (T8 wires the enum arms). Expectations come only from the rows
-// and the Java (L4). The nested-graph paths (`GraphInfoHolder` child graphs, `sweepInHierarchicalNodes`) are U until
-// 7h: no row nests graphs.
+// and the Java (L4). The nested-graph paths (`GraphInfoHolder` child graphs, `sweepInHierarchicalNodes`) are proven by the
+// `layered-compound.json` rows (mission 7h), not here.
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
 import { Random } from '../../../java/util/Random.js';

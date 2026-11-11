@@ -73,6 +73,17 @@ const ENTRY_POINTS: readonly string[] = [
   'src/alg/layered/intermediate/loops/routing/LabelPlacer.ts',
   'src/alg/layered/intermediate/loops/ordering/PortRestorer.ts',
   'src/alg/layered/intermediate/loops/ordering/PortSideAssigner.ts',
+  // mission 7h (T5)
+  'src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts',
+  'src/alg/layered/compound/CrossHierarchyEdge.ts',
+  'src/alg/layered/compound/CrossHierarchyEdgeComparator.ts',
+  // mission 7h (T6)
+  'src/alg/layered/compound/CompoundGraphPreprocessorSections.ts',
+  // mission 7h (T7)
+  'src/alg/layered/compound/CompoundGraphPostprocessorSections.ts',
+  // mission 7h (T8): the facades, now delegating to the sections
+  'src/alg/layered/compound/CompoundGraphPreprocessor.ts',
+  'src/alg/layered/compound/CompoundGraphPostprocessor.ts',
 ];
 
 /** Imports `entry` in a fresh process; returns its exit status (0 on success) and captured stderr. */

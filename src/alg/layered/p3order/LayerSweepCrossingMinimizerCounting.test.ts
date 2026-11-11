@@ -2,8 +2,8 @@
 // Unit cases of the counting functions of LayerSweepCrossingMinimizer (java:334-448; mission 7c, T7), decided by hand
 // from the Java. The model-order part of `countCurrentNumberOfCrossingsNodePortOrder` runs in the replay of
 // `scenarios/LayerSweep/model-order-influence` and the other rows with a crossing-counter influence (see
-// LayerSweepCrossingMinimizer.test.ts); the recursion into child graphs is U until 7h and is exercised through the
-// hand-built nested graph of LayerSweepCrossingMinimizerSweep.test.ts.
+// LayerSweepCrossingMinimizer.test.ts); the recursion into child graphs is proven by the `layered-compound.json` rows (mission 7h) and
+// is also exercised through the hand-built nested graph of LayerSweepCrossingMinimizerSweep.test.ts.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { addLayer, addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 // The hierarchical sweep of LayerSweepCrossingMinimizer (java:450-503; mission 7c, T7) on a hand-built nested graph:
-// no oracle row nests graphs, so `sweepInHierarchicalNodes`, `sweepInHierarchicalNode` and the recursion of
-// `countCurrentNumberOfCrossings` are U for the rows until 7h. The checks are the invariants the Java guarantees
+// `sweepInHierarchicalNodes`, `sweepInHierarchicalNode` and the recursion of `countCurrentNumberOfCrossings` are proven
+// by the `layered-compound.json` rows (mission 7h). The checks are the invariants the Java guarantees
 // whatever the random sweep direction is: the layout is a permutation of the input, the ports of the host node are a
 // permutation of its ports, and every graph that was swept holds a best copy of its order.
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -141,7 +141,7 @@ describe('the hierarchical sweep (hand-built nested graph; U for the rows until 
   });
 
   it('sweeps a child with crossed east dummies: the root greedy port distributor and the child switch run (exercise)', () => {
-    // The resulting orders are algorithmic outcomes: an oracle row of mission 7h proves them (L4, U until 7h). Here only
+    // The resulting orders are algorithmic outcomes: the `layered-compound.json` rows of mission 7h prove them (L4). Here only
     // the invariants the Java guarantees are asserted: every port and dummy survives as a permutation and both graphs
     // hold a best copy.
     const { root, child, host, hostPorts, eastDummies } = nested('east');
@@ -157,7 +157,7 @@ describe('the hierarchical sweep (hand-built nested graph; U for the rows until 
   });
 
   it('sweeps a child with crossed west dummies: the child greedy switch meets a parent port counter (exercise)', () => {
-    // As above: the orders are 7h's to prove; only the permutation invariants are asserted here.
+    // As above: the orders are proven by the `layered-compound.json` rows; only the permutation invariants are asserted here.
     const { root, child, host, hostPorts, westDummies } = nested('west');
     const phase = new LayerSweepCrossingMinimizer(CrossMinType.TWO_SIDED_GREEDY_SWITCH);
     phase.process(root, new NullElkProgressMonitor());

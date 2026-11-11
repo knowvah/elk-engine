@@ -193,5 +193,7 @@ Notes:
   would hide it. Any such list is sorted in the recording.
 - `STRIP_KEYS` shrinks in mission 7h, when layered's `layerId` and `positionId` options are
   registered; then regenerate the parse refs and remove the keys from both places.
+  Mission 7h's brief did not carry this hand-off, and it changes landed parse refs, so both
+  places still strip the two keys; issue #63 asks for the decision.
 - Regenerating a ref is journaled with the patch id (`CLAUDE.md`, Verification); never regenerate
   to make a failing test pass.

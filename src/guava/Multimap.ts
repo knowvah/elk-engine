@@ -244,6 +244,18 @@ export class BucketMultimap<K, V, B extends Bucket<V>> implements Multimap<K, V>
     return out;
   }
 
+  /**
+   * `AbstractMultimap.toString()`: `asMap().toString()`, so `{k1=[v1, v2], k2=[v3]}` with the keys in `keySet()` order and
+   * each key's values in its bucket's order, each element through `String.valueOf` (`null` prints `null`).
+   *
+   * @see https://guava.dev/releases/33.3.0-jre/api/docs/com/google/common/collect/AbstractMultimap.html#toString()
+   */
+  toString(): string {
+    const text = (element: unknown): string => String(element);
+    const groups = this.keySet().map((k) => `${text(k)}=[${[...(this.bucketOf(k) as B)].map(text).join(', ')}]`);
+    return `{${groups.join(', ')}}`;
+  }
+
   private open(k: K): B {
     const bucket = this.newBucket(k);
     this.table.put(k, bucket);

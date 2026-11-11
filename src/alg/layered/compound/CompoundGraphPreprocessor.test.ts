@@ -1,18 +1,30 @@
 // SPDX-License-Identifier: EPL-2.0
-// CompoundGraphPreprocessor is a staged class (L1, F1): process throws until mission 7h.
-import { describe, expect, it } from 'vitest';
-import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
-import { LGraph } from '../graph/LGraph.js';
+// CompoundGraphPreprocessor: the facade (mission 7h, T8, H7). `process` delegates to the section entry (`CompoundGraphPreprocessorSections.ts`, H11); the
+// behaviour itself is proven by the section tests against the whole ref. Here one recorded `models` row whose stop is the preprocessor is
+// replayed through the real driver: the facade's `process` is observed by a call-through spy (it runs the real method), the tree
+// at the stop is compared with the row's `expected.tree` at AD-4 (L4: the row is the only expectation).
+import { afterEach, expect, it, vi } from 'vitest';
+import {
+  describeCompound,
+  isCompoundModelsRow,
+  loadCompoundRowsIfPresent,
+} from '../../../../test/helpers/layered-compound-replay-rows.js';
+import { runToStop } from '../../../../test/helpers/layered-compound-replay-stops.js';
 import { CompoundGraphPreprocessor } from './CompoundGraphPreprocessor.js';
 
-const STAGED_MESSAGE = 'CompoundGraphPreprocessor is ported in mission 7h';
+const row = loadCompoundRowsIfPresent()
+  .filter(isCompoundModelsRow)
+  .find((candidate) => candidate.expected.stop.className === 'CompoundGraphPreprocessor');
 
-describe('CompoundGraphPreprocessor (staged, mission 7h)', () => {
-  it('process names 7h', () => {
-    const processor = new CompoundGraphPreprocessor();
-    const run = (): never => processor.process(new LGraph(), new NullElkProgressMonitor());
-    expect(run).toThrow(new UnsupportedOperationException(STAGED_MESSAGE));
-    expect(run).toThrow(UnsupportedOperationException);
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+describeCompound('CompoundGraphPreprocessor (the facade)', () => {
+  it('delegates process to the section entry: one call per compound layout, the recorded tree at the stop', () => {
+    const process = vi.spyOn(CompoundGraphPreprocessor.prototype, 'process');
+    const result = runToStop(row!);
+    expect(process).toHaveBeenCalledTimes(1);
+    expect(result.diffs).toEqual([]);
   });
 });

@@ -2,10 +2,13 @@
 # SPDX-License-Identifier: EPL-2.0
 # Regenerates the committed oracle golden refs (AD-5) from the pinned
 # elk-models corpus. Output is byte-stable: no timestamps.
-# Usage: regen-goldens.sh [--set default|algorithms]
+# Usage: regen-goldens.sh [--set default|algorithms|layered]
 #   default     test/corpus/manifest.json  -> test/golden/refs/elk
 #   algorithms  test/golden/algorithms.json -> test/golden/refs/elk-algorithms
-# Both sets take the pinned models commit from test/corpus/manifest.json.
+#   layered     test/golden/layered.json   -> test/golden/refs/elk-layered
+# All sets take the pinned models commit from test/corpus/manifest.json.
+# The layered set runs the oracle JVM with -XX:hashCode=2 (H4), recorded as
+# "jvmFlags" in its _meta.json; the other sets run without it.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -19,13 +22,15 @@ ELK_ORACLE_DIR="${ELK_ORACLE_DIR:-$ROOT/../elk-oracle}"
 MODELS_DIR="${ELK_MODELS_DIR:-$ROOT/../../eclipse-elk/elk-models}"
 GENERATED_BY="tools/oracle/regen-goldens.sh"
 META_FILE="_meta.json"
+JVM_FLAGS=""
+LAYERED_JVM_FLAGS="-XX:hashCode=2"
 
 die() {
   echo "error: $1" >&2
   exit 1
 }
 
-select_set() { # select_set <default|algorithms>
+select_set() { # select_set <default|algorithms|layered>
   case "$1" in
     default) ;;
     algorithms)
@@ -34,7 +39,15 @@ select_set() { # select_set <default|algorithms>
       REFS_DIR="$REFS_PARENT/$REFS_NAME"
       VENDORED_DIR="$ROOT/test/golden/inputs"
       ;;
-    *) die "unknown set '$1' (expected default or algorithms)" ;;
+    layered)
+      MANIFEST="$ROOT/test/golden/layered.json"
+      REFS_NAME="elk-layered"
+      REFS_DIR="$REFS_PARENT/$REFS_NAME"
+      VENDORED_DIR="$ROOT/test/golden/inputs/pipeline"
+      JVM_FLAGS="$LAYERED_JVM_FLAGS"
+      export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-XX:+UnlockExperimentalVMOptions $JVM_FLAGS"
+      ;;
+    *) die "unknown set '$1' (expected default, algorithms or layered)" ;;
   esac
 }
 
@@ -111,7 +124,7 @@ require_vendored_inputs() {
 write_meta() { # write_meta <dest file>
   node -e '
     const fs = require("fs");
-    const [build, corpusManifest, generatedBy] = process.argv.slice(1, 4);
+    const [build, corpusManifest, generatedBy, jvmFlags] = process.argv.slice(1, 5);
     const b = JSON.parse(fs.readFileSync(build, "utf8"));
     const m = JSON.parse(fs.readFileSync(corpusManifest, "utf8"));
     const meta = {
@@ -121,8 +134,9 @@ write_meta() { # write_meta <dest file>
       modelsCommit: m.commit,
       generatedBy,
     };
-    fs.writeFileSync(process.argv[4], JSON.stringify(meta, null, 2) + "\n");
-  ' "$ELK_ORACLE_DIR/oracle-build.json" "$CORPUS_MANIFEST" "$GENERATED_BY" "$1"
+    if (jvmFlags !== "") meta.jvmFlags = jvmFlags;
+    fs.writeFileSync(process.argv[5], JSON.stringify(meta, null, 2) + "\n");
+  ' "$ELK_ORACLE_DIR/oracle-build.json" "$CORPUS_MANIFEST" "$GENERATED_BY" "$JVM_FLAGS" "$1"
 }
 
 run_harness() { # run_harness <outDir> <casesFile>

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 // Unit cases of LayerSweepTypeDecider (mission 7c, T7), decided by hand from LayerSweepTypeDecider.java:66-136: on the
 // root graphs of the oracle rows it only reaches `rootNode()` (every LayerSweepCrossingMinimizer row passes through
-// it), the other branches need a nested graph and are U for the rows until 7h. Each nested graph below is built by hand
+// it), the other branches need a nested graph and are proven by the `layered-compound.json` rows (7h). Each nested graph below is built by hand
 // with the counts worked out in the comment of its case.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { addLayer, addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';

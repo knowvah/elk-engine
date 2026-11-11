@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
 import { ConstraintsPostprocessor } from './ConstraintsPostprocessor.js';
@@ -19,6 +18,7 @@ import { HypernodesProcessor } from './HypernodesProcessor.js';
 import { InLayerConstraintProcessor } from './InLayerConstraintProcessor.js';
 import { InnermostNodeMarginCalculator } from './InnermostNodeMarginCalculator.js';
 import { InteractiveExternalPortPositioner } from './InteractiveExternalPortPositioner.js';
+import { HierarchicalNodeResizingProcessor } from './HierarchicalNodeResizingProcessor.js';
 import { IntermediateProcessorStrategy as Strategy } from './IntermediateProcessorStrategy.js';
 import { createIntermediateProcessor } from './IntermediateProcessorStrategyCreate.js';
 import { InvertedPortProcessor } from './InvertedPortProcessor.js';
@@ -188,7 +188,7 @@ const ARMS: Record<Name, [string, string]> = {
   DIRECTION_POSTPROCESSOR: ['GraphTransformer', '7f'],
 };
 
-/** The ported (missions 7b, 7c, 7d, the six 7e processors of T5 and T9, and the six 7f processors wired by T8, the twelve 7f2 arms wired by T11, the nine 7g arms wired by T15) arms: constant name to the class `create()` returns. */
+/** The ported (missions 7b, 7c, 7d, the six 7e processors of T5 and T9, and the six 7f processors wired by T8, the twelve 7f2 arms wired by T11, the nine 7g arms wired by T15, the 7h node resizer wired by T8) arms: constant name to the class `create()` returns. */
 const PORTED = {
   EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER: EdgeAndLayerConstraintEdgeReverser,
   INTERACTIVE_EXTERNAL_PORT_POSITIONER: InteractiveExternalPortPositioner,
@@ -248,6 +248,7 @@ const PORTED = {
   SELF_LOOP_POSTPROCESSOR: SelfLoopPostProcessor,
   BREAKING_POINT_REMOVER: BreakingPointRemover,
   HORIZONTAL_COMPACTOR: HorizontalGraphCompactor,
+  HIERARCHICAL_NODE_RESIZER: HierarchicalNodeResizingProcessor,
 } as const;
 
 /** The six 7e members ported by T5 and T9 (`FINAL_SPLINE_BENDPOINTS_CALCULATOR` is T9's). */
@@ -306,17 +307,9 @@ describe('IntermediateProcessorStrategy', () => {
     expect(Strategy.valueOf(name).create()).not.toBe(created);
   });
 
-  it.each(PENDING)('create() of %s throws UnsupportedOperationException naming its class and mission', (name) => {
-    const [className, mission] = ARMS[name];
-    expect(() => Strategy[name].create()).toThrow(UnsupportedOperationException);
-    expect(() => Strategy[name].create()).toThrow(
-      new UnsupportedOperationException(`${className} is ported in mission ${mission}`),
-    );
-  });
-
-  it('ports exactly the 7b, 7c, 7d, 7e, 7f, 7f2 and 7g members and leaves the other 1 pending (7h 1)', () => {
-    expect(PORTED_NAMES.size).toBe(58);
-    expect(PENDING).toHaveLength(1);
+  it('ports every member: 59 ported (7b, 7c, 7d, 7e, 7f, 7f2, 7g and 7h) and 0 pending', () => {
+    expect(PORTED_NAMES.size).toBe(59);
+    expect(PENDING).toHaveLength(0);
     expect(
       DECLARED.filter(
         (name) =>
@@ -326,6 +319,7 @@ describe('IntermediateProcessorStrategy', () => {
           ARMS[name][1] === '7f' ||
           ARMS[name][1] === '7f2' ||
           ARMS[name][1] === '7g' ||
+          ARMS[name][1] === '7h' ||
           (ARMS[name][1] === '7e' && PORTED_IN_7E.has(name)),
       ).sort(),
     ).toEqual([...PORTED_NAMES].sort());

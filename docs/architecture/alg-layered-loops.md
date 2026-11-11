@@ -57,7 +57,8 @@ Task boundaries moved at batch 2 (journal): T5 also ported `SelfLoopPreProcessor
 enum arms kept throwing until T15 (W13).
 
 **The 9 arms (W1, T15), and where the plan adds them.** Each arm is constructed as the Java does. The enum tally is 7b 10,
-7c 10, 7d 5, 7e 6, 7f 6, 7f2 12, 7g 9, 7h 1: **58 arms ported, 1 pending (7h `HIERARCHICAL_NODE_RESIZER`)**.
+7c 10, 7d 5, 7e 6, 7f 6, 7f2 12, 7g 9, 7h 1: **58 arms ported at the end of 7g; mission 7h wired the last, `HIERARCHICAL_NODE_RESIZER`, so
+now 59 are ported and 0 are pending**.
 
 | Arm                                                                             | Added by                                                                                                                                                      |
 | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -277,7 +278,8 @@ settled: `EndLabelPreprocessor.ts:145` is reached by `sites/EndLabelPreprocessor
 `JsonDebugUtilGraph.ts:191` are U with their Java lines (`DotDebugUtil.java:191`, `JsonDebugUtil.java:643`). 7e's list is
 settled too: `NorthSouthPortPostprocessor.processSelfLoop` is reached by `scenarios/DummySelfLoopProcessor/NORTH-NORTH/RIGHT/end`,
 the orthogonal router's self loop arm by `…/EAST-EAST/RIGHT/end`, and the far arms of `segmentAllowsSloppyRouting` are
-reached. The `NorthToSouth`/`SouthToNorth` routing strategy arms run only from the hierarchical port router (U, 7h).
+reached. The `NorthToSouth`/`SouthToNorth` routing strategy arms run only from the hierarchical port router; mission 7h's rows do not
+reach `:38 if[0]`, `:58 if[1]` and `:78 if[0]` either, and they are open in issue #59.
 `NubsSelfLoop` has no caller in ELK: U.
 
 **Unobserved.** A site row can reach an arm without observing it: the `invertedPorts/*` rows reach `NetworkSimplexCompaction`'s
@@ -325,11 +327,11 @@ variable (`LOOPS_FILTER`, ...), because the stamp does not cover them. Run the J
 | A site row passes but a mutation survives           | `unreached.md`, issue #55                                                                                            | the row reaches the arm without observing it; a discriminating oracle graph is needed                                                                                                           |
 | A cap exceeded                                      | the recorder's size or line check                                                                                    | 16 MiB per ref, 5,000 lines per launcher: a decision                                                                                                                                            |
 | A replay of another ref reports label-manager names | `layered-labels.json` rows mismatching on `properties[…labelManager]`                                                | rows of another ref keep 7f2's twin; only rows tagged from the loops ref take the loops twin                                                                                                    |
-| `layout` throws `… ported in mission 7h`            | `INCLUDE_CHILDREN`, the compound stages                                                                              | expected until 7h                                                                                                                                                                               |
+| `layout` throws `… ported in mission 7h`            | `INCLUDE_CHILDREN`, the compound stages                                                                              | not expected since 7h: a throw of this text is a regression (see [alg-layered-compound.md](alg-layered-compound.md))                                                                            |
 
 ## What still throws
 
-`INCLUDE_CHILDREN`: 7h, 1 pending arm (`HIERARCHICAL_NODE_RESIZER`, in `HierarchicalNodeResizingProcessor`) plus the compound
-stages (`CompoundGraphPreprocessor`, `CompoundGraphPostprocessor`, `CrossHierarchyEdge`, listed in
-`test/architecture/staged-classes.json`). Each throws `UnsupportedOperationException` naming the class and mission, at plan
-build. Self loops, wrapping, compaction and `compaction.connectedComponents` run.
+Nothing of this part. After mission 7h, `INCLUDE_CHILDREN` runs: the last pending arm (`HIERARCHICAL_NODE_RESIZER`, in
+`HierarchicalNodeResizingProcessor`) is wired, the compound classes are ported, and `test/architecture/staged-classes.json`
+is `[]`. Self loops, wrapping, compaction and `compaction.connectedComponents` run. See
+[alg-layered-compound.md](alg-layered-compound.md).

@@ -2,18 +2,23 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { AbstractLayoutProvider } from '../../core/AbstractLayoutProvider.js';
 import { LayoutMetaDataService } from '../../core/data/LayoutMetaDataService.js';
-import { HierarchyHandling } from '../../core/options/HierarchyHandling.js';
 import { TestController } from '../../core/testing/TestController.js';
 import { NullElkProgressMonitor } from '../../core/util/NullElkProgressMonitor.js';
 import type { ElkNode } from '../../graph/ElkNode.js';
 import { ElkGraphUtil } from '../../graph/util/ElkGraphUtil.js';
-import { UnsupportedOperationException } from '../../java/lang/UnsupportedOperationException.js';
-import { importSiteInput } from '../../../test/helpers/transform-site-rows.js';
+import { compareLayout, formatDiffs } from '../../../test/golden/compare-json.js';
+import { exportElk, importSiteInput, loadSiteRow } from '../../../test/helpers/transform-site-rows.js';
 import { ElkLayered } from './ElkLayered.js';
 import { LayeredLayoutProvider } from './LayeredLayoutProvider.js';
 import { LayeredOptions } from './options/LayeredOptions.js';
 
-const COMPOUND_STAGED_MESSAGE = 'CompoundGraphPreprocessor is ported in mission 7h';
+const INCLUDE_CHILDREN_ROW = 'site/provider/include-children';
+
+/** The AD-4 diffs of the laid-out `root` against the recorded `elk` export of the layered-sites row `id`. */
+function diffsAgainstRow(id: string, root: ElkNode): string {
+  const comparison = compareLayout(loadSiteRow(id).expected.elk, exportElk(root));
+  return comparison.ok ? '' : formatDiffs(comparison.diffs);
+}
 
 function graphWithNode(): ElkNode {
   const graph = ElkGraphUtil.createGraph();
@@ -44,17 +49,16 @@ describe('LayeredLayoutProvider', () => {
     expect(doCompoundLayout).not.toHaveBeenCalled();
   });
 
-  it('delegates INCLUDE_CHILDREN to doCompoundLayout, which stops at the staged compound preprocessor', () => {
+  it('delegates INCLUDE_CHILDREN to doCompoundLayout, which completes the recorded layout', () => {
     const provider = new LayeredLayoutProvider();
     const doLayout = vi.spyOn(provider.getLayoutAlgorithm(), 'doLayout');
     const doCompoundLayout = vi.spyOn(provider.getLayoutAlgorithm(), 'doCompoundLayout');
-    const graph = graphWithNode();
-    graph.setProperty(LayeredOptions.HIERARCHY_HANDLING, HierarchyHandling.INCLUDE_CHILDREN);
-    expect(() => provider.layout(graph, new NullElkProgressMonitor())).toThrow(
-      new UnsupportedOperationException(COMPOUND_STAGED_MESSAGE),
-    );
+    const root = importSiteInput(INCLUDE_CHILDREN_ROW);
+    provider.layout(root, new NullElkProgressMonitor());
     expect(doCompoundLayout).toHaveBeenCalledTimes(1);
+    expect(doCompoundLayout.mock.results[0]?.type).toBe('return');
     expect(doLayout).not.toHaveBeenCalled();
+    expect(diffsAgainstRow(INCLUDE_CHILDREN_ROW, root)).toBe('');
   });
 
   it('imports the graph before the layout test preparation', () => {
@@ -88,8 +92,8 @@ describe('LayeredLayoutProvider', () => {
 });
 
 describe('LayeredLayoutProvider (oracle site rows)', () => {
-  // The flat rows lay out for real since 7f2 (FX5); the INCLUDE_CHILDREN rows stop at the staged
-  // `CompoundGraphPreprocessor` (7h) before the `isCanceled` arm, so only the flat cancelled row has a case here.
+  // The flat rows lay out for real since 7f2 (FX5) and the INCLUDE_CHILDREN row since 7h; only the flat cancelled row has a
+  // cancelled case here.
   it('imports a flat labelled graph, hands it to doLayout and applies the recorded layout', () => {
     // oracle: site/provider/flat; LayeredLayoutProvider.java:59-60 (layout, flat arm); coordinates of the row
     const provider = new LayeredLayoutProvider();
@@ -122,21 +126,21 @@ describe('LayeredLayoutProvider (oracle site rows)', () => {
     expect(root.getHeight()).toBe(0);
   });
 
-  it('imports an INCLUDE_CHILDREN hierarchy and hands it to doCompoundLayout, which stops at the staged compound preprocessor', () => {
+  it('imports an INCLUDE_CHILDREN hierarchy, hands it to doCompoundLayout and applies the recorded layout', () => {
     // oracle: site/provider/include-children; LayeredLayoutProvider.java:55-57 (layout, INCLUDE_CHILDREN arm)
     const provider = new LayeredLayoutProvider();
     const doLayout = vi.spyOn(provider.getLayoutAlgorithm(), 'doLayout');
     const doCompoundLayout = vi.spyOn(provider.getLayoutAlgorithm(), 'doCompoundLayout');
-    const root = importSiteInput('site/provider/include-children');
+    const root = importSiteInput(INCLUDE_CHILDREN_ROW);
     const monitor = new NullElkProgressMonitor();
     const isCanceled = vi.spyOn(monitor, 'isCanceled');
-    expect(() => provider.layout(root, monitor)).toThrow(new UnsupportedOperationException(COMPOUND_STAGED_MESSAGE));
+    provider.layout(root, monitor);
     expect(doCompoundLayout).toHaveBeenCalledTimes(1);
     expect(doLayout).not.toHaveBeenCalled();
-    expect(isCanceled).not.toHaveBeenCalled();
+    expect(isCanceled).toHaveBeenCalled();
     const imported = doCompoundLayout.mock.calls[0]?.[0];
     expect(imported?.getLayerlessNodes().length).toBe(2);
     expect(imported?.getLayerlessNodes()[1]?.getNestedGraph()?.getLayerlessNodes().length).toBe(2);
-    expect(root.getChildren().get(0)?.getX()).toBe(0);
+    expect(diffsAgainstRow(INCLUDE_CHILDREN_ROW, root)).toBe('');
   });
 });

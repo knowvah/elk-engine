@@ -1,0 +1,263 @@
+{
+  "sites/CompoundGraphPreprocessor/portLabelNorth": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorSections.ts",
+      "line": 214,
+      "arm": "if[1]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/insideSelfLoopFlow": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 58,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 97,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 308,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 308,
+      "arm": "binary-expr[2]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 311,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 311,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 313,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 313,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 329,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 329,
+      "arm": "binary-expr[2]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 332,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 332,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 334,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 334,
+      "arm": "binary-expr[1]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/fixedSideOut": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 196,
+      "arm": "cond-expr[1]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/deepOutMerged": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorSegments.ts",
+      "line": 254,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorSegments.ts",
+      "line": 438,
+      "arm": "if[1]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/deepToParentPort": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorSegments.ts",
+      "line": 214,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorSegments.ts",
+      "line": 218,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorSegments.ts",
+      "line": 259,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorSegments.ts",
+      "line": 302,
+      "arm": "if[1]"
+    }
+  ],
+  "sites/CompoundGraphPostprocessor/unnecessaryBendpoints/RIGHT": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPostprocessorSections.ts",
+      "line": 223,
+      "arm": "binary-expr[4]"
+    }
+  ],
+  "sites/CompoundGraphPostprocessor/unnecessaryBendpoints/DOWN": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPostprocessorSections.ts",
+      "line": 223,
+      "arm": "binary-expr[4]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPostprocessorSections.ts",
+      "line": 223,
+      "arm": "binary-expr[5]"
+    }
+  ],
+  "sites/HierarchicalNodeResizingProcessor/defaultMinimum": [
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 112,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 116,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/HierarchicalNodeResizingProcessor/minimumWithoutDefault": [
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 111,
+      "arm": "if[1]"
+    }
+  ],
+  "sites/ElkLayered/childStrategyThrow": [
+    {
+      "file": "src/alg/layered/ElkLayeredHierarchy.ts",
+      "line": 49,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/LayerSweepCrossingMinimizer/modelOrderCounterTopDown": [
+    {
+      "file": "src/alg/layered/p3order/LayerSweepCrossingMinimizerCounting.ts",
+      "line": 161,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/LayerSweepCrossingMinimizer/modelOrderCounterBottomUp": [
+    {
+      "file": "src/alg/layered/p3order/LayerSweepCrossingMinimizerCounting.ts",
+      "line": 161,
+      "arm": "if[1]"
+    }
+  ],
+  "sites/CommentPreprocessor/hierarchicalPortDummy/lone": [
+    {
+      "file": "src/alg/layered/intermediate/CommentPreprocessor.ts",
+      "line": 225,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/intermediate/CommentPreprocessor.ts",
+      "line": 229,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/intermediate/CommentPreprocessor.ts",
+      "line": 232,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/intermediate/CommentPreprocessor.ts",
+      "line": 235,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/CommentPreprocessor/hierarchicalPortDummy/shared": [
+    {
+      "file": "src/alg/layered/intermediate/CommentPreprocessor.ts",
+      "line": 232,
+      "arm": "if[1]"
+    }
+  ],
+  "sites/GraphConfigurator/levelOptions": [
+    {
+      "file": "src/alg/layered/GraphConfigurator.ts",
+      "line": 110,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/GraphConfigurator.ts",
+      "line": 130,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/GraphConfigurator.ts",
+      "line": 130,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "file": "src/alg/layered/GraphConfigurator.ts",
+      "line": 244,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/GraphConfigurator.ts",
+      "line": 327,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/OrthogonalEdgeRouter/extPortSelfLoop/north": [
+    {
+      "file": "src/alg/layered/p5edges/orthogonal/direction/SouthToNorthRoutingStrategy.ts",
+      "line": 54,
+      "arm": "if[1]"
+    }
+  ],
+  "sites/OrthogonalEdgeRouter/extPortSelfLoop/south": [
+    {
+      "file": "src/alg/layered/p5edges/orthogonal/direction/NorthToSouthRoutingStrategy.ts",
+      "line": 54,
+      "arm": "if[1]"
+    }
+  ],
+  "sites/JsonDebugUtil/loggedCompound": [
+    {
+      "file": "src/alg/layered/JsonDebugUtilGraph.ts",
+      "line": 135,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CrossHierarchyEdge.ts",
+      "line": 37,
+      "arm": "fn"
+    }
+  ]
+}

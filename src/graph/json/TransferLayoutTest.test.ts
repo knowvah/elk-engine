@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 // Port of org.eclipse.elk.graph.json.test.TransferLayoutTest; assertions frozen (AD-13).
 // Ported: transferLayoutTest, transferLayoutFailTest, transferLayoutEdgeSectionExistsTest (J6 closed; uses `random`).
-// Deferred:
-//   - EdgeCoordsTest.edgeCoordsTest (the whole EdgeCoordsTest file, 1 method) -> mission 7h (layered)
+// Ported: EdgeCoordsTest.edgeCoordsTest (the whole EdgeCoordsTest file, 1 method) -> `EdgeCoordsTest.test.ts` (mission 7h, T11).
 // @see test/org.eclipse.elk.graph.json.test/src/org/eclipse/elk/graph/json/test/TransferLayoutTest.xtend
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LayoutMetaDataService } from '../../core/data/LayoutMetaDataService.js';
