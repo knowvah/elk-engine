@@ -1,0 +1,149 @@
+{
+  "id": "root",
+  "layoutOptions": {
+    "org.eclipse.elk.algorithm": "org.eclipse.elk.sporeOverlap"
+  },
+  "edges": [
+    {
+      "id": "e0",
+      "sources": [
+        "n0"
+      ],
+      "targets": [
+        "n3"
+      ]
+    },
+    {
+      "id": "e1",
+      "sources": [
+        "n3"
+      ],
+      "targets": [
+        "n7"
+      ]
+    },
+    {
+      "id": "e2",
+      "sources": [
+        "n5"
+      ],
+      "targets": [
+        "n11"
+      ]
+    }
+  ],
+  "children": [
+    {
+      "id": "n0",
+      "x": 45,
+      "y": 79,
+      "width": 90,
+      "height": 60
+    },
+    {
+      "id": "n1",
+      "x": 89,
+      "y": 104,
+      "width": 90,
+      "height": 60
+    },
+    {
+      "id": "n2",
+      "x": 150,
+      "y": 2,
+      "width": 80,
+      "height": 40
+    },
+    {
+      "id": "n3",
+      "x": 149,
+      "y": 1,
+      "width": 90,
+      "height": 50
+    },
+    {
+      "id": "n4",
+      "x": 54,
+      "y": 79,
+      "width": 90,
+      "height": 50
+    },
+    {
+      "id": "n5",
+      "x": 163,
+      "y": 84,
+      "width": 80,
+      "height": 50
+    },
+    {
+      "id": "n6",
+      "x": 103,
+      "y": 118,
+      "width": 60,
+      "height": 60
+    },
+    {
+      "id": "n7",
+      "x": 122,
+      "y": 4,
+      "width": 90,
+      "height": 60
+    },
+    {
+      "id": "n8",
+      "x": 137,
+      "y": 32,
+      "width": 60,
+      "height": 50
+    },
+    {
+      "id": "n9",
+      "x": 122,
+      "y": 98,
+      "width": 70,
+      "height": 40
+    },
+    {
+      "id": "n10",
+      "x": 176,
+      "y": 101,
+      "width": 90,
+      "height": 40
+    },
+    {
+      "id": "n11",
+      "x": 91,
+      "y": 99,
+      "width": 80,
+      "height": 40
+    },
+    {
+      "id": "n12",
+      "x": 82,
+      "y": 3,
+      "width": 80,
+      "height": 60
+    },
+    {
+      "id": "n13",
+      "x": 54,
+      "y": 40,
+      "width": 80,
+      "height": 40
+    },
+    {
+      "id": "n14",
+      "x": 195,
+      "y": 60,
+      "width": 80,
+      "height": 50
+    },
+    {
+      "id": "n15",
+      "x": 30,
+      "y": 116,
+      "width": 80,
+      "height": 50
+    }
+  ]
+}

@@ -455,6 +455,8 @@ JUnit: `org.eclipse.elk.alg.disco.test` (1 package directory, 1 file, 169 LOC) �
 
 ## `alg.rectpacking` → `src/alg/rectpacking/`
 
+Status: ported (mission 8c); design, evidence and runbook in [alg-packing.md](alg-packing.md).
+
 7 package directories, 38 Java + 0 Xtend files, 4,688 LOC
 (`plugins/org.eclipse.elk.alg.rectpacking/src`).
 
@@ -486,6 +488,8 @@ tests:
 
 ## `alg.spore` → `src/alg/spore/`
 
+Status: ported (mission 8c); design, evidence and runbook in [alg-packing.md](alg-packing.md).
+
 6 package directories, 18 Java + 0 Xtend files, 1,326 LOC (`plugins/org.eclipse.elk.alg.spore/src`).
 
 | Java package (`org.eclipse.elk.` omitted) | TS directory                      | Files | LOC | Strategy                                          |
@@ -513,6 +517,8 @@ JUnit: `org.eclipse.elk.alg.spore.test` (1 package directory, 2 files, 249 LOC) 
 | `alg.spore.test` | `src/alg/spore/*.test.ts` |     2 | 249 | hand port |
 
 ## `alg.topdownpacking` → `src/alg/topdownpacking/`
+
+Status: ported (mission 8c); design, evidence and runbook in [alg-packing.md](alg-packing.md). `GridElkNode` is a delegating class, see [alg-packing.md](alg-packing.md#alg-packing-gridelknode).
 
 1 package directory, 9 Java + 0 Xtend files, 1,113 LOC
 (`plugins/org.eclipse.elk.alg.topdownpacking/src`).

@@ -354,7 +354,7 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   never terminates (D2 amendment).
 - Model (D3): interface/impl split in `src/graph/` and `src/graph/impl/`, Java accessor names;
   `instanceof <interface>` is an exported guard (`isElkNode(o)`) over a registry in
-  `src/graph/ElkGraphPackage.ts` (constants only). D4: `eContainer`, `eContents`, `eAllContents`
+  `src/graph/ElkGraphPackage.ts` (constants only; a list of classes per interface name, so `GridElkNode` registers beside the `*Impl`, mission 8c). D4: `eContainer`, `eContents`, `eAllContents`
   (pre-order: `properties`, `labels`, `ports`, `children`, `containedEdges`, then
   `sections`/`bendPoints`). D10: identity-hash `toString()`s drop the `@hash`, a proxy appends EMF's ` (eProxyURI: <uri>)` (D5 of text-follow-ups); NPE is `TypeError`.
 - `IProperty` equality is by id (D5, `src/graph/properties/MapPropertyHolder.ts`); `ElkReflect` keys

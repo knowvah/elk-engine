@@ -21,6 +21,10 @@ export const PENDING_TYPES: readonly string[] = [];
  * `NodePlacementStrategy` does the same for the node placement phases. Mission 8a (T7): `radial.SortingStrategy`
  * creates `IDSorter`, which reads `RadialOptions.ORDER_ID`. Mission 8a (T10): `radial.CompactionStrategy` and
  * `radial.OverlapRemovalStrategy` create the compactors and the overlap removal, which read `RadialOptions`.
+ * Mission 8c (T8): `topdownpacking.NodeArrangementStrategy` creates `LeftRightTopDownNodePlacer`, which reads
+ * `TopdownpackingOptions`. Mission 8c (T9): `rectpacking.WidthApproximationStrategy` and
+ * `rectpacking.WhiteSpaceEliminationStrategy` create the p1 and p3 phases, which read `RectPackingOptions`.
+ * Mission 8c (T10): `rectpacking.PackingStrategy` creates the p2 phases, which read `RectPackingOptions`.
  */
 export const NON_LEAF_DEFAULT_TYPES: readonly string[] = [
   'org.eclipse.elk.alg.layered.options.CrossingMinimizationStrategy',
@@ -31,6 +35,10 @@ export const NON_LEAF_DEFAULT_TYPES: readonly string[] = [
   'org.eclipse.elk.alg.radial.options.CompactionStrategy',
   'org.eclipse.elk.alg.radial.options.OverlapRemovalStrategy',
   'org.eclipse.elk.alg.radial.options.SortingStrategy',
+  'org.eclipse.elk.alg.rectpacking.p1widthapproximation.WidthApproximationStrategy',
+  'org.eclipse.elk.alg.rectpacking.p2packing.PackingStrategy',
+  'org.eclipse.elk.alg.rectpacking.p3whitespaceelimination.WhiteSpaceEliminationStrategy',
+  'org.eclipse.elk.alg.topdownpacking.NodeArrangementStrategy',
 ];
 
 /** Where the vendored sources and their manifest live. */

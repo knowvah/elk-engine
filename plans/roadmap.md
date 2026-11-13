@@ -1458,3 +1458,112 @@ Audit points: the `decisions.md` audit points, the `MARKER` widening (FD5) and t
 resolved under the layered-cycles-layers E1 and 7g T15 precedent; eight landed base classes behave the same); the `layered`
 registration in the sweep tool; the x86_64 limit of FD3; the Row 16 argument of `unreached.md` (`ElkGraphTransformer.java:499-500`
 is dead by a reading of the Java, not by a vector); the one added exception row in the exception-hierarchy fitness test.
+
+## Revision 2026-11-13 (alg-packing)
+
+Appended; no earlier line is edited. Source: PK1-PK12 in `plans/alg-packing/decisions.md`; the journal is
+`plans/alg-packing/decision-journal.md`. Where this section conflicts with the text above, this section wins. Task ids are
+T1-T15; the base is `a30af6618ce3686be283d69fa1eac271670d8042` (the 8b squash commit).
+
+**Row 8c is done.** `alg.rectpacking`, `alg.spore` (the algorithms `sporeOverlap` and `sporeCompaction`) and
+`alg.topdownpacking` are ported to `src/alg/{rectpacking,spore,topdownpacking}/` (42, 21 and 11 modules) with their generated
+options and providers (issue #39). `RecursiveGraphLayoutEngine` lays out a graph with each once its provider is registered.
+Design and runbook: `docs/architecture/alg-packing.md`; counts: `docs/conformance.md` § Rectpacking, spore and topdownpacking.
+The final commit is one squashed commit `feat(packing): port rectpacking, spore and topdownpacking (8c)` with `Refs: #39`
+(PK12); the per-task history is under the tag `alg-packing/pre-squash`.
+
+**Evidence.**
+
+- Vector refs (oracle `8aaa3c14` with patches 0001 and 0002, `-XX:hashCode=2`, cold re-records `cmp`-identical at mission end):
+  `rectpacking.json` 1,356 rows (full 558, stops 151, throws 7, sort 640), `spore-layout.json` 339 rows (full 113, stops 60,
+  throws 4, minst 95, jitter 4, objects 63), `topdownpacking.json` 898 rows (full 296, stops 288, predicted 296, throws 18).
+  Replays through the real providers and `RecursiveGraphLayoutEngine`: rectpacking full and stops rows raw-bit identical
+  (66,304 and 132,339 doubles at T12, before the 13 rows T14 added, which also replay at raw bits); spore 67,980 doubles raw-bit
+  identical at T11, all 76 order-sensitive `minst` rows in the recorded order (the end-to-end `NaiveMinST` tie order); all 898
+  topdownpacking rows equal, with the real row list lengths of `GridElkNode`.
+- Goldens: the `packing` set, 44 refs under `test/golden/refs/elk-packing/` (rectpacking 17, sporeCompaction 13, sporeOverlap 7,
+  topdownpacking 7; one per option value; the four `--minst-ties-*` entries included), equal to the TS layout at AD-4;
+  `default`, `algorithms`, `layered`, `trees`, `force-disco` and `packing` regenerate byte-identically at mission end.
+- JUnit: the eight suites ported whole, 30 runs: `CompactionTest` 10, `PaddingTest` 4, `Issue583Test` 1, `UtilsTest` 3,
+  `ScanlineOverlapRemovalTest` 1, `TopdownPackingTest` 4, `TopdownLayoutTest` 5, `PortPlacementCalculationTest` 2; the oracle
+  runs 30 / 0 at the start and at the end.
+- Sweep (every provider registered): rectpacking planned 919, ok 830, mismatch 0, both-throw 89; topdownpacking planned 906,
+  ok 906; sporeCompaction planned 906, ok 99, nondeterministic 807; sporeOverlap planned 906, ok 94-97, both-throw 20-21,
+  nondeterministic 788; 0 one-sided throws and 0 mismatches among deterministic cases, apart from four `sporeOverlap` cases
+  the oracle's two-run determinism check misses (issue #79). The 8b residuals (6 cases) and the #68 item A residuals (7 cases)
+  are `ok`.
+- Coverage (each bundle's own tests): rectpacking branches 98.12 % (418 of 426), spore 100 % (85 of 85), topdownpacking
+  96.42 % (54 of 56); `plans/alg-packing/unreached.md` has 18 `U` rows and one arm neither reached nor proven dead
+  (`Compaction.java:364`, issue #81). Whole suite at mission end: 98.92 / 96.99 / 98.84 / 98.92 (statements / branches / functions / lines) over 49,157 tests. `staged-classes.json` is `[]`; `PENDING_TYPES` is `[]`.
+- Recursion (PK6): `DepthFirstCompaction.compactTree` (landed `alg.common/spore`) and `GrowTreePhase.growAt` are explicit-stack
+  loops, each proven against its verbatim recursive form on 1,000 seeded trees; both 2,000-node chains complete in the oracle
+  and in TS. Under `--jitless` the overlap chain is in the default suite and the compaction chain passed in one detached run (2,394 s; it stays behind `SPORE_CHAIN_FULL=1`, `DepthFirstCompaction` being cubic on a path).
+
+**Decisions taken during the run.**
+
+- PK1: three recorders; stops are taken at the providers' own `logGraph` points (rectpacking) and through stepwise calls of
+  the phases checked against the engine run (spore, topdownpacking); the `sort`, `minst`, `jitter` groups as planned, and one
+  group beyond the plan, `objects` (63 rows: `Objects.equals`, `KVector.equals`, `TTriangle.contains`, `TEdge.equals` with NaN).
+- PK2: the `packing` golden set; options with one constant (`structureExtractionStrategy`, `compactionStrategy`, topdown's two
+  strategies) and `sporeOverlap`'s `processingOrder.*` (overwritten by the provider) have no golden.
+- PK3: `GridElkNode implements ElkNode, Grid<ElkNode>` by delegation; `ElkGraphPackage`'s guard registry holds a list of classes
+  per interface name; every landed guard result is unchanged.
+- PK4: `Math.random()` verbatim; `jitter` rows assert invariants; nondeterministic sweep cases are counted, not compared.
+- PK5: `JavaHashSet<TEdge>` and `JavaHashMap` (KVector strategy) replay the Java insertion history, `clear` keeping capacity.
+- PK6: two conversions (above); thresholds beyond 2,000 in issue #76.
+- PK7: `Array.prototype.sort` with the verbatim comparator; 427 of 640 JVM sort rows reproduce, 213 are classified (34
+  Java-only throws, 179 order differences, all of length 32 or more), issue #75.
+- PK8: 13 staged classes, unstaged task by task; `MARKER` widened by `8c`; four `NON_LEAF_DEFAULT_TYPES` entries.
+- PK9: sweeps as above; the `SUFFIX_DIFFERENCES` row of `force--iterations-50` is removed.
+- PK10: the eight suites. PK11: cross-bundle suites stay with 8x. PK12: one squash commit.
+
+Deviations from the plan, all journaled: (1) T14 was split: its recursion half ran beside T12, its coverage half beside T13.
+(2) The recorders were extended additively after the ports existed (13 rectpacking rows, 2 spore rows for arms no row
+reached; 63 `objects` rows), each with a byte-identity proof of every earlier row. (3) Helper files beside the planned ones
+(`rectpacking-replay-{run,p1p3,p2,provider}.ts`, `rectpacking-sort-classified.ts`, `spore-replay-providers.ts`,
+`spore-tree-fixtures.ts`). (4) `tools/melk/config.ts` and the regenerated metadata providers were changed by the wiring tasks
+(TDZ entries). (5) `tools/corpus/ts-layout-compare.ts` gained the #71 item 1 neutralisation of `debug.discoGraph` (ruled for
+row 9; the PK9 re-run needed it). (6) `Compaction.compact` is split behind the class into `CompactionContext.ts` and
+`CompactionPlacement.ts` (limits), and the staged provider tests of spore were deleted, not replaced (the vector replay
+exercises the providers).
+
+**Divergences and kept quirks.** Known divergences (details in `docs/conformance.md`): the 213 PK7 sort rows (interactive
+rectpacking with at least 32 children carrying tied `desiredPosition`s can order differently from ELK, or lay out where ELK
+throws); spore's jitter (inputs with coincident centres are nondeterministic in ELK and in the port); spore inputs whose
+spanning tree is a path deeper than about 2,125 overflow V8's stack where the oracle completes up to 4,000 (#76). Kept
+upstream quirks: the `absorbBlocks` hang (#73); the stale parent row after `placeNextBeside`; `RectRow.removeBlock` reducing
+the width for an absent block; the `AreaApproximation.java:98` `NullPointerException` for zero-size nodes with zero spacing;
+`InteractiveRectPackingGraphVisitor`'s reversed `endsWith` (and that nothing applies the visitor); `GridElkNode.put`'s insert
+semantics; spore's overwritten explicit margins; `MaxSTPhase` rooting on `.vertex` while `MinSTPhase` roots on
+`.originalVertex`. One upstream typo corrected (the task name of `ToAspectratioNodeExpander.java:51`).
+
+**Changes to landed code.**
+
+- `src/java/util/JavaObjects.ts` `equals`: an object equals itself before `equals` is called (the JVM's `Objects.equals`; a
+  `KVector` with a NaN component is not equal to itself under `equals`). Found by the sweep (19 ptolemy cases); proven by the
+  `objects` vector group; no landed expectation changed.
+- `src/alg/common/spore/DepthFirstCompaction.ts` `compactTree`: explicit stack (PK6; the hand-off mission 6a recorded).
+- `src/graph/ElkGraphPackage.ts`: the guard registry (PK3). `test/architecture/staged-classes.fitness.test.ts`: `MARKER`.
+  `test/golden/force-disco-goldens.test.ts`: three registrations and the pre-approved row removal.
+  `tools/oracle/regen-goldens.sh`: the `packing` set. `tools/melk/config.ts`: four `NON_LEAF_DEFAULT_TYPES` entries.
+- No landed expected value, ref, vector or tolerance changed.
+
+**Hand-offs.**
+
+- To 8x: `NodeMicroLayoutTest`, `PlainJavaInitializationTest` and `ElkReflectTest` are unblocked (every in-scope algorithm is
+  ported).
+- To row 9: `tools/corpus/ts-layout-compare.ts` registers every in-scope provider and carries the #71 item 1 neutralisation;
+  the sweep's determinism check for spore (#79) and a per-case bound (cubic `DepthFirstCompaction`, #73's inputs) are open.
+- `docs/parity-report.md` is generated (`tools/corpus/parity-report.ts`); its TS column is still the constant
+  "n/a (no TS port yet)" and it was not regenerated.
+
+**Flags for the maintainer (open decisions).** Open `needs-ruling` issues: #75 (the 213 sort rows), #78 (four oracle rows
+falsify a premise of this mission's `RectRow.test.ts`; classified, AD-13), #79 (four nondeterministic sweep cases classified
+deterministic), #80 (upstream defects with drafts). Open `follow-up` issues: #73 (the upstream hang; filed as `needs-ruling`
+and relabelled during the run), #76 (recursion depth beyond 2,000), #81 (the one open arm).
+
+Audit points: the `decisions.md` audit points (the `MARKER` widening, the `ElkGraphPackage.ts` registry, the
+`SUFFIX_DIFFERENCES` row removal, `Math.random()` in shipped code); the `JavaObjects.equals` change and its vector; the
+explicit-stack conversion in landed `DepthFirstCompaction.ts`; the classified list in `RectRow.test.ts` (#78); the additive
+recorder extensions and the count pins that followed them; the `neutraliseIdentity` step landing ahead of row 9; `U` rows 4
+and 9 of `unreached.md` (dead by a reading of the Java supported by a search, not by a vector).

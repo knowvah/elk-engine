@@ -16,6 +16,7 @@ import {
   inputOf,
   layoutToJson,
   lenientParse,
+  neutraliseIdentity,
   overlayAlgorithm,
   execute,
   parseArgs,
@@ -182,6 +183,41 @@ describe('compareCase', () => {
   });
 });
 
+const IDENTITY_TEXT = 'org.eclipse.elk.alg.disco.graph.DCGraph@1';
+const discoDoc = (value: string, x = 0): string =>
+  JSON.stringify({
+    id: 'root',
+    layoutOptions: { 'debug.discoGraph': value },
+    children: [{ id: 'c', x, layoutOptions: { 'debug.discoGraph': value } }],
+  });
+
+describe('debug.discoGraph identity text (#71 ruling, item 1)', () => {
+  it('compares ok when the oracle value has the Java identity form and the TS value differs', () => {
+    expect(compareCase(row(), deps(discoDoc(IDENTITY_TEXT), discoDoc('[object Object]'))).category).toBe('ok');
+  });
+
+  it('keeps comparing the geometry of such a case in full', () => {
+    const out = compareCase(row(), deps(discoDoc(IDENTITY_TEXT), discoDoc('[object Object]', 2e-6)));
+    expect(out.category).toBe('mismatch');
+    expect(out.optionsOnly).toBe(false);
+    expect(out.detail).toContain('children[id=c].x');
+  });
+
+  it('does not neutralise an oracle value without the identity form', () => {
+    const out = compareCase(row(), deps(discoDoc('something else'), discoDoc('[object Object]')));
+    expect(out.category).toBe('mismatch');
+    expect(out.optionsOnly).toBe(true);
+  });
+
+  it('neutralises both sides of the matching nodes only', () => {
+    const expected = { layoutOptions: { 'debug.discoGraph': IDENTITY_TEXT }, children: [{ id: 'a' }] };
+    const actual = { layoutOptions: { 'debug.discoGraph': 'x' }, children: [{ id: 'a' }, { id: 'extra' }] };
+    neutraliseIdentity(expected, actual);
+    expect(expected.layoutOptions['debug.discoGraph']).toBe('<identity toString>');
+    expect(actual.layoutOptions['debug.discoGraph']).toBe('<identity toString>');
+  });
+});
+
 describe('summarize', () => {
   const outcome = (algorithm: string, category: CaseOutcome['category'], extra: Partial<CaseOutcome> = {}) => ({
     caseId: `${algorithm}/${category}`,
@@ -333,6 +369,37 @@ describe('registerTreeAlgorithms (8b: force, stress, disco)', () => {
       'stress',
       'disco',
     ]);
+  });
+});
+
+const PACKING_ALGORITHMS = ['rectpacking', 'sporeOverlap', 'sporeCompaction', 'topdownpacking'] as const;
+
+describe('registerTreeAlgorithms (8c: rectpacking, spore, topdownpacking)', () => {
+  it('resolves the four packing algorithms, once each, and their option keys', () => {
+    LayoutMetaDataService.unload();
+    registerTreeAlgorithms();
+    registerTreeAlgorithms();
+    const service = LayoutMetaDataService.getInstance();
+    const ids = PACKING_ALGORITHMS.map((a) => service.getAlgorithmData(`org.eclipse.elk.${a}`)?.getId());
+    expect(ids).toEqual(PACKING_ALGORITHMS.map((a) => `org.eclipse.elk.${a}`));
+    for (const a of PACKING_ALGORITHMS) {
+      expect(service.getAlgorithmData().filter((d) => d.getId() === `org.eclipse.elk.${a}`)).toHaveLength(1);
+    }
+    expect(service.getOptionData('org.eclipse.elk.rectpacking.packing.compaction.iterations')?.getId()).toBe(
+      'org.eclipse.elk.rectpacking.packing.compaction.iterations',
+    );
+  });
+
+  it.each(PACKING_ALGORITHMS)('layoutToJson lays a two-node graph out with %s', (alg) => {
+    const out = JSON.parse(
+      layoutToJson(TREE_TWO_NODES, 'json', row({ algorithm: `org.eclipse.elk.${alg}`, variant: 'default' })),
+    ) as { children: { id: string; x: number; y: number }[] };
+    expect(out.children.map((c) => c.id)).toEqual(['a', 'b']);
+    expect(out.children.every((c) => Number.isFinite(c.x) && Number.isFinite(c.y))).toBe(true);
+  });
+
+  it('parseArgs selects the four algorithms by their short names', () => {
+    expect(parseArgs(['--algorithms', PACKING_ALGORITHMS.join(',')]).algorithms).toEqual([...PACKING_ALGORITHMS]);
   });
 });
 

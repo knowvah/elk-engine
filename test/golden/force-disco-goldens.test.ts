@@ -21,6 +21,9 @@ import { StressMetaDataProvider } from '../../src/alg/force/options/StressMetaDa
 import { StressOptions } from '../../src/alg/force/options/StressOptions.js';
 import { MrTreeMetaDataProvider } from '../../src/alg/mrtree/options/MrTreeMetaDataProvider.js';
 import { RadialMetaDataProvider } from '../../src/alg/radial/options/RadialMetaDataProvider.js';
+import { RectPackingMetaDataProvider } from '../../src/alg/rectpacking/options/RectPackingMetaDataProvider.js';
+import { SporeMetaDataProvider } from '../../src/alg/spore/options/SporeMetaDataProvider.js';
+import { TopdownpackingMetaDataProvider } from '../../src/alg/topdownpacking/options/TopdownpackingMetaDataProvider.js';
 import { VertiFlexMetaDataProvider } from '../../src/alg/vertiflex/options/VertiFlexMetaDataProvider.js';
 import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
 import { RecursiveGraphLayoutEngine } from '../../src/core/RecursiveGraphLayoutEngine.js';
@@ -79,7 +82,6 @@ const IDENTITY_NEUTRAL = '<identity toString>';
  * the TS export names the ref's key, so the row must then be removed.
  */
 const SUFFIX_DIFFERENCES: Readonly<Record<string, { readonly ref: string; readonly actual: string }>> = {
-  'force--iterations-50': { ref: 'force.iterations', actual: 'iterations' },
 };
 
 type LayoutOptions = Record<string, unknown>;
@@ -137,6 +139,9 @@ describe('force, stress and disco goldens (AD-4, FD2)', () => {
       new StressOptions(),
       new MrTreeMetaDataProvider(),
       new RadialMetaDataProvider(),
+      new RectPackingMetaDataProvider(),
+      new SporeMetaDataProvider(),
+      new TopdownpackingMetaDataProvider(),
       new VertiFlexMetaDataProvider(),
     );
   });

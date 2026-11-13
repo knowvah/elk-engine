@@ -1,0 +1,150 @@
+{
+  "id": "root",
+  "layoutOptions": {
+    "org.eclipse.elk.algorithm": "org.eclipse.elk.sporeOverlap",
+    "org.eclipse.elk.spacing.nodeNode": 20
+  },
+  "edges": [
+    {
+      "id": "e0",
+      "sources": [
+        "n0"
+      ],
+      "targets": [
+        "n3"
+      ]
+    },
+    {
+      "id": "e1",
+      "sources": [
+        "n3"
+      ],
+      "targets": [
+        "n7"
+      ]
+    },
+    {
+      "id": "e2",
+      "sources": [
+        "n5"
+      ],
+      "targets": [
+        "n11"
+      ]
+    }
+  ],
+  "children": [
+    {
+      "id": "n0",
+      "x": 9,
+      "y": 154,
+      "width": 60,
+      "height": 40
+    },
+    {
+      "id": "n1",
+      "x": 48,
+      "y": 96,
+      "width": 70,
+      "height": 60
+    },
+    {
+      "id": "n2",
+      "x": 107,
+      "y": 127,
+      "width": 60,
+      "height": 50
+    },
+    {
+      "id": "n3",
+      "x": 212,
+      "y": 147,
+      "width": 80,
+      "height": 50
+    },
+    {
+      "id": "n4",
+      "x": 10,
+      "y": 37,
+      "width": 60,
+      "height": 50
+    },
+    {
+      "id": "n5",
+      "x": 23,
+      "y": 106,
+      "width": 70,
+      "height": 60
+    },
+    {
+      "id": "n6",
+      "x": 67,
+      "y": 80,
+      "width": 90,
+      "height": 60
+    },
+    {
+      "id": "n7",
+      "x": 180,
+      "y": 90,
+      "width": 90,
+      "height": 60
+    },
+    {
+      "id": "n8",
+      "x": 202,
+      "y": 26,
+      "width": 60,
+      "height": 50
+    },
+    {
+      "id": "n9",
+      "x": 20,
+      "y": 23,
+      "width": 90,
+      "height": 40
+    },
+    {
+      "id": "n10",
+      "x": 162,
+      "y": 157,
+      "width": 80,
+      "height": 40
+    },
+    {
+      "id": "n11",
+      "x": 124,
+      "y": 60,
+      "width": 70,
+      "height": 50
+    },
+    {
+      "id": "n12",
+      "x": 62,
+      "y": 136,
+      "width": 60,
+      "height": 40
+    },
+    {
+      "id": "n13",
+      "x": 147,
+      "y": 120,
+      "width": 90,
+      "height": 40
+    },
+    {
+      "id": "n14",
+      "x": 132,
+      "y": 75,
+      "width": 80,
+      "height": 40
+    },
+    {
+      "id": "n15",
+      "x": 39,
+      "y": 94,
+      "width": 80,
+      "height": 60
+    }
+  ]
+}

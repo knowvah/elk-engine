@@ -168,31 +168,39 @@ export type ElkGraphInterfaceName =
 export type ImplConstructor = abstract new (...args: never[]) => object;
 
 /**
- * Interface name → implementing class. Port-specific (D3, journaled): Java's `instanceof
- * <interface>` becomes a type guard doing `instanceof` on the implementing class; each impl module
- * registers itself at load, so an interface file needs no runtime import of its impl (and none
- * exists before T9 for five of them). Written once per class at module load; read by the guards.
+ * Interface name → implementing classes. Port-specific (D3, journaled): Java's `instanceof <interface>` becomes a type
+ * guard doing `instanceof` on the implementing classes; each impl module registers itself at load, so an interface
+ * file needs no runtime import of its impl (and none exists before T9 for five of them). A name holds more than one
+ * class when a second class implements the interface without extending the first (alg-packing PK3: `GridElkNode`
+ * delegates to an `ElkNode` instead of extending `ElkNodeImpl`). Appended to once per class at module load; read by
+ * the guards.
  */
-const IMPLS = new Map<ElkGraphInterfaceName, ImplConstructor>();
+const IMPLS = new Map<ElkGraphInterfaceName, ImplConstructor[]>();
 
 /**
- * Registers the class implementing `interfaceName`. Called by each impl module at load.
+ * Registers a class implementing `interfaceName`; a class already registered under the name is not added again.
+ * Called by each impl module at load.
  *
  * @internal
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/ElkGraphPackage.java
  */
 export function registerImpl(interfaceName: ElkGraphInterfaceName, ctor: ImplConstructor): void {
-  IMPLS.set(interfaceName, ctor);
+  const ctors = IMPLS.get(interfaceName);
+  if (ctors === undefined) {
+    IMPLS.set(interfaceName, [ctor]);
+  } else if (!ctors.includes(ctor)) {
+    ctors.push(ctor);
+  }
 }
 
 /**
- * Java `o instanceof <interfaceName>`: `instanceof` against the registered impl class; `false`
- * when no impl is registered.
+ * Java `o instanceof <interfaceName>`: `instanceof` against any class registered for the name; `false` when none
+ * is registered.
  *
  * @internal
  * @see org.eclipse.elk.graph/src/org/eclipse/elk/graph/ElkGraphPackage.java
  */
 export function isInstance(interfaceName: ElkGraphInterfaceName, o: unknown): boolean {
-  const ctor = IMPLS.get(interfaceName);
-  return ctor !== undefined && o instanceof ctor;
+  const ctors = IMPLS.get(interfaceName);
+  return ctors !== undefined && ctors.some((ctor) => o instanceof ctor);
 }

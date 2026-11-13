@@ -1,0 +1,53 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "n0",
+      "x": 12.0,
+      "y": 12.0,
+      "width": 212.0,
+      "height": 187.36067892503536
+    },
+    {
+      "id": "n1",
+      "x": 244.0,
+      "y": 93.27864214992928,
+      "width": 212.0,
+      "height": 187.36067892503536
+    },
+    {
+      "id": "n2",
+      "x": 476.0,
+      "y": 174.55728429985857,
+      "width": 212.0,
+      "height": 187.36067892503536
+    },
+    {
+      "id": "n3",
+      "x": 12.0,
+      "y": 381.9179632248939,
+      "width": 328.0,
+      "height": 187.36067892503536
+    },
+    {
+      "id": "n4",
+      "x": 360.0,
+      "y": 463.1966053748232,
+      "width": 328.0,
+      "height": 187.36067892503536
+    }
+  ],
+  "layoutOptions": {
+    "algorithm": "org.eclipse.elk.topdownpacking",
+    "topdownLayout": "true",
+    "elk.padding": "[top=12.0,left=12.0,bottom=12.0,right=12.0]",
+    "aspectRatio": "1.4201680672268908",
+    "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.topdownpacking",
+    "topdown.nodeType": "PARALLEL_NODE",
+    "hierarchyHandling": "SEPARATE_CHILDREN"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 700.0,
+  "height": 500.0
+}

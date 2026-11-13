@@ -1,0 +1,312 @@
+{
+  "golden": [
+    {
+      "id": "rectpacking--default",
+      "path": "rectpacking--default.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x default: designed input, 16 boxes, default options (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--widthApproximation.strategy-TARGET_WIDTH",
+      "path": "rectpacking--widthApproximation.strategy-TARGET_WIDTH.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x widthApproximation.strategy-TARGET_WIDTH: widthApproximation.strategy=TARGET_WIDTH with widthApproximation.targetWidth=260 (the strategy throws without a target width) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--widthApproximation.targetWidth-180",
+      "path": "rectpacking--widthApproximation.targetWidth-180.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x widthApproximation.targetWidth-180: widthApproximation.targetWidth=180 under widthApproximation.strategy=TARGET_WIDTH (read only there) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--widthApproximation.optimizationGoal-ASPECT_RATIO_DRIVEN",
+      "path": "rectpacking--widthApproximation.optimizationGoal-ASPECT_RATIO_DRIVEN.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x widthApproximation.optimizationGoal-ASPECT_RATIO_DRIVEN: widthApproximation.optimizationGoal=ASPECT_RATIO_DRIVEN (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--widthApproximation.optimizationGoal-AREA_DRIVEN",
+      "path": "rectpacking--widthApproximation.optimizationGoal-AREA_DRIVEN.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x widthApproximation.optimizationGoal-AREA_DRIVEN: widthApproximation.optimizationGoal=AREA_DRIVEN (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--widthApproximation.lastPlaceShift-false",
+      "path": "rectpacking--widthApproximation.lastPlaceShift-false.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x widthApproximation.lastPlaceShift-false: widthApproximation.lastPlaceShift=false (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--packing.strategy-SIMPLE",
+      "path": "rectpacking--packing.strategy-SIMPLE.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x packing.strategy-SIMPLE: packing.strategy=SIMPLE (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--packing.strategy-NONE",
+      "path": "rectpacking--packing.strategy-NONE.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x packing.strategy-NONE: packing.strategy=NONE (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--packing.compaction.rowHeightReevaluation-true",
+      "path": "rectpacking--packing.compaction.rowHeightReevaluation-true.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x packing.compaction.rowHeightReevaluation-true: packing.compaction.rowHeightReevaluation=true (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--packing.compaction.iterations-3",
+      "path": "rectpacking--packing.compaction.iterations-3.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x packing.compaction.iterations-3: packing.compaction.iterations=3 (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--whiteSpaceElimination.strategy-EQUAL_BETWEEN_STRUCTURES",
+      "path": "rectpacking--whiteSpaceElimination.strategy-EQUAL_BETWEEN_STRUCTURES.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x whiteSpaceElimination.strategy-EQUAL_BETWEEN_STRUCTURES: whiteSpaceElimination.strategy=EQUAL_BETWEEN_STRUCTURES (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--whiteSpaceElimination.strategy-TO_ASPECT_RATIO",
+      "path": "rectpacking--whiteSpaceElimination.strategy-TO_ASPECT_RATIO.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x whiteSpaceElimination.strategy-TO_ASPECT_RATIO: whiteSpaceElimination.strategy=TO_ASPECT_RATIO (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--trybox-true",
+      "path": "rectpacking--trybox-true.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x trybox-true: trybox=true on boxes that are not stackable, so box layout runs instead of the three phases (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--orderBySize-true",
+      "path": "rectpacking--orderBySize-true.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x orderBySize-true: orderBySize=true (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--inNewRow-true",
+      "path": "rectpacking--inNewRow-true.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x inNewRow-true: inNewRow=true on n5 and n9 (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--interactive-true",
+      "path": "rectpacking--interactive-true.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x interactive-true: interactive=true without desiredPosition (core option read by the provider; sets currentPosition on every node) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "rectpacking--desiredPosition-2",
+      "path": "rectpacking--desiredPosition-2.json",
+      "algorithm": "org.eclipse.elk.rectpacking",
+      "variant": "default",
+      "note": "rectpacking x desiredPosition-2: interactive=true with desiredPosition=2 on n9 and desiredPosition=8 on n3 (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--default",
+      "path": "sporeCompaction--default.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x default: designed input, 14 scattered nodes with distinct centres and 4 edges, default options (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--processingOrder.spanningTreeCostFunction-CENTER_DISTANCE",
+      "path": "sporeCompaction--processingOrder.spanningTreeCostFunction-CENTER_DISTANCE.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x processingOrder.spanningTreeCostFunction-CENTER_DISTANCE: processingOrder.spanningTreeCostFunction=CENTER_DISTANCE (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--processingOrder.spanningTreeCostFunction-RECTANGLE_UNDERLAP",
+      "path": "sporeCompaction--processingOrder.spanningTreeCostFunction-RECTANGLE_UNDERLAP.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x processingOrder.spanningTreeCostFunction-RECTANGLE_UNDERLAP: processingOrder.spanningTreeCostFunction=RECTANGLE_UNDERLAP (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--processingOrder.spanningTreeCostFunction-INVERTED_OVERLAP",
+      "path": "sporeCompaction--processingOrder.spanningTreeCostFunction-INVERTED_OVERLAP.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x processingOrder.spanningTreeCostFunction-INVERTED_OVERLAP: processingOrder.spanningTreeCostFunction=INVERTED_OVERLAP (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--processingOrder.spanningTreeCostFunction-MINIMUM_ROOT_DISTANCE",
+      "path": "sporeCompaction--processingOrder.spanningTreeCostFunction-MINIMUM_ROOT_DISTANCE.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x processingOrder.spanningTreeCostFunction-MINIMUM_ROOT_DISTANCE: processingOrder.spanningTreeCostFunction=MINIMUM_ROOT_DISTANCE (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--processingOrder.treeConstruction-MAXIMUM_SPANNING_TREE",
+      "path": "sporeCompaction--processingOrder.treeConstruction-MAXIMUM_SPANNING_TREE.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x processingOrder.treeConstruction-MAXIMUM_SPANNING_TREE: processingOrder.treeConstruction=MAXIMUM_SPANNING_TREE (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--processingOrder.rootSelection-FIXED",
+      "path": "sporeCompaction--processingOrder.rootSelection-FIXED.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x processingOrder.rootSelection-FIXED: processingOrder.rootSelection=FIXED without preferredRoot (the first node is the root) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--processingOrder.preferredRoot-n9",
+      "path": "sporeCompaction--processingOrder.preferredRoot-n9.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x processingOrder.preferredRoot-n9: processingOrder.preferredRoot=n9 under processingOrder.rootSelection=FIXED (required by the option) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--compaction.orthogonal-true",
+      "path": "sporeCompaction--compaction.orthogonal-true.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x compaction.orthogonal-true: compaction.orthogonal=true (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--underlyingLayoutAlgorithm-box",
+      "path": "sporeCompaction--underlyingLayoutAlgorithm-box.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x underlyingLayoutAlgorithm-box: underlyingLayoutAlgorithm=org.eclipse.elk.box (applied before compaction) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--spacing.nodeNode-20",
+      "path": "sporeCompaction--spacing.nodeNode-20.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x spacing.nodeNode-20: spacing.nodeNode=20 (supported option, default 8) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeOverlap--default",
+      "path": "sporeOverlap--default.json",
+      "algorithm": "org.eclipse.elk.sporeOverlap",
+      "variant": "default",
+      "note": "sporeOverlap x default: designed input, 16 overlapping nodes with distinct centres and 3 edges, default options (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeOverlap--overlapRemoval.maxIterations-1",
+      "path": "sporeOverlap--overlapRemoval.maxIterations-1.json",
+      "algorithm": "org.eclipse.elk.sporeOverlap",
+      "variant": "default",
+      "note": "sporeOverlap x overlapRemoval.maxIterations-1: overlapRemoval.maxIterations=1 (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeOverlap--overlapRemoval.runScanline-false",
+      "path": "sporeOverlap--overlapRemoval.runScanline-false.json",
+      "algorithm": "org.eclipse.elk.sporeOverlap",
+      "variant": "default",
+      "note": "sporeOverlap x overlapRemoval.runScanline-false: overlapRemoval.runScanline=false (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeOverlap--underlyingLayoutAlgorithm-box",
+      "path": "sporeOverlap--underlyingLayoutAlgorithm-box.json",
+      "algorithm": "org.eclipse.elk.sporeOverlap",
+      "variant": "default",
+      "note": "sporeOverlap x underlyingLayoutAlgorithm-box: underlyingLayoutAlgorithm=org.eclipse.elk.box (applied before overlap removal) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeOverlap--spacing.nodeNode-20",
+      "path": "sporeOverlap--spacing.nodeNode-20.json",
+      "algorithm": "org.eclipse.elk.sporeOverlap",
+      "variant": "default",
+      "note": "sporeOverlap x spacing.nodeNode-20: spacing.nodeNode=20 (supported option, default 8) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--minst-ties-1",
+      "path": "sporeCompaction--minst-ties-1.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x minst-ties-1: 4x4 grid of equal 40x40 nodes at pitch 100, equal-cost spanning-tree edges (NaiveMinST ties) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeCompaction--minst-ties-2",
+      "path": "sporeCompaction--minst-ties-2.json",
+      "algorithm": "org.eclipse.elk.sporeCompaction",
+      "variant": "default",
+      "note": "sporeCompaction x minst-ties-2: 4x4 lattice of equal 40x40 nodes rotated by 45 degrees (pitch 70), equal-cost spanning-tree edges (NaiveMinST ties) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeOverlap--minst-ties-1",
+      "path": "sporeOverlap--minst-ties-1.json",
+      "algorithm": "org.eclipse.elk.sporeOverlap",
+      "variant": "default",
+      "note": "sporeOverlap x minst-ties-1: 4x4 grid of equal 60x60 nodes at pitch 50 (all neighbours overlap), equal-cost spanning-tree edges (NaiveMinST ties) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "sporeOverlap--minst-ties-2",
+      "path": "sporeOverlap--minst-ties-2.json",
+      "algorithm": "org.eclipse.elk.sporeOverlap",
+      "variant": "default",
+      "note": "sporeOverlap x minst-ties-2: 4x4 lattice of equal 60x60 nodes rotated by 45 degrees (pitch 35), equal-cost spanning-tree edges (NaiveMinST ties) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "topdownpacking--default",
+      "path": "topdownpacking--default.json",
+      "algorithm": "org.eclipse.elk.topdownpacking",
+      "variant": "default",
+      "note": "topdownpacking x default: designed input, 5 children (3 columns, 2 rows) under a parallel root without preset size, default options (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "topdownpacking--rootSize-700x500",
+      "path": "topdownpacking--rootSize-700x500.json",
+      "algorithm": "org.eclipse.elk.topdownpacking",
+      "variant": "default",
+      "note": "topdownpacking x rootSize-700x500: root preset to 700x500, larger than the predicted size, so whitespace elimination expands every row and the column (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "topdownpacking--children-7",
+      "path": "topdownpacking--children-7.json",
+      "algorithm": "org.eclipse.elk.topdownpacking",
+      "variant": "default",
+      "note": "topdownpacking x children-7: 7 children (3 columns, 3 rows: more than cols*cols-cols) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "topdownpacking--topdown.hierarchicalNodeWidth-120",
+      "path": "topdownpacking--topdown.hierarchicalNodeWidth-120.json",
+      "algorithm": "org.eclipse.elk.topdownpacking",
+      "variant": "default",
+      "note": "topdownpacking x topdown.hierarchicalNodeWidth-120: topdown.hierarchicalNodeWidth=120 (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "topdownpacking--topdown.hierarchicalNodeAspectRatio-2",
+      "path": "topdownpacking--topdown.hierarchicalNodeAspectRatio-2.json",
+      "algorithm": "org.eclipse.elk.topdownpacking",
+      "variant": "default",
+      "note": "topdownpacking x topdown.hierarchicalNodeAspectRatio-2: topdown.hierarchicalNodeAspectRatio=2 (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "topdownpacking--spacing.nodeNode-35",
+      "path": "topdownpacking--spacing.nodeNode-35.json",
+      "algorithm": "org.eclipse.elk.topdownpacking",
+      "variant": "default",
+      "note": "topdownpacking x spacing.nodeNode-35: spacing.nodeNode=35 (core default 20) (PK2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "topdownpacking--topdown.nodeType-ROOT_NODE",
+      "path": "topdownpacking--topdown.nodeType-ROOT_NODE.json",
+      "algorithm": "org.eclipse.elk.topdownpacking",
+      "variant": "default",
+      "note": "topdownpacking x topdown.nodeType-ROOT_NODE: topdown.nodeType=ROOT_NODE with the root preset to 700x500 (the root size is recomputed from the child area afterwards) (PK2); recorded with -XX:hashCode=2 (H4)."
+    }
+  ]
+}

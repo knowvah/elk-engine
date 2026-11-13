@@ -21,6 +21,13 @@ import { MrTreeMetaDataProvider } from '../../src/alg/mrtree/options/MrTreeMetaD
 import { MrTreeOptions } from '../../src/alg/mrtree/options/MrTreeOptions.js';
 import { RadialMetaDataProvider } from '../../src/alg/radial/options/RadialMetaDataProvider.js';
 import { RadialOptions } from '../../src/alg/radial/options/RadialOptions.js';
+import { RectPackingMetaDataProvider } from '../../src/alg/rectpacking/options/RectPackingMetaDataProvider.js';
+import { RectPackingOptions } from '../../src/alg/rectpacking/options/RectPackingOptions.js';
+import { SporeCompactionOptions } from '../../src/alg/spore/options/SporeCompactionOptions.js';
+import { SporeMetaDataProvider } from '../../src/alg/spore/options/SporeMetaDataProvider.js';
+import { SporeOverlapRemovalOptions } from '../../src/alg/spore/options/SporeOverlapRemovalOptions.js';
+import { TopdownpackingMetaDataProvider } from '../../src/alg/topdownpacking/options/TopdownpackingMetaDataProvider.js';
+import { TopdownpackingOptions } from '../../src/alg/topdownpacking/options/TopdownpackingOptions.js';
 import { VertiFlexMetaDataProvider } from '../../src/alg/vertiflex/options/VertiFlexMetaDataProvider.js';
 import { VertiFlexOptions } from '../../src/alg/vertiflex/options/VertiFlexOptions.js';
 import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
@@ -225,6 +232,35 @@ function tsSide(row: SweepRow, deps: CaseDeps): { text: string | null; threw: st
   }
 }
 
+/**
+ * Classified, options-only difference (maintainer ruling on #71, item 1; the goldens test does the same). The oracle exports
+ * DisCo's `debug.discoGraph` option as Java's identity `toString` (`org.eclipse.elk.alg.disco.graph.DCGraph@<hash>`; `DCGraph`
+ * has no `toString`), which a TypeScript object cannot reproduce. Only the value of that one key is neutralised, on both sides,
+ * and only where the oracle's value has the identity form; every other value, and the geometry, is compared in full.
+ */
+const IDENTITY_KEY = 'debug.discoGraph';
+const IDENTITY_FORM = /^org\.eclipse\.elk\.alg\.disco\.graph\.DCGraph@[0-9a-f]+$/;
+const IDENTITY_NEUTRAL = '<identity toString>';
+
+type OptionsHolder = { layoutOptions?: Record<string, unknown>; children?: OptionsHolder[] };
+
+/** Neutralises `debug.discoGraph` in `actual` wherever `expected` holds the identity form there (both trees are walked together). */
+export function neutraliseIdentity(expected: unknown, actual: unknown): void {
+  const e = expected as OptionsHolder;
+  const a = actual as OptionsHolder;
+  const expectedValue = e.layoutOptions?.[IDENTITY_KEY];
+  if (typeof expectedValue === 'string' && IDENTITY_FORM.test(expectedValue)) {
+    (e.layoutOptions as Record<string, unknown>)[IDENTITY_KEY] = IDENTITY_NEUTRAL;
+    if (a.layoutOptions !== undefined && IDENTITY_KEY in a.layoutOptions)
+      a.layoutOptions[IDENTITY_KEY] = IDENTITY_NEUTRAL;
+  }
+  const expectedChildren = e.children ?? [];
+  const actualChildren = a.children ?? [];
+  for (let i = 0; i < Math.min(expectedChildren.length, actualChildren.length); i++) {
+    neutraliseIdentity(expectedChildren[i], actualChildren[i]);
+  }
+}
+
 /** Compares one case end to end. Oracle-nondeterministic cases are not run (`excluded`). */
 export function compareCase(row: SweepRow, deps: CaseDeps): CaseOutcome {
   const base = { caseId: row.caseId, algorithm: row.algorithm, oracleMs: row.ms };
@@ -240,7 +276,10 @@ export function compareCase(row: SweepRow, deps: CaseDeps): CaseOutcome {
     const { category, detail } = classify(row, { kind: 'laid', equal: false });
     return { ...base, category, detail, tsMs: side.ms };
   }
-  const result = compareLayout(lenientParse(deps.readOracleOutput(row.caseId)), lenientParse(side.text));
+  const expected = lenientParse(deps.readOracleOutput(row.caseId));
+  const actual = lenientParse(side.text);
+  neutraliseIdentity(expected, actual);
+  const result = compareLayout(expected, actual);
   const { category } = classify(row, { kind: 'laid', equal: result.ok });
   const detail = result.ok ? '' : formatDiffs(result.diffs, MAX_DETAIL_DIFFS);
   const optionsOnly = result.diffs.every((d) => LAYOUT_OPTIONS_PATH.test(d.path));
@@ -327,7 +366,10 @@ interface AlgorithmRegistration {
   readonly providers: () => readonly ILayoutMetaDataProvider[];
 }
 
-/** The tree algorithms of mission 8a, then force, stress and disco of mission 8b; the others register in their own missions. */
+/**
+ * The tree algorithms of mission 8a, force, stress and disco of mission 8b, rectpacking, spore and topdownpacking of
+ * mission 8c; the others register in their own missions.
+ */
 const REGISTRATIONS: readonly AlgorithmRegistration[] = [
   { id: LayeredOptions.ALGORITHM_ID, providers: () => [new LayeredMetaDataProvider()] },
   { id: MrTreeOptions.ALGORITHM_ID, providers: () => [new MrTreeMetaDataProvider()] },
@@ -337,6 +379,11 @@ const REGISTRATIONS: readonly AlgorithmRegistration[] = [
   { id: StressOptions.ALGORITHM_ID, providers: () => [new StressMetaDataProvider()] },
   // PolyominoOptions beside DisCo, as the oracle harness registers it (ElkOracle.java:218-221); it owns no algorithm.
   { id: DisCoOptions.ALGORITHM_ID, providers: () => [new PolyominoOptions(), new DisCoMetaDataProvider()] },
+  // Mission 8c: rectpacking, the two spore algorithms (one provider) and topdownpacking.
+  { id: RectPackingOptions.ALGORITHM_ID, providers: () => [new RectPackingMetaDataProvider()] },
+  { id: SporeOverlapRemovalOptions.ALGORITHM_ID, providers: () => [new SporeMetaDataProvider()] },
+  { id: SporeCompactionOptions.ALGORITHM_ID, providers: () => [new SporeMetaDataProvider()] },
+  { id: TopdownpackingOptions.ALGORITHM_ID, providers: () => [new TopdownpackingMetaDataProvider()] },
 ];
 
 /** Registers the tree, force, stress and disco metadata providers once per module registry. */

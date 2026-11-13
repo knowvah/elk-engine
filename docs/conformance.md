@@ -1867,6 +1867,190 @@ interactive-constraints/interactiveRectpacking_{hierarchy,oneBigNode}` (`layoutO
 **What still throws.** Nothing in force, stress or disco is staged. `NodeMicroLayoutTest` still needs rectpacking (mission 8x);
 `PlainJavaInitializationTest` and `ElkReflectTest` wait for the remaining algorithms (8x, after 8c).
 
+## Rectpacking, spore and topdownpacking (mission 8c) {#alg-packing}
+
+Mission 8c ported the bundles `alg.rectpacking` (`elk.rectpacking`), `alg.spore` (`elk.sporeOverlap` and `elk.sporeCompaction`) and
+`alg.topdownpacking` (`elk.topdownpacking`), generated their option classes and providers, and proved them against the oracle
+(design, evidence tables, decisions as built and runbook in [alg-packing.md](architecture/alg-packing.md)). Decisions:
+`plans/alg-packing/decisions.md` (PK1-PK12). `test/architecture/staged-classes.json` is `[]` and `PENDING_TYPES` is `[]`. The
+providers are registered explicitly, not by `getInstance()` (PK8); `SporeMetaDataProvider` registers both spore algorithms.
+
+**Evidence.**
+
+- Vector refs under `test/golden/refs/java/` (oracle `8aaa3c14` with patches 0001 and 0002, `-XX:hashCode=2`; an orchestrator cold
+  rerun of each recorder is `cmp`-identical to the committed ref):
+
+  | Ref                   |  Rows | full | stops | throws | other                          | Recorder                                   |
+  | --------------------- | ----: | ---: | ----: | -----: | ------------------------------ | ------------------------------------------ |
+  | `rectpacking.json`    | 1,356 |  558 |   151 |      7 | sort 640                       | `tools/vectors/RectPackingVectors.java`    |
+  | `spore-layout.json`   |   339 |  113 |    60 |      4 | minst 95, jitter 4, objects 63 | `tools/vectors/SporeLayoutVectors.java`    |
+  | `topdownpacking.json` |   898 |  296 |   288 |     18 | predicted 296                  | `tools/vectors/TopdownPackingVectors.java` |
+
+  Two of the counts are the result of additive extensions (rows appended at the end of the scenario lists; every earlier row
+  byte-identical as JSON text and in the same order): `rectpacking.json` 1,343 to 1,356 and `spore-layout.json` 274 to 276
+  (T14b: arms no row reached), then 276 to 339 (the `objects` group).
+
+- Replays: `RectPackingVectors.test.ts` (at T12, before the extension: 552 full rows with 66,304 doubles bit-exact, 145 stops
+  rows with 1,069 stops and 132,339 doubles bit-exact, 6 throws; now 558, 151, 7, and the sort group), `SporeLayoutVectors.test.ts`
+  (at T11: full 111 of 112, stops 59, minst 95, throws 4, jitter 4 by invariants; 67,980 doubles, all raw-bit identical),
+  `TopdownPackingVectors.test.ts` (296 full, 288 stops with the real row-list lengths, 296 predicted, 18 throws).
+  `JavaObjects.test.ts` replays the 63 `objects` rows. Isolated replays of the classes: rectpacking p1 165 stops (149 greedy),
+  p3 34 stops (2,960 hex values bit-exact), p2 165 stops; spore 34,992 hex doubles over the stops and 13,636 over the `minst` rows.
+- Goldens (PK2): `tools/oracle/regen-goldens.sh --set packing` writes `test/golden/refs/elk-packing/`: 44 refs (rectpacking 17,
+  sporeCompaction 13, sporeOverlap 7, topdownpacking 7), regenerated `diff -r` identical by the orchestrator; `resolvedAlgorithm`
+  equals the entry's algorithm in 44 of 44; `test/golden/packing-goldens.test.ts` (49 tests) compares every entry at AD-4 and the
+  four `--minst-ties-<n>` entries are named in one test title. The five landed sets regenerate byte-identically.
+- JUnit: `PaddingTest` 4, `CompactionTest` 10, `Issue583Test` 1, `UtilsTest` 3, `ScanlineOverlapRemovalTest` 1,
+  `TopdownPackingTest` 4, `TopdownLayoutTest` 5, `PortPlacementCalculationTest` 2: 30 runs ported with the Java's assertions;
+  the oracle runs at mission start are the same 30 runs, 0 failures (`plans/alg-packing/java-baseline.md`).
+- Sweep (PK9), oracle `sweep.sh --filter /<alg>/` under `-XX:hashCode=2`, TS through `ts-layout-compare.ts`:
+
+  | Algorithm       | planned |    ok | mismatch | both-throw | ts-only-throw | oracle-only-throw | nondeterministic (excluded) |
+  | --------------- | ------: | ----: | -------: | ---------: | ------------: | ----------------: | --------------------------: |
+  | rectpacking     |     919 |   830 |        0 |         89 |             0 |                 0 |                           0 |
+  | sporeOverlap    |     906 | 94-97 |      0-3 |      20-21 |             0 |               0-1 |                         788 |
+  | sporeCompaction |     906 |    99 |        0 |          0 |             0 |                 0 |                         807 |
+  | topdownpacking  |     906 |   906 |        0 |          0 |             0 |                 0 |                           0 |
+
+  The sporeOverlap ranges are four cases (below). No timeout and no hang; nothing from the sweep is committed (AD-5). The 6
+  residual cases of 8b (`interactiveRectpacking_{hierarchy,oneBigNode}` under force, stress and disco) and the 7 tree
+  residuals of issue #68 item A are `ok` with every provider registered. The `force--iterations-50` row of `SUFFIX_DIFFERENCES`
+  in `test/golden/force-disco-goldens.test.ts` is removed (51 tests pass against the unchanged ref).
+
+- Coverage, each bundle from its own tests: rectpacking 99.38 % statements, 98.12 % branches (418 of 426), 98.46 % functions;
+  spore 99.21 %, 100 % (85 of 85); topdownpacking 98.61 %, 96.42 % (54 of 56); the whole project at the batch 5 gate 98.92 / 96.99 /
+  98.84 / 98.92 (statements / branches / functions / lines) over 49,156 tests. `plans/alg-packing/unreached.md` lists 18 `U` rows and
+  one arm neither reached nor proven dead (`Compaction.java:364`, issue #81).
+
+### Upstream quirks kept (mission 8c) {#alg-packing-quirks}
+
+Each is read from the Java and reproduced; all are "kept: upstream behaviour". Java paths are under
+`org.eclipse.elk.alg.<bundle>`.
+
+rectpacking:
+
+- `p2packing/Compaction.java:412` `placeNextBeside` adds the next block to the row without `nextBlock.setParentRow(row)` (the
+  other two sites set it, `:165` and `:323-324`), so the block keeps its old parent row and is appended out of x order. When
+  the row is compacted again (`RowFillingAndCompaction.java:117` `rowIdx--`), `wasFromNextRow` (`Compaction.java:101`) is true
+  for a block already in the row, the block is added twice, and `absorbBlocks` (`:266-269`) moves a rectangle from a block into
+  itself forever: a hang on the oracle and in the port (issue #73).
+- `util/RectRow.java:170-178` `removeBlock` reduces the row width even when the block is not in the row; the Compactor sets row
+  width and height directly, so 35 of 381 recorded row widths (at T6) differ from `notifyAboutNodeChange`; block `minWidth`,
+  `maxHeight` and `averageHeight` depend on the call history.
+- `Compactor.java:69-93`: with `compaction.iterations` above 1 the ROWS list at `after:Compactor` is the first iteration's
+  while node positions are a later accepted iteration's.
+- `util/BlockStack.java:155-168` `placeRectsIn` stores `currentY` (with the trailing spacing) as the stack height.
+- `util/RectRow.java:98-108` `calculateBlockStacks` has no caller; on four recorded rows it does not rebuild the recorded
+  stacks (below).
+- `p2packing/Compactor.java:193-194` `copyPosition`'s child loop is dead: `clone()` copies only direct children.
+- `p1widthapproximation/AreaApproximation.java:154-157` `findBestCandidate` returns null when more than two placement options
+  tie, and `:98` dereferences it: two 0 by 0 children with `spacing.nodeNode = 0` throw `NullPointerException` (a `TypeError` in the
+  port; row `throws/arm/noBestCandidate`).
+- `RectPackingLayoutProvider.java:223-224` adds `MIN_SIZE_POST_PROCESSOR` before P2. `InteractiveRectPackingGraphVisitor` is
+  applied by no code under `plugins/` (so `interactiveLayout` has no effect in a headless run), and its `endsWith` at `:47` tests
+  the id against the option value in the reversed direction (kept).
+- `Compaction.java:74` writes "There should not be an empty block..." to `System.err` on recorded inputs: `console.error`.
+- `util/Block.java:176` (the `rows.size() > 0 ? ... : 0` else arm) is dead: `getLastRow()` at `:168` has already thrown.
+
+spore:
+
+- `ElkGraphImporter.java:167-169`: `(Math.random() - 0.5) * 0.001` shifts a centre that equals one already in `nodeMap`; unseeded
+  (PK4, the policy of the one-argument `Collections.shuffle`).
+- `ElkGraphImporter.java:227-241` `updateGraph`: two nodes at identical centres collapse in `nodeMap`; `put` replaces the value and
+  only the last-put node is placed.
+- `ElkGraphImporter.java:69` `minRootDistance` without a root throws `NullPointerException`; `MaxSTPhase.java:44-46` takes
+  `vertices.get(0)` when the fixed preferred root names no child.
+- `OverlapRemovalLayoutProvider.java:67-72` overwrites the `processingOrder.*` options of sporeOverlap; `:59-60` reads
+  `hasProperty` on the compaction option and `getProperty` on the overlap option (verbatim).
+- `NodeMarginCalculator.java:218-223` overwrites explicit `CoreOptions.MARGINS` on children: spore ignores them.
+- `ScanlineOverlapCheck.java:166` ("Invalid hitboxes for scanline overlap calculation.", `IllegalStateException`) is reachable
+  from ordinary small overlapping inputs (897 of 200,000 in the recorder's search; row `throws/overlap/scanlineHitboxes`).
+- `ElkUtil.debugFolderPath('spore')` is `null` in the port and the Java concatenates the string `"null..."`; the five sites write
+  `String(...)` (`DelaunayTriangulationPhase.java:46`, `MinSTPhase.java:62`, `MaxSTPhase.java:48`, `GrowTreePhase.java:52`,
+  `ShrinkTreeCompactionPhase.java:46`); nothing is written to disk. `DEBUG_SVG` is a programmatic option and is kept.
+- `ElkGraphUtil.java:633` rejects a hyperedge (`IllegalArgumentException` "Passed edge is not 'simple'.").
+
+topdownpacking:
+
+- `GridElkNode.java:67-76` `put` **inserts** with `add(col, item)` (`:73`): every row list is `cols` plus its node count long,
+  and `BottomRowEqualWhitespaceEliminator.java:58` walks back over the nulls.
+- `NodeArrangementStrategy.java:38-40` and `WhitespaceEliminationStrategy.java:40-42`: single-constant enums whose `default` arms
+  no input reaches (`U` row 15).
+- The engine never calls a provider for a childless node, so `full/n0/default` is the untouched 0 by 0 root; a direct provider call
+  (`stops/n0/default`) gives a 4 by 4 root.
+- `ArrayList.add(index)` and `get(index)` throw with different texts ("Index: -1, Size: 2" against "Index -1 out of bounds for length
+  2"); both are JVM texts recorded in `topdownpacking.json`, compared by class and frame.
+
+### Known divergences and classified rows (mission 8c) {#alg-packing-divergences}
+
+- **PK7: 213 of the 640 `sort` rows (issue #75, `needs-ruling`).** `InteractiveNodeReorderer.java:56-63` returns `-1` for equal
+  `desiredPosition`s in both directions. `Array.prototype.sort` with the verbatim comparator reproduces 427 rows (all 310 of length
+  1-31 and 117 of the 330 of length 32-64). The 213 that differ are listed in `test/helpers/rectpacking-sort-classified.ts` and the
+  test asserts the two lists equal the computed differing set exactly:
+  - `JAVA_ONLY_THROW_ROWS`, 34 rows where only the JVM throws `IllegalArgumentException` "Comparison method violates its general
+    contract!": ids `sort/L<n>/v2` for every length `n` from 32 to 64 (33 rows) and `sort/L34/v8`.
+  - `ORDER_DIFFERENCE_ROWS`, 179 rows where both sorts finish and the orders differ, all of length 32 or more: ids
+    `sort/L<n>/v<k>` with `k` = 1 (33 rows), 3 (20), 4 (12), 5 (16), 7 (33), 8 (32), 9 (33).
+    No TimSort was written and no OpenJDK source was read (AD-9).
+- **Four `RectRow.test.ts` rows (issue #78, `needs-ruling`).** The T6 test "resetStacks followed by calculateBlockStacks rebuilds
+  the recorded stacks of every row" held for the first recording; the four rows added by T14b make it fail:
+  `stops/arm/fixedBlockSkip/default`, `.../fixedBlockSkipSpaced/default`, `.../staleParentRow/default` and
+  `.../staleParentRowNoSpacing/default` (children not in x order, `Compaction.java:309-325`, `:411-413`; the rebuilt stacks number
+  3, 3, 5, 4 against 2, 2, 4, 3 recorded). A JVM probe of the Java method on the oracle gives the same counts as the port, so the
+  expectation was a premise and not an oracle observation. The test now collects the differing rows and asserts the set equals
+  `CHILDREN_NOT_X_GROUPED_ROWS` (those four ids) exactly.
+- **Four nondeterministic sporeOverlap sweep cases (issue #79, `needs-ruling`).** Oracle-nondeterministic through the PK4 jitter,
+  yet both sweep runs agreed, so they carry `ok` or `throws` and flicker in the TS comparison: `retarget/sporeOverlap/default/`
+  `tests/layered/node_placement/flexible_ports/graph01`, `.../tests/layered/edge_label_placement/layerSelection_widest`,
+  `.../tickets/layered/401_portConstraintsOfCompoundNodes` and the ptolemy model
+  `.../realworld/ptolemy/hierarchical/ptolemy_electricpowersystem_GeneratorRegulatorProtectorSimXRhapsodyFMUMetronomy`. Twelve oracle
+  runs of `graph01` wrote 10 distinct outputs. They are never compared and the tool does not classify them (row 9 owns it).
+- **Jitter rows (PK4).** The 4 `jitter` rows (corpus inputs x2, `dup5` x2) record invariants only: node count, no remaining
+  overlap and an input-derived displacement bound; the TS test checks the same over three runs. Recorded `full` and `stops` rows and
+  the spore goldens have distinct centres. The 788 and 807 `nondeterministic` sweep cases are counted, not compared.
+- **The flag-gated chain row.** `full/compaction/chain2000/default` (a 2,000-node path, `DepthFirstCompaction` cubic) runs only with
+  `SPORE_CHAIN_FULL=1`; with the flag it equals the oracle row (8,004 doubles), measured at 321 s under vitest. The explicit-stack
+  conversions of `DepthFirstCompaction.compactTree` and `GrowTreePhase.growAt` (PK6) are proven against verbatim recursive copies
+  (`*.explicit-stack.test.ts`); beyond 2,000 nodes the port's stack limit is below the oracle's at the unconverted sites (issue #76,
+  `follow-up`).
+- **Upstream defects the ports copy.** Issue #73 (`follow-up`, the `absorbBlocks` hang, no row or golden reaches it), issue #80
+  (`needs-ruling`, seven further defects: the `AreaApproximation.java:98` NPE, the unused visitor and its reversed `endsWith`,
+  `RectRow.removeBlock`, the stale parent row, dead `calculateBlockStacks` and `copyPosition`, spore's overwritten margins,
+  `ScanlineOverlapCheck.java:166`); drafts for upstream, nothing filed upstream.
+- **Open arm.** `Compaction.java:364` (`placeBeside`, `shouldRowHeigthBeReevalauted && nextBlockHeight > nextBlock.getMinHeight()`)
+  is neither reached by any row nor proven dead (issue #81, `follow-up`).
+
+**Landed shim fixed at the origin.** `src/java/util/JavaObjects.ts` `equals` called `a.equals(b)` without an identity test. The JVM's
+`Objects.equals` is true for one and the same object, so a vector with a NaN component (not equal to itself under
+`KVector.equals`) was not recognised by `TTriangle.contains` (`TTriangle.java:138-141`) in `BowyerWatsonTriangulation`; the
+super-triangle edges stayed in the set and `ElkGraphImporter.nodeOf` found no node (`TypeError`) where Java went on. The sweep
+found it (14 sporeOverlap mismatches and 5 `ts-only-throw` across sporeOverlap and sporeCompaction, all ptolemy hierarchical
+models). The fix returns true for `typeof a === 'object' && a === b` before `a.equals(b)` (objects only, so `0` and `-0` stay
+unequal as under `Double.equals`). The Javadoc of `Objects.equals` does not state the identity test, so AD-9 required a vector: the
+group `objects` of `spore-layout.json` (63 rows appended after every existing row; `rowCounts` gains `objects: 63`) records that
+`Objects.equals(v, v)` is true and `v.equals(v)` false for a `KVector` with a NaN component, that two distinct vectors with equal
+NaN bits are unequal under both, that `TTriangle.contains` is true for its own NaN vertex object and false for a distinct copy, that
+a `TEdge` with a NaN endpoint equals itself and an edge over the same vertex objects in either order and not one over distinct
+copies, and that a boxed `Double` NaN equals NaN while `0.0` and `-0.0` are unequal. `src/java/util/JavaObjects.test.ts` replays all
+63; the eight landed `JavaObjects` tests pass unchanged. After the fix sporeCompaction has 0 findings and the affected sporeOverlap
+cases are both-throw.
+
+**Landed code changed for PK3 and PK6.** `src/graph/ElkGraphPackage.ts` holds a list of classes per interface name (`registerImpl`
+appends once, `isInstance` is true for any registered class; `GridElkNode` registers under `ElkNode` and its super-interfaces);
+`src/alg/common/spore/DepthFirstCompaction.ts` `compactTree` is an explicit-stack loop. No landed expected value changed.
+`test/golden/force-disco-goldens.test.ts` registers the new providers and drops the `force--iterations-50` suffix row; its ref is
+unchanged. `tools/corpus/ts-layout-compare.ts` registers the three metadata providers and gains `neutraliseIdentity` (the
+maintainer's ruling on issue #71 item 1: assert the oracle value matches `DCGraph@<hex>`, neutralise that one key on both sides).
+
+**Upstream typos (CLAUDE.md carve-out).** One progress-monitor task name, a message string nothing branches on and no ref records:
+`ToAspectratioNodeExpander.java:51` reads "To Aspect Ratio Whitesapce Eliminator"; the port reads "To Aspect Ratio Whitespace
+Eliminator" (`ToAspectratioNodeExpander.ts:26`), with a comment at the site naming the upstream text;
+`ToAspectratioNodeExpander.test.ts` asserts the corrected string. No other prose typo in
+the three bundles is recorded in the journal.
+
+**What still throws.** Nothing in rectpacking, spore or topdownpacking is staged. `NodeMicroLayoutTest`,
+`PlainJavaInitializationTest` and `ElkReflectTest` (mission 8x) are unblocked.
+
 ## Temporary gaps
 
 Known differences from the Java after mission 3 (core metadata), each with the mission that closes

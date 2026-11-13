@@ -31,6 +31,10 @@ export function equals(a: unknown, b: unknown): boolean {
   if (a === null) {
     return b === null;
   }
+  if (typeof a === 'object' && a === b) {
+    // `(a == b) || ...`: an object equals itself even when its `equals` is not reflexive (a KVector with a NaN component)
+    return true;
+  }
   if (typeof a === 'object' && hasMethod(a, 'equals')) {
     return (a as { equals(o: unknown): boolean }).equals(b);
   }

@@ -168,9 +168,10 @@ iterator whenever an edge has more than one section.
   `basicAdd/basicRemove` calls need no `InternalEList` cast.
 - **Type guards.** Java's `instanceof <interface>` becomes an exported guard (`isElkNode(o)`, …),
   implemented through a constructor registry in `ElkGraphPackage.ts`: `registerImpl(name, ctor)` is
-  called by each impl module, `isInstance(name, o)` runs `instanceof` against it, keyed by a
-  string-literal union of interface names. Interfaces never import impls. Mission 8c extends the
-  guards for `GridElkNode` (section 9).
+  called by each impl module and appends the class to the list kept for the name,
+  `isInstance(name, o)` runs `instanceof` against any class in that list, keyed by a
+  string-literal union of interface names. Interfaces never import impls. Mission 8c made the
+  registry a list per name for `GridElkNode` (section 9).
 - **`ElkGraphPackage`** is ported as constants only: 106 feature ids keeping Java's defining
   expressions, `eNAME`/`eNS_URI`/`eNS_PREFIX`, and `Literals` (`{ getName() }` EClass stand-ins that
   drive `eStaticClass`). The metamodel itself is not ported, so the generated `switch` bodies stay
@@ -293,8 +294,9 @@ Kept from the pre-mission-2 survey for the missions that meet them. 41 files imp
 - `LoggedGraph` and `NGraph` (importers that read `ElkNode`).
 - `ECollections.sort`, 2 call sites (ported in `src/emf/common/util/ECollections.ts`).
 - `GridElkNode` (`alg.topdownpacking/src/.../GridElkNode.java:44`), a 523-line class that
-  **implements the whole EMF `ElkNode` interface by delegation**: it needs a narrower interface or an
-  explicit adapter under AD-11, and the type guards must admit it (mission 8c).
+  **implements the whole EMF `ElkNode` interface by delegation**: mission 8c ported it as a
+  delegating class (`src/alg/topdownpacking/GridElkNode.ts`) that registers under `ElkNode` and its
+  super-interfaces, and the registry holds a list of classes per name, so the guards admit it.
 - `EcoreUtil.copy` is used only for debug logging (`core/src/.../util/BasicProgressMonitor.java:433`).
 - `eAllContents()` drives generated ids (`graph/src/.../util/GraphIdentifierGenerator.java:348`) and
   `core/src/.../util/ElkUtil.java:989`; both consume the single `eAllContents` implementation above.

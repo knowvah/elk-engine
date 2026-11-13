@@ -2,18 +2,20 @@
 # SPDX-License-Identifier: EPL-2.0
 # Regenerates the committed oracle golden refs (AD-5) from the pinned
 # elk-models corpus. Output is byte-stable: no timestamps.
-# Usage: regen-goldens.sh [--set default|algorithms|layered|trees|force-disco]
+# Usage: regen-goldens.sh [--set default|algorithms|layered|trees|force-disco|packing]
 #   default     test/corpus/manifest.json  -> test/golden/refs/elk
 #   algorithms  test/golden/algorithms.json -> test/golden/refs/elk-algorithms
 #   layered     test/golden/layered.json   -> test/golden/refs/elk-layered
 #   trees       test/golden/trees.json     -> test/golden/refs/elk-trees
 #   force-disco test/golden/force-disco.json -> test/golden/refs/elk-force-disco
+#   packing     test/golden/packing.json   -> test/golden/refs/elk-packing
 # All sets take the pinned models commit from test/corpus/manifest.json.
-# The layered, trees and force-disco sets run the oracle JVM with -XX:hashCode=2 (H4),
+# The layered, trees, force-disco and packing sets run the oracle JVM with -XX:hashCode=2 (H4),
 # recorded as "jvmFlags" in their _meta.json; the other sets run without it.
 # The trees set reads its designed inputs from test/golden/trees-inputs/ in
 # the repository (TR2), not from the elk-models checkout; the force-disco set
-# likewise from test/golden/force-disco-inputs/ (FD2).
+# likewise from test/golden/force-disco-inputs/ (FD2), and the packing set from
+# test/golden/packing-inputs/ (PK2).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -72,7 +74,16 @@ select_set() { # select_set <default|algorithms|layered>
       JVM_FLAGS="$LAYERED_JVM_FLAGS"
       export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-XX:+UnlockExperimentalVMOptions $JVM_FLAGS"
       ;;
-    *) die "unknown set '$1' (expected default, algorithms, layered, trees or force-disco)" ;;
+    packing)
+      MANIFEST="$ROOT/test/golden/packing.json"
+      REFS_NAME="elk-packing"
+      REFS_DIR="$REFS_PARENT/$REFS_NAME"
+      INPUTS_DIR="$ROOT/test/golden/packing-inputs"
+      NEEDS_MODELS=0
+      JVM_FLAGS="$LAYERED_JVM_FLAGS"
+      export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-XX:+UnlockExperimentalVMOptions $JVM_FLAGS"
+      ;;
+    *) die "unknown set '$1' (expected default, algorithms, layered, trees, force-disco or packing)" ;;
   esac
 }
 

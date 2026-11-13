@@ -4,7 +4,7 @@
  * Fitness function (decision L1, mission 7a): a staged class is a file at its Java path that ports only the members
  * earlier code references and throws for the rest until the named mission completes it. Each such file carries the
  * header marker `// @staged <mission>` within its first lines, and `staged-classes.json` lists every one as
- * `{ path, mission }`, sorted by path. The two must agree in both directions; the list is empty after mission 8b.
+ * `{ path, mission }`, sorted by path. The two must agree in both directions; the list is empty after mission 8c.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -19,7 +19,7 @@ interface StagedClass {
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SRC = join(ROOT, 'src');
-const MARKER = /^\/\/ @staged (7f2|7[b-h]|8a|8b)$/;
+const MARKER = /^\/\/ @staged (7f2|7[b-h]|8a|8b|8c)$/;
 const HEADER_WINDOW = 3;
 const STAGED: readonly StagedClass[] = JSON.parse(
   readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'staged-classes.json'), 'utf8'),
