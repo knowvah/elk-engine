@@ -26,6 +26,8 @@ tools/vectors/elkr-generate-scenarios/
 tools/vectors/elkr-lexer-cases.txt
 # Written by tools/bundle-deps.ts; the fitness test compares it byte-for-byte
 test/architecture/bundle-deps.json
+# Written by tools/corpus/parity-report.ts; its staleness check compares it byte-for-byte
+docs/parity-report.md
 
 # Mission archaeology: never rewritten (CLAUDE.md)
 plans/

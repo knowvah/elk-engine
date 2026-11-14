@@ -3,6 +3,7 @@ import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
 import { LayoutProcessorConfiguration } from '../../../core/alg/LayoutProcessorConfiguration.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import * as Int32 from '../../../java/lang/Int32.js';
+import { PROPERTY_RETURN_VALUE, unboxInteger } from '../../../java/lang/Unbox.js';
 import { LayeredPhases } from '../LayeredPhases.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
@@ -12,6 +13,9 @@ import { InternalProperties } from '../options/InternalProperties.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
 import { PortType } from '../options/PortType.js';
 import { GroupModelOrderCalculator } from './GroupModelOrderCalculator.js';
+
+/** The null expression of the unboxing sites below, as the JVM names it. */
+const LGRAPH_PROPERTY = PROPERTY_RETURN_VALUE('org.eclipse.elk.alg.layered.graph.LGraph');
 
 /**
  * A cycle breaker that reverses all edges that go against the model order or group model order, i.e. edges from high
@@ -68,11 +72,17 @@ export class ModelOrderCycleBreaker implements ILayoutPhase<LayeredPhases, LGrap
     // E.g. A node with the LAST constraint needs to have a model order m = modelOrder + offset
     // such that m > m(n) with m(n) being the model order of a normal node n (without constraints).
     // Such that the highest model order has to be used as an offset
+    // Both reads unbox an `Integer` property that has no default (`:70-71`). A nested graph laid out with
+    // `INCLUDE_CHILDREN` never gets them (`ElkGraphImporter.java:382-384` sets them on the top-level graph only), so the
+    // Java throws a NullPointerException here; the oracle does on the corpus model `modelOrderCycleBreaking`.
     const offset = Math.max(
       layeredGraph.getLayerlessNodes().length,
-      layeredGraph.getProperty(InternalProperties.MAX_MODEL_ORDER_NODES),
+      unboxInteger(layeredGraph.getProperty(InternalProperties.MAX_MODEL_ORDER_NODES), LGRAPH_PROPERTY),
     );
-    const bigOffset = Int32.mul(offset, layeredGraph.getProperty(InternalProperties.CB_NUM_MODEL_ORDER_GROUPS));
+    const bigOffset = Int32.mul(
+      offset,
+      unboxInteger(layeredGraph.getProperty(InternalProperties.CB_NUM_MODEL_ORDER_GROUPS), LGRAPH_PROPERTY),
+    );
     const enforceGroupModelOrder =
       layeredGraph.getProperty(LayeredOptions.CONSIDER_MODEL_ORDER_GROUP_MODEL_ORDER_CB_GROUP_ORDER_STRATEGY) ===
       GroupOrderStrategy.ENFORCED;

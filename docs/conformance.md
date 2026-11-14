@@ -168,6 +168,61 @@ Concrete entries (add one only with the user's approval):
 | --- | ------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | 1   | Parse-error message text | ANTLR messages are artifacts of the generated parser, which is never ported | Invalid grammar input (`.elkt`, `.elkj`, `.elkr`): only the _presence_ of a parse failure must match, not the message. Valid input must match exactly | D8, user, 2026-10-11 |
 
+### Non-strict Math call sites (AD-4 known-divergences list) {#math-call-sites}
+
+Every transcendental `Math.*` call in non-test `src/` (36 calls in 14 files), pinned by
+`test/architecture/math-call-sites.json` and the fitness test `math-call-sites.fitness.test.ts` (TP7): a new call fails the test
+until it has a row here. Row order is file, then line. The Java calls plain `Math` at every site (the pinned ELK source has no
+`StrictMath` call), so HotSpot may use an intrinsic that differs from `StrictMath` in the last bit. Evidence names the tests that
+reached the site when every test file was run with the `Math` functions wrapped to record the calling `src` line; it lists tests that
+reach the call, not tests that would detect a last-ulp difference. The divergence column holds what is already recorded elsewhere in
+this file.
+
+| TS site                                                              | Java site                                                                                                          | Function | Java calls | Evidence that reaches the site                                                                                                                      | Observed last-ulp divergence                                                          |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `src/alg/disco/transform/ElkGraphTransformerGeometry.ts:51`          | `org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:632`                   | `atan2`  | `Math`     | disco: `test/golden/force-disco-goldens.test.ts`, `DiscoVectors.test.ts`; the 8b sweep rows named in the entry                                      | none observed (8b: 171 replayed inputs bit-identical in V8, `Math` and `StrictMath`)  |
+| `src/alg/disco/transform/ElkGraphTransformerGeometry.ts:55`          | `org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:636`                   | `sin`    | `Math`     | disco: `test/golden/force-disco-goldens.test.ts`, `DiscoVectors.test.ts`; the 8b sweep rows named in the entry                                      | last-ulp, 32 numeric fields: [8b `getOrthogonalPoints`](#alg-force-disco-divergences) |
+| `src/alg/disco/transform/ElkGraphTransformerGeometry.ts:56`          | `org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:637`                   | `cos`    | `Math`     | disco: `test/golden/force-disco-goldens.test.ts`, `DiscoVectors.test.ts`; the 8b sweep rows named in the entry                                      | last-ulp, 32 numeric fields: [8b `getOrthogonalPoints`](#alg-force-disco-divergences) |
+| `src/alg/disco/transform/ElkGraphTransformerGeometry.ts:57`          | `org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:638`                   | `sin`    | `Math`     | disco: `test/golden/force-disco-goldens.test.ts`, `DiscoVectors.test.ts`; the 8b sweep rows named in the entry                                      | last-ulp, 32 numeric fields: [8b `getOrthogonalPoints`](#alg-force-disco-divergences) |
+| `src/alg/disco/transform/ElkGraphTransformerGeometry.ts:58`          | `org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:639`                   | `cos`    | `Math`     | disco: `test/golden/force-disco-goldens.test.ts`, `DiscoVectors.test.ts`; the 8b sweep rows named in the entry                                      | last-ulp, 32 numeric fields: [8b `getOrthogonalPoints`](#alg-force-disco-divergences) |
+| `src/alg/layered/intermediate/wrapping/BreakingPointInserter.ts:322` | `org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/wrapping/BreakingPointInserter.java:329` | `pow`    | `Math`     | layered wrapping: `test/corpus/loops-sweep.test.ts`, `test/helpers/layered-loops-sweep.test.ts`, `LayeredLoopsVectors.test.ts`                      | none observed                                                                         |
+| `src/alg/layered/p5edges/splines/SplinesMath.ts:140`                 | `org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/splines/SplinesMath.java:116`                 | `acos`   | `Math`     | layered splines: `SplinesMath.test.ts`, `LayeredRoutingVectors.test.ts` (JVM vectors `layered-routing-steps.json`)                                  | none observed                                                                         |
+| `src/alg/layered/p5edges/splines/SplinesMath.ts:219`                 | `org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/splines/SplinesMath.java:207`                 | `cos`    | `Math`     | layered splines: `SplinesMath.test.ts`, `LayeredRoutingVectors.test.ts` (JVM vectors `layered-routing-steps.json`)                                  | none observed                                                                         |
+| `src/alg/mrtree/intermediate/FanProcessor.ts:87`                     | `org.eclipse.elk.alg.mrtree/src/org/eclipse/elk/alg/mrtree/intermediate/FanProcessor.java:96`                      | `log10`  | `Math`     | mrtree: `test/golden/tree-goldens.test.ts`, `FanProcessor.test.ts`                                                                                  | none observed                                                                         |
+| `src/alg/radial/RadialUtil.ts:138`                                   | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/RadialUtil.java:156`                                    | `atan2`  | `Math`     | radial: `test/golden/tree-goldens.test.ts`                                                                                                          | none observed                                                                         |
+| `src/alg/radial/RadialUtil.ts:151`                                   | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/RadialUtil.java:169`                                    | `atan2`  | `Math`     | radial: `test/golden/tree-goldens.test.ts`                                                                                                          | none observed                                                                         |
+| `src/alg/radial/intermediate/EdgeAngleCalculator.ts:28`              | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/intermediate/EdgeAngleCalculator.java:48`               | `atan2`  | `Math`     | radial: `test/golden/tree-goldens.test.ts`, `RadialVectors.test.ts`                                                                                 | none observed                                                                         |
+| `src/alg/radial/intermediate/rotation/AngleRotation.ts:76`           | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/intermediate/rotation/AngleRotation.java:53`            | `atan2`  | `Math`     | radial: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`                                                                                 | none observed                                                                         |
+| `src/alg/radial/p1position/EadesRadial.ts:79`                        | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/p1position/EadesRadial.java:101`                        | `cos`    | `Math`     | radial: `test/golden/tree-goldens.test.ts`, `RadialVectors.test.ts`                                                                                 | none observed                                                                         |
+| `src/alg/radial/p1position/EadesRadial.ts:80`                        | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/p1position/EadesRadial.java:102`                        | `sin`    | `Math`     | radial: `test/golden/tree-goldens.test.ts`, `RadialVectors.test.ts`                                                                                 | last-ulp, one sweep case: [8a `EadesRadial` `sin`](#alg-trees-divergences)            |
+| `src/alg/radial/p1position/EadesRadial.ts:110`                       | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/p1position/EadesRadial.java:108`                        | `acos`   | `Math`     | radial: `test/golden/tree-goldens.test.ts`, `RadialVectors.test.ts`                                                                                 | none observed                                                                         |
+| `src/alg/radial/sorting/PolarCoordinateSorter.ts:57`                 | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/sorting/PolarCoordinateSorter.java:74`                  | `atan2`  | `Math`     | radial: `test/golden/tree-goldens.test.ts`                                                                                                          | none observed                                                                         |
+| `src/core/math/ElkMathBezier.ts:26`                                  | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/ElkMath.java:467`                                              | `pow`    | `Math`     | module-level constant, evaluated on import: every golden and sweep test that loads `ElkMath`                                                        | none observed                                                                         |
+| `src/core/math/KVector.ts:68`                                        | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:95`                                               | `cos`    | `Math`     | layered splines and self loops: `test/corpus/loops-sweep.test.ts`, `test/corpus/compound-sweep.test.ts`, `test/helpers/layered-loops-sweep.test.ts` | none observed                                                                         |
+| `src/core/math/KVector.ts:68`                                        | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:96`                                               | `sin`    | `Math`     | layered splines and self loops: `test/corpus/loops-sweep.test.ts`, `test/corpus/compound-sweep.test.ts`, `test/helpers/layered-loops-sweep.test.ts` | none observed                                                                         |
+| `src/core/math/KVector.ts:294`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:381`                                              | `asin`   | `Math`     | layered splines: `SplinesMath.test.ts`, `LayeredRoutingVectors.test.ts` (JVM vectors `layered-routing-steps.json`)                                  | none observed                                                                         |
+| `src/core/math/KVector.ts:297`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:383`                                              | `asin`   | `Math`     | layered splines: `SplinesMath.test.ts`, `LayeredRoutingVectors.test.ts` (JVM vectors `layered-routing-steps.json`)                                  | none observed                                                                         |
+| `src/core/math/KVector.ts:300`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:385`                                              | `asin`   | `Math`     | layered splines: `SplinesMath.test.ts`, `LayeredRoutingVectors.test.ts` (JVM vectors `layered-routing-steps.json`)                                  | none observed                                                                         |
+| `src/core/math/KVector.ts:352`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:443`                                              | `cos`    | `Math`     | radial rotation: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`, `GeneralRotator.test.ts`                                              | none observed                                                                         |
+| `src/core/math/KVector.ts:352`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:443`                                              | `sin`    | `Math`     | radial rotation: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`, `GeneralRotator.test.ts`                                              | none observed                                                                         |
+| `src/core/math/KVector.ts:353`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:444`                                              | `cos`    | `Math`     | radial rotation: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`, `GeneralRotator.test.ts`                                              | none observed                                                                         |
+| `src/core/math/KVector.ts:353`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:444`                                              | `sin`    | `Math`     | radial rotation: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`, `GeneralRotator.test.ts`                                              | none observed                                                                         |
+| `src/core/math/KVector.ts:364`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:455`                                              | `acos`   | `Math`     | radial rotation: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`, `GeneralRotator.test.ts`                                              | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:59`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:58`                        | `pow`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:66`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:65`                        | `log`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:66`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:65`                        | `log`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:67`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:66`                        | `exp`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:73`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:72`                        | `pow`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:79`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:78`                        | `pow`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/util/BoxLayoutProvider.ts:316`                             | `org.eclipse.elk.core/src/org/eclipse/elk/core/util/BoxLayoutProvider.java:286`                                    | `pow`    | `Math`     | box layouts (`computeMaxRowWidth`): `test/golden/layout-goldens.test.ts`, `test/golden/packing-goldens.test.ts`, `RectPackingVectors.test.ts`       | none observed                                                                         |
+| `src/core/util/BoxLayoutProviderGrouping.ts:220`                     | `org.eclipse.elk.core/src/org/eclipse/elk/core/util/BoxLayoutProvider.java:469`                                    | `pow`    | `Math`     | unit test only (`BoxLayoutProviderGrouping.test.ts`); no golden, ref replay or sweep test reaches it                                                | none observed                                                                         |
+
+There is no `StrictMath.ts`. `src/java/lang/JavaMath.ts` `log` is the bit-exact `StrictMath.log` shim and its callers
+(`Random.nextGaussian`, `EadesModel`) are not `Math.log` sites; every site above ports a Java `Math` call, and 8b measured V8
+equal to `StrictMath` on all 160 `sin` and 160 `cos` inputs while HotSpot's `Math` differs from both, so a fdlibm port of
+`sin`, `cos` or `atan2` would not match the oracle any better (TP7). Measuring each site's delta against the 0.01 px bar is
+issue #74's audit.
+
 **Verdicts.** Each case gets one verdict from two separate JVM runs of the oracle (D4, D5, OR-2):
 
 | Verdict            | Meaning                                                                                                                                                      |
@@ -682,6 +737,12 @@ behaviour". Detail: [core-engine.md](architecture/core-engine.md).
 - `ElkUtil.determineJunctionPoints` checks the main edge's section count inside the loop over the other edges
   (`ElkUtil.java:537-541`), so an other edge without sections throws `IndexOutOfBoundsException`, never the
   documented `IllegalArgumentException`.
+
+**Update 2026-11-13 (roadmap row 9).** After every provider is registered, the same comparison over the oracle sweep of that
+date (18,930 cases; see [TS corpus sweep](#ts-corpus-sweep)) gives `fixed` 869 `ok` and 29 `both-throw` of 898, `box` 898 `ok`
+of 898, and `random` 534 `ok` and 372 `excluded` of 906. All three have 0 `mismatch`, 0 options-only mismatches and 0
+`ts-only-throw`, so the 497 options-only mismatches and the 18 TS-only throws reported above have closed, as the section
+predicted for the registration of the layered and the other algorithm bundles.
 
 ## Core remainder (mission 5b) {#core-remainder}
 
@@ -2050,6 +2111,129 @@ the three bundles is recorded in the journal.
 
 **What still throws.** Nothing in rectpacking, spore or topdownpacking is staged. `NodeMicroLayoutTest`,
 `PlainJavaInitializationTest` and `ElkReflectTest` (mission 8x) are unblocked.
+
+## TS corpus sweep (roadmap row 9) {#ts-corpus-sweep}
+
+Roadmap row 9 (issue #40, mission `ts-parity-dashboard`, 2026-11-13) ran every case of the oracle sweep through the TS engine, for
+all 14 algorithms, in one sharded run, and published the per-algorithm result in the parity report. Design, runner protocol,
+summary contract and runbook: [parity-dashboard.md](architecture/parity-dashboard.md). Decisions: `plans/ts-parity-dashboard/decisions.md`
+(TP1-TP8).
+
+**Inputs.** Oracle: ELK `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` plus seam patches 0001 and 0002, run with
+`JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:hashCode=2"`; models commit `ac5af2ba511c0037e4f347e8bd91f013950951c7`;
+macOS arm64, JDK 21.0.1, Node v26.3.1. The oracle sweep has 18,930 cases (wall 110 s, 8 shards, no parse errors, 0 `oracle-error`,
+1 `timeout`: `retarget/vertiflex/default/realworld/ptolemy/flattened/de_trilateration_Trilateration`). It replaced a stale
+10,881-row filtered partial (2026-11-05) that a `sweep.sh` run with a filter and no `--out` had written over the full sweep. The
+previous committed report had 18,023 cases (patch 0001 only); this one has 907 more (layered native 6,265 to 7,160, rectpacking
+native 21 to 24, one more generated input for each of nine algorithms). The TS sweep ran with the defaults: 14 algorithms, 8
+shards, 120 s per case; wall 44.7 s, 18,930 cases with one category each, 0 `ts-aborted`, slowest case about 5.0 s
+(`retarget/force/…/de_trilateration_Trilateration`).
+
+**Result** (from the TS summary the report was generated with; `TS conformant` is `ok` + `both-throw` out of planned minus
+`excluded`):
+
+| algorithm         | planned |    ok | mismatch | both-throw | ts-only-throw | oracle-only-throw | ts-aborted | excluded | options-only mismatches |          TS conformant |
+| ----------------- | ------: | ----: | -------: | ---------: | ------------: | ----------------: | ---------: | -------: | ----------------------: | ---------------------: |
+| `box`             |     898 |   898 |        0 |          0 |             0 |                 0 |          0 |        0 |                       0 |     898 / 898 (100.0%) |
+| `disco`           |     906 |   819 |        0 |         87 |             0 |                 0 |          0 |        0 |                       0 |     906 / 906 (100.0%) |
+| `fixed`           |     898 |   869 |        0 |         29 |             0 |                 0 |          0 |        0 |                       0 |     898 / 898 (100.0%) |
+| `force`           |     906 |   817 |        0 |         89 |             0 |                 0 |          0 |        0 |                       0 |     906 / 906 (100.0%) |
+| `layered`         |    7163 |  7144 |        0 |         19 |             0 |                 0 |          0 |        0 |                       0 |   7163 / 7163 (100.0%) |
+| `mrtree`          |     906 |   817 |        0 |         89 |             0 |                 0 |          0 |        0 |                       0 |     906 / 906 (100.0%) |
+| `radial`          |     906 |   540 |        1 |        365 |             0 |                 0 |          0 |        0 |                       1 |      905 / 906 (99.9%) |
+| `random`          |     906 |   534 |        0 |          0 |             0 |                 0 |          0 |      372 |                       0 |     534 / 534 (100.0%) |
+| `rectpacking`     |     919 |   830 |        0 |         89 |             0 |                 0 |          0 |        0 |                       0 |     919 / 919 (100.0%) |
+| `sporeCompaction` |     906 |    99 |        0 |          0 |             0 |                 0 |          0 |      807 |                       0 |       99 / 99 (100.0%) |
+| `sporeOverlap`    |     906 |    94 |        0 |         21 |             0 |                 1 |          0 |      790 |                       0 |      115 / 116 (99.1%) |
+| `stress`          |     898 |   809 |        0 |         89 |             0 |                 0 |          0 |        0 |                       0 |     898 / 898 (100.0%) |
+| `topdownpacking`  |     906 |   906 |        0 |          0 |             0 |                 0 |          0 |        0 |                       0 |     906 / 906 (100.0%) |
+| `vertiflex`       |     906 |   352 |        0 |        553 |             0 |                 0 |          0 |        1 |                       0 |     905 / 905 (100.0%) |
+| total             |   18930 | 15528 |        1 |       1430 |             0 |                 1 |          0 |     1970 |                       1 | 16958 / 16960 (99.99%) |
+
+**Categories** (`classify` and `abortedOutcome` in `tools/corpus/ts-layout-classify.ts`; every case gets exactly one).
+
+- `ok`: the oracle verdict is `ok` and the TS output equals the oracle output at the AD-4 bar (`compareLayout`).
+- `mismatch`: both laid out and the outputs differ, or both threw but different exception classes. `optionsOnly` marks a
+  mismatch whose every difference is under a `layoutOptions` object (no geometry).
+- `both-throw`: the oracle threw and TS threw the same class (`NullPointerException` and `TypeError`, `StackOverflowError`
+  and `RangeError`; every other class by its Java simple name).
+- `ts-only-throw`: the oracle laid out, TS threw.
+- `oracle-only-throw`: the oracle threw, TS laid out.
+- `ts-aborted`: the TS run was cut short. The detail is `timeout` (past `--timeout-ms`; the child got SIGKILL), `exit <code or
+signal>` (the child died mid-case) or `startup timeout` (a fresh child did not announce `ready` within 60 s). The case
+  was never compared, so it is a finding, not a pass.
+- `excluded`: the oracle verdict is `nondeterministic` or `timeout`; there is nothing to compare against. The exclusions here
+  are the 372 unseeded `random` cases (§ Core layouts), the spore cases whose two oracle runs differ through the
+  `Math.random` jitter (§ Rectpacking, spore and topdownpacking), and the one oracle `timeout` case of `vertiflex`.
+- Reported (listed under `## TS findings`): `mismatch`, `ts-only-throw`, `oracle-only-throw`, `ts-aborted`.
+
+The in-process path (`summarize`, `runComparison`, `execute`) keeps the six categories without `ts-aborted`, because a landed
+test pins that key set (AD-13); the sharded sweep (`SWEEP_CATEGORIES`, `summarizeSweep`) has seven. Whether to fold the two
+lists is issue #82 (maintainer's decision).
+
+**Residual re-runs (TP8): all 13 are `ok`.**
+
+- Issue #68 item A (7 cases): `retarget/mrtree/default/examples/hierarchy/hierarchicalLayoutMixing`;
+  `retarget/{mrtree,radial,vertiflex}/default/examples/user-hints/interactive-constraints/interactiveRectpacking_{hierarchy,oneBigNode}`.
+- Issue #71 item 2 (6 cases):
+  `retarget/{force,stress,disco}/default/examples/user-hints/interactive-constraints/interactiveRectpacking_{hierarchy,oneBigNode}`.
+
+**Findings by mechanism.**
+
+1. **A landed-port defect, fixed here (one module).** `native/layered/hierarchy-include/examples/user-hints/model-order/modelOrderCycleBreaking`
+   was `oracle-only-throw`. The oracle throws `NullPointerException: Cannot invoke "java.lang.Integer.intValue()" because the
+return value of "org.eclipse.elk.alg.layered.graph.LGraph.getProperty(org.eclipse.elk.graph.properties.IProperty)" is
+null` at `ModelOrderCycleBreaker.java:70`. Under `hierarchyHandling: INCLUDE_CHILDREN`, `ElkGraphImporter.java:380-384` sets
+   `MAX_MODEL_ORDER_NODES` and `CB_NUM_MODEL_ORDER_GROUPS` on the top-level graph only, and the property has no default
+   (`InternalProperties.java:425`), so a nested graph with `cycleBreaking.strategy: MODEL_ORDER` unboxes null. The port read
+   it inside `Math.max(n, null)`, which is `n` in JavaScript, and laid the graph out. The fix is in
+   `src/alg/layered/p1cycles/ModelOrderCycleBreaker.ts`: both properties are read through `unboxInteger`
+   (`src/java/lang/Unbox.ts`), with a unit test carrying the oracle's message in `ModelOrderCycleBreaker.test.ts`. The case is
+   now `both-throw`; layered is 7,144 `ok` and 19 `both-throw` of 7,163.
+   - Sibling sites, not fixed here (two more modules; issue #83, `follow-up`): `GreedyModelOrderCycleBreaker.java:37` and
+     `SCCModelOrderCycleBreaker.java:97` throw the same NPE in the oracle on a crafted nested graph, and the port lays out. No
+     corpus case reaches them.
+   - The upstream defect itself, that nested graphs get no `MAX_MODEL_ORDER_NODES`, is issue #84 (`needs-ruling`, with a draft
+     upstream issue). The port keeps the Java behaviour; the maintainer decides whether to file it.
+2. **A known last-ulp `Math.sin` divergence (issue #68 item B, accepted).** `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`
+   is the one `mismatch`, options-only: `layoutOptions.childAreaHeight` is `"2561.1171089266686"` in the oracle and
+   `"2561.117108926668"` in the port. It is already listed in § Known divergences (mission 8a) and annotated `#68`; the 0.01 px
+   audit is issue #74.
+3. **Spore jitter (issue #79, oracle nondeterminism, not a port defect).** `ElkGraphImporter.java:167-169` (spore) shifts
+   coincident centres by `(Math.random() - 0.5) * 0.001`, unseeded. In this oracle sweep the four cases of #79 are
+   `nondeterministic` (their two oracle runs differed), so they are `excluded`. Two further cases have verdict `throws`,
+   because both oracle runs threw by chance:
+   `retarget/sporeOverlap/default/realworld/ptolemy/hierarchical/ptolemy_electricpowersystem_GeneratorRegulatorProtectorSimXFMU`
+   (24 repeated oracle runs: 20 throws, 4 layouts, all 4 distinct; 12 TS runs: 6 `both-throw`, 6 `oracle-only-throw`) and
+   `retarget/sporeOverlap/default/realworld/ptolemy/hierarchical/ptolemy_test_auto32_GeneratorRegulatorProtectorSimXFMU` (24
+   oracle runs: 16 throws, 8 distinct layouts; 12 TS runs: 9 and 3). So a TS sweep shows 0, 1 or 2 `oracle-only-throw`
+   findings from these two; the final run shows 1 (`test_auto32`), and two earlier runs of the same oracle sweep differed in
+   exactly this one case. All six cases are annotated `#79` in `tools/corpus/ts-findings.json`; annotations change no
+   category or count. How the sweep treats them (a wider determinism check, a list of known cases, or leaving them) is the maintainer's decision under #79.
+
+No `ts-only-throw` and no `ts-aborted` case exists in this run.
+
+**Reproduce.** Run from the repository root with the oracle built (§ 4); `ELK_ORACLE_DIR` and `ELK_MODELS_DIR` as in
+`CLAUDE.md`. Expected exit codes are in the runbook of [parity-dashboard.md](architecture/parity-dashboard.md#parity-dashboard-runbook).
+
+1. Oracle sweep, full, into the default directory `$ELK_ORACLE_DIR/sweep/<elk>-<models>/` (about 2 minutes):
+   `JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:hashCode=2" nice -n 10 tools/oracle/sweep.sh`.
+2. TS sweep, all algorithms, `min(cores, 8)` shards, 120 s per case; it exits 1 while findings exist:
+   `npx tsx tools/corpus/ts-layout-compare.ts --out "$TMPDIR/ts-final.json"`. Narrower or slower runs take
+   `--algorithms radial,box`, `--filter examples/`, `--shards 4` and `--timeout-ms 300000`.
+3. Write the report, then check that it is current (exit 0 current or written, 1 stale, 2 usage or tool error):
+   `npx tsx tools/corpus/parity-report.ts --write --ts-summary "$TMPDIR/ts-final.json"`, then the same command without
+   `--write`.
+4. Mirror the report into the site and build it: `npm run docs:build`.
+
+The commands are a list, not a fenced block, on purpose: `test/docs/translation-lint.test.ts` requires every translated copy
+of this page to carry the same code fences as this file, and the page has none.
+
+A filtered oracle sweep (`--filter`, `--limit`) must pass `--out <scratch dir>`; without it, it overwrites the default
+directory that the report reads.
+
+**Supersedes.** `parity-report.ts` now requires `--ts-summary <file>` (exit 2 without it). The report command shown in § 3
+("Parity report (D9)") and in the § 6 gates table is without the flag and is older than this section; use the commands above.
 
 ## Temporary gaps
 

@@ -15,6 +15,17 @@ import {
   RUN_SCRIPT_RELATIVE,
   WRITE_FLAG,
 } from './census.js';
+import {
+  assertKnownAlgorithms,
+  assertSameCommits,
+  parseFindings,
+  parseTsSummary,
+  TS_FINDINGS_RELATIVE,
+  tsConformantCell,
+  tsHeaderLine,
+  type TsReport,
+  tsSections,
+} from './parity-report-ts.js';
 import type { SweepRecord, Tier, Verdict } from './sweep.js';
 
 export interface SweepSummary {
@@ -45,6 +56,8 @@ const TIER_EMPTY_CELLS: Record<Tier, string> = {
   retarget: '— (no retarget cases)',
   generated: '— (no generated inputs)',
 };
+const TS_SUMMARY_FLAG = '--ts-summary';
+const USAGE = `usage: npx tsx tools/corpus/parity-report.ts ${TS_SUMMARY_FLAG} <ts-summary.json> [${WRITE_FLAG}]\n`;
 const MS_PER_MINUTE = 60_000;
 const SWEEP_DIR = 'sweep';
 const RESULTS_FILE = 'results.jsonl';
@@ -160,19 +173,27 @@ function countCell(count: number, emptyCell: string): string {
   return count === 0 ? emptyCell : String(count);
 }
 
-function matrixRow(algorithm: string, cases: readonly SweepRecord[]): string[] {
+function matrixRow(algorithm: string, cases: readonly SweepRecord[], tsCell: string): string[] {
   const tierCells = TIERS.map((t) => countCell(cases.filter((c) => c.tier === t).length, TIER_EMPTY_CELLS[t]));
   const verdictCells = VERDICTS.map((v) =>
     cases.length === 0 ? NO_CASES_CELL : String(cases.filter((c) => c.verdict === v).length),
   );
-  return [`\`${suffixOf(algorithm)}\``, ...tierCells, ...verdictCells, TS_CONFORMANT_CELL];
+  return [`\`${suffixOf(algorithm)}\``, ...tierCells, ...verdictCells, tsCell];
 }
 
-function matrixTable(groups: ReadonlyMap<string, readonly SweepRecord[]>): string[] {
+function matrixTable(groups: ReadonlyMap<string, readonly SweepRecord[]>, ts: TsReport | undefined): string[] {
   const header = ['algorithm', ...TIERS.map((t) => `${t} cases`), ...VERDICTS, 'TS conformant'];
   return table(
     header,
-    [...groups.keys()].sort(compareStrings).map((a) => matrixRow(a, groups.get(a) ?? [])),
+    [...groups.keys()]
+      .sort(compareStrings)
+      .map((a) =>
+        matrixRow(
+          a,
+          groups.get(a) ?? [],
+          ts === undefined ? TS_CONFORMANT_CELL : tsConformantCell(ts.summary.byAlgorithm[a]),
+        ),
+      ),
   );
 }
 
@@ -200,7 +221,7 @@ function nondeterminismSection(groups: ReadonlyMap<string, readonly SweepRecord[
   return lines.length === 0 ? [] : ['## Nondeterminism sources', '', ...lines, ''];
 }
 
-function headerLines(summary: SweepSummary, patches: readonly string[]): string[] {
+function headerLines(summary: SweepSummary, patches: readonly string[], ts: TsReport | undefined): string[] {
   const patchList = patches.length === 0 ? 'none' : patches.map((p) => `\`${p}\``).join(', ');
   const errors = summary.parseErrors.length === 0 ? 'none' : summary.parseErrors.map((e) => `\`${e}\``).join(', ');
   return [
@@ -210,6 +231,7 @@ function headerLines(summary: SweepSummary, patches: readonly string[]): string[
     `- Cases: ${summary.cases}`,
     `- Sweep wall time: ${Math.round(summary.wallMs / MS_PER_MINUTE)} min`,
     `- Parse errors: ${errors}`,
+    ...(ts === undefined ? [] : [tsHeaderLine(ts.summary)]),
   ];
 }
 
@@ -221,35 +243,52 @@ const INTRO = [
   'An empty cell names why it is empty: `—` for nothing planned, `n/a` for work that cannot exist yet.',
 ].join('\n');
 
-function preamble(summary: SweepSummary, patches: readonly string[]): string[] {
-  return [GENERATED_HEADER, SPDX_HEADER, '', '# Parity report', '', INTRO, '', ...headerLines(summary, patches), ''];
+function preamble(summary: SweepSummary, patches: readonly string[], ts: TsReport | undefined): string[] {
+  return [
+    GENERATED_HEADER,
+    SPDX_HEADER,
+    '',
+    '# Parity report',
+    '',
+    INTRO,
+    '',
+    ...headerLines(summary, patches, ts),
+    '',
+  ];
 }
 
 /**
  * Pure Markdown report (D9). `context.algorithms` is the oracle's `--list-algorithms`; every one
- * gets a row, and a result naming any other algorithm is a harness fault.
+ * gets a row, and a result naming any other algorithm is a harness fault. `ts` (the TS sweep, TP4) is
+ * optional: without it the output is the oracle-only report.
  */
 export function renderReport(
   results: readonly SweepRecord[],
   summary: SweepSummary,
   census: Census,
   context: ReportContext,
+  ts?: TsReport,
 ): string {
   if (summary.cases !== results.length) {
     throw new Error(`summary.json says ${summary.cases} cases but results.jsonl has ${results.length}`);
   }
   const groups = groupByAlgorithm(results, context.algorithms);
+  if (ts !== undefined) {
+    assertSameCommits(ts.summary, summary);
+    assertKnownAlgorithms(ts.summary, context.algorithms);
+  }
   const lines = [
-    ...preamble(summary, context.patches),
+    ...preamble(summary, context.patches, ts),
     '## Matrix',
     '',
-    ...matrixTable(groups),
+    ...matrixTable(groups, ts),
     '',
     '## Native-tier models per elk-models folder',
     '',
     ...folderTable(census, context.algorithms),
     '',
     ...nondeterminismSection(groups),
+    ...(ts === undefined ? [] : tsSections(ts)),
   ];
   return `${lines.join('\n').trimEnd()}\n`;
 }
@@ -282,7 +321,7 @@ function readIfPresent(file: string): string | undefined {
   }
 }
 
-function buildReport(root: string): string {
+function buildReport(root: string, tsSummaryFile: string): string {
   const elkCommit = readFileSync(path.join(root, ELK_COMMIT_RELATIVE), 'utf8').trim();
   const oracleDir = resolveOracleDir(root);
   const sweepDir = path.join(oracleDir, SWEEP_DIR, `${elkCommit}-${loadManifest().commit}`);
@@ -291,19 +330,34 @@ function buildReport(root: string): string {
   const census = JSON.parse(readFileSync(path.join(root, COMMITTED_CENSUS_RELATIVE), 'utf8')) as Census;
   const patches = parsePatches(readFileSync(path.join(oracleDir, ORACLE_BUILD_FILE), 'utf8'));
   const algorithms = listAlgorithms(path.join(root, RUN_SCRIPT_RELATIVE));
-  return renderReport(results, summary, census, { algorithms, patches });
+  const tsSummary = parseTsSummary(readFileSync(tsSummaryFile, 'utf8'), summary);
+  const annotations = parseFindings(readFileSync(path.join(root, TS_FINDINGS_RELATIVE), 'utf8'));
+  return renderReport(results, summary, census, { algorithms, patches }, { summary: tsSummary, annotations });
+}
+
+/** The value after `--ts-summary`, or undefined when the flag or its value is missing. */
+export function tsSummaryArg(argv: readonly string[]): string | undefined {
+  const value = argv[argv.indexOf(TS_SUMMARY_FLAG) + 1];
+  return argv.includes(TS_SUMMARY_FLAG) && value !== undefined && !value.startsWith('--') ? value : undefined;
 }
 
 function main(argv: readonly string[]): number {
+  const tsSummaryFile = tsSummaryArg(argv);
+  if (tsSummaryFile === undefined) {
+    process.stderr.write(USAGE);
+    return 2;
+  }
   const root = repoRoot();
-  const rendered = buildReport(root);
+  const rendered = buildReport(root, path.resolve(tsSummaryFile));
   const target = path.join(root, REPORT_RELATIVE);
   if (argv.includes(WRITE_FLAG)) {
     writeFileSync(target, rendered);
     return 0;
   }
   if (!isStale(readIfPresent(target), rendered)) return 0;
-  process.stderr.write(`${REPORT_RELATIVE} is stale; run: npx tsx tools/corpus/parity-report.ts ${WRITE_FLAG}\n`);
+  process.stderr.write(
+    `${REPORT_RELATIVE} is stale; run: npx tsx tools/corpus/parity-report.ts ${TS_SUMMARY_FLAG} <ts-summary.json> ${WRITE_FLAG}\n`,
+  );
   return 1;
 }
 

@@ -11,51 +11,76 @@ An empty cell names why it is empty: `—` for nothing planned, `n/a` for work t
 
 - ELK commit: `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`
 - Models commit: `ac5af2ba511c0037e4f347e8bd91f013950951c7`
-- Oracle seam patches: `0001-graph.json-seedable-JsonExporter-id-collision-random.patch`
-- Cases: 18023
+- Oracle seam patches: `0001-graph.json-seedable-JsonExporter-id-collision-random.patch`, `0002-graph-seedable-GraphIdentifierGenerator-random.patch`
+- Cases: 18930
 - Sweep wall time: 2 min
 - Parse errors: none
+- TS sweep: v26.3.1, 8 shards, 1 min, timeout 120 s
 
 ## Matrix
 
-| algorithm         |                    native cases | retarget cases |         generated cases |   ok | throws | nondeterministic | timeout | oracle-error |        TS conformant |
-| ----------------- | ------------------------------: | -------------: | ----------------------: | ---: | -----: | ---------------: | ------: | -----------: | -------------------: |
-| `box`             | — (no model has it at the root) |            898 | — (no generated inputs) |  898 |      0 |                0 |       0 |            0 | n/a (no TS port yet) |
-| `disco`           | — (no model has it at the root) |            898 |                       7 |  818 |     87 |                0 |       0 |            0 | n/a (no TS port yet) |
-| `fixed`           | — (no model has it at the root) |            898 | — (no generated inputs) |  869 |     29 |                0 |       0 |            0 | n/a (no TS port yet) |
-| `force`           | — (no model has it at the root) |            898 |                       7 |  816 |     89 |                0 |       0 |            0 | n/a (no TS port yet) |
-| `layered`         |                            6265 |              3 | — (no generated inputs) | 6251 |     17 |                0 |       0 |            0 | n/a (no TS port yet) |
-| `mrtree`          | — (no model has it at the root) |            898 |                       7 |  816 |     89 |                0 |       0 |            0 | n/a (no TS port yet) |
-| `radial`          | — (no model has it at the root) |            898 |                       7 |  540 |    365 |                0 |       0 |            0 | n/a (no TS port yet) |
-| `random`          | — (no model has it at the root) |            898 |                       7 |  533 |      0 |              372 |       0 |            0 | n/a (no TS port yet) |
-| `rectpacking`     |                              21 |            895 | — (no generated inputs) |  827 |     89 |                0 |       0 |            0 | n/a (no TS port yet) |
-| `sporeCompaction` | — (no model has it at the root) |            898 |                       7 |   99 |      0 |              806 |       0 |            0 | n/a (no TS port yet) |
-| `sporeOverlap`    | — (no model has it at the root) |            898 |                       7 |   96 |     22 |              787 |       0 |            0 | n/a (no TS port yet) |
-| `stress`          | — (no model has it at the root) |            898 | — (no generated inputs) |  809 |     89 |                0 |       0 |            0 | n/a (no TS port yet) |
-| `topdownpacking`  | — (no model has it at the root) |            898 |                       7 |  905 |      0 |                0 |       0 |            0 | n/a (no TS port yet) |
-| `vertiflex`       | — (no model has it at the root) |            898 |                       7 |  351 |    553 |                0 |       1 |            0 | n/a (no TS port yet) |
+| algorithm | native cases | retarget cases | generated cases | ok | throws | nondeterministic | timeout | oracle-error | TS conformant |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `box` | — (no model has it at the root) | 898 | — (no generated inputs) | 898 | 0 | 0 | 0 | 0 | 898 / 898 (100.0%) |
+| `disco` | — (no model has it at the root) | 898 | 8 | 819 | 87 | 0 | 0 | 0 | 906 / 906 (100.0%) |
+| `fixed` | — (no model has it at the root) | 898 | — (no generated inputs) | 869 | 29 | 0 | 0 | 0 | 898 / 898 (100.0%) |
+| `force` | — (no model has it at the root) | 898 | 8 | 817 | 89 | 0 | 0 | 0 | 906 / 906 (100.0%) |
+| `layered` | 7160 | 3 | — (no generated inputs) | 7144 | 19 | 0 | 0 | 0 | 7163 / 7163 (100.0%) |
+| `mrtree` | — (no model has it at the root) | 898 | 8 | 817 | 89 | 0 | 0 | 0 | 906 / 906 (100.0%) |
+| `radial` | — (no model has it at the root) | 898 | 8 | 541 | 365 | 0 | 0 | 0 | 905 / 906 (99.9%) |
+| `random` | — (no model has it at the root) | 898 | 8 | 534 | 0 | 372 | 0 | 0 | 534 / 534 (100.0%) |
+| `rectpacking` | 24 | 895 | — (no generated inputs) | 830 | 89 | 0 | 0 | 0 | 919 / 919 (100.0%) |
+| `sporeCompaction` | — (no model has it at the root) | 898 | 8 | 99 | 0 | 807 | 0 | 0 | 99 / 99 (100.0%) |
+| `sporeOverlap` | — (no model has it at the root) | 898 | 8 | 94 | 22 | 790 | 0 | 0 | 115 / 116 (99.1%) |
+| `stress` | — (no model has it at the root) | 898 | — (no generated inputs) | 809 | 89 | 0 | 0 | 0 | 898 / 898 (100.0%) |
+| `topdownpacking` | — (no model has it at the root) | 898 | 8 | 906 | 0 | 0 | 0 | 0 | 906 / 906 (100.0%) |
+| `vertiflex` | — (no model has it at the root) | 898 | 8 | 352 | 553 | 0 | 1 | 0 | 905 / 905 (100.0%) |
 
 ## Native-tier models per elk-models folder
 
-| algorithm (native root) | examples |    tests |  tickets | realworld |                           total |
-| ----------------------- | -------: | -------: | -------: | --------: | ------------------------------: |
-| `box`                   | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `disco`                 | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `fixed`                 | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `force`                 | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `layered`               |       42 |      193 |      110 |       550 |                             895 |
-| `mrtree`                | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `radial`                | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `random`                | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `rectpacking`           |        3 | — (none) | — (none) |  — (none) |                               3 |
-| `sporeCompaction`       | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `sporeOverlap`          | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `stress`                | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `topdownpacking`        | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
-| `vertiflex`             | — (none) | — (none) | — (none) |  — (none) | — (no model has it at the root) |
+| algorithm (native root) | examples | tests | tickets | realworld | total |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `box` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `disco` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `fixed` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `force` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `layered` | 42 | 193 | 110 | 550 | 895 |
+| `mrtree` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `radial` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `random` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `rectpacking` | 3 | — (none) | — (none) | — (none) | 3 |
+| `sporeCompaction` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `sporeOverlap` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `stress` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `topdownpacking` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
+| `vertiflex` | — (none) | — (none) | — (none) | — (none) | — (no model has it at the root) |
 
 ## Nondeterminism sources
 
 - `random` (372 cases): nested composites keep the default `randomSeed = 0` (unseeded) because retarget (D2) seeds only the root.
-- `sporeCompaction` (806 cases): `Math.random()` vertex jitter (`ElkGraphImporter.java:169`), unseedable from outside the algorithm.
-- `sporeOverlap` (787 cases): `Math.random()` vertex jitter (`ElkGraphImporter.java:169`), unseedable from outside the algorithm.
+- `sporeCompaction` (807 cases): `Math.random()` vertex jitter (`ElkGraphImporter.java:169`), unseedable from outside the algorithm.
+- `sporeOverlap` (790 cases): `Math.random()` vertex jitter (`ElkGraphImporter.java:169`), unseedable from outside the algorithm.
+
+## TS sweep
+
+| algorithm (TS) | planned | ok | mismatch | both-throw | ts-only-throw | oracle-only-throw | ts-aborted | excluded | options-only mismatches | TS ms | oracle ms |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `box` | 898 | 898 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 3178 | 4237 |
+| `disco` | 906 | 819 | 0 | 87 | 0 | 0 | 0 | 0 | 0 | 7371 | 10024 |
+| `fixed` | 898 | 869 | 0 | 29 | 0 | 0 | 0 | 0 | 0 | 3247 | 3689 |
+| `force` | 906 | 817 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 45007 | 16437 |
+| `layered` | 7163 | 7144 | 0 | 19 | 0 | 0 | 0 | 0 | 0 | 131995 | 163508 |
+| `mrtree` | 906 | 817 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 8083 | 7876 |
+| `radial` | 906 | 540 | 1 | 365 | 0 | 0 | 0 | 0 | 1 | 3466 | 3489 |
+| `random` | 906 | 534 | 0 | 0 | 0 | 0 | 0 | 372 | 0 | 2036 | 3676 |
+| `rectpacking` | 919 | 830 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 5252 | 5117 |
+| `sporeCompaction` | 906 | 99 | 0 | 0 | 0 | 0 | 0 | 807 | 0 | 169 | 6406 |
+| `sporeOverlap` | 906 | 94 | 0 | 21 | 0 | 1 | 0 | 790 | 0 | 880 | 17237 |
+| `stress` | 898 | 809 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 45335 | 13753 |
+| `topdownpacking` | 906 | 906 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2918 | 2420 |
+| `vertiflex` | 906 | 352 | 0 | 553 | 0 | 0 | 0 | 1 | 0 | 4999 | 35044 |
+
+## TS findings
+
+- `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`: mismatch: `value layoutOptions.childAreaHeight: expected "2561.1171089266686", actual "2561.117108926668"`: #68: accepted last-ulp Math.sin divergence (AD-4, #68 B): one option string, childAreaHeight; every coordinate agrees within 1e-13
+- `retarget/sporeOverlap/default/realworld/ptolemy/hierarchical/ptolemy_test_auto32_GeneratorRegulatorProtectorSimXFMU`: oracle-only-throw: `oracle threw IllegalStateException`: #79: oracle nondeterminism (Math.random jitter on coincident centres): 24 oracle runs gave 16 throws and 8 distinct layouts; TS flickers alike
