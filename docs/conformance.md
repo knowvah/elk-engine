@@ -70,14 +70,16 @@ options omitted. A failing input prints `ERROR <input>: <message>`; the
 JVM exits `1` if any input failed. Input basenames must be unique within one
 run, since the output name is the basename.
 
-**Patch series semantics.** The series holds one patch today:
+**Patch series semantics.** The series holds three patches:
 
-| Patch                                                                   | Effect                                                                                                                                                                                                                              | Paired TS seam                                                                                                                                                                                                                    |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b) | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1` | Optional `random` parameter of the `JsonExporter` constructor (J4, [elk-json.md](architecture/elk-json.md#exporter-random)); tests pass `new Random(1)` (the TS `Random` shim reproduces the stream: seed 1 gives 548985, 764588) |
+| Patch                                                                                                          | Effect                                                                                                                                                                                                                                                                                                                                                                                               | Paired TS seam                                                                                                                                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b)                                        | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1`                                                                                                                                                                  | Optional `random` parameter of the `JsonExporter` constructor (J4, [elk-json.md](architecture/elk-json.md#exporter-random)); tests pass `new Random(1)` (the TS `Random` shim reproduces the stream: seed 1 gives 548985, 764588)                           |
+| `0002-graph-seedable-GraphIdentifierGenerator-random.patch` (added with the `.elkj` harness modes, `9ec3d1d5`) | `GraphIdentifierGenerator` resolves id collisions with an unseeded `Random`; the patch seeds it from the system property `org.eclipse.elk.graph.util.identifierSeed` (unset = ELK behavior). Only the harness convert mode sets it                                                                                                                                                                   | None: the TS port parses the converted files and needs no paired seam (D12, stated in the patch message)                                                                                                                                                    |
+| `0003-alg.test-pluggable-label-text-measurer.patch` (row 10, TX1, TX2)                                         | In the test bundle `org.eclipse.elk.alg.test` only, `TestConfiguration.computeLabelSize` takes a label's size from `TextMeasurer.fromSystemProperty()`. The property `org.eclipse.elk.alg.test.textMeasurer` selects the measurer: unset or `awt` keeps the AWT font metrics (the default, unchanged), `fixed` gives `[length × 6, 12]`, any other value throws `IllegalArgumentException` naming it | `test/helpers/layout-test-text-measurer.ts` (`TextMeasurer`, `AWT_SNAPSHOT_TEXT_MEASURER`, `FIXED_ADVANCE_TEXT_MEASURER`, `textMeasurerFrom`); env `ELK_TEST_TEXT_MEASURER` with the same values and the same throw ([text-sizing-seam](#text-sizing-seam)) |
 
 Patches exist only to add narrowly scoped seams that make JVM and JS behavior comparable;
-each is paired with a TS-side seam (section 4).
+each is paired with a TS-side seam (section 4). Patch `0002` is the one exception: it needs no TS seam, as its row says.
 
 **Why not elkjs?** elkjs is ELK compiled by GWT. It cannot carry our patch
 series, and GWT emulation of the JRE differs from the JVM we are porting from.
@@ -349,6 +351,8 @@ Seam patches change the oracle; they are rare and always paired with a TS seam.
    prefix fixes the apply order.
 3. Add the matching TS seam (same behavior, injectable, in `src/`), with tests
    whose expected values come from the patched oracle (AD-13).
+   A seam whose Java site lives in a test bundle has its TS twin in `test/helpers/`, beside that
+   framework's port, not in `src/` (TX5; the row-10 precedent).
 4. Otherwise remove the worktree: `git -C "$ELK_SOURCE_DIR" worktree remove $ELK_ORACLE_DIR`
    (add `--force` if build output makes it dirty).
 5. Rebuild: `tools/oracle/build.sh` (re-applies the series from scratch).
@@ -1447,6 +1451,11 @@ and 7h lifted them: 59 ported, 0 pending.)
 and is compared as a multiset (G3); identity hashes in debug strings are normalised on both sides (G3a); the group and
 `END_LABELS` orders are insertion order (G4, FX2); the label metrics remain a macOS JVM snapshot (FX8).
 
+**Reference platform (#52 ruling, row 10).** macOS on Apple Silicon (arm64) with JDK 21.0.1 is the reference platform for
+JVM measurements. `layered-label-metrics.json` (the FX8 snapshot) was recorded there and is never re-recorded on another OS,
+JDK or CPU; CI uses it as stored. Its file records only `jdk`, so this paragraph is where the platform is recorded. The
+text-sizing seam leaves it unchanged ([Text-sizing seam](#text-sizing-seam)).
+
 ## alg.layered, part h: self loops, wrapping and compaction (mission 7g) {#alg-layered-loops}
 
 Mission 7g ported the self loop package (`intermediate/loops` with `ordering` and `routing`) and the four self loop
@@ -2234,6 +2243,66 @@ directory that the report reads.
 
 **Supersedes.** `parity-report.ts` now requires `--ts-summary <file>` (exit 2 without it). The report command shown in § 3
 ("Parity report (D9)") and in the § 6 gates table is without the flag and is older than this section; use the commands above.
+
+## Text-sizing seam (roadmap row 10) {#text-sizing-seam}
+
+Roadmap row 10 (issue #41, mission `text-sizing-seam`, 2026-11-13) made the oracle's label-text measurement pluggable, so that
+a platform-independent measure can be compared between the oracle and the TS port. Design and runbook:
+[text-sizing-seam.md](architecture/text-sizing-seam.md). Decisions: `plans/text-sizing-seam/decisions.md` (TX1-TX8).
+
+**What was patched, and why only the test bundle (TX1).** Patch `0003` changes only `test/org.eclipse.elk.alg.test`. At the pin
+the one place that measures text is `TestConfiguration.computeLabelSize` (AWT font metrics). No plugin measures text:
+`Core.melk` declares `font.name` and `font.size` as programmatic options, and no plugin reads them for sizing. The patch adds
+no class or method to a plugin bundle, and the golden harness and the vector recorders never size a label.
+
+**Two modes, and which side uses which (TX3).** With the property unset the oracle measures through AWT as before, and the TS
+runner keeps the FX8 snapshot (`layered-label-metrics.json`) as its default measurer. Fixed mode is the normalized,
+platform-independent path; both sides use it only for the oracle-against-TS comparison of label-bearing models. The snapshot
+is neither replaced, re-recorded nor extended.
+
+**The fixed measure (TX4).** `width = text.length() * 6.0` and `height = 12.0`, where `length()` counts UTF-16 units as JS
+`.length` does. Both constants are integers, so every result is exact and no `Math.*` call is involved. Line breaks are not
+special. This is not a font model.
+
+**Evidence.**
+
+- Non-impact of the patch on the default mode (TX7), three checks. Class hashes: 1,348 `.class` entries before the rebuild and
+  1,351 after; the only differences are `TestConfiguration.class` (changed) and `AwtTextMeasurer`, `FixedAdvanceTextMeasurer`
+  and `TextMeasurer` (added), so every class of the 16 jars of `oracle-build.json` and of every other test bundle is
+  byte-identical. JUnit in
+  default mode over the 43 runner suites: 5,619 runs, 0 failures, and the output equals the one before the patch. The AWT
+  re-measure through the patched `TextMeasurer.fromSystemProperty()` equals the FX8 snapshot on 2,317 of 2,317 texts, and the
+  output file is byte-identical to the committed snapshot. No vector recorder is rerun, because none has
+  `org.eclipse.elk.alg.test` on its classpath.
+- `test/golden/refs/java/label-sizing.json` (TX6a; recorder `tools/vectors/label-sizing-vectors.sh`, fixed mode; macOS arm64,
+  JDK 21.0.1, `-XX:hashCode=2`): 17 `texts` rows and 119 vendored label-bearing models (108 under `test/golden/inputs/labels/`,
+  19 under `test/corpus/elkt-curated/`, 8 content duplicates dropped), 1,052 label rows of which 131 are `preset` by the model,
+  no `throws`. `test/golden/label-sizing.test.ts` (239 tests) checks, for all 119 models, the label keys in order and every text,
+  size and `preset` flag exactly, and the TS layout against the oracle's at 1e-6. With the fixed advance mutated to 7 in
+  scratch, 230 of the 266 tests of the two new test files fail.
+- Corpus comparison (TX6b): 759 label-bearing elk-models (209 `elkt`, 550 `json`) with 21,753 label rows, of which 1,513 are
+  sized by the measurer and 20,240 are preset by the model. The oracle's sizes are local only (AD-5), under
+  `$ELK_ORACLE_DIR/sweep/label-sizing/`; `test/corpus/label-sizing-sweep.test.ts` compares every row exactly and skips without
+  its input directory. Result: 759 of 759 models and 21,753 labels equal. The directory lies under `sweep/` because
+  `tools/oracle/build.sh` treats a new untracked directory at the oracle root as a stale worktree (issue #85).
+- Runner parity in fixed mode (TX6c), 43 suites. The oracle ran 5,619 JUnit runs with 0 failures, per class equal to default
+  mode; the TS runner ran 5,669 tests with 0 failures and 1 skipped. The TS runner describe equals the JUnit line for 41 of 43
+  classes. The other two, `Issue665Test` (JUnit 1, TS 0) and `Issue700Test` (JUnit 4, TS 2), are the three stress-dependent
+  cases of issue #58 and differ identically in default mode, so the measurer is not the cause. These runs used a scratch copy
+  of `tools/oracle/java-tests.sh` with `org.eclipse.elk.alg.common.test` added to its test bundles, because three suites live
+  there; the committed script covers the `alg.layered.test` and `alg.test` bundles only.
+- Regenerated refs (TX8), by script only: the `patches` array of the nine `_meta.json` files gained
+  `0003-alg.test-pluggable-label-text-measurer.patch`, and nothing else moved (`regen-generated.sh` left no diff). The parity
+  report changed in its patch line only. A fresh oracle sweep also moves six `sporeOverlap` verdicts (unseeded jitter, issue
+  #79) and every timing column, so those rows were not regenerated and wait for the ruling in issue #86; the committed report
+  was not regenerated from the fresh sweep, and `parity-report.ts` without `--write` reports it stale against the live cache.
+
+**Reference platform (#52 ruling).** The row's evidence is recorded on macOS on Apple Silicon (arm64) with JDK 21.0.1, which
+the maintainer ruled the reference platform for JVM measurements.
+
+**Left out.** A font model (not wanted: the fixed measure approximates nothing); the four label texts that
+`layered-label-metrics.json` lacks (issue #58, unchanged, and the runner still throws naming a missing text); the snapshot
+itself, which this mission does not re-record, extend or edit.
 
 ## Temporary gaps
 

@@ -45,6 +45,7 @@ import { ElkGraphUtil } from '../../src/graph/util/ElkGraphUtil.js';
 import { describe, it } from 'vitest';
 import { registerLayered } from './layered-framework-replay.js';
 import { ensureSensibleLabelSize } from './layout-test-labels.js';
+import { type TextMeasurer, textMeasurerFrom } from './layout-test-text-measurer.js';
 import {
   FULL_SUITES_ENV,
   inputsRoot,
@@ -101,6 +102,8 @@ export interface LayoutTestCase {
 /** The seam to the engine: `layout` lays the graph out as ExperimentStatement does. */
 export interface LayoutTestDeps {
   layout(graph: ElkNode, controller: TestController | null): void;
+  /** Label text measurement for `ensureSensibleLabelSize`; `buildLayoutTests` fills it from `ELK_TEST_TEXT_MEASURER`. */
+  readonly measurer?: TextMeasurer;
 }
 
 const NOT_EXECUTED = 'Test was not executed, but was supposed to.';
@@ -258,7 +261,7 @@ interface Experiment {
 type Outcome = { readonly graph: ElkNode } | { readonly error: unknown };
 
 /** `ExperimentalObject.realize`: the graph, the algorithm, the configurator, then the default configuration. */
-function realize(spec: LayoutTestSpec, experiment: Experiment): ElkNode {
+function realize(spec: LayoutTestSpec, experiment: Experiment, measurer?: TextMeasurer): ElkNode {
   registerLayered();
   const graph = experiment.graph.provide();
   if (spec.algorithm !== undefined) {
@@ -266,14 +269,14 @@ function realize(spec: LayoutTestSpec, experiment: Experiment): ElkNode {
   }
   experiment.configurator?.(graph);
   applyDefaultConfiguration(graph, defaultOptions(spec.defaultConfiguration));
-  ensureSensibleLabelSize(graph);
+  ensureSensibleLabelSize(graph, measurer);
   return graph;
 }
 
 /** `ExperimentStatement.evaluate`, up to the blackbox tests: layout is raised as its own error, plainly. */
 function evaluate(spec: LayoutTestSpec, experiment: Experiment, deps: LayoutTestDeps): Outcome {
   try {
-    const graph = realize(spec, experiment);
+    const graph = realize(spec, experiment, deps.measurer);
     let controller: TestController | null = null;
     if (experiment.recordings.size > 0 && spec.algorithm !== undefined) {
       controller = new TestController(spec.algorithm);
@@ -418,9 +421,10 @@ export function buildLayoutTests(
   deps: LayoutTestDeps = DEFAULT_DEPS,
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): LayoutTestCase[] {
+  const withMeasurer: LayoutTestDeps = { measurer: textMeasurerFrom(env), ...deps };
   const graphs = graphsOf(spec.graphs, inputsRoot(env));
   validate(spec, graphs);
-  return experimentsOf(spec, graphs).flatMap((experiment) => casesOf(spec, experiment, deps));
+  return experimentsOf(spec, graphs).flatMap((experiment) => casesOf(spec, experiment, withMeasurer));
 }
 
 /** Registers a suite as a `describe` with one `it` per graph x configurator x check. */

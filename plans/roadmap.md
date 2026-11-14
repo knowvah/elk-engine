@@ -1661,3 +1661,82 @@ Audit points: the change to landed `ModelOrderCycleBreaker.ts` and its test; the
 the reformatted (now unpadded) committed report; the annotations for the four #79 cases, which are not findings in this
 sweep; the evidence cells of the `Math.*` table (a test reaches the call; it does not prove the test would detect a last-ulp
 difference).
+
+## Revision 2026-11-13 (text-sizing-seam)
+
+Appended; no earlier line is edited. Source: TX1-TX8 in `plans/text-sizing-seam/decisions.md`; the journal is
+`plans/text-sizing-seam/decision-journal.md`. Where this section conflicts with the text above, this section wins. Task ids
+are T1-T7; the base is `854cbbd7cb51bed20ca1fb176c5b69f72a00a4b9` (the row-9 squash commit).
+
+**Row 10 is done, with one part waiting for a ruling (#86).** The oracle carries its first text-sizing patch,
+`tools/oracle/patches/0003-alg.test-pluggable-label-text-measurer.patch` (issue #41), and the port has the paired seam in
+`test/helpers/layout-test-text-measurer.ts`. With the fixed measure on both sides, the port sizes every label of every
+label-bearing model as the oracle does. Design and runbook: `docs/architecture/text-sizing-seam.md`; counts:
+`docs/conformance.md` § Text-sizing seam. The final commit is one squashed commit
+`feat(oracle): text-sizing seam patch and ts measurer (10)` with `Refs: #41`; the per-task history is under the tag
+`text-sizing-seam/pre-squash`. No ELK class was ported and nothing under `src/` changed.
+
+**Decisions (planned unattended; all eight held, with the deviations below).**
+
+- TX1: the patch touches only the test bundle `org.eclipse.elk.alg.test`; at the pin no plugin measures text.
+- TX2: `TextMeasurer` with `AwtTextMeasurer` (the former body, verbatim) and `FixedAdvanceTextMeasurer`, selected by the
+  system property `org.eclipse.elk.alg.test.textMeasurer` (unset or `awt`; `fixed`; anything else throws).
+- TX3: "both". The default stays AWT in the oracle and the FX8 snapshot in TS; fixed mode exists only for the comparison.
+- TX4: the fixed measure is `[length × 6, 12]`, exact in binary; not a font model.
+- TX5: the TS twin lives in `test/helpers/`, not `src/`, because its Java site is test-framework code.
+- TX6: evidence is a committed ref for the vendored models, a local corpus comparison, and runner parity in fixed mode.
+- TX7: the default is proven unchanged by class hashes, default-mode JUnit outcomes and an AWT re-measure.
+- TX8: refs are restamped by script only; the only ref diff is the `patches` arrays.
+
+**Evidence** (reference platform `Darwin arm64`, JDK 21.0.1; oracle `8aaa3c14` + patches 0001, 0002, 0003).
+
+- TX7: 1,348 class hashes before the rebuild, 1,351 after; the only differences are `TestConfiguration.class` (changed) and
+  the three new classes. Default-mode JUnit over the 43 runner suites: 5,619 runs, 0 failures, per class equal before and
+  after. The AWT re-measure through the patched code equals `layered-label-metrics.json` on 2,317 of 2,317 texts (the file
+  is byte-identical).
+- TX6(a): `test/golden/refs/java/label-sizing.json` (new, by `tools/vectors/label-sizing-vectors.sh`): 17 text rows, 119
+  vendored label-bearing models, 1,052 label rows (131 preset), each model's layout. `test/golden/label-sizing.test.ts`
+  (239 tests): every key, text, size and `preset` equal, every layout equal at 1e-6.
+- TX6(b): `test/corpus/label-sizing-sweep.test.ts` (skip-gated; the oracle output is local): 759 of 759 corpus models and
+  21,753 label rows equal (1,513 sized by the measurer, 20,240 preset by the model).
+- TX6(c): in fixed mode the oracle's 43 suites give 5,619 runs and 0 failures; the TS runner's cases equal the JUnit line for
+  41 of 43 classes. `Issue665Test` and `Issue700Test` differ by #58's three stress-dependent cases, in default mode too.
+- TX8: all ten regen scripts reran; nine `_meta.json` gained `0003` in `patches`, nothing else moved.
+- Gates at mission end: in the journal's last `gate` rows.
+
+**Deviations from the plan, all journaled.**
+
+- 119 models, not "up to 137": the planning count was a text grep; the recorder counts models whose parsed graph holds a
+  label (108 + 19) and drops 8 content duplicates.
+- The local corpus output is `$ELK_ORACLE_DIR/sweep/label-sizing/`, not `$ELK_ORACLE_DIR/label-sizing/`: a new untracked
+  directory at the oracle root makes `build.sh` call the worktree stale.
+- `build.sh` ran with an environment-scoped git excludes file for four existing cache directories (`vector-cache/`, `t4/`,
+  `rerecord/`, `final-gate/`), which its staleness filter does not know (#85). `build.sh` itself was not edited.
+- JUnit runs used a scratch copy of `java-tests.sh` with `org.eclipse.elk.alg.common.test` added (three suites live there).
+- `test/helpers/label-sizing-rows.ts` beside the planned files: the label-row derivation both comparison tests share.
+- The parity report changed in its patch line only, generated from the committed report's own sweep inputs and the new
+  oracle manifest, not from the fresh sweep (#86, below).
+
+**Flags for the maintainer (open decisions).**
+
+- #86 (`needs-ruling`): a report generated from a fresh sweep cannot differ from the committed one by the patch line alone.
+  Six `sporeOverlap` verdicts flicker between sweeps (unseeded `Math.random()` jitter, #79; confirmed by four repeats on one
+  build) and the 14 timing rows change on every sweep. The spore rows, the timings and `ts-findings.json` are untouched;
+  against the live sweep cache the staleness check reports the committed report stale.
+- #85 (`follow-up`): `build.sh`'s staleness filter does not exempt `vector-cache/` and three old output directories.
+- TX5 against `docs/conformance.md` § 4 step 3, which said "in `src/`": the step now has a sentence for test-bundle seams.
+- TX3 "both": the snapshot is neither replaced nor extended. #58's four texts are still missing from it; in fixed mode they
+  are not needed.
+- The rebuild changed `oracle-build.json`, which is part of the vector cache's salt, so the next run of every cached JVM
+  recorder is cold (the elkj round-trip recorder took 3 h 58 min cold in mission 4e).
+- The patch's new Java types are `public`; the package is not exported by the bundle, as before.
+- `../elk` past the pin over `plugins/` and `test/org.eclipse.elk.alg.test`: only `8bd00922` (prose, `graph` bundle), as at
+  planning.
+
+**Hand-offs.**
+
+- To #58: in fixed mode the three stress-dependent cases need no snapshot rows; `STRESS_PENDING` and model vendoring remain.
+- To #57 and #77 (upstream PRs as oracle patches): the next patch is `0004`; the in-place rebuild needs the #85 workaround
+  or its fix, and it empties the vector cache.
+- To row 13 (ELK upgrade): a pin bump must re-prove TX1 (no plugin measures text) and rerun
+  `label-sizing-vectors.sh --remeasure-awt` on the reference platform.

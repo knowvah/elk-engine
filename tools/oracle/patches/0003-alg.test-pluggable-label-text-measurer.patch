@@ -1,0 +1,258 @@
+From 98bc966c3ec4a314a3a41ff17968cd8bbba4c789 Mon Sep 17 00:00:00 2001
+From: elk-engine-oracle <oracle@invalid>
+Date: Fri, 13 Nov 2026 19:12:00 -0600
+Subject: [PATCH] alg.test: pluggable label text measurer
+
+TestConfiguration.computeLabelSize sizes unsized labels with AWT font
+metrics, so the test framework's layouts depend on the platform's
+fonts. The measurement moves behind a TextMeasurer, selected by the
+system property org.eclipse.elk.alg.test.textMeasurer: unset or "awt"
+keeps ELK's behavior (AwtTextMeasurer, the former body unchanged),
+"fixed" measures [length * 6, 12] (FixedAdvanceTextMeasurer), any other
+value throws. Paired TS seam: test/helpers/layout-test-text-measurer.ts
+in the elk-engine port.
+---
+ .../framework/config/AwtTextMeasurer.java     | 53 ++++++++++++++++
+ .../config/FixedAdvanceTextMeasurer.java      | 37 ++++++++++++
+ .../framework/config/TestConfiguration.java   | 32 +++-------
+ .../test/framework/config/TextMeasurer.java   | 60 +++++++++++++++++++
+ 4 files changed, 157 insertions(+), 25 deletions(-)
+ create mode 100644 test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/AwtTextMeasurer.java
+ create mode 100644 test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/FixedAdvanceTextMeasurer.java
+ create mode 100644 test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/TextMeasurer.java
+
+diff --git a/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/AwtTextMeasurer.java b/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/AwtTextMeasurer.java
+new file mode 100644
+index 00000000..891ac58a
+--- /dev/null
++++ b/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/AwtTextMeasurer.java
+@@ -0,0 +1,53 @@
++/*******************************************************************************
++ * Copyright (c) 2026 elk-engine contributors and others.
++ * 
++ * This program and the accompanying materials are made available under the
++ * terms of the Eclipse Public License 2.0 which is available at
++ * http://www.eclipse.org/legal/epl-2.0.
++
++ * This Source Code may also be made available under the following Secondary
++ * Licenses when the conditions for such availability set forth in the Eclipse
++ * Public License v. 2.0 are satisfied: GPL-3.0 which is available at
++ * https://www.gnu.org/licenses/gpl-3.0-standalone.html.
++ *
++ * SPDX-License-Identifier: EPL-2.0 OR GPL-3.0-or-later
++ *******************************************************************************/
++package org.eclipse.elk.alg.test.framework.config;
++
++import java.awt.Graphics2D;
++import java.awt.geom.Rectangle2D;
++import java.awt.image.BufferedImage;
++
++import org.eclipse.elk.core.math.KVector;
++import org.eclipse.swt.SWT;
++
++/**
++ * The default {@link TextMeasurer}: chooses a font and calculates the space necessary to render the text with that
++ * font. This is the measurement {@link TestConfiguration} has always made, moved here unchanged. Its results depend
++ * on the fonts of the platform it runs on.
++ */
++public final class AwtTextMeasurer implements TextMeasurer {
++
++    /** The size of the font used to calculate the size of a label. */
++    private static final int DEFAULT_LABEL_FONT_SIZE = 10;
++
++    @Override
++    public KVector measure(final String text) {
++        // There seems to be a problem with SansSerif on Windows...
++        String fontName;
++        if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
++            fontName = "Arial";
++        } else {
++            fontName = "SansSerif";
++        }
++
++        BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
++
++        Graphics2D graphics = image.createGraphics();
++        graphics.setFont(new java.awt.Font(fontName, SWT.NORMAL, DEFAULT_LABEL_FONT_SIZE));
++
++        Rectangle2D rect = graphics.getFontMetrics().getStringBounds(text, graphics);
++        return new KVector(rect.getWidth(), rect.getHeight());
++    }
++
++}
+diff --git a/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/FixedAdvanceTextMeasurer.java b/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/FixedAdvanceTextMeasurer.java
+new file mode 100644
+index 00000000..c92466e6
+--- /dev/null
++++ b/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/FixedAdvanceTextMeasurer.java
+@@ -0,0 +1,37 @@
++/*******************************************************************************
++ * Copyright (c) 2026 elk-engine contributors and others.
++ * 
++ * This program and the accompanying materials are made available under the
++ * terms of the Eclipse Public License 2.0 which is available at
++ * http://www.eclipse.org/legal/epl-2.0.
++
++ * This Source Code may also be made available under the following Secondary
++ * Licenses when the conditions for such availability set forth in the Eclipse
++ * Public License v. 2.0 are satisfied: GPL-3.0 which is available at
++ * https://www.gnu.org/licenses/gpl-3.0-standalone.html.
++ *
++ * SPDX-License-Identifier: EPL-2.0 OR GPL-3.0-or-later
++ *******************************************************************************/
++package org.eclipse.elk.alg.test.framework.config;
++
++import org.eclipse.elk.core.math.KVector;
++
++/**
++ * A {@link TextMeasurer} that does not depend on the platform: every character (UTF-16 code unit) advances the width
++ * by {@link #CHAR_ADVANCE}, and the height is always {@link #LINE_HEIGHT}. Line breaks are not special. Both constants
++ * are integers, so every result is exact. This is a normalized measure for comparing layouts across platforms, not a
++ * font model.
++ */
++public final class FixedAdvanceTextMeasurer implements TextMeasurer {
++
++    /** The width of a single character. */
++    public static final double CHAR_ADVANCE = 6.0;
++    /** The height of every text. */
++    public static final double LINE_HEIGHT = 12.0;
++
++    @Override
++    public KVector measure(final String text) {
++        return new KVector(text.length() * CHAR_ADVANCE, LINE_HEIGHT);
++    }
++
++}
+diff --git a/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/TestConfiguration.java b/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/TestConfiguration.java
+index 81d8b6a3..4abbb6bc 100644
+--- a/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/TestConfiguration.java
++++ b/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/TestConfiguration.java
+@@ -14,19 +14,16 @@
+  *******************************************************************************/
+ package org.eclipse.elk.alg.test.framework.config;
+ 
+-import java.awt.Graphics2D;
+-import java.awt.geom.Rectangle2D;
+-import java.awt.image.BufferedImage;
+ import java.util.StringJoiner;
+ 
+ import org.eclipse.elk.alg.test.framework.annotations.DefaultConfiguration;
++import org.eclipse.elk.core.math.KVector;
+ import org.eclipse.elk.core.util.ElkUtil;
+ import org.eclipse.elk.graph.ElkEdge;
+ import org.eclipse.elk.graph.ElkLabel;
+ import org.eclipse.elk.graph.ElkNode;
+ import org.eclipse.elk.graph.ElkPort;
+ import org.eclipse.elk.graph.util.ElkGraphUtil;
+-import org.eclipse.swt.SWT;
+ import org.junit.runners.model.TestClass;
+ 
+ import com.google.common.base.Strings;
+@@ -169,32 +166,17 @@ public class TestConfiguration {
+         });
+     }
+ 
+-    /** The size of the font used to calculate the size of a label. */
+-    private static final int DEFAULT_LABEL_FONT_SIZE = 10;
+-
+     /**
+-     * Computes the size of a label if it doesn't already have one. The size is calculated by choosing a font and
+-     * calculating the space necessary to render the label's text with that font.
++     * Computes the size of a label if it doesn't already have one. The size is calculated by the {@link TextMeasurer}
++     * the system property {@link TextMeasurer#PROPERTY} selects; by default, that chooses a font and calculates the
++     * space necessary to render the label's text with that font.
+      */
+     private void computeLabelSize(final ElkLabel label) {
+         // Check if we need to do anything
+         if (label.getHeight() == 0 && label.getWidth() == 0 && !Strings.isNullOrEmpty(label.getText())) {
+-            // There seems to be a problem with SansSerif on Windows...
+-            String fontName;
+-            if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+-                fontName = "Arial";
+-            } else {
+-                fontName = "SansSerif";
+-            }
+-
+-            BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+-
+-            Graphics2D graphics = image.createGraphics();
+-            graphics.setFont(new java.awt.Font(fontName, SWT.NORMAL, DEFAULT_LABEL_FONT_SIZE));
+-
+-            Rectangle2D rect = graphics.getFontMetrics().getStringBounds(label.getText(), graphics);
+-            label.setHeight(rect.getHeight());
+-            label.setWidth(rect.getWidth());
++            KVector size = TextMeasurer.fromSystemProperty().measure(label.getText());
++            label.setHeight(size.y);
++            label.setWidth(size.x);
+         }
+     }
+ 
+diff --git a/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/TextMeasurer.java b/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/TextMeasurer.java
+new file mode 100644
+index 00000000..74f93034
+--- /dev/null
++++ b/test/org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/TextMeasurer.java
+@@ -0,0 +1,60 @@
++/*******************************************************************************
++ * Copyright (c) 2026 elk-engine contributors and others.
++ * 
++ * This program and the accompanying materials are made available under the
++ * terms of the Eclipse Public License 2.0 which is available at
++ * http://www.eclipse.org/legal/epl-2.0.
++
++ * This Source Code may also be made available under the following Secondary
++ * Licenses when the conditions for such availability set forth in the Eclipse
++ * Public License v. 2.0 are satisfied: GPL-3.0 which is available at
++ * https://www.gnu.org/licenses/gpl-3.0-standalone.html.
++ *
++ * SPDX-License-Identifier: EPL-2.0 OR GPL-3.0-or-later
++ *******************************************************************************/
++package org.eclipse.elk.alg.test.framework.config;
++
++import org.eclipse.elk.core.math.KVector;
++
++/**
++ * Measures the text of a label for {@link TestConfiguration}, which gives a size to every label that has none before
++ * a test graph is laid out. Test seam (elk-engine oracle): the measurer is selected by the system property
++ * {@value #PROPERTY}. Unset, the test framework measures with AWT font metrics as it always did.
++ */
++public interface TextMeasurer {
++
++    /**
++     * The system property that selects the measurer: unset or {@code awt} measures with AWT font metrics
++     * ({@link AwtTextMeasurer}, the unchanged default), {@code fixed} measures with a fixed advance per character
++     * ({@link FixedAdvanceTextMeasurer}), which does not depend on the platform's fonts.
++     */
++    String PROPERTY = "org.eclipse.elk.alg.test.textMeasurer";
++
++    /**
++     * Computes the space the given text takes up.
++     * 
++     * @param text
++     *            the text to measure; neither {@code null} nor empty.
++     * @return the size of the text: {@code x} is its width, {@code y} its height.
++     */
++    KVector measure(String text);
++
++    /**
++     * Returns the measurer the system property {@value #PROPERTY} selects.
++     * 
++     * @return the measurer to use.
++     * @throws IllegalArgumentException
++     *             if the property holds a value other than {@code awt} or {@code fixed}.
++     */
++    static TextMeasurer fromSystemProperty() {
++        String value = System.getProperty(PROPERTY);
++        if (value == null || value.equals("awt")) {
++            return new AwtTextMeasurer();
++        } else if (value.equals("fixed")) {
++            return new FixedAdvanceTextMeasurer();
++        } else {
++            throw new IllegalArgumentException("Unknown text measurer: " + value);
++        }
++    }
++
++}
+-- 
+2.54.0 (Apple Git-157)
+

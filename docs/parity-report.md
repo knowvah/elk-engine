@@ -11,7 +11,7 @@ An empty cell names why it is empty: `—` for nothing planned, `n/a` for work t
 
 - ELK commit: `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`
 - Models commit: `ac5af2ba511c0037e4f347e8bd91f013950951c7`
-- Oracle seam patches: `0001-graph.json-seedable-JsonExporter-id-collision-random.patch`, `0002-graph-seedable-GraphIdentifierGenerator-random.patch`
+- Oracle seam patches: `0001-graph.json-seedable-JsonExporter-id-collision-random.patch`, `0002-graph-seedable-GraphIdentifierGenerator-random.patch`, `0003-alg.test-pluggable-label-text-measurer.patch`
 - Cases: 18930
 - Sweep wall time: 2 min
 - Parse errors: none

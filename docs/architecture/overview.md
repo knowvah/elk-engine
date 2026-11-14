@@ -23,6 +23,7 @@
 | [alg-layered-loops.md](alg-layered-loops.md)         | Layered self loops, wrapping, compaction (mission 7g): loops package, breaking points, 1D compaction, `ComponentsCompactor`, rows, sweep, runbook |
 | [alg-layered-compound.md](alg-layered-compound.md)   | Layered compound graphs (mission 7h): `compound` package, hierarchical driver, whole-tree stops, goldens, sweep, hash-order twins, runbook        |
 | [parity-dashboard.md](parity-dashboard.md)           | TS sweep against the oracle (row 9): sharded runner, summary contract, annotations, report, runbook                                               |
+| [text-sizing-seam.md](text-sizing-seam.md)           | Pluggable label-text measurement (row 10): patch 0003, the TS twin, fixed mode, evidence, runbook                                                 |
 
 ## What elk-engine is
 
