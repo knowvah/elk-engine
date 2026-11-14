@@ -625,6 +625,8 @@ Mission mapping: `graph.text` is roadmap 4b, `graph.json.text` 4c, `core.debug.g
 `graph.json.text.ui`, `core.debug.grandom.ui` (out of scope); `alg.libavoid`, `alg.graphviz.dot`,
 `alg.graphviz.layouter`, `graph.text.ide`, `graph.json.text.ide`, `core.debug.grandom.ide`
 (deferred); `core.debug`, `alg.disco.debug` (reference only: read for ideas, never ported).
+A decision for the three deferred algorithm bundles (`alg.libavoid`, `alg.graphviz.dot`, `alg.graphviz.layouter`) is
+proposed in the [deferred-bundles ADR](deferred-bundles-adr.md); they stay deferred until the maintainer rules on it.
 `core.meta` contains the `.melk` compiler whose behavior the `tools/melk/` generator reproduces
 (AD-12); it is read as a reference only. `graph.text`, `graph.json.text` and `core.debug.grandom`
 are in scope per D0 (`plans/conformance-corpus/decisions.md`); see the next section.

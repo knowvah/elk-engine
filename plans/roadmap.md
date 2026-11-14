@@ -1740,3 +1740,59 @@ label-bearing model as the oracle does. Design and runbook: `docs/architecture/t
   or its fix, and it empties the vector cache.
 - To row 13 (ELK upgrade): a pin bump must re-prove TX1 (no plugin measures text) and rerun
   `label-sizing-vectors.sh --remeasure-awt` on the reference platform.
+
+## Revision 2026-11-13 (deferred-bundles-adr)
+
+Appended; no earlier line is edited. Source: DB1-DB7 in `plans/deferred-bundles-adr/decisions.md`; the journal is
+`plans/deferred-bundles-adr/decision-journal.md`. Where this section conflicts with the text above, this section wins. Task
+ids are T1-T3; the base is `887d11e9b05dc357cc5b17fd50b018fb58080d75` (the row-10 squash commit).
+
+**Row 11 is done as an ADR with Status Proposed; acceptance is pending on #88 (`needs-ruling`).** The ADR is
+`docs/architecture/deferred-bundles-adr.md`; its evidence, with every command, is `plans/deferred-bundles-adr/evidence.md`.
+The final commit is one squashed commit `docs(adr): propose deferred-bundles decision (11)` with `Refs: #42`; the per-task
+history is under the tag `deferred-bundles-adr/pre-squash`. No ELK class was ported and nothing under `src/`, `test/` or
+`tools/` changed.
+
+**Recommendation per bundle (6,019 lines evaluated, 0 ported).**
+
+| Bundle | Lines | Recommendation | Reason |
+| ------ | ----: | -------------- | ------ |
+| `alg.libavoid` | 1,548 | no-go: skip | A client of a downloaded C++ binary (libavoid-server v0.3.1); the routing is not in the Java, so the pin does not define the result; no delegate exists |
+| `alg.graphviz.dot` | 2,728 | no-go: skip | Portable and oracle-provable, but its only consumer is `alg.graphviz.layouter` and `DotImporter` has none; 7 to 10 tasks for code nothing calls |
+| `alg.graphviz.layouter` | 1,743 | no-go in this package | Process and Eclipse code; results depend on an unpinned Graphviz; a dot-engine delegate is feasible only as a separate package (AD-14), about 5 to 8 tasks, when a consumer asks |
+
+For all three: no in-scope caller, no ELK test, none of the 898 corpus models. No recommendation needs a locked rule
+amended.
+
+**What did not change, and why.**
+
+- `test/architecture/bundle-deps.json` and `tools/bundle-deps.ts` are byte-identical to the base (DB3): no bundle is
+  adopted. The committed table equals a regeneration from the pinned manifests (checked by hand, journal T3).
+- No new fitness test (DB4). "Deferred = not ported" is enforced by `module-boundaries.fitness.test.ts:322`
+  (`has no unmapped directories`), self-checked at `:306`. The row-11 exit "fitness test updated" is met by that citation.
+- CLAUDE.md's "Deferred" list, the skeleton's AD rows and `docs/conformance.md` are untouched; `inventory.md` rows 38-40 and
+  `port-map.md` link the ADR and keep `Deferred` (DB6).
+- No oracle rebuild, JVM run or external binary (DB7).
+
+**On acceptance (#88), not done here.** CLAUDE.md moves the three bundles from "Deferred" to "Out of scope"; AD-17 is
+appended to `plans/elk-engine-skeleton/decisions.md`; the inventory and port-map rows become `Out`; the ADR becomes Accepted.
+A "go" for any bundle instead needs its suffix in `IN_SCOPE_SUFFIXES`, a regenerated `bundle-deps.json`, a mapping test and
+a new roadmap row.
+
+**Flags for the maintainer.**
+
+- #88 (`needs-ruling`): accept, amend or reject the ADR.
+- #89 (`follow-up`): `module-boundaries.fitness.test.ts:342` (`regenerated deps equal the committed file`) is skipped
+  unless the ELK checkout's HEAD is exactly the pin; on this machine neither `../elk` (`b715fb10`) nor `../elk-oracle`
+  (`d650f036`, pin plus patches) qualifies, so the check does not run locally.
+- The LGPL-2.1-or-later licence of libavoid is recorded as a cost of porting it; whether such a port could ship in an
+  EPL-2.0 package was not answered.
+
+**Hand-offs.**
+
+- To row 12 (docs site, first publish): the ADR is not a site page; links to it from the inventory and port-map pages are
+  rewritten to GitHub blob URLs, which resolve once `chore/issue-queue` reaches `main`.
+- To row 13 (ELK upgrade): a pin move that touches one of the three bundles, or gives one an in-scope caller or test, is a
+  revisit trigger of the ADR.
+- To the `shared.test` port (`test/integration/`): its manifest requires `alg.graphviz.layouter`, but none of its four
+  classes uses it; the entry is not carried.
