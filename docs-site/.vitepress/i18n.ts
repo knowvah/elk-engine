@@ -132,7 +132,9 @@ export const TRANSLATABLE_EXCLUDES: readonly string[] = [
   'guide/port-map.md',
   'guide/inventory.md',
   'guide/roadmap.md',
+  'guide/getting-started.md',
   'showcase/',
+  'reference/',
 ];
 
 const localesDir = path.join(import.meta.dirname, 'locales');

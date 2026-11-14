@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: EPL-2.0
+name: Links
+
+# External link check for the docs site. Internal links and fragments are
+# checked on every pull request by CI (`npm run docs:linkcheck`); this workflow
+# adds the links that leave the site, which can rot without any change here.
+# It never runs on pull requests or pushes: a third-party outage must not turn
+# a PR red. A failure here is a follow-up to triage, not a broken build.
+on:
+  schedule:
+    # Mondays 06:17 UTC (off the hour, where scheduled runs are less delayed).
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+# Least-privilege GITHUB_TOKEN; the job only reads the repo and the @knowvah
+# packages on GitHub Packages (see .npmrc).
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26'
+          cache: npm
+          # Writes the npm.pkg.github.com auth line so `@knowvah/*` (the docs
+          # theme is on GitHub Packages only) resolves; the scope mapping
+          # itself is in the repo's .npmrc.
+          registry-url: https://npm.pkg.github.com
+          scope: '@knowvah'
+      - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm run docs:build
+      # linkinator over the built site with external URLs included
+      # (docs-site/linkinator.external.config.json: 20 s per request, 429s
+      # retried after their retry-after, 5xx retried twice). GitHub blob links
+      # to files that are not on main yet report 404 until they are merged.
+      - run: npm run docs:linkcheck:external

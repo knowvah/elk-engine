@@ -1,0 +1,25 @@
+{
+  "golden": [
+    {
+      "id": "build-and-layout",
+      "path": "build-and-layout.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
+      "note": "Input twin of test/docs/examples/build-and-layout.ts: a four-node diamond built with ElkGraphUtil, layered, direction DOWN (DP4); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "json-roundtrip",
+      "path": "json-roundtrip.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
+      "note": "Input of test/docs/examples/json-roundtrip.ts: ELK JSON with a compound node, ports and labels, layered with orthogonal routing (DP4); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "tree-layout",
+      "path": "tree-layout.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "Input twin of test/docs/examples/tree-layout.ts: a six-node tree built with ElkGraphUtil, mrtree, spacing.nodeNode 30 (DP4); recorded with -XX:hashCode=2 (H4)."
+    }
+  ]
+}

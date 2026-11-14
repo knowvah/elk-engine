@@ -1796,3 +1796,97 @@ a new roadmap row.
   revisit trigger of the ADR.
 - To the `shared.test` port (`test/integration/`): its manifest requires `alg.graphviz.layouter`, but none of its four
   classes uses it; the entry is not carried.
+
+## Revision 2026-11-14 (docs-publish-prep)
+
+Appended; no earlier line is edited. Source: DP1-DP9 in `plans/docs-publish-prep/decisions.md`; the journal is
+`plans/docs-publish-prep/decision-journal.md`. Where this section conflicts with the text above, this section wins. Task
+ids are T1-T9; the base is `372d7871c34d3a8523e955be0811193694f18900` (the row-11 squash commit).
+
+**Row 12 is done except its three maintainer-only parts**, which are handed over as rulings: accepting the export surface
+(#90), and claiming the npm name with the first `npm publish` and switching the release workflow on (#91). **Nothing was
+published or run:** no `npm publish` (not even `--dry-run`), no `npm login`, no semantic-release run, no tag. The final
+commit is one squashed commit `docs(site): api reference, example tests and release prep (12)` with `Refs: #43`; the
+per-task history is under the tag `docs-publish-prep/pre-squash`.
+
+**Exit items and their evidence** (journal rows by task).
+
+| Exit item (§ 12, #43) | State | Evidence |
+| --- | --- | --- |
+| Docs build with the API reference | done | `npm run docs:build` runs `docs:api` (typedoc 0.28.20 on an isolated TypeScript 6.0.3, `tools/typedoc/`): 0 errors, 200 warnings, 72 pages under the generated `/reference/` (T2) |
+| Link check in CI | done | `npm run docs:linkcheck` (linkinator 8.1.0, internal links and fragments): 555 links, 0 broken; in `ci.yml` after `docs:build`; external links weekly in `links.yml` (T5, T8) |
+| Example tests in CI | done | three programs in `test/docs/examples/` equal the oracle refs of the new golden set `elk-examples` at 1e-6 and are the snippets of the getting-started page (T3, T4); they run inside `coverage` |
+| Export surface proposed in a reviewable doc | done, **ruling #90** | `docs/architecture/public-api.md` (69 exports in four tiers, eight open questions, acceptance steps) and the same surface as code, `test/public-api/candidate-index.ts`; `src/index.ts` unchanged (T1) |
+| Release config in place, not run | done, **ruling #91** | `.releaserc.json`, `release.yml` (`workflow_dispatch` only, `main` only, environment `release`), `publish:check`, `prepublishOnly`, registry pins, `PUBLISHING.md` (T6) |
+| "Installs and lays out a graph in a clean project" | rehearsed, not published | `npm run pack:smoke`: tarball contents checked, offline install into a clean project, import; with `--entry` the bundled candidate lays out an example in a clean process and equals its oracle ref (T7); both modes in CI (T8) |
+| Queue gates | pass | journal, T9 |
+
+**Decisions held.** DP1-DP9 as written. Three readings to know:
+
+- **AD-6 ("adds a TS 6 alias")** is carried out as a private package with its own lockfile, not an alias: typedoc's peer
+  is the name `typescript`, and npm cannot alias a peer beside the root's TypeScript 7 (DP3). TypeScript 7.0.2 remains the
+  project compiler; AD-6 is not edited.
+- **DP6 (pinned nav).** `test/docs/locale-complete.test.ts` pins the English nav and sidebar exactly (`:91-105`,
+  `:107-115`, `:117-119`), so the two new pages are outside the navigation and outside translation until #90 (AD-13: the
+  rows are named in the ruling, not changed). They are reachable by URL, by site search, from `README.md` and from each
+  other.
+- **DP7 wording.** "PR titles drive versions" is true for dot-engine's squash merges. This repository merges with merge
+  commits, so semantic-release will read every per-task commit; `PUBLISHING.md` and `CONTRIBUTING.md` say so.
+
+**Deviations and additions** (each journaled with its reason).
+
+- T2-T7 were done by the orchestrator, not by the subagents the brief suggested (journal, start/plan).
+- `package.json` `files` gains `NOTICE.md` (the dry run showed the derivative-work notice was not in the tarball); the pack
+  check requires it. Flagged in #91 for a veto.
+- `release.yml` checks `npm >= 11.5.1` instead of installing `npm@latest` into a job that holds `id-token: write`.
+- `npm publish --dry-run` was not run (stop 2). The publish target was established with npm's own resolver instead: before
+  the pins `https://npm.pkg.github.com`, with them `https://registry.npmjs.org/`.
+- Files outside the planned write-sets: `.prettierignore` (the generated reference), `docs-site/linkinator*.config.json`,
+  `docs-site/.vitepress/README.md` (on-call entry for the link check), `tools/release/consumer-layout.mjs`,
+  `CONTRIBUTING.md` gate list, `tools/typedoc/reference-index.md`.
+
+**Two defects found and fixed, both in the docs site** (diagnosis artifacts in the journal, T5).
+
+- 138 dead language-switcher links on the base build (6 English-only pages × 23 locales): the default theme appends the
+  page path to each locale prefix (`langs.js:15`). Fixed with `themeConfig.i18nRouting: false`.
+- 18 dead member anchors in the generated reference (new with T2): the site slugs heading ids by GitHub's rule, the
+  typedoc theme slugs its links by VitePress's default. Reference pages now get ids by the generator's rule
+  (`referenceHeadingSlug`); no id on any other page changes.
+
+**Changes to landed code.** None under `src/`. No landed test, vector or ref changed: `git diff <base> -- test/golden/refs/`
+shows only the new `elk-examples/` set, and all six earlier sets regenerate byte-identically. Landed files that changed:
+`tsconfig.json` (`paths`), `vitest.config.ts` (alias), `package.json`/`package-lock.json`, `.gitignore`, `.prettierignore`,
+`tools/oracle/regen-goldens.sh` (the `examples` set), both `TRANSLATABLE_EXCLUDES` copies (two entries),
+`docs-site/.vitepress/config.ts` (`i18nRouting`, heading ids under `reference/`), `ci.yml`, `README.md`, `CONTRIBUTING.md`,
+`docs/architecture/overview.md`. CLAUDE.md and the AD rows are untouched.
+
+**On acceptance (#90), not done here.** Move the candidate into `src/index.ts` (changes the landed `src/index.test.ts`
+assertion), flip the three `@knowvah/elk-engine` mappings, add the two pages to `navFor`/`sidebarFor` (changes the pinned
+rows above), update CLAUDE.md's "exports nothing yet", remove the "proposed" notices. Then #91: first version, manual
+publish with 2FA, tag `v<version>`, trusted publisher, switch `release.yml` to `push: main`.
+
+**Flags for the maintainer.**
+
+- #90 (`needs-ruling`): the surface, with eight open questions (algorithm option enums, subpath exports, text formats and
+  grandom, `EnumSet`, errors, internal types in signatures, no registration helper, first version).
+- #91 (`needs-ruling`): the first publish. **It freezes the ElkGraph API (AD-14) and is irreversible.**
+- **A UX change shipped with the link fix:** the language switcher now opens each locale's home page, not the same page in
+  that locale. VitePress has no per-page switch; the alternatives were rejected in DP5. Revert by removing
+  `i18nRouting: false`, at the price of the 138 dead links (and one per locale for every page under `/reference/`).
+- #92 (`follow-up`): translate the getting-started page and add nav labels after #90.
+- #93 (`follow-up`): `docs-site/guide/overview.md` still says "No layout algorithm is ported yet".
+- #94 (`follow-up`): the English search index grew from about 177 KB to 2.0 MB with the reference; `headingSlug` drops
+  `_` where GitHub keeps it (nothing broken today).
+- #87: the `childPids()` check of `ts-layout-shards.test.ts` failed once more under load, at `:263`; a rerun at low load
+  passed (comment on the issue).
+- The weekly external link check will report nine GitHub `blob/main` links as 404 until `chore/issue-queue` reaches
+  `main` (files that exist only on the queue branch).
+
+**Hand-offs.**
+
+- To the surface ruling (#90): `docs/architecture/public-api.md` § "On acceptance" lists every site by path.
+- To row 13 (ELK upgrade): an upgrade check now includes `npm run docs:build` (typedoc on the isolated TypeScript 6 package;
+  compare the warning count with 200), `regen-goldens.sh --set examples` with `examples.test.ts`, and both `pack:smoke`
+  modes. A typedoc release with TypeScript 7 support removes `tools/typedoc/` (its README says how).
+- To a later wrapper layer (AD-14, AD-16c): open questions 4, 5 and 7 of the proposal (`EnumSet`, errors, registration) are
+  the first candidates for idiomatic API.

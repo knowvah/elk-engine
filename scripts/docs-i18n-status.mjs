@@ -35,7 +35,9 @@ export const TRANSLATABLE_EXCLUDES = [
   'guide/port-map.md',
   'guide/inventory.md',
   'guide/roadmap.md',
+  'guide/getting-started.md',
   'showcase/',
+  'reference/',
 ];
 const HASHES_FILE = `${SITE_DIR}/.vitepress/i18n-hashes.json`;
 const MANIFEST_FILE = 'test/corpus/manifest.json';

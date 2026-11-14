@@ -118,3 +118,17 @@ missing seed) are checked by invariants only. The entry point is internal; see [
 Bundle import direction follows `test/architecture/bundle-deps.json`; SPDX header on every code
 file; no Node built-ins or `process.env` in `src/`; no module-level mutable `let` outside the
 allowlist.
+
+## Docs and release toolchain
+
+Added by roadmap row 12; decisions DP1 to DP9 in
+[`plans/docs-publish-prep/decisions.md`](../../plans/docs-publish-prep/decisions.md). Nothing is published yet.
+
+| Piece          | What it is                                                                                                                                                                          |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Export surface | A proposal, [public-api.md](public-api.md), and the same surface as code in `test/public-api/candidate-index.ts`; `src/index.ts` exports nothing until it is accepted (AD-14)       |
+| API reference  | `npm run docs:api`: typedoc in the private package `tools/typedoc/` with TypeScript 6 of its own (typedoc has no TypeScript 7 release, AD-6), into the generated `/reference/`      |
+| Examples       | `test/docs/examples/*.ts`, shown on the site's getting-started page as snippets and compared with oracle refs (`test/golden/refs/elk-examples/`, `regen-goldens.sh --set examples`) |
+| Link check     | `npm run docs:linkcheck`: linkinator over the built site, internal links and fragments, in CI; external links weekly (`links.yml`)                                                  |
+| Pack rehearsal | `npm run pack:smoke`: pack, check the file list, install offline into a clean project, import; with `--entry`, lay out an example there and compare with its oracle ref             |
+| Release        | semantic-release configuration and `release.yml`, manual trigger only until the maintainer's first publish; runbook in [`PUBLISHING.md`](../../PUBLISHING.md)                       |

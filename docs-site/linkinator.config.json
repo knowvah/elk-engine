@@ -1,0 +1,7 @@
+{
+  "recurse": true,
+  "cleanUrls": true,
+  "checkFragments": true,
+  "serverRoot": "docs-site/.vitepress/dist",
+  "skip": ["^https?://(?!localhost|127\\.0\\.0\\.1|\\[::1\\])"]
+}

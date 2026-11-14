@@ -1,0 +1,179 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "client",
+      "labels": [
+        {
+          "text": "Client",
+          "id": "client_label",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 42.0,
+          "height": 16.0
+        }
+      ],
+      "ports": [
+        {
+          "id": "client_out",
+          "layoutOptions": {
+            "port.side": "EAST"
+          },
+          "x": 90.0,
+          "y": 16.0,
+          "width": 8.0,
+          "height": 8.0
+        }
+      ],
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "crossingMinimization.positionId": "-1",
+        "layering.layerId": "-1"
+      },
+      "x": 12.0,
+      "y": 31.0,
+      "width": 90.0,
+      "height": 40.0
+    },
+    {
+      "id": "server",
+      "labels": [
+        {
+          "text": "Server",
+          "id": "server_label",
+          "x": 0.0,
+          "y": 0.0,
+          "width": 44.0,
+          "height": 16.0
+        }
+      ],
+      "ports": [
+        {
+          "id": "server_in",
+          "layoutOptions": {
+            "port.side": "WEST"
+          },
+          "x": -8.0,
+          "y": 35.0,
+          "width": 8.0,
+          "height": 8.0
+        }
+      ],
+      "children": [
+        {
+          "id": "api",
+          "layoutOptions": {
+            "nodeSize.constraints": "[]",
+            "crossingMinimization.positionId": "-1",
+            "layering.layerId": "-1"
+          },
+          "x": 12.0,
+          "y": 30.0,
+          "width": 70.0,
+          "height": 36.0
+        },
+        {
+          "id": "db",
+          "layoutOptions": {
+            "nodeSize.constraints": "[]",
+            "crossingMinimization.positionId": "-1",
+            "layering.layerId": "-1"
+          },
+          "x": 102.0,
+          "y": 30.0,
+          "width": 70.0,
+          "height": 36.0
+        }
+      ],
+      "layoutOptions": {
+        "portLabels.placement": "[OUTSIDE]",
+        "nodeLabels.placement": "[]",
+        "nodeSize.constraints": "[]",
+        "elk.padding": "[top=30.0,left=12.0,bottom=12.0,right=12.0]",
+        "layering.layerId": "-1",
+        "crossingMinimization.positionId": "-1",
+        "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.layered",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
+        "hierarchyHandling": "SEPARATE_CHILDREN"
+      },
+      "x": 138.0,
+      "y": 12.0,
+      "width": 184.0,
+      "height": 78.0,
+      "edges": [
+        {
+          "id": "query",
+          "sources": [
+            "api"
+          ],
+          "targets": [
+            "db"
+          ],
+          "sections": [
+            {
+              "id": "s1",
+              "startPoint": {
+                "x": 82.0,
+                "y": 48.0
+              },
+              "endPoint": {
+                "x": 102.0,
+                "y": 48.0
+              },
+              "incomingShape": "api",
+              "outgoingShape": "db"
+            }
+          ],
+          "layoutOptions": {
+            "junctionPoints": "()"
+          }
+        }
+      ]
+    }
+  ],
+  "layoutOptions": {
+    "portLabels.placement": "[OUTSIDE]",
+    "nodeLabels.placement": "[]",
+    "algorithm": "layered",
+    "nodeSize.constraints": "[]",
+    "spacing.portsSurrounding": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+    "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.layered",
+    "edgeRouting": "ORTHOGONAL",
+    "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
+    "nodeLabels.padding": "[top=5.0,left=5.0,bottom=5.0,right=5.0]",
+    "hierarchyHandling": "SEPARATE_CHILDREN"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 334.0,
+  "height": 102.0,
+  "edges": [
+    {
+      "id": "request",
+      "sources": [
+        "client_out"
+      ],
+      "targets": [
+        "server_in"
+      ],
+      "sections": [
+        {
+          "id": "s0",
+          "startPoint": {
+            "x": 110.0,
+            "y": 51.0
+          },
+          "endPoint": {
+            "x": 130.0,
+            "y": 51.0
+          },
+          "incomingShape": "client_out",
+          "outgoingShape": "server_in"
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    }
+  ]
+}
