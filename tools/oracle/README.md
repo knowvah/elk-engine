@@ -124,6 +124,11 @@ git -C "$ELK_SOURCE_DIR" worktree remove --force "$ELK_ORACLE_DIR"
 tools/oracle/build.sh
 ```
 
+## Upgrading ELK
+
+Moving `ELK_COMMIT` to a newer upstream commit, and rehearsing the move in scratch space, is the runbook
+[`docs/architecture/elk-upgrade.md`](../../docs/architecture/elk-upgrade.md).
+
 ## Quality gates
 
 `shellcheck tools/oracle/build.sh` is clean; functions stay <= 30 lines.
