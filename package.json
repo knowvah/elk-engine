@@ -47,6 +47,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "complexity": "tsx tools/complexity/check.ts",
+    "codeql": "bash tools/codeql/scan.sh",
     "melk:generate": "tsx tools/melk/generate.ts",
     "test": "vitest run",
     "coverage": "bash tools/coverage-gate/run.sh",

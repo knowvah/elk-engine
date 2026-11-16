@@ -393,12 +393,13 @@ means run `build.sh` first; `bundle <name> not in p2 cache` means set
 
 Every change:
 
-| Gate               | Command                                                   | Bar                                                                          |
-| ------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Types              | `npm run typecheck`                                       | exit 0                                                                       |
-| Tests and coverage | `npm run coverage`                                        | all tests pass; 90% statements, branches, functions, and lines over `src/**` |
-| Architecture       | `test/architecture/*.fitness.test.ts` (run by `npm test`) | module boundaries, module globals, no Node builtins in `src/`, SPDX headers  |
-| Oracle refs        | `test/golden/oracle-refs.test.ts`                         | committed refs consistent with manifest and `ELK_COMMIT`                     |
+| Gate               | Command                                                   | Bar                                                                                                                                                                 |
+| ------------------ | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Types              | `npm run typecheck`                                       | exit 0                                                                                                                                                              |
+| Tests and coverage | `npm run coverage`                                        | all tests pass; 90% statements, branches, functions, and lines over `src/**`                                                                                        |
+| Architecture       | `test/architecture/*.fitness.test.ts` (run by `npm test`) | module boundaries, module globals, no Node builtins in `src/`, SPDX headers                                                                                         |
+| Oracle refs        | `test/golden/oracle-refs.test.ts`                         | committed refs consistent with manifest and `ELK_COMMIT`                                                                                                            |
+| CodeQL             | `npm run codeql`                                          | exit 0: every finding of GitHub Code Quality's suites (Java recorders and TypeScript) is in `tools/codeql/accepted.json` with a reason, and no entry there is stale |
 
 Changes to `tools/oracle/`, the manifest, or the patch series also need:
 

@@ -1,0 +1,56 @@
+[
+  {
+    "rule": "js/useless-assignment-to-local",
+    "file": "src/alg/disco/transform/ElkGraphTransformerGeometry.ts",
+    "fingerprint": "13f17209f2310dd:1",
+    "reason": "Java-faithful (CLAUDE.md \"The Java Is Sacred\"): disco ElkGraphTransformer.nearestSide assigns shortestDistance in its last branch without reading it."
+  },
+  {
+    "rule": "js/useless-assignment-to-local",
+    "file": "src/alg/disco/transform/ElkGraphTransformerGeometry.ts",
+    "fingerprint": "7ca4fcc28c7c51ee:1",
+    "reason": "Java-faithful (CLAUDE.md \"The Java Is Sacred\"): disco ElkGraphTransformer.nearestSide initialises shortestDistance = Double.MAX_VALUE and overwrites it."
+  },
+  {
+    "rule": "js/useless-assignment-to-local",
+    "file": "src/alg/force/ElkGraphImporter.ts",
+    "fingerprint": "c28c8d4c3f9acb9e:1",
+    "reason": "Java-faithful (CLAUDE.md \"The Java Is Sacred\"): force ElkGraphImporter.java:100-103 defaults portConstraints to FREE and never reads it (// TODO consider ports)."
+  },
+  {
+    "rule": "js/trivial-conditional",
+    "file": "src/alg/force/model/AbstractForceModel.ts",
+    "fingerprint": "7b213420a7109789:1",
+    "reason": "Java-faithful (CLAUDE.md \"The Java Is Sacred\"): AbstractForceModel.avoidSamePosition declares triedForBendPoints = false inside the loop, so the negation is always true."
+  },
+  {
+    "rule": "js/useless-assignment-to-local",
+    "file": "src/alg/force/model/AbstractForceModel.ts",
+    "fingerprint": "68de80065249109a:1",
+    "reason": "Java-faithful (CLAUDE.md \"The Java Is Sacred\"): AbstractForceModel.avoidSamePosition never reads triedForBendPoints after setting it."
+  },
+  {
+    "rule": "js/redundant-assignment",
+    "file": "src/alg/layered/compaction/CompactionTest.test.ts",
+    "fingerprint": "53336ec0b9504746:1",
+    "reason": "Java-faithful (CLAUDE.md \"The Java Is Sacred\"): ported JUnit test: CompactionTest.java:587 has the same hitbox.x = hitbox.x."
+  },
+  {
+    "rule": "js/redundant-operation",
+    "file": "src/alg/mrtree/ElkGraphImporter.ts",
+    "fingerprint": "1dbb195e1c304865:1",
+    "reason": "Java-faithful (CLAUDE.md \"The Java Is Sacred\"): ElkGraphImporter.java:122 repeats !elkedge.isHierarchical() in the same condition."
+  },
+  {
+    "rule": "js/implicit-operand-conversion",
+    "file": "src/alg/mrtree/TreeUtil.ts",
+    "fingerprint": "ac4b8a4fd1d119dc:1",
+    "reason": "False positive: Int64.shl is typed (a: bigint, distance: bigint | number): bigint (src/java/lang/Int64.ts:71); the analyzer does not resolve the namespace import and assumes undefined."
+  },
+  {
+    "rule": "js/redundant-operation",
+    "file": "src/alg/radial/p1position/EadesRadial.ts",
+    "fingerprint": "afe8b84a7c0a7577:1",
+    "reason": "Java-faithful (CLAUDE.md \"The Java Is Sacred\"): EadesRadial.java:108 computes currentRadius / currentRadius + radius (precedence quirk)."
+  }
+]
