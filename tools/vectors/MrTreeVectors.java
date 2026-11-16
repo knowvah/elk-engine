@@ -455,6 +455,9 @@ d002e5a2eac3086de326c108f6582caa66356ffcc2e707ad7faf59778d92df49  repo:test/corp
     }
 
     static List<Opt> opts(Object... kv) {
+        if (kv.length % 2 != 0) {
+            throw new IllegalArgumentException("opts() takes key/value pairs, got " + kv.length + " arguments");
+        }
         List<Opt> l = new ArrayList<>();
         for (int i = 0; i < kv.length; i += 2) {
             l.add(new Opt((String) kv[i], kv[i + 1]));

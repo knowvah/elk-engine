@@ -499,6 +499,15 @@ public class MrTreeUnitVectors {
         return n == null ? "-1" : String.valueOf(m.get(n));
     }
 
+    /** {@link Integer#parseInt}, with a malformed value reported by name (a neighbour missing from the index map). */
+    static int parseIntArg(String what, String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not an integer: " + s, e);
+        }
+    }
+
     static List<JsonObject> orderBalanceRows() {
         Random r = new Random(ORDER_BALANCE_SEED);
         List<JsonObject> rows = new ArrayList<>();
@@ -531,8 +540,8 @@ public class MrTreeUnitVectors {
                 for (int i = 0; i < n; i++) {
                     TNode x = nodes[i];
                     props.add(ints(x.getProperty(InternalProperties.FAN), x.getProperty(InternalProperties.DESCENDANTS),
-                            Integer.parseInt(idx(x.getProperty(InternalProperties.LEFTNEIGHBOR), m)),
-                            Integer.parseInt(idx(x.getProperty(InternalProperties.RIGHTNEIGHBOR), m))));
+                            parseIntArg("left neighbour index", idx(x.getProperty(InternalProperties.LEFTNEIGHBOR), m)),
+                            parseIntArg("right neighbour index", idx(x.getProperty(InternalProperties.RIGHTNEIGHBOR), m))));
                 }
                 new OrderBalance().process(g, mon);
                 JsonArray out = new JsonArray();

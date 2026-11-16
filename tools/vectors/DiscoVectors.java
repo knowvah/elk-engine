@@ -1477,7 +1477,9 @@ public class DiscoVectors {
         double[] pts = bend ? new double[] {ox, oy, bx, by, ix, iy} : new double[] {ox, oy, ix, iy};
         if (!incoming) {
             double[] rev = new double[pts.length];
-            for (int i = 0; i < pts.length; i += 2) {
+            // pts holds (x, y) pairs, so i + 1 < pts.length is the same bound as i < pts.length; written out so the
+            // pair access below is visibly in bounds.
+            for (int i = 0; i + 1 < pts.length; i += 2) {
                 rev[i] = pts[pts.length - 2 - i];
                 rev[i + 1] = pts[pts.length - 1 - i];
             }
