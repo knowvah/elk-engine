@@ -4,18 +4,10 @@
 // scale measure must equal the recorded raw bits. DrawingUtil's dimensions are checked against the recorded SimplePlacement stops
 // (SimplePlacement.java:51-90 uses them to set DRAWING_WIDTH and ADDITIONAL_HEIGHT) and recorded node boxes.
 import { describe, expect, it } from 'vitest';
-import { dumpRectRows } from '../../../../test/helpers/rectpacking-replay-dump.js';
-import {
-  collectStops,
-  decodeHex,
-  STOP_AFTER_SIMPLE_PLACEMENT,
-  type DrawingEntry,
-} from '../../../../test/helpers/rectpacking-replay-rows.js';
-import { replayRows, replayStop } from '../../../../test/helpers/rectpacking-replay-run.js';
-import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
+import { collectStops, decodeHex, type DrawingEntry } from '../../../../test/helpers/rectpacking-replay-rows.js';
+import { replayStop } from '../../../../test/helpers/rectpacking-replay-run.js';
 import { DrawingData } from './DrawingData.js';
 import { DrawingDataDescriptor } from './DrawingDataDescriptor.js';
-import { DrawingUtil } from './DrawingUtil.js';
 
 const LOOP = { timeout: 60_000 };
 const num = decodeHex;

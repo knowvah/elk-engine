@@ -446,6 +446,9 @@ public class SporeLayoutVectors {
     }
 
     static boolean callObjects(String call, Object a, Object b) {
+        if (a == null && !call.equals("Objects.equals")) {
+            throw new IllegalArgumentException(call + " needs a non-null receiver (only Objects.equals rows pass null)");
+        }
         return switch (call) {
             case "Objects.equals" -> Objects.equals(a, b);
             case "equals" -> a.equals(b);
@@ -471,6 +474,9 @@ public class SporeLayoutVectors {
     }
 
     static Map<String, Spec3> specs(Object... nameSpecPairs) {
+        if (nameSpecPairs.length % 2 != 0) {
+            throw new IllegalArgumentException("specs() takes name/spec pairs, got " + nameSpecPairs.length + " arguments");
+        }
         Map<String, Spec3> m = new LinkedHashMap<>();
         for (int i = 0; i < nameSpecPairs.length; i += 2) {
             m.put((String) nameSpecPairs[i], (Spec3) nameSpecPairs[i + 1]);

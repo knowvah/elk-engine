@@ -234,7 +234,6 @@ describe('rebuilt state is what a step reads', () => {
 
 describe('per-node options in the rebuilt state', () => {
   it('are exactly what the importer makes of the row input, not injected by the helper', { timeout: 60_000 }, () => {
-    const nodeOption = 'org.eclipse.elk.vertiflex.considerNodeModelOrder';
     const rows = stopsRows.filter((row) => row.id.includes('nodeOrderFalseNodesOnly'));
     expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) {

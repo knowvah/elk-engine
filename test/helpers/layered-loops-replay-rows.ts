@@ -33,7 +33,6 @@ import {
 import type { Factories } from './layered-phase-replay-ops.js';
 import {
   isFullRow,
-  isStopRow,
   registerPipelineEnums,
   type FullRow,
   type PipelineStopRow,

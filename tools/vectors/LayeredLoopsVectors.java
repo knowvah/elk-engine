@@ -2707,7 +2707,7 @@ bf0f9655c77c6ca7e4672130cc39c2e7350120087f76e45683785458ebcbbb2b  repo:test/gold
         return "{\"id\":\"root\",\"layoutOptions\":{" + rootOptions + "},\"children\":[" + inner + "]}";
     }
 
-    static final String[] SIDES_4 = {N_ == null ? "" : "NORTH", "EAST", "SOUTH", "WEST"};
+    static final String[] SIDES_4 = {"NORTH", "EAST", "SOUTH", "WEST"};
     static final String[] SIDES_8 = {"NORTH", "NORTH", "EAST", "EAST", "SOUTH", "SOUTH", "WEST", "WEST"};
     static final String[] SIDES_NS = {"NORTH", "SOUTH", "NORTH", "SOUTH"};
     static final String[] SIDES_EW = {"EAST", "WEST", "EAST", "WEST"};
@@ -2856,7 +2856,7 @@ bf0f9655c77c6ca7e4672130cc39c2e7350120087f76e45683785458ebcbbb2b  repo:test/gold
     static Map<String, java.util.function.UnaryOperator<String>> graphs(Object... nameAndBuilder) {
         Map<String, java.util.function.UnaryOperator<String>> m = new LinkedHashMap<>();
         requirePairs(nameAndBuilder.length);
-        for (int i = 0; i < nameAndBuilder.length; i += 2) {
+        for (int i = 0; i + 1 < nameAndBuilder.length; i += 2) {
             @SuppressWarnings("unchecked")
             java.util.function.UnaryOperator<String> b = (java.util.function.UnaryOperator<String>) nameAndBuilder[i + 1];
             m.put((String) nameAndBuilder[i], b);

@@ -15,7 +15,7 @@ import { stackOf, type CompactContext } from './CompactionContext.js';
  * @see alg.rectpacking/src/org/eclipse/elk/alg/rectpacking/p2packing/Compaction.java
  */
 export function placeBelow(ctx: CompactContext, block: Block, nextBlock: Block, wasFromNextRow: boolean): boolean {
-  const { rows, row, boundingWidth, nextRowIndex, nodeNodeSpacing } = ctx;
+  const { row, boundingWidth, nodeNodeSpacing } = ctx;
   let somethingWasChanged = false;
   // Flatten both blocks and check whether they fit on top of each other.
   const remainingWidth = boundingWidth - block.getX();

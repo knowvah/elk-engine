@@ -4,7 +4,7 @@
 // member, so the test registers it for the `processor <SimpleClassName>` step op (never from `src/`). A row passes when
 // `replayLoopsRow` reports no mismatch (numbers within 1e-6, everything else exactly). Expectations come only from the rows
 // (L4).
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, expect, it } from 'vitest';
 import { registerStepProcessor, unregisterStepProcessor } from '../../../../test/helpers/layered-loops-replay-ops.js';
 import {
   describeLoops,

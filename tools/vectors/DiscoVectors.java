@@ -564,7 +564,7 @@ public class DiscoVectors {
         // importGraph
         ElkGraphTransformer transformer = new ElkGraphTransformer(spacing);
         DCGraph dc = transformer.importGraph(layout);
-        stops.add(importStop(dc, transformer, split, spacing, layoutId, flags));
+        stops.add(importStop(dc, transformer, split, spacing, flags));
 
         // compaction (POLYOMINO, the only CompactionStrategy)
         if (layout.getProperty(DisCoMetaDataProvider.COMPONENT_COMPACTION_STRATEGY) != CompactionStrategy.POLYOMINO) {
@@ -657,7 +657,7 @@ public class DiscoVectors {
         return e instanceof ElkNode ? 3 : e instanceof ElkEdge ? 2 : 1;
     }
 
-    static String importStop(DCGraph dc, ElkGraphTransformer tr, List<List<ElkNode>> split, double cs, String layoutId,
+    static String importStop(DCGraph dc, ElkGraphTransformer tr, List<List<ElkNode>> split, double cs,
             Map<String, Integer> flags) {
         Map<ElkGraphElement, DCElement> mapping = getField(tr, ElkGraphTransformer.class, "elementMapping");
         Map<ElkEdge, DCExtension> in = getField(tr, ElkGraphTransformer.class, "incomingExtensionsMapping");

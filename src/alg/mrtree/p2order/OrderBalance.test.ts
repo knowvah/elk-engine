@@ -19,7 +19,6 @@ import { TNode } from '../graph/TNode.js';
 import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import { MrTreeOptions } from '../options/MrTreeOptions.js';
-import { OrderWeighting } from '../options/OrderWeighting.js';
 import { TreeLayoutPhases } from '../TreeLayoutPhases.js';
 import { OrderBalance } from './OrderBalance.js';
 
