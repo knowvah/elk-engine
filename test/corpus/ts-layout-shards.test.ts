@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: EPL-2.0
-import { execFileSync } from 'node:child_process';
+import { ChildProcess, execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterEach, describe, expect, it } from 'vitest';
+import { type MockInstance, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   type CaseOutcome,
   type Dirs,
@@ -55,18 +55,35 @@ const row = (caseId: string, over: Partial<SweepRow> = {}): SweepRow => ({
 });
 
 const cleanups: (() => void)[] = [];
+// Every child this test process starts asynchronously (the runner's `fork`) goes through `ChildProcess.prototype.spawn`;
+// the spy records those instances, so the checks below look only at processes this test forked.
+let forkSpy: MockInstance;
+beforeEach(() => {
+  // `spawn` is Node's internal method behind `fork` and `spawn`; @types/node does not declare it.
+  forkSpy = vi.spyOn(ChildProcess.prototype as unknown as { spawn: (options: unknown) => void }, 'spawn');
+});
 afterEach(() => {
+  forkSpy.mockRestore();
   for (const cleanup of cleanups.splice(0)) cleanup();
 });
 
-/** Child processes of this test process (a vitest worker owns no other child), without the `ps` that lists them. */
-function childPids(): number[] {
-  const table = execFileSync('ps', ['-axo', 'pid=,ppid=,command='], { encoding: 'utf8' });
+/**
+ * Pids of the processes this test forked that are still children of this process: a worker the runner failed to
+ * reap. Not every child of the test process (#87): the vitest worker also has short-lived children the runner never
+ * started, and a check over all children failed whenever it caught one of them exiting. Requiring the pid to still be
+ * a child of this process keeps a reused pid from counting.
+ */
+function liveForkedPids(): number[] {
+  const forked = new Set(
+    (forkSpy.mock.contexts as unknown as ChildProcess[]).map((c) => c.pid).filter((pid): pid is number => pid !== undefined),
+  );
+  if (forked.size === 0) return [];
+  const table = execFileSync('ps', ['-axo', 'pid=,ppid='], { encoding: 'utf8' });
   return table
     .split('\n')
-    .map((line) => /^\s*(\d+)\s+(\d+)\s+(.*)$/.exec(line))
+    .map((line) => /^\s*(\d+)\s+(\d+)\s*$/.exec(line))
     .filter((m): m is RegExpExecArray => m !== null)
-    .filter((m) => Number(m[2]) === process.pid && !(m[3] ?? '').startsWith('ps '))
+    .filter((m) => Number(m[2]) === process.pid && forked.has(Number(m[1])))
     .map((m) => Number(m[1]));
 }
 
@@ -170,7 +187,7 @@ describe('runSharded with a worker that hangs or exits', () => {
       ['f/skip', 'excluded', 'nondeterministic'],
     ]);
     expect(outcomes[1]?.tsMs).toBeGreaterThanOrEqual(TIMEOUT_MS);
-    expect(childPids()).toEqual([]);
+    expect(liveForkedPids()).toEqual([]);
   }, SLOW_TEST_MS);
 
   it('spreads cases over shards and keeps the order of the rows', async () => {
@@ -182,7 +199,7 @@ describe('runSharded with a worker that hangs or exits', () => {
       ['c/ok', 'ok', ''],
       ['d/die', 'ts-aborted', 'exit 3'],
     ]);
-    expect(childPids()).toEqual([]);
+    expect(liveForkedPids()).toEqual([]);
   }, SLOW_TEST_MS);
 
   it('records a child that exits before it is ready and one that never announces itself', async () => {
@@ -196,12 +213,13 @@ describe('runSharded with a worker that hangs or exits', () => {
     expect([dead?.category, dead?.detail]).toEqual(['ts-aborted', 'exit 1']);
     const [mute] = await runSharded([row('y/ok')], { ...common, workerFile: silent });
     expect([mute?.category, mute?.detail]).toEqual(['ts-aborted', 'startup timeout']);
-    expect(childPids()).toEqual([]);
+    expect(liveForkedPids()).toEqual([]);
   }, SLOW_TEST_MS);
 
   it('returns no outcomes and starts no child for no rows', async () => {
     expect(await runSharded([], { shards: 2, timeoutMs: TIMEOUT_MS, dirs, execArgv: TSX })).toEqual([]);
-    expect(childPids()).toEqual([]);
+    expect(forkSpy).not.toHaveBeenCalled();
+    expect(liveForkedPids()).toEqual([]);
   });
 });
 
@@ -260,7 +278,7 @@ describe('executeSharded over a fixture sweep', () => {
     expect(written.wallMs).toBeGreaterThan(0);
     expect(printed).toContain(`${ALG}: planned=3 ok=1 mismatch=1 both-throw=0 ts-only-throw=0 oracle-only-throw=0 ts-aborted=0 excluded=1`);
     expect(printed).toContain('findings=1');
-    expect(childPids()).toEqual([]);
+    expect(liveForkedPids()).toEqual([]);
   }, SLOW_TEST_MS);
 
   it('writes every case once and reports an aborted case as a finding', async () => {
@@ -293,7 +311,7 @@ describe('executeSharded over a fixture sweep', () => {
     expect(written.timeoutMs).toBe(TIMEOUT_MS);
     expect(printed).toContain('ts-aborted=2');
     expect(printed).toContain('findings=2');
-    expect(childPids()).toEqual([]);
+    expect(liveForkedPids()).toEqual([]);
     expect(summarizeSweep(written.cases).byAlgorithm[ALG]?.planned).toBe(rows.length);
     expect(() => summarize(written.cases)).toThrow('Case r/die: category ts-aborted is not counted here');
   }, SLOW_TEST_MS);
@@ -311,6 +329,6 @@ describe('executeSharded over a fixture sweep', () => {
     };
     expect(await executeSharded(['--sweep-dir', dirs.sweepDir, '--algorithms', 'box', '--shards', '1'], dirs.root, io)).toBe(0);
     expect(writes).toEqual([]);
-    expect(childPids()).toEqual([]);
+    expect(liveForkedPids()).toEqual([]);
   }, SLOW_TEST_MS);
 });
