@@ -6,10 +6,12 @@ import { phaseDump } from '../../../../test/helpers/layered-phase-replay-dump.js
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow, loadRows, type PhaseRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpLGraph } from '../../../../test/helpers/layered-framework-replay.js';
+import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
 import { LayeredPhases } from '../LayeredPhases.js';
-import type { LGraph } from '../graph/LGraph.js';
+import { LGraph } from '../graph/LGraph.js';
 import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
 import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
+import { InternalProperties } from '../options/InternalProperties.js';
 import { ModelOrderCycleBreaker } from './ModelOrderCycleBreaker.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-phases.json`;
@@ -56,5 +58,31 @@ describe('ModelOrderCycleBreaker configuration', () => {
       IntermediateProcessorStrategy.REVERSED_EDGE_RESTORER,
     ]);
     expect([...configuration.processorsBefore(LayeredPhases.P1_CYCLE_BREAKING)]).toEqual([]);
+  });
+});
+
+/**
+ * A nested graph under `hierarchyHandling: INCLUDE_CHILDREN` never gets `MAX_MODEL_ORDER_NODES`
+ * (`ElkGraphImporter.java:382` sets it on the top-level graph only), so `ModelOrderCycleBreaker.java:70` unboxes null.
+ * The expected message is the oracle's, from the sweep row of
+ * `native/layered/hierarchy-include/examples/user-hints/model-order/modelOrderCycleBreaking` (verdict `throws`,
+ * `java.lang.NullPointerException`; mission ts-parity-dashboard, T6). A NullPointerException is a `TypeError` in the port.
+ */
+describe('ModelOrderCycleBreaker on a graph without MAX_MODEL_ORDER_NODES', () => {
+  const ORACLE_MESSAGE =
+    'Cannot invoke "java.lang.Integer.intValue()" because the return value of ' +
+    '"org.eclipse.elk.alg.layered.graph.LGraph.getProperty(org.eclipse.elk.graph.properties.IProperty)" is null';
+
+  it('throws the unboxing NullPointerException of the oracle', () => {
+    const graph = new LGraph();
+    expect(graph.getProperty(InternalProperties.MAX_MODEL_ORDER_NODES)).toBeNull();
+    let thrown: unknown;
+    try {
+      new ModelOrderCycleBreaker().process(graph, new NullElkProgressMonitor());
+    } catch (err) {
+      thrown = err;
+    }
+    expect(thrown).toBeInstanceOf(TypeError);
+    expect((thrown as TypeError).message).toBe(ORACLE_MESSAGE);
   });
 });

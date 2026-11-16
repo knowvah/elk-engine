@@ -118,6 +118,41 @@ export function headingSlug(text: string): string {
   return text.trim().toLowerCase().replace(NOT_SLUG_CHARS, '').replace(/\s/g, '-');
 }
 
+/** Site-relative directory of the generated API reference (`npm run docs:api`, tools/typedoc). */
+const REFERENCE_DIR = 'reference/';
+const COMBINING_MARKS = /[\u0300-\u036f]/g;
+const CONTROL_CHARS = /[\u0000-\u001f]/g;
+// Whitespace and ASCII punctuation, underscore included, plus the four typographic quotes. Built from a string with
+// escapes because lizard mis-tokenizes a regex literal that holds a quote character (.agent-notes/docs-site.md).
+const SEPARATOR_RUNS = new RegExp(
+  '[\\s~\\x60!@#$%^&*()\\-_+=[\\]{}|\\\\;:\\x22\\x27\\u201c\\u201d\\u2018\\u2019<>,.?/]+',
+  'g',
+);
+
+/**
+ * Heading ids for the generated API reference. typedoc-vitepress-theme writes every link anchor with VitePress's
+ * default slug rule (its `slugifyAnchor`), not GitHub's: `PARALLEL_NODE` is linked as `#parallel-node`, where
+ * `headingSlug` would give the heading the id `parallelnode` and the link would miss. So the reference pages get their
+ * ids by the rule their links were written with: strip accents and control characters, turn each run of whitespace
+ * or punctuation into one hyphen, trim hyphens, guard a leading digit with `_`, lowercase.
+ */
+export function referenceHeadingSlug(text: string): string {
+  return text
+    .normalize('NFKD')
+    .replace(COMBINING_MARKS, '')
+    .replace(CONTROL_CHARS, '')
+    .replace(SEPARATOR_RUNS, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/^(\d)/, '_$1')
+    .toLowerCase();
+}
+
+/** The heading id for a page: the reference rule under `reference/`, GitHub's rule everywhere else. */
+export function pageHeadingSlug(text: string, relativePath: string): string {
+  return relativePath.startsWith(REFERENCE_DIR) ? referenceHeadingSlug(text) : headingSlug(text);
+}
+
 type LinkOpenRule = NonNullable<MarkdownRenderer['renderer']['rules']['link_open']>;
 
 /** Wraps markdown-it's `link_open` so included pages get rewritten hrefs. */
@@ -147,7 +182,12 @@ export default defineConfigWithTheme<SiteThemeConfig>({
   cleanUrls: true,
   locales: localesConfig(),
   markdown: {
-    anchor: { slugify: headingSlug },
+    anchor: {
+      slugify: headingSlug,
+      // Takes precedence over `slugify` in markdown-it-anchor; the state carries the page being rendered.
+      slugifyWithState: (text, state) =>
+        pageHeadingSlug(text, (state.env as { relativePath?: string }).relativePath ?? ''),
+    },
     toc: { slugify: headingSlug },
     config: installIncludeLinkRewrite,
   },
@@ -165,6 +205,12 @@ export default defineConfigWithTheme<SiteThemeConfig>({
     // Built-in offline search (MiniSearch); no external service.
     search: { provider: 'local' },
     componentsByLang: COMPONENTS_BY_LANG,
+    // The language switcher links each locale's home page, not the page being read. With i18nRouting unset the
+    // default theme (`useLangs({ correspondingLink: true })`, theme-default/composables/langs.js:15) appends the
+    // current page path to every locale prefix, and it has no per-page switch. English-only pages
+    // (TRANSLATABLE_EXCLUDES: the reference wrappers, parity, getting-started, the API reference) exist under no
+    // locale, so each of them carried one dead link per registered locale. `npm run docs:linkcheck` guards this.
+    i18nRouting: false,
     socialLinks: [{ icon: 'github', link: 'https://github.com/knowvah/elk-engine' }],
   },
 });

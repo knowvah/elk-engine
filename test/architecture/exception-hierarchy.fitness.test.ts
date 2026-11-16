@@ -33,6 +33,7 @@ import { Exception } from '../../src/java/lang/Exception.js';
 import { IllegalArgumentException } from '../../src/java/lang/IllegalArgumentException.js';
 import { IllegalStateException } from '../../src/java/lang/IllegalStateException.js';
 import { IndexOutOfBoundsException } from '../../src/java/lang/IndexOutOfBoundsException.js';
+import { NegativeArraySizeException } from '../../src/java/lang/NegativeArraySizeException.js';
 import { NumberFormatException } from '../../src/java/lang/NumberFormatException.js';
 import { RuntimeException } from '../../src/java/lang/RuntimeException.js';
 import { StringIndexOutOfBoundsException } from '../../src/java/lang/StringIndexOutOfBoundsException.js';
@@ -69,6 +70,7 @@ const JAVA_PARENTS: ReadonlyMap<ErrorClass, ErrorClass> = new Map<ErrorClass, Er
   [UnsupportedOperationException, RuntimeException],
   [ArithmeticException, RuntimeException],
   [ClassCastException, RuntimeException],
+  [NegativeArraySizeException, RuntimeException],
   [IndexOutOfBoundsException, RuntimeException],
   [ArrayIndexOutOfBoundsException, IndexOutOfBoundsException],
   [StringIndexOutOfBoundsException, IndexOutOfBoundsException],

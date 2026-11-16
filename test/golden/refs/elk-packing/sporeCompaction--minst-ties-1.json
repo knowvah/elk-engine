@@ -1,0 +1,176 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "n0",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 8.0,
+      "y": 8.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n1",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 56.0,
+      "y": 8.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n2",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 104.0,
+      "y": 8.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n3",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 152.0,
+      "y": 8.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n4",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 8.0,
+      "y": 56.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n5",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 56.0,
+      "y": 56.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n6",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 104.0,
+      "y": 56.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n7",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 152.0,
+      "y": 56.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n8",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 8.0,
+      "y": 104.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n9",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 56.0,
+      "y": 104.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n10",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 152.0,
+      "y": 104.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n11",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 200.0,
+      "y": 104.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n12",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 8.0,
+      "y": 152.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n13",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 56.0,
+      "y": 152.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n14",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 104.0,
+      "y": 152.0,
+      "width": 40.0,
+      "height": 40.0
+    },
+    {
+      "id": "n15",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 152.0,
+      "y": 152.0,
+      "width": 40.0,
+      "height": 40.0
+    }
+  ],
+  "layoutOptions": {
+    "nodeSize.constraints": "[]",
+    "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.sporeCompaction",
+    "algorithm": "org.eclipse.elk.sporeCompaction",
+    "elk.padding": "[top=8.0,left=8.0,bottom=8.0,right=8.0]",
+    "hierarchyHandling": "SEPARATE_CHILDREN"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 248.0,
+  "height": 200.0
+}

@@ -1,0 +1,261 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "n0",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 15.0,
+      "y": 15.0,
+      "width": 103.75,
+      "height": 60.0
+    },
+    {
+      "id": "n1",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 133.75,
+      "y": 15.0,
+      "width": 113.75,
+      "height": 60.0
+    },
+    {
+      "id": "n2",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 262.5,
+      "y": 15.0,
+      "width": 63.75,
+      "height": 60.0
+    },
+    {
+      "id": "n3",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 341.25,
+      "y": 15.0,
+      "width": 103.75,
+      "height": 60.0
+    },
+    {
+      "id": "n4",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 15.0,
+      "y": 90.0,
+      "width": 60.0,
+      "height": 70.0
+    },
+    {
+      "id": "n5",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 90.0,
+      "y": 90.0,
+      "width": 50.0,
+      "height": 70.0
+    },
+    {
+      "id": "n6",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 155.0,
+      "y": 90.0,
+      "width": 40.0,
+      "height": 70.0
+    },
+    {
+      "id": "n7",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 210.0,
+      "y": 90.0,
+      "width": 50.0,
+      "height": 70.0
+    },
+    {
+      "id": "n8",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 275.0,
+      "y": 90.0,
+      "width": 40.0,
+      "height": 70.0
+    },
+    {
+      "id": "n9",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 330.0,
+      "y": 90.0,
+      "width": 70.0,
+      "height": 70.0
+    },
+    {
+      "id": "n10",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 415.0,
+      "y": 90.0,
+      "width": 30.0,
+      "height": 70.0
+    },
+    {
+      "id": "n11",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 15.0,
+      "y": 175.0,
+      "width": 60.0,
+      "height": 70.0
+    },
+    {
+      "id": "n12",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 90.0,
+      "y": 175.0,
+      "width": 50.0,
+      "height": 70.0
+    },
+    {
+      "id": "n13",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 155.0,
+      "y": 175.0,
+      "width": 50.0,
+      "height": 70.0
+    },
+    {
+      "id": "n14",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 220.0,
+      "y": 175.0,
+      "width": 90.0,
+      "height": 70.0
+    },
+    {
+      "id": "n15",
+      "layoutOptions": {
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "contentAlignment": "[V_TOP, H_LEFT]",
+        "portLabels.placement": "[OUTSIDE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]"
+      },
+      "x": 325.0,
+      "y": 175.0,
+      "width": 120.0,
+      "height": 70.0
+    }
+  ],
+  "layoutOptions": {
+    "nodeSize.constraints": "[]",
+    "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.rectpacking",
+    "contentAlignment": "[V_TOP, H_LEFT]",
+    "spacing.portsSurrounding": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+    "widthApproximation.targetWidth": "425.0",
+    "nodeLabels.padding": "[top=5.0,left=5.0,bottom=5.0,right=5.0]",
+    "algorithm": "org.eclipse.elk.rectpacking",
+    "whiteSpaceElimination.strategy": "EQUAL_BETWEEN_STRUCTURES",
+    "elk.padding": "[top=15.0,left=15.0,bottom=15.0,right=15.0]",
+    "hierarchyHandling": "SEPARATE_CHILDREN"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 460.0,
+  "height": 260.0
+}

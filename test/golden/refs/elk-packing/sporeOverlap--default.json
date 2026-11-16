@@ -1,0 +1,256 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "n0",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 42.375,
+      "y": 250.9087339100975,
+      "width": 90.0,
+      "height": 60.0
+    },
+    {
+      "id": "n1",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 141.7725268869296,
+      "y": 307.46428946565305,
+      "width": 90.0,
+      "height": 60.0
+    },
+    {
+      "id": "n2",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 420.70770658979126,
+      "y": 8.0,
+      "width": 80.0,
+      "height": 40.0
+    },
+    {
+      "id": "n3",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 429.30811981293175,
+      "y": 56.0,
+      "width": 90.0,
+      "height": 50.0
+    },
+    {
+      "id": "n4",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 140.375,
+      "y": 201.46428946565305,
+      "width": 90.0,
+      "height": 50.0
+    },
+    {
+      "id": "n5",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 389.4995554129625,
+      "y": 206.03703703703704,
+      "width": 80.0,
+      "height": 50.0
+    },
+    {
+      "id": "n6",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 151.91538402978674,
+      "y": 375.46428946565305,
+      "width": 60.0,
+      "height": 60.0
+    },
+    {
+      "id": "n7",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 331.30811981293175,
+      "y": 80.03703703703704,
+      "width": 90.0,
+      "height": 60.0
+    },
+    {
+      "id": "n8",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 321.49955541296254,
+      "y": 153.46428946565305,
+      "width": 60.0,
+      "height": 50.0
+    },
+    {
+      "id": "n9",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 235.1475268869296,
+      "y": 259.46428946565305,
+      "width": 70.0,
+      "height": 40.0
+    },
+    {
+      "id": "n10",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 463.9995554129625,
+      "y": 264.03703703703707,
+      "width": 90.0,
+      "height": 40.0
+    },
+    {
+      "id": "n11",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 284.2933594495426,
+      "y": 211.46428946565305,
+      "width": 80.0,
+      "height": 40.0
+    },
+    {
+      "id": "n12",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 243.30811981293175,
+      "y": 77.97037037037038,
+      "width": 80.0,
+      "height": 60.0
+    },
+    {
+      "id": "n13",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 157.29053673039164,
+      "y": 153.46428946565305,
+      "width": 80.0,
+      "height": 40.0
+    },
+    {
+      "id": "n14",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 420.30811981293175,
+      "y": 148.03703703703704,
+      "width": 80.0,
+      "height": 50.0
+    },
+    {
+      "id": "n15",
+      "layoutOptions": {
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]"
+      },
+      "x": 8.0,
+      "y": 318.9087339100975,
+      "width": 80.0,
+      "height": 50.0
+    }
+  ],
+  "layoutOptions": {
+    "algorithm": "org.eclipse.elk.sporeOverlap",
+    "elk.padding": "[top=8.0,left=8.0,bottom=8.0,right=8.0]",
+    "nodeSize.constraints": "[]",
+    "processingOrder.rootSelection": "CENTER_NODE",
+    "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.sporeOverlap",
+    "processingOrder.treeConstruction": "MINIMUM_SPANNING_TREE",
+    "hierarchyHandling": "SEPARATE_CHILDREN",
+    "processingOrder.spanningTreeCostFunction": "INVERTED_OVERLAP"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 561.9995554129625,
+  "height": 443.46428946565305,
+  "edges": [
+    {
+      "id": "e0",
+      "sources": [
+        "n0"
+      ],
+      "targets": [
+        "n3"
+      ],
+      "sections": [
+        {
+          "id": "s0",
+          "startPoint": {
+            "x": 132.375,
+            "y": 257.65951443179705
+          },
+          "endPoint": {
+            "x": 429.30811981293175,
+            "y": 104.24921947830049
+          }
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e1",
+      "sources": [
+        "n3"
+      ],
+      "targets": [
+        "n7"
+      ],
+      "sections": [
+        {
+          "id": "s1",
+          "startPoint": {
+            "x": 429.30811981293175,
+            "y": 94.33333333333333
+          },
+          "endPoint": {
+            "x": 421.30811981293175,
+            "y": 96.7037037037037
+          }
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    },
+    {
+      "id": "e2",
+      "sources": [
+        "n5"
+      ],
+      "targets": [
+        "n11"
+      ],
+      "sections": [
+        {
+          "id": "s2",
+          "startPoint": {
+            "x": 389.4995554129625,
+            "y": 231.19948086449548
+          },
+          "endPoint": {
+            "x": 364.2933594495426,
+            "y": 231.3018456381946
+          }
+        }
+      ],
+      "layoutOptions": {
+        "junctionPoints": "()"
+      }
+    }
+  ]
+}

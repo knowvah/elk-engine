@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 // Unit cases of GraphInfoHolder (mission 7c, T7) from GraphInfoHolder.java:80-288. The root-graph path is also proved
 // by every replay of LayerSweepCrossingMinimizer.test.ts; the child-graph path (`childGraphs`, `parentGraphData`) is
-// built by hand here, as no oracle row nests graphs (U until 7h).
+// built by hand here, as the nested graphs are proven by the `layered-compound.json` rows (7h).
 import { beforeAll, describe, expect, it } from 'vitest';
 import { addLayer, addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';

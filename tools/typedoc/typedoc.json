@@ -1,0 +1,24 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "@knowvah/elk-engine",
+  "entryPoints": ["../../test/public-api/candidate-index.ts"],
+  "tsconfig": "tsconfig.json",
+  "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+  "out": "../../docs-site/reference",
+  "docsRoot": "../../docs-site",
+  "readme": "reference-index.md",
+  "mergeReadme": true,
+  "githubPages": false,
+  "excludeInternal": true,
+  "excludePrivate": true,
+  "excludeExternals": true,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "useCodeBlocks": true,
+  "sanitizeComments": true,
+  "expandObjects": true,
+  "expandParameters": true,
+  "sidebar": {
+    "pretty": true
+  }
+}

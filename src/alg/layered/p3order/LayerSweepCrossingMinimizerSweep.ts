@@ -22,7 +22,7 @@ import {
  * The sweep of `LayerSweepCrossingMinimizer` (`:450-503`), as functions over the shared state record. The three
  * methods are mutually recursive through the hierarchy (`sweepReducingCrossings` -> `sweepInHierarchicalNodes` ->
  * `sweepInHierarchicalNode` -> `sweepReducingCrossings`): the recursion depth is the nesting depth of the graph
- * hierarchy, not its size, and no recorded row nests graphs (they are U until 7h), so the recursion is kept as the
+ * hierarchy, not its size, and the nested rows of `layered-compound.json` (mission 7h) prove it, so the recursion is kept as the
  * Java has it (C7).
  */
 

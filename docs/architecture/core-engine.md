@@ -197,7 +197,7 @@ counts. A mismatch with a named mechanism goes to the known-divergences list; an
   header).
 - Mission 5b landed what this section once listed for it (the four `ElkMathTest` rectangle cases, `LayoutConfigurator`,
   the spacing, assembler and spline tests); see section 7.
-- Mission 7h: `EdgeCoordsTest`, `exportLayoutOptions`, `importIndividualSpacingsTest` (T18).
+- Mission 7h: `EdgeCoordsTest`, `exportLayoutOptions`, `importIndividualSpacingsTest` (T18). Ported in 7h (T11).
 - Showcase entries for the algorithm goldens are later docs work (M4).
 
 **Dropped `elkjs-exclude` blocks (M2).** `BasicProgressMonitor` (22 markers), `ElkUtil` (4: the `debugFolderPath`

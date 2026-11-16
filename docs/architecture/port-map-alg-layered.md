@@ -112,3 +112,12 @@ M15 files), with 20 of 59 `IntermediateProcessorStrategy` arms now live. JUnit: 
 → 7f); `TestGraphCreator`, the three greedy-switch graph creators, the 16 suites built on them,
 `ConcreteSortByInputModelTest` and `AllowNonFlowPortsToSwitchSidesTest` → the sibling brief 7c-tests (C1, before 7d).
 The staged list is unchanged.
+
+## Status after mission 7h (2026-11-10) {#status-7h}
+
+Ported (design in [alg-layered-compound.md](alg-layered-compound.md)): `alg.layered.compound` — all 4
+(`CrossHierarchyEdge`, `CrossHierarchyEdgeComparator`, `CompoundGraphPreprocessor`, `CompoundGraphPostprocessor`; the
+preprocessor is a facade over four section files and the postprocessor over one) and `alg.layered.intermediate.HierarchicalNodeResizingProcessor`,
+the last pending arm of `IntermediateProcessorStrategy`. Every package of the table above is ported: 59 of 59 arms are
+live, 0 are pending, and `test/architecture/staged-classes.json` is `[]`. The staged lists of the status sections above
+(7a to 7c) are history.

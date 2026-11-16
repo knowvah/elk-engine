@@ -5,8 +5,7 @@
 // authority (6c D1) for the literals that the colocated unit tests re-anchor to a row id.
 //
 // Provider rows (`site/provider/*`): `ElkLayered` runs for real. The flat rows lay out and compare their recorded
-// `layout` (FX5, 7f2 landed); the INCLUDE_CHILDREN rows reach `doCompoundLayout`, where the staged
-// `CompoundGraphPreprocessor` throws naming 7h.
+// `layout` and `elk` (FX5, 7f2 landed); the INCLUDE_CHILDREN rows reach `doCompoundLayout` and compare theirs too (7h landed).
 import { describe, expect, it } from 'vitest';
 import {
   OPS,

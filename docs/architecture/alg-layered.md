@@ -10,21 +10,23 @@ cited are `plans/layered-framework/decisions.md` (L1–L7, S1–S4, X1–X6); ta
 `plans/alg-common/decisions.md`. Nothing here is exported from `src/index.ts` (AD-14), and no layout runs yet: the
 algorithm classes land in 7b–7h. Counts of oracle rows live in [conformance.md](../conformance.md#alg-layered-framework).
 
-| Section                                     | Answers                                                                     |
-| ------------------------------------------- | --------------------------------------------------------------------------- |
-| [1. Package map](#package-map)              | What 7a ported, where it lives, what is staged                              |
-| [2. LGraph model](#lgraph-model)            | The 13 graph classes and the Java idioms they keep                          |
-| [3. Transform](#transform)                  | Importer and transferrer sections, hash sites, quirks kept                  |
-| [4. Staged classes (L1)](#staged-classes)   | Marker, registry, fitness test, how a mission replaces a staged file        |
-| [5. Options and registration](#options)     | Generated `LayeredOptions`, `Spacings`, L5 registration                     |
-| [6. Evidence](#evidence)                    | The three replays, the site rows, coverage                                  |
-| [7. Runbook](#runbook)                      | Re-recording, regenerating, reading a staged throw                          |
-| [8. Part b: cycles and layers](#part-b)     | Mission 7b: p1cycles, p2layers, ten processors, phase rows, sweep           |
-| [9. Part c: crossing minimization](#part-c) | Mission 7c: p3order, counting, greedy switch, model order, eight processors |
-| [10. Part d: node placement](#part-d)       | Mission 7d: see [alg-layered-placement.md](alg-layered-placement.md)        |
-| [11. Part e: edge routing](#part-e)         | Mission 7e: see [alg-layered-routing.md](alg-layered-routing.md)            |
-| [12. Part f: the running pipeline](#part-f) | Mission 7f: see [alg-layered-pipeline.md](alg-layered-pipeline.md)          |
-| [13. Part g: labels and comments](#part-g)  | Mission 7f2: see [alg-layered-labels.md](alg-layered-labels.md)             |
+| Section                                            | Answers                                                                     |
+| -------------------------------------------------- | --------------------------------------------------------------------------- |
+| [1. Package map](#package-map)                     | What 7a ported, where it lives, what is staged                              |
+| [2. LGraph model](#lgraph-model)                   | The 13 graph classes and the Java idioms they keep                          |
+| [3. Transform](#transform)                         | Importer and transferrer sections, hash sites, quirks kept                  |
+| [4. Staged classes (L1)](#staged-classes)          | Marker, registry, fitness test, how a mission replaces a staged file        |
+| [5. Options and registration](#options)            | Generated `LayeredOptions`, `Spacings`, L5 registration                     |
+| [6. Evidence](#evidence)                           | The three replays, the site rows, coverage                                  |
+| [7. Runbook](#runbook)                             | Re-recording, regenerating, reading a staged throw                          |
+| [8. Part b: cycles and layers](#part-b)            | Mission 7b: p1cycles, p2layers, ten processors, phase rows, sweep           |
+| [9. Part c: crossing minimization](#part-c)        | Mission 7c: p3order, counting, greedy switch, model order, eight processors |
+| [10. Part d: node placement](#part-d)              | Mission 7d: see [alg-layered-placement.md](alg-layered-placement.md)        |
+| [11. Part e: edge routing](#part-e)                | Mission 7e: see [alg-layered-routing.md](alg-layered-routing.md)            |
+| [12. Part f: the running pipeline](#part-f)        | Mission 7f: see [alg-layered-pipeline.md](alg-layered-pipeline.md)          |
+| [13. Part g: labels and comments](#part-g)         | Mission 7f2: see [alg-layered-labels.md](alg-layered-labels.md)             |
+| [14. Part h: loops, wrapping, compaction](#part-h) | Mission 7g: see [alg-layered-loops.md](alg-layered-loops.md)                |
+| [15. Part i: compound graphs](#part-i)             | Mission 7h: see [alg-layered-compound.md](alg-layered-compound.md)          |
 
 ## 1. Package map {#package-map}
 
@@ -40,6 +42,9 @@ behind a facade (P1) and nested types in prefixed files (M15) follow the alg.com
 | `graph.transform` | `graph/transform` | `IGraphTransformer`, `ElkGraphTransformer` (T6); `ElkGraphTransformerUtility` (X1, T3); `ElkGraphImporter` facade + 11 sections; `ElkGraphLayoutTransferrer` facade + `Apply`, `Utility`, `NonMutating` (T6)                                                                                                                |
 | `options`         | `options`         | 32 enums, `InternalProperties`, `Spacings` + `SpacingsUnspecifiedSpacingException`, `LayeredSpacings` + its builder (T2, T3, T4); generated `LayeredOptions` and `LayeredMetaDataProvider` (L7, T3/T7)                                                                                                                      |
 | staged (L1)       | various           | `intermediate/LabelDummySwitcher` (7f), `intermediate/loops/{SelfLoopEdge,SelfLoopHolder,SelfLoopPort}` (7g), `intermediate/wrapping/{BreakingPointInserter,BreakingPointInserterBPInfo}` (7g), `compound/CrossHierarchyEdge` (7h), `p5edges/splines/SplineSegment` (7e)                                                    |
+
+State after 7h: the tables of this section and of § 4 are the state of 7a, kept as written. Every staged file named in them
+is a real class now, `components` is complete, and `test/architecture/staged-classes.json` is `[]`.
 
 Moved out of 7a by L2 (to 7f): `ElkLayered` (staged here), `GraphConfigurator`, `InteractiveLayeredGraphVisitor`,
 `DebugUtil`, `DotDebugUtil`, `JsonDebugUtil`. `IntermediateProcessorStrategy` goes to 7b (S3), `TestGraphCreator` to 7b
@@ -121,7 +126,8 @@ throw `'<Class> is ported in mission 7b/7c/7d'` with no import and no staged fil
 
 **Replacing a staged file (7b–7h):** port the class fully at the same path, delete the `@staged` line, remove its row
 from `staged-classes.json` (the fitness test fails until both are done), replace any `create()` arm that named the
-class, and re-run the three 7a replays unchanged (they must stay green: AD-13). The list is empty after 7h.
+class, and re-run the three 7a replays unchanged (they must stay green: AD-13). The list is empty after 7h. The table above is
+the list at 7a; mission 7h replaced the last staged file (`compound/CrossHierarchyEdge.ts`) and `staged-classes.json` is `[]`.
 
 ## 5. Options and registration {#options}
 
@@ -490,3 +496,17 @@ evidence, runbook).
 
 Mission 7f2 (`layered-labels`) ported the label family, the comment processors, `AlternatingLayerUnzipper`,
 `InteractiveLayeredGraphVisitor` and the debug utilities; see [alg-layered-labels.md](alg-layered-labels.md).
+
+## 14. Part h: self loops, wrapping and compaction (mission 7g) {#part-h}
+
+Mission 7g (`layered-loops-wrapping-compaction`) ported the self loop package and processors, graph wrapping, horizontal
+compaction, the layered `compaction` package and `ComponentsCompactor`; see [alg-layered-loops.md](alg-layered-loops.md).
+The staged `intermediate/loops` and `intermediate/wrapping` classes listed in § 1 are real classes from there.
+
+## 15. Part i: compound graphs (mission 7h) {#part-i}
+
+Mission 7h (`layered-compound`) ported the `compound` package (`CrossHierarchyEdge`, `CrossHierarchyEdgeComparator`,
+`CompoundGraphPreprocessor`, `CompoundGraphPostprocessor`) and `HierarchicalNodeResizingProcessor`, and proved the
+hierarchical driver of 7f; see [alg-layered-compound.md](alg-layered-compound.md). The last pending arm of
+`IntermediateProcessorStrategy` is wired (59 ported, 0 pending), the staged list is empty, and layered runs every
+hierarchy-handling mode.

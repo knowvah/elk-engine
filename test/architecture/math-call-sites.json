@@ -1,0 +1,182 @@
+[
+  {
+    "file": "src/alg/disco/transform/ElkGraphTransformerGeometry.ts",
+    "fn": "atan2",
+    "javaSite": "org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:632"
+  },
+  {
+    "file": "src/alg/disco/transform/ElkGraphTransformerGeometry.ts",
+    "fn": "cos",
+    "javaSite": "org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:637"
+  },
+  {
+    "file": "src/alg/disco/transform/ElkGraphTransformerGeometry.ts",
+    "fn": "cos",
+    "javaSite": "org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:639"
+  },
+  {
+    "file": "src/alg/disco/transform/ElkGraphTransformerGeometry.ts",
+    "fn": "sin",
+    "javaSite": "org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:636"
+  },
+  {
+    "file": "src/alg/disco/transform/ElkGraphTransformerGeometry.ts",
+    "fn": "sin",
+    "javaSite": "org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:638"
+  },
+  {
+    "file": "src/alg/layered/intermediate/wrapping/BreakingPointInserter.ts",
+    "fn": "pow",
+    "javaSite": "org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/wrapping/BreakingPointInserter.java:329"
+  },
+  {
+    "file": "src/alg/layered/p5edges/splines/SplinesMath.ts",
+    "fn": "acos",
+    "javaSite": "org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/splines/SplinesMath.java:116"
+  },
+  {
+    "file": "src/alg/layered/p5edges/splines/SplinesMath.ts",
+    "fn": "cos",
+    "javaSite": "org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/splines/SplinesMath.java:207"
+  },
+  {
+    "file": "src/alg/mrtree/intermediate/FanProcessor.ts",
+    "fn": "log10",
+    "javaSite": "org.eclipse.elk.alg.mrtree/src/org/eclipse/elk/alg/mrtree/intermediate/FanProcessor.java:96"
+  },
+  {
+    "file": "src/alg/radial/RadialUtil.ts",
+    "fn": "atan2",
+    "javaSite": "org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/RadialUtil.java:156"
+  },
+  {
+    "file": "src/alg/radial/RadialUtil.ts",
+    "fn": "atan2",
+    "javaSite": "org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/RadialUtil.java:169"
+  },
+  {
+    "file": "src/alg/radial/intermediate/EdgeAngleCalculator.ts",
+    "fn": "atan2",
+    "javaSite": "org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/intermediate/EdgeAngleCalculator.java:48"
+  },
+  {
+    "file": "src/alg/radial/intermediate/rotation/AngleRotation.ts",
+    "fn": "atan2",
+    "javaSite": "org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/intermediate/rotation/AngleRotation.java:53"
+  },
+  {
+    "file": "src/alg/radial/p1position/EadesRadial.ts",
+    "fn": "acos",
+    "javaSite": "org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/p1position/EadesRadial.java:108"
+  },
+  {
+    "file": "src/alg/radial/p1position/EadesRadial.ts",
+    "fn": "cos",
+    "javaSite": "org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/p1position/EadesRadial.java:101"
+  },
+  {
+    "file": "src/alg/radial/p1position/EadesRadial.ts",
+    "fn": "sin",
+    "javaSite": "org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/p1position/EadesRadial.java:102"
+  },
+  {
+    "file": "src/alg/radial/sorting/PolarCoordinateSorter.ts",
+    "fn": "atan2",
+    "javaSite": "org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/sorting/PolarCoordinateSorter.java:74"
+  },
+  {
+    "file": "src/core/math/ElkMathBezier.ts",
+    "fn": "pow",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/ElkMath.java:467"
+  },
+  {
+    "file": "src/core/math/KVector.ts",
+    "fn": "acos",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:455"
+  },
+  {
+    "file": "src/core/math/KVector.ts",
+    "fn": "asin",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:381"
+  },
+  {
+    "file": "src/core/math/KVector.ts",
+    "fn": "asin",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:383"
+  },
+  {
+    "file": "src/core/math/KVector.ts",
+    "fn": "asin",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:385"
+  },
+  {
+    "file": "src/core/math/KVector.ts",
+    "fn": "cos",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:443"
+  },
+  {
+    "file": "src/core/math/KVector.ts",
+    "fn": "cos",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:444"
+  },
+  {
+    "file": "src/core/math/KVector.ts",
+    "fn": "cos",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:95"
+  },
+  {
+    "file": "src/core/math/KVector.ts",
+    "fn": "sin",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:443"
+  },
+  {
+    "file": "src/core/math/KVector.ts",
+    "fn": "sin",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:444"
+  },
+  {
+    "file": "src/core/math/KVector.ts",
+    "fn": "sin",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:96"
+  },
+  {
+    "file": "src/core/options/TopdownSizeApproximatorUtil.ts",
+    "fn": "exp",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:66"
+  },
+  {
+    "file": "src/core/options/TopdownSizeApproximatorUtil.ts",
+    "fn": "log",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:65"
+  },
+  {
+    "file": "src/core/options/TopdownSizeApproximatorUtil.ts",
+    "fn": "log",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:65"
+  },
+  {
+    "file": "src/core/options/TopdownSizeApproximatorUtil.ts",
+    "fn": "pow",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:58"
+  },
+  {
+    "file": "src/core/options/TopdownSizeApproximatorUtil.ts",
+    "fn": "pow",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:72"
+  },
+  {
+    "file": "src/core/options/TopdownSizeApproximatorUtil.ts",
+    "fn": "pow",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:78"
+  },
+  {
+    "file": "src/core/util/BoxLayoutProvider.ts",
+    "fn": "pow",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/util/BoxLayoutProvider.java:286"
+  },
+  {
+    "file": "src/core/util/BoxLayoutProviderGrouping.ts",
+    "fn": "pow",
+    "javaSite": "org.eclipse.elk.core/src/org/eclipse/elk/core/util/BoxLayoutProvider.java:469"
+  }
+]

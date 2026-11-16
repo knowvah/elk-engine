@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 // Unit cases of the port-ordering functions of LayerSweepCrossingMinimizer (java:504-543; mission 7c, T7), decided by
-// hand from the Java. They run in the hierarchical sweep only, which no oracle row reaches (nested graphs are U until
-// 7h), and in `setPortOrderOnParentGraph`.
+// hand from the Java. They run in the hierarchical sweep only, which the nested rows of `layered-compound.json` (mission 7h) now
+// reach and prove, and in `setPortOrderOnParentGraph`.
 import { describe, expect, it } from 'vitest';
 import { addLayer, addNode, addPort } from '../../../../test/helpers/lgraph-builders.js';
 import { PortSide } from '../../../core/options/PortSide.js';

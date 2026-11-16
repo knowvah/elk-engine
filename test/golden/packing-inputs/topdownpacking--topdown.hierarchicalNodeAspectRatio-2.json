@@ -1,0 +1,46 @@
+{
+  "id": "root",
+  "layoutOptions": {
+    "org.eclipse.elk.algorithm": "org.eclipse.elk.topdownpacking",
+    "org.eclipse.elk.topdownLayout": true,
+    "org.eclipse.elk.topdown.nodeType": "PARALLEL_NODE",
+    "org.eclipse.elk.topdown.hierarchicalNodeAspectRatio": 2
+  },
+  "children": [
+    {
+      "id": "n0",
+      "x": 0,
+      "y": 0,
+      "width": 10,
+      "height": 10
+    },
+    {
+      "id": "n1",
+      "x": 0,
+      "y": 0,
+      "width": 10,
+      "height": 10
+    },
+    {
+      "id": "n2",
+      "x": 0,
+      "y": 0,
+      "width": 10,
+      "height": 10
+    },
+    {
+      "id": "n3",
+      "x": 0,
+      "y": 0,
+      "width": 10,
+      "height": 10
+    },
+    {
+      "id": "n4",
+      "x": 0,
+      "y": 0,
+      "width": 10,
+      "height": 10
+    }
+  ]
+}

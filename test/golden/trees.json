@@ -1,0 +1,287 @@
+{
+  "golden": [
+    {
+      "id": "mrtree--default",
+      "path": "mrtree--default.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x default: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--direction-up",
+      "path": "mrtree--direction-up.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x direction-up: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--direction-down",
+      "path": "mrtree--direction-down.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x direction-down: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--direction-left",
+      "path": "mrtree--direction-left.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x direction-left: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--direction-right",
+      "path": "mrtree--direction-right.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x direction-right: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--separateConnectedComponents-false",
+      "path": "mrtree--separateConnectedComponents-false.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x separateConnectedComponents-false: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--compaction-true",
+      "path": "mrtree--compaction-true.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x compaction-true: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--edgeEndTextureLength-15",
+      "path": "mrtree--edgeEndTextureLength-15.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x edgeEndTextureLength-15: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--weighting-descendants",
+      "path": "mrtree--weighting-descendants.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x weighting-descendants: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--weighting-fan",
+      "path": "mrtree--weighting-fan.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x weighting-fan: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--weighting-constraint",
+      "path": "mrtree--weighting-constraint.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x weighting-constraint: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--edgeRoutingMode-middle-to-middle",
+      "path": "mrtree--edgeRoutingMode-middle-to-middle.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x edgeRoutingMode-middle-to-middle: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree--searchOrder-bfs",
+      "path": "mrtree--searchOrder-bfs.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x searchOrder-bfs: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--default",
+      "path": "radial--default.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x default: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--centerOnRoot-true",
+      "path": "radial--centerOnRoot-true.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x centerOnRoot-true: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--radius-70",
+      "path": "radial--radius-70.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x radius-70: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--rotate-true",
+      "path": "radial--rotate-true.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x rotate-true: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--targetAngle-1",
+      "path": "radial--targetAngle-1.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x targetAngle-1: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--computeAdditionalWedgeSpace-true",
+      "path": "radial--computeAdditionalWedgeSpace-true.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x computeAdditionalWedgeSpace-true: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--outgoingEdgeAngles-true",
+      "path": "radial--outgoingEdgeAngles-true.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x outgoingEdgeAngles-true: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--compactor-radial-compaction",
+      "path": "radial--compactor-radial-compaction.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x compactor-radial-compaction: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--compactor-wedge-compaction",
+      "path": "radial--compactor-wedge-compaction.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x compactor-wedge-compaction: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--compactionStepSize-4",
+      "path": "radial--compactionStepSize-4.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x compactionStepSize-4: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--sorter-polar-coordinate",
+      "path": "radial--sorter-polar-coordinate.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x sorter-polar-coordinate: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--sorter-id",
+      "path": "radial--sorter-id.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x sorter-id: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--wedgeCriteria-leaf-number",
+      "path": "radial--wedgeCriteria-leaf-number.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x wedgeCriteria-leaf-number: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--optimizationCriteria-edge-length",
+      "path": "radial--optimizationCriteria-edge-length.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x optimizationCriteria-edge-length: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--optimizationCriteria-edge-length-by-position",
+      "path": "radial--optimizationCriteria-edge-length-by-position.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x optimizationCriteria-edge-length-by-position: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial--optimizationCriteria-crossing-minimization-by-position",
+      "path": "radial--optimizationCriteria-crossing-minimization-by-position.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x optimizationCriteria-crossing-minimization-by-position: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "vertiflex--default",
+      "path": "vertiflex--default.json",
+      "algorithm": "org.eclipse.elk.vertiflex",
+      "variant": "default",
+      "note": "vertiflex x default: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "vertiflex--layoutStrategy-bend",
+      "path": "vertiflex--layoutStrategy-bend.json",
+      "algorithm": "org.eclipse.elk.vertiflex",
+      "variant": "default",
+      "note": "vertiflex x layoutStrategy-bend: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "vertiflex--layerDistance-80",
+      "path": "vertiflex--layerDistance-80.json",
+      "algorithm": "org.eclipse.elk.vertiflex",
+      "variant": "default",
+      "note": "vertiflex x layerDistance-80: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "vertiflex--considerNodeModelOrder-false",
+      "path": "vertiflex--considerNodeModelOrder-false.json",
+      "algorithm": "org.eclipse.elk.vertiflex",
+      "variant": "default",
+      "note": "vertiflex x considerNodeModelOrder-false: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "vertiflex--verticalConstraint-set",
+      "path": "vertiflex--verticalConstraint-set.json",
+      "algorithm": "org.eclipse.elk.vertiflex",
+      "variant": "default",
+      "note": "vertiflex x verticalConstraint-set: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree-generated",
+      "path": "mrtree-generated.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x generated: corpus input test/corpus/generated/mrtree-tree-small.json copied byte-identical; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial-generated",
+      "path": "radial-generated.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x generated: corpus input test/corpus/generated/radial-tree-small.json copied byte-identical; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "vertiflex-generated",
+      "path": "vertiflex-generated.json",
+      "algorithm": "org.eclipse.elk.vertiflex",
+      "variant": "default",
+      "note": "vertiflex x generated: corpus input test/corpus/generated/vertiflex-tree-small.json copied byte-identical; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "mrtree-generated-retarget",
+      "path": "mrtree-generated.json",
+      "algorithm": "org.eclipse.elk.mrtree",
+      "retarget": "org.eclipse.elk.mrtree",
+      "variant": "default",
+      "note": "mrtree x generated, retargeted: the corpus input sets no algorithm, so the entry 'mrtree-generated' was recorded with the default (layered); this entry retargets the same input to mrtree; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "radial-generated-retarget",
+      "path": "radial-generated.json",
+      "algorithm": "org.eclipse.elk.radial",
+      "retarget": "org.eclipse.elk.radial",
+      "variant": "default",
+      "note": "radial x generated, retargeted: the corpus input sets no algorithm, so the entry 'radial-generated' was recorded with the default (layered); this entry retargets the same input to radial; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "vertiflex-generated-retarget",
+      "path": "vertiflex-generated.json",
+      "algorithm": "org.eclipse.elk.vertiflex",
+      "retarget": "org.eclipse.elk.vertiflex",
+      "variant": "default",
+      "note": "vertiflex x generated, retargeted: the corpus input sets no algorithm, so the entry 'vertiflex-generated' was recorded with the default (layered); this entry retargets the same input to vertiflex; recorded with -XX:hashCode=2 (H4)."
+    }
+  ]
+}

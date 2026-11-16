@@ -2,10 +2,23 @@
 # SPDX-License-Identifier: EPL-2.0
 # Regenerates the committed oracle golden refs (AD-5) from the pinned
 # elk-models corpus. Output is byte-stable: no timestamps.
-# Usage: regen-goldens.sh [--set default|algorithms]
+# Usage: regen-goldens.sh [--set default|algorithms|layered|trees|force-disco|packing|examples]
 #   default     test/corpus/manifest.json  -> test/golden/refs/elk
 #   algorithms  test/golden/algorithms.json -> test/golden/refs/elk-algorithms
-# Both sets take the pinned models commit from test/corpus/manifest.json.
+#   layered     test/golden/layered.json   -> test/golden/refs/elk-layered
+#   trees       test/golden/trees.json     -> test/golden/refs/elk-trees
+#   force-disco test/golden/force-disco.json -> test/golden/refs/elk-force-disco
+#   packing     test/golden/packing.json   -> test/golden/refs/elk-packing
+#   examples    test/golden/examples.json  -> test/golden/refs/elk-examples
+# All sets take the pinned models commit from test/corpus/manifest.json.
+# The layered, trees, force-disco, packing and examples sets run the oracle JVM with -XX:hashCode=2 (H4),
+# recorded as "jvmFlags" in their _meta.json; the other sets run without it.
+# The trees set reads its designed inputs from test/golden/trees-inputs/ in
+# the repository (TR2), not from the elk-models checkout; the force-disco set
+# likewise from test/golden/force-disco-inputs/ (FD2), and the packing set from
+# test/golden/packing-inputs/ (PK2). The examples set reads the input twins of
+# the documentation examples (test/docs/examples/) from
+# test/golden/examples-inputs/ (docs-publish-prep DP4).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -15,17 +28,21 @@ REFS_PARENT="$ROOT/test/golden/refs"
 REFS_NAME="elk"
 REFS_DIR="$REFS_PARENT/$REFS_NAME"
 VENDORED_DIR=""
+INPUTS_DIR=""
+NEEDS_MODELS=1
 ELK_ORACLE_DIR="${ELK_ORACLE_DIR:-$ROOT/../elk-oracle}"
 MODELS_DIR="${ELK_MODELS_DIR:-$ROOT/../../eclipse-elk/elk-models}"
 GENERATED_BY="tools/oracle/regen-goldens.sh"
 META_FILE="_meta.json"
+JVM_FLAGS=""
+LAYERED_JVM_FLAGS="-XX:hashCode=2"
 
 die() {
   echo "error: $1" >&2
   exit 1
 }
 
-select_set() { # select_set <default|algorithms>
+select_set() { # select_set <default|algorithms|layered>
   case "$1" in
     default) ;;
     algorithms)
@@ -34,7 +51,51 @@ select_set() { # select_set <default|algorithms>
       REFS_DIR="$REFS_PARENT/$REFS_NAME"
       VENDORED_DIR="$ROOT/test/golden/inputs"
       ;;
-    *) die "unknown set '$1' (expected default or algorithms)" ;;
+    layered)
+      MANIFEST="$ROOT/test/golden/layered.json"
+      REFS_NAME="elk-layered"
+      REFS_DIR="$REFS_PARENT/$REFS_NAME"
+      VENDORED_DIR="$ROOT/test/golden/inputs/pipeline"
+      JVM_FLAGS="$LAYERED_JVM_FLAGS"
+      export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-XX:+UnlockExperimentalVMOptions $JVM_FLAGS"
+      ;;
+    trees)
+      MANIFEST="$ROOT/test/golden/trees.json"
+      REFS_NAME="elk-trees"
+      REFS_DIR="$REFS_PARENT/$REFS_NAME"
+      INPUTS_DIR="$ROOT/test/golden/trees-inputs"
+      NEEDS_MODELS=0
+      JVM_FLAGS="$LAYERED_JVM_FLAGS"
+      export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-XX:+UnlockExperimentalVMOptions $JVM_FLAGS"
+      ;;
+    force-disco)
+      MANIFEST="$ROOT/test/golden/force-disco.json"
+      REFS_NAME="elk-force-disco"
+      REFS_DIR="$REFS_PARENT/$REFS_NAME"
+      INPUTS_DIR="$ROOT/test/golden/force-disco-inputs"
+      NEEDS_MODELS=0
+      JVM_FLAGS="$LAYERED_JVM_FLAGS"
+      export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-XX:+UnlockExperimentalVMOptions $JVM_FLAGS"
+      ;;
+    packing)
+      MANIFEST="$ROOT/test/golden/packing.json"
+      REFS_NAME="elk-packing"
+      REFS_DIR="$REFS_PARENT/$REFS_NAME"
+      INPUTS_DIR="$ROOT/test/golden/packing-inputs"
+      NEEDS_MODELS=0
+      JVM_FLAGS="$LAYERED_JVM_FLAGS"
+      export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-XX:+UnlockExperimentalVMOptions $JVM_FLAGS"
+      ;;
+    examples)
+      MANIFEST="$ROOT/test/golden/examples.json"
+      REFS_NAME="elk-examples"
+      REFS_DIR="$REFS_PARENT/$REFS_NAME"
+      INPUTS_DIR="$ROOT/test/golden/examples-inputs"
+      NEEDS_MODELS=0
+      JVM_FLAGS="$LAYERED_JVM_FLAGS"
+      export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-XX:+UnlockExperimentalVMOptions $JVM_FLAGS"
+      ;;
+    *) die "unknown set '$1' (expected default, algorithms, layered, trees, force-disco, packing or examples)" ;;
   esac
 }
 
@@ -73,13 +134,13 @@ golden_paths() { # prints one golden input path per line
 
 # Prints one oracle case per golden entry (JSON Lines). `variant` is always
 # sent; `algorithm` only when the entry carries `retarget` (D2).
-write_cases() { # write_cases <models dir> <dest file>
+write_cases() { # write_cases <input dir> <dest file>
   node -e '
     const fs = require("fs");
-    const [manifest, modelsDir, dest] = process.argv.slice(1, 4);
+    const [manifest, inputDir, dest] = process.argv.slice(1, 4);
     const m = JSON.parse(fs.readFileSync(manifest, "utf8"));
     const lines = m.golden.map((g) => {
-      const c = { id: g.id, input: modelsDir + "/" + g.path, mode: "layout" };
+      const c = { id: g.id, input: inputDir + "/" + g.path, mode: "layout" };
       if (g.retarget !== undefined) c.algorithm = g.algorithm;
       c.variant = g.variant;
       return JSON.stringify(c);
@@ -111,7 +172,7 @@ require_vendored_inputs() {
 write_meta() { # write_meta <dest file>
   node -e '
     const fs = require("fs");
-    const [build, corpusManifest, generatedBy] = process.argv.slice(1, 4);
+    const [build, corpusManifest, generatedBy, jvmFlags] = process.argv.slice(1, 5);
     const b = JSON.parse(fs.readFileSync(build, "utf8"));
     const m = JSON.parse(fs.readFileSync(corpusManifest, "utf8"));
     const meta = {
@@ -121,12 +182,13 @@ write_meta() { # write_meta <dest file>
       modelsCommit: m.commit,
       generatedBy,
     };
-    fs.writeFileSync(process.argv[4], JSON.stringify(meta, null, 2) + "\n");
-  ' "$ELK_ORACLE_DIR/oracle-build.json" "$CORPUS_MANIFEST" "$GENERATED_BY" "$1"
+    if (jvmFlags !== "") meta.jvmFlags = jvmFlags;
+    fs.writeFileSync(process.argv[5], JSON.stringify(meta, null, 2) + "\n");
+  ' "$ELK_ORACLE_DIR/oracle-build.json" "$CORPUS_MANIFEST" "$GENERATED_BY" "$JVM_FLAGS" "$1"
 }
 
 run_harness() { # run_harness <outDir> <casesFile>
-  write_cases "$MODELS_DIR" "$2"
+  write_cases "${INPUTS_DIR:-$MODELS_DIR}" "$2"
   "$ROOT/tools/oracle/run.sh" --cases "$2" "$1"
 }
 
@@ -157,8 +219,10 @@ cleanup() {
 main() {
   local count start elapsed
   parse_args "$@"
-  require_models_commit
-  require_vendored_inputs
+  if [ "$NEEDS_MODELS" = 1 ]; then
+    require_models_commit
+    require_vendored_inputs
+  fi
   mkdir -p "$REFS_PARENT"
   OUT_DIR="$(mktemp -d)"
   STAGE_DIR="$(mktemp -d "$REFS_PARENT/.$REFS_NAME-staging.XXXXXX")"

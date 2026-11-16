@@ -455,6 +455,8 @@ JUnit: `org.eclipse.elk.alg.disco.test` (1 package directory, 1 file, 169 LOC) �
 
 ## `alg.rectpacking` → `src/alg/rectpacking/`
 
+Status: ported (mission 8c); design, evidence and runbook in [alg-packing.md](alg-packing.md).
+
 7 package directories, 38 Java + 0 Xtend files, 4,688 LOC
 (`plugins/org.eclipse.elk.alg.rectpacking/src`).
 
@@ -486,6 +488,8 @@ tests:
 
 ## `alg.spore` → `src/alg/spore/`
 
+Status: ported (mission 8c); design, evidence and runbook in [alg-packing.md](alg-packing.md).
+
 6 package directories, 18 Java + 0 Xtend files, 1,326 LOC (`plugins/org.eclipse.elk.alg.spore/src`).
 
 | Java package (`org.eclipse.elk.` omitted) | TS directory                      | Files | LOC | Strategy                                          |
@@ -513,6 +517,8 @@ JUnit: `org.eclipse.elk.alg.spore.test` (1 package directory, 2 files, 249 LOC) 
 | `alg.spore.test` | `src/alg/spore/*.test.ts` |     2 | 249 | hand port |
 
 ## `alg.topdownpacking` → `src/alg/topdownpacking/`
+
+Status: ported (mission 8c); design, evidence and runbook in [alg-packing.md](alg-packing.md). `GridElkNode` is a delegating class, see [alg-packing.md](alg-packing.md#alg-packing-gridelknode).
 
 1 package directory, 9 Java + 0 Xtend files, 1,113 LOC
 (`plugins/org.eclipse.elk.alg.topdownpacking/src`).
@@ -619,6 +625,8 @@ Mission mapping: `graph.text` is roadmap 4b, `graph.json.text` 4c, `core.debug.g
 `graph.json.text.ui`, `core.debug.grandom.ui` (out of scope); `alg.libavoid`, `alg.graphviz.dot`,
 `alg.graphviz.layouter`, `graph.text.ide`, `graph.json.text.ide`, `core.debug.grandom.ide`
 (deferred); `core.debug`, `alg.disco.debug` (reference only: read for ideas, never ported).
+A decision for the three deferred algorithm bundles (`alg.libavoid`, `alg.graphviz.dot`, `alg.graphviz.layouter`) is
+proposed in the [deferred-bundles ADR](deferred-bundles-adr.md); they stay deferred until the maintainer rules on it.
 `core.meta` contains the `.melk` compiler whose behavior the `tools/melk/` generator reproduces
 (AD-12); it is read as a reference only. `graph.text`, `graph.json.text` and `core.debug.grandom`
 are in scope per D0 (`plans/conformance-corpus/decisions.md`); see the next section.

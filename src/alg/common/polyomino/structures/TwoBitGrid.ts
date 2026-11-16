@@ -2,6 +2,7 @@
 import { ArrayIndexOutOfBoundsException } from '../../../../java/lang/ArrayIndexOutOfBoundsException.js';
 import { IndexOutOfBoundsException } from '../../../../java/lang/IndexOutOfBoundsException.js';
 import * as Int32 from '../../../../java/lang/Int32.js';
+import { NegativeArraySizeException } from '../../../../java/lang/NegativeArraySizeException.js';
 import * as Int64 from '../../../../java/lang/Int64.js';
 import type { IThreeValueGrid } from './IThreeValueGrid.js';
 
@@ -37,9 +38,19 @@ export class TwoBitGrid implements IThreeValueGrid {
     this.ySize = height;
   }
 
-  /** `new long[height][(int) Math.ceil(width / HALF_WORD)]`. */
+  /**
+   * `new long[height][(int) Math.ceil(width / HALF_WORD)]`: the dimensions are checked first, a negative one (height
+   * first) is a `NegativeArraySizeException` carrying it, as `TwoBitGrid.java:117` raises it (row `throws/negativeAspect`
+   * of `disco.json`).
+   */
   private static newWords(width: number, height: number): bigint[][] {
     const rowLength = Math.ceil(width / HALF_WORD);
+    if (height < 0) {
+      throw new NegativeArraySizeException(String(height));
+    }
+    if (rowLength < 0) {
+      throw new NegativeArraySizeException(String(rowLength));
+    }
     return Array.from({ length: height }, () => new Array<bigint>(rowLength).fill(0n));
   }
 

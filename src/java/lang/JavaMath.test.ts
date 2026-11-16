@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { d2i, d2l, floorDiv, floorMod, round, roundFloat, roundToLong } from './JavaMath.js';
+import { d2i, d2l, floorDiv, floorMod, log, round, roundFloat, roundToLong } from './JavaMath.js';
 
 const VECTORS_URL = new URL('../../../test/golden/refs/java/lang.json', import.meta.url);
 const BITS_BYTES = 8;
@@ -188,5 +188,67 @@ describe('floorDiv / floorMod zero divisor', () => {
       expect(() => fn(a, 0), `${op} ${a}`).toThrow(ArithmeticException);
       expect(() => fn(a, 0), `${op} ${a}`).toThrow('/ by zero');
     }
+  });
+});
+
+const FORCE_URL = new URL('../../../test/golden/refs/java/force.json', import.meta.url);
+const LOG_ROW_COUNT = 20014;
+const LOG_TIMEOUT_MS = 60_000;
+const NAN_BITS = '7ff8000000000000';
+
+interface LogRow {
+  readonly id: string;
+  readonly group: string;
+  readonly input: string;
+  readonly expected: string;
+}
+
+function toBits(x: number): string {
+  const view = new DataView(new ArrayBuffer(BITS_BYTES));
+  view.setFloat64(0, x);
+  return view.getBigUint64(0).toString(16).padStart(16, '0');
+}
+
+const logRows = (JSON.parse(readFileSync(FORCE_URL, 'utf8')) as { rows: LogRow[] }).rows.filter(
+  (row) => row.group === 'log',
+);
+const edgeRows = logRows.filter((row) => row.id.startsWith('log/edge/'));
+
+describe('log', () => {
+  it(
+    'matches the raw bits of every JVM Math.log row',
+    () => {
+      expect(logRows.length).toBe(LOG_ROW_COUNT);
+      for (const row of logRows) {
+        const actual = toBits(log(fromBits(row.input)));
+        expect(actual, row.id).toBe(row.expected);
+      }
+    },
+    LOG_TIMEOUT_MS,
+  );
+
+  it('has edge rows', () => {
+    expect(edgeRows.length).toBeGreaterThan(10);
+  });
+
+  it.each(['zero', 'negZero'])('returns -Infinity for %s', (name) => {
+    const row = edgeRows.find((r) => r.id === `log/edge/${name}`);
+    expect(row?.expected).toBe('fff0000000000000');
+    expect(log(fromBits(row?.input ?? ''))).toBe(-Infinity);
+  });
+
+  it('returns NaN for a negative input and for NaN', () => {
+    expect(toBits(log(-1))).toBe(NAN_BITS);
+    expect(toBits(log(NaN))).toBe(NAN_BITS);
+    expect(toBits(log(-Infinity))).toBe(NAN_BITS);
+  });
+
+  it('returns +Infinity for +Infinity, 0 for 1', () => {
+    expect(log(Infinity)).toBe(Infinity);
+    expect(Object.is(log(1), 0)).toBe(true);
+  });
+
+  it.each(edgeRows.map((row) => [row.id, row] as const))('replays %s', (_id, row) => {
+    expect(toBits(log(fromBits(row.input)))).toBe(row.expected);
   });
 });

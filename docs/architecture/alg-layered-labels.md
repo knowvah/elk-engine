@@ -46,7 +46,7 @@ listed in the second table.
 `END_LABEL_POSTPROCESSOR`, `CENTER_LABEL_MANAGEMENT_PROCESSOR` (`LabelManagementProcessor(true)`),
 `END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR` (`LabelManagementProcessor(false)`) and
 `ALTERNATING_LAYER_UNZIPPER`. The enum
-tally is 7b 10, 7c 10, 7d 5, 7e 6, 7f 6, 7f2 12, 7g 9, 7h 1: **49 arms ported, 10 pending (7g 9, 7h 1)**.
+tally is 7b 10, 7c 10, 7d 5, 7e 6, 7f 6, 7f2 12, 7g 9, 7h 1: **49 arms ported, 10 pending (7g 9, 7h 1) at the end of 7f2**; 7g wired its 9 and 7h the last, so now 59 are ported and 0 are pending.
 
 ## 2. Rows and the bar (G2, G3) {#part-g-rows}
 
@@ -78,7 +78,7 @@ yields it (T9), not in insertion order as G3's text says. A new type printed thr
 **Unpinning (G9, FX5).** T11 deleted the 59 entries of `test/helpers/layered-pipeline-pinned-rows.ts` naming 7f2 (57
 `layered-pipeline.json` rows, 2 `layered-phases.json` rows); all 59 replay their recorded expectations. One entry stays,
 `models/ptolemy-sinewaveoptimization/N1/DIRECTION_PREPROCESSOR/DOWN` (7g). `site/provider/flat` and
-`site/provider/cancelled` compare their recorded layout, and only `INCLUDE_CHILDREN` provider rows still expect a throw.
+`site/provider/cancelled` compare their recorded layout; at 7f2 only `INCLUDE_CHILDREN` provider rows still expected a throw, and since 7h those rows compare their recorded layout too.
 The assertion changes are G11's and G11a's, each journaled with old and new text.
 
 ## 3. Decisions that shape the replay {#part-g-decisions}
@@ -154,11 +154,13 @@ MODELS_REPO=$ELK_MODELS_DIR bash tools/oracle/java-tests.sh <the suites of java-
 | The entry-point dead zone                      | `ReferenceError … before initialization` in `layered-entry-points.fitness.test.ts` | the E1 recipe (cached static getters, lazy enum reads); never an entry-order import                                     |
 | A cap exceeded                                 | the recorder's size or line check                                                  | 16 MiB per ref, 5,000 lines per launcher: a decision                                                                    |
 | A label-metrics entry changes                  | the append-only test                                                               | stop 20; an unknown text throws naming it: append it under G8's proof                                                   |
-| `layout` throws `… is ported in mission 7g/7h` | self loops, `MULTI_EDGE` wrapping, post compaction (7g); `INCLUDE_CHILDREN` (7h)   | expected until that mission                                                                                             |
+| `layout` throws `… is ported in mission 7g/7h` | self loops, `MULTI_EDGE` wrapping, post compaction (7g); `INCLUDE_CHILDREN` (7h)   | expected until that mission; since 7h no layered layout throws it                                                       |
 | A sweep cache that ignores `LABELS_FILTER`     | stale `results.jsonl` after a filtered run                                         | `--force`; the cache salt does not cover `LABELS_FILTER`                                                                |
 
 ## What still throws
 
-Self loops, wrapping (`MULTI_EDGE`) and compaction (post compaction, `compaction.connectedComponents`): 7g, 9 pending
-arms plus the staged `ComponentsCompactor`. `INCLUDE_CHILDREN`: 7h, 1 pending arm (`HierarchicalNodeResizingProcessor`)
-plus the compound stages. Each throws `UnsupportedOperationException` naming the class and mission, at plan build.
+Nothing of the layered algorithm. At the end of 7f2 self loops, wrapping and compaction (7g, 9 pending arms plus the staged
+`ComponentsCompactor`) and `INCLUDE_CHILDREN` (7h, 1 pending arm and the compound stages) threw
+`UnsupportedOperationException` naming the class and mission, at plan build. Mission 7g and mission 7h lifted them: 59 arms are
+ported, 0 are pending and the staged list is empty (see [alg-layered-loops.md](alg-layered-loops.md) and
+[alg-layered-compound.md](alg-layered-compound.md)).

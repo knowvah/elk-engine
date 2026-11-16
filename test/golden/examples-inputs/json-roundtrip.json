@@ -1,0 +1,28 @@
+{
+  "id": "root",
+  "layoutOptions": {
+    "elk.algorithm": "layered",
+    "elk.edgeRouting": "ORTHOGONAL"
+  },
+  "children": [
+    {
+      "id": "client",
+      "width": 90,
+      "height": 40,
+      "labels": [{ "id": "client_label", "text": "Client", "width": 42, "height": 16 }],
+      "ports": [{ "id": "client_out", "width": 8, "height": 8 }]
+    },
+    {
+      "id": "server",
+      "layoutOptions": { "elk.padding": "[top=30,left=12,bottom=12,right=12]" },
+      "labels": [{ "id": "server_label", "text": "Server", "width": 44, "height": 16 }],
+      "ports": [{ "id": "server_in", "width": 8, "height": 8 }],
+      "children": [
+        { "id": "api", "width": 70, "height": 36 },
+        { "id": "db", "width": 70, "height": 36 }
+      ],
+      "edges": [{ "id": "query", "sources": ["api"], "targets": ["db"] }]
+    }
+  ],
+  "edges": [{ "id": "request", "sources": ["client_out"], "targets": ["server_in"] }]
+}

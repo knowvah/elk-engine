@@ -1,0 +1,14 @@
+{
+  "name": "elk-engine-typedoc",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Isolated TypeScript 6 toolchain for the API reference (typedoc has no TypeScript 7 release). See README.md.",
+  "license": "EPL-2.0",
+  "type": "module",
+  "devDependencies": {
+    "typedoc": "0.28.20",
+    "typedoc-plugin-markdown": "4.14.1",
+    "typedoc-vitepress-theme": "1.1.4",
+    "typescript": "6.0.3"
+  }
+}

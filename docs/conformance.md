@@ -10,28 +10,30 @@ The comparator is [`test/golden/compare-json.ts`](../test/golden/compare-json.ts
 this document describes what it implements. Port rules live in
 [`docs/translation-rules.md`](translation-rules.md).
 
-| #   | Section                                                    | Answers                                      |
-| --- | ---------------------------------------------------------- | -------------------------------------------- |
-| 1   | [Oracle](#1-oracle)                                        | What is "correct", and at which commit?      |
-| 1a  | [Conformance unit](#1a-conformance-unit)                   | What is one case, and which cases exist?     |
-| 2   | [Conformance bar](#2-conformance-bar)                      | What counts as equal?                        |
-| 3   | [Goldens and corpus](#3-goldens-and-corpus)                | Where do reference outputs come from?        |
-| 4   | [Seam patches](#4-seam-patches)                            | How do we change the oracle?                 |
-| 5   | [Oracle operations](#5-oracle-operations-runbook)          | What do I do when it breaks?                 |
-| 6   | [Gates](#6-gates)                                          | What must pass before a change lands?        |
-| 7   | [ELK Text](#elk-text-elkt)                                 | How is `.elkt` proven?                       |
-| 8   | [ELK Textual JSON](#elk-textual-json-elkj)                 | How is `.elkj` proven?                       |
-| -   | [Core layouts](#core-layouts-fixed-box-random)             | How are `fixed`, `box`, `random` proven?     |
-| -   | [alg.common](#alg-common)                                  | How is `alg.common` part a proven?           |
-| -   | [alg.common nodespacing](#alg-common-nodespacing)          | How is `alg.common` part b proven?           |
-| -   | [alg.layered framework](#alg-layered-framework)            | How is the layered framework (7a) proven?    |
-| -   | [alg.layered cycles and layers](#alg-layered-phases)       | How are the first two phases (7b) proven?    |
-| -   | [alg.layered crossing minimization](#alg-layered-ordering) | How is the third phase (7c) proven?          |
-| -   | [alg.layered node placement](#alg-layered-placement)       | How is the fourth phase (7d) proven?         |
-| -   | [alg.layered edge routing](#alg-layered-routing)           | How is the fifth phase (7e) proven?          |
-| -   | [alg.layered running pipeline](#alg-layered-pipeline)      | How is the whole layered layout (7f) proven? |
-| -   | [alg.layered labels and comments](#alg-layered-labels)     | How are labels and comments (7f2) proven?    |
-| -   | [Temporary gaps](#temporary-gaps)                          | What differs from the Java for now?          |
+| #   | Section                                                       | Answers                                          |
+| --- | ------------------------------------------------------------- | ------------------------------------------------ |
+| 1   | [Oracle](#1-oracle)                                           | What is "correct", and at which commit?          |
+| 1a  | [Conformance unit](#1a-conformance-unit)                      | What is one case, and which cases exist?         |
+| 2   | [Conformance bar](#2-conformance-bar)                         | What counts as equal?                            |
+| 3   | [Goldens and corpus](#3-goldens-and-corpus)                   | Where do reference outputs come from?            |
+| 4   | [Seam patches](#4-seam-patches)                               | How do we change the oracle?                     |
+| 5   | [Oracle operations](#5-oracle-operations-runbook)             | What do I do when it breaks?                     |
+| 6   | [Gates](#6-gates)                                             | What must pass before a change lands?            |
+| 7   | [ELK Text](#elk-text-elkt)                                    | How is `.elkt` proven?                           |
+| 8   | [ELK Textual JSON](#elk-textual-json-elkj)                    | How is `.elkj` proven?                           |
+| -   | [Core layouts](#core-layouts-fixed-box-random)                | How are `fixed`, `box`, `random` proven?         |
+| -   | [alg.common](#alg-common)                                     | How is `alg.common` part a proven?               |
+| -   | [alg.common nodespacing](#alg-common-nodespacing)             | How is `alg.common` part b proven?               |
+| -   | [alg.layered framework](#alg-layered-framework)               | How is the layered framework (7a) proven?        |
+| -   | [alg.layered cycles and layers](#alg-layered-phases)          | How are the first two phases (7b) proven?        |
+| -   | [alg.layered crossing minimization](#alg-layered-ordering)    | How is the third phase (7c) proven?              |
+| -   | [alg.layered node placement](#alg-layered-placement)          | How is the fourth phase (7d) proven?             |
+| -   | [alg.layered edge routing](#alg-layered-routing)              | How is the fifth phase (7e) proven?              |
+| -   | [alg.layered running pipeline](#alg-layered-pipeline)         | How is the whole layered layout (7f) proven?     |
+| -   | [alg.layered labels and comments](#alg-layered-labels)        | How are labels and comments (7f2) proven?        |
+| -   | [alg.layered loops, wrapping, compaction](#alg-layered-loops) | How are loops, wrapping, compaction (7g) proven? |
+| -   | [alg.layered compound graphs](#alg-layered-compound)          | How are compound graphs (7h) proven?             |
+| -   | [Temporary gaps](#temporary-gaps)                             | What differs from the Java for now?              |
 
 ## 1. Oracle
 
@@ -68,14 +70,16 @@ options omitted. A failing input prints `ERROR <input>: <message>`; the
 JVM exits `1` if any input failed. Input basenames must be unique within one
 run, since the output name is the basename.
 
-**Patch series semantics.** The series holds one patch today:
+**Patch series semantics.** The series holds three patches:
 
-| Patch                                                                   | Effect                                                                                                                                                                                                                              | Paired TS seam                                                                                                                                                                                                                    |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b) | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1` | Optional `random` parameter of the `JsonExporter` constructor (J4, [elk-json.md](architecture/elk-json.md#exporter-random)); tests pass `new Random(1)` (the TS `Random` shim reproduces the stream: seed 1 gives 548985, 764588) |
+| Patch                                                                                                          | Effect                                                                                                                                                                                                                                                                                                                                                                                               | Paired TS seam                                                                                                                                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b)                                        | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1`                                                                                                                                                                  | Optional `random` parameter of the `JsonExporter` constructor (J4, [elk-json.md](architecture/elk-json.md#exporter-random)); tests pass `new Random(1)` (the TS `Random` shim reproduces the stream: seed 1 gives 548985, 764588)                           |
+| `0002-graph-seedable-GraphIdentifierGenerator-random.patch` (added with the `.elkj` harness modes, `9ec3d1d5`) | `GraphIdentifierGenerator` resolves id collisions with an unseeded `Random`; the patch seeds it from the system property `org.eclipse.elk.graph.util.identifierSeed` (unset = ELK behavior). Only the harness convert mode sets it                                                                                                                                                                   | None: the TS port parses the converted files and needs no paired seam (D12, stated in the patch message)                                                                                                                                                    |
+| `0003-alg.test-pluggable-label-text-measurer.patch` (row 10, TX1, TX2)                                         | In the test bundle `org.eclipse.elk.alg.test` only, `TestConfiguration.computeLabelSize` takes a label's size from `TextMeasurer.fromSystemProperty()`. The property `org.eclipse.elk.alg.test.textMeasurer` selects the measurer: unset or `awt` keeps the AWT font metrics (the default, unchanged), `fixed` gives `[length × 6, 12]`, any other value throws `IllegalArgumentException` naming it | `test/helpers/layout-test-text-measurer.ts` (`TextMeasurer`, `AWT_SNAPSHOT_TEXT_MEASURER`, `FIXED_ADVANCE_TEXT_MEASURER`, `textMeasurerFrom`); env `ELK_TEST_TEXT_MEASURER` with the same values and the same throw ([text-sizing-seam](#text-sizing-seam)) |
 
 Patches exist only to add narrowly scoped seams that make JVM and JS behavior comparable;
-each is paired with a TS-side seam (section 4).
+each is paired with a TS-side seam (section 4). Patch `0002` is the one exception: it needs no TS seam, as its row says.
 
 **Why not elkjs?** elkjs is ELK compiled by GWT. It cannot carry our patch
 series, and GWT emulation of the JRE differs from the JVM we are porting from.
@@ -166,6 +170,61 @@ Concrete entries (add one only with the user's approval):
 | --- | ------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | 1   | Parse-error message text | ANTLR messages are artifacts of the generated parser, which is never ported | Invalid grammar input (`.elkt`, `.elkj`, `.elkr`): only the _presence_ of a parse failure must match, not the message. Valid input must match exactly | D8, user, 2026-10-11 |
 
+### Non-strict Math call sites (AD-4 known-divergences list) {#math-call-sites}
+
+Every transcendental `Math.*` call in non-test `src/` (36 calls in 14 files), pinned by
+`test/architecture/math-call-sites.json` and the fitness test `math-call-sites.fitness.test.ts` (TP7): a new call fails the test
+until it has a row here. Row order is file, then line. The Java calls plain `Math` at every site (the pinned ELK source has no
+`StrictMath` call), so HotSpot may use an intrinsic that differs from `StrictMath` in the last bit. Evidence names the tests that
+reached the site when every test file was run with the `Math` functions wrapped to record the calling `src` line; it lists tests that
+reach the call, not tests that would detect a last-ulp difference. The divergence column holds what is already recorded elsewhere in
+this file.
+
+| TS site                                                              | Java site                                                                                                          | Function | Java calls | Evidence that reaches the site                                                                                                                      | Observed last-ulp divergence                                                          |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `src/alg/disco/transform/ElkGraphTransformerGeometry.ts:51`          | `org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:632`                   | `atan2`  | `Math`     | disco: `test/golden/force-disco-goldens.test.ts`, `DiscoVectors.test.ts`; the 8b sweep rows named in the entry                                      | none observed (8b: 171 replayed inputs bit-identical in V8, `Math` and `StrictMath`)  |
+| `src/alg/disco/transform/ElkGraphTransformerGeometry.ts:55`          | `org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:636`                   | `sin`    | `Math`     | disco: `test/golden/force-disco-goldens.test.ts`, `DiscoVectors.test.ts`; the 8b sweep rows named in the entry                                      | last-ulp, 32 numeric fields: [8b `getOrthogonalPoints`](#alg-force-disco-divergences) |
+| `src/alg/disco/transform/ElkGraphTransformerGeometry.ts:56`          | `org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:637`                   | `cos`    | `Math`     | disco: `test/golden/force-disco-goldens.test.ts`, `DiscoVectors.test.ts`; the 8b sweep rows named in the entry                                      | last-ulp, 32 numeric fields: [8b `getOrthogonalPoints`](#alg-force-disco-divergences) |
+| `src/alg/disco/transform/ElkGraphTransformerGeometry.ts:57`          | `org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:638`                   | `sin`    | `Math`     | disco: `test/golden/force-disco-goldens.test.ts`, `DiscoVectors.test.ts`; the 8b sweep rows named in the entry                                      | last-ulp, 32 numeric fields: [8b `getOrthogonalPoints`](#alg-force-disco-divergences) |
+| `src/alg/disco/transform/ElkGraphTransformerGeometry.ts:58`          | `org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphTransformer.java:639`                   | `cos`    | `Math`     | disco: `test/golden/force-disco-goldens.test.ts`, `DiscoVectors.test.ts`; the 8b sweep rows named in the entry                                      | last-ulp, 32 numeric fields: [8b `getOrthogonalPoints`](#alg-force-disco-divergences) |
+| `src/alg/layered/intermediate/wrapping/BreakingPointInserter.ts:322` | `org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/wrapping/BreakingPointInserter.java:329` | `pow`    | `Math`     | layered wrapping: `test/corpus/loops-sweep.test.ts`, `test/helpers/layered-loops-sweep.test.ts`, `LayeredLoopsVectors.test.ts`                      | none observed                                                                         |
+| `src/alg/layered/p5edges/splines/SplinesMath.ts:140`                 | `org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/splines/SplinesMath.java:116`                 | `acos`   | `Math`     | layered splines: `SplinesMath.test.ts`, `LayeredRoutingVectors.test.ts` (JVM vectors `layered-routing-steps.json`)                                  | none observed                                                                         |
+| `src/alg/layered/p5edges/splines/SplinesMath.ts:219`                 | `org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/splines/SplinesMath.java:207`                 | `cos`    | `Math`     | layered splines: `SplinesMath.test.ts`, `LayeredRoutingVectors.test.ts` (JVM vectors `layered-routing-steps.json`)                                  | none observed                                                                         |
+| `src/alg/mrtree/intermediate/FanProcessor.ts:87`                     | `org.eclipse.elk.alg.mrtree/src/org/eclipse/elk/alg/mrtree/intermediate/FanProcessor.java:96`                      | `log10`  | `Math`     | mrtree: `test/golden/tree-goldens.test.ts`, `FanProcessor.test.ts`                                                                                  | none observed                                                                         |
+| `src/alg/radial/RadialUtil.ts:138`                                   | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/RadialUtil.java:156`                                    | `atan2`  | `Math`     | radial: `test/golden/tree-goldens.test.ts`                                                                                                          | none observed                                                                         |
+| `src/alg/radial/RadialUtil.ts:151`                                   | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/RadialUtil.java:169`                                    | `atan2`  | `Math`     | radial: `test/golden/tree-goldens.test.ts`                                                                                                          | none observed                                                                         |
+| `src/alg/radial/intermediate/EdgeAngleCalculator.ts:28`              | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/intermediate/EdgeAngleCalculator.java:48`               | `atan2`  | `Math`     | radial: `test/golden/tree-goldens.test.ts`, `RadialVectors.test.ts`                                                                                 | none observed                                                                         |
+| `src/alg/radial/intermediate/rotation/AngleRotation.ts:76`           | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/intermediate/rotation/AngleRotation.java:53`            | `atan2`  | `Math`     | radial: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`                                                                                 | none observed                                                                         |
+| `src/alg/radial/p1position/EadesRadial.ts:79`                        | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/p1position/EadesRadial.java:101`                        | `cos`    | `Math`     | radial: `test/golden/tree-goldens.test.ts`, `RadialVectors.test.ts`                                                                                 | none observed                                                                         |
+| `src/alg/radial/p1position/EadesRadial.ts:80`                        | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/p1position/EadesRadial.java:102`                        | `sin`    | `Math`     | radial: `test/golden/tree-goldens.test.ts`, `RadialVectors.test.ts`                                                                                 | last-ulp, one sweep case: [8a `EadesRadial` `sin`](#alg-trees-divergences)            |
+| `src/alg/radial/p1position/EadesRadial.ts:110`                       | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/p1position/EadesRadial.java:108`                        | `acos`   | `Math`     | radial: `test/golden/tree-goldens.test.ts`, `RadialVectors.test.ts`                                                                                 | none observed                                                                         |
+| `src/alg/radial/sorting/PolarCoordinateSorter.ts:57`                 | `org.eclipse.elk.alg.radial/src/org/eclipse/elk/alg/radial/sorting/PolarCoordinateSorter.java:74`                  | `atan2`  | `Math`     | radial: `test/golden/tree-goldens.test.ts`                                                                                                          | none observed                                                                         |
+| `src/core/math/ElkMathBezier.ts:26`                                  | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/ElkMath.java:467`                                              | `pow`    | `Math`     | module-level constant, evaluated on import: every golden and sweep test that loads `ElkMath`                                                        | none observed                                                                         |
+| `src/core/math/KVector.ts:68`                                        | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:95`                                               | `cos`    | `Math`     | layered splines and self loops: `test/corpus/loops-sweep.test.ts`, `test/corpus/compound-sweep.test.ts`, `test/helpers/layered-loops-sweep.test.ts` | none observed                                                                         |
+| `src/core/math/KVector.ts:68`                                        | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:96`                                               | `sin`    | `Math`     | layered splines and self loops: `test/corpus/loops-sweep.test.ts`, `test/corpus/compound-sweep.test.ts`, `test/helpers/layered-loops-sweep.test.ts` | none observed                                                                         |
+| `src/core/math/KVector.ts:294`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:381`                                              | `asin`   | `Math`     | layered splines: `SplinesMath.test.ts`, `LayeredRoutingVectors.test.ts` (JVM vectors `layered-routing-steps.json`)                                  | none observed                                                                         |
+| `src/core/math/KVector.ts:297`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:383`                                              | `asin`   | `Math`     | layered splines: `SplinesMath.test.ts`, `LayeredRoutingVectors.test.ts` (JVM vectors `layered-routing-steps.json`)                                  | none observed                                                                         |
+| `src/core/math/KVector.ts:300`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:385`                                              | `asin`   | `Math`     | layered splines: `SplinesMath.test.ts`, `LayeredRoutingVectors.test.ts` (JVM vectors `layered-routing-steps.json`)                                  | none observed                                                                         |
+| `src/core/math/KVector.ts:352`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:443`                                              | `cos`    | `Math`     | radial rotation: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`, `GeneralRotator.test.ts`                                              | none observed                                                                         |
+| `src/core/math/KVector.ts:352`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:443`                                              | `sin`    | `Math`     | radial rotation: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`, `GeneralRotator.test.ts`                                              | none observed                                                                         |
+| `src/core/math/KVector.ts:353`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:444`                                              | `cos`    | `Math`     | radial rotation: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`, `GeneralRotator.test.ts`                                              | none observed                                                                         |
+| `src/core/math/KVector.ts:353`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:444`                                              | `sin`    | `Math`     | radial rotation: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`, `GeneralRotator.test.ts`                                              | none observed                                                                         |
+| `src/core/math/KVector.ts:364`                                       | `org.eclipse.elk.core/src/org/eclipse/elk/core/math/KVector.java:455`                                              | `acos`   | `Math`     | radial rotation: `test/golden/tree-goldens.test.ts`, `AngleRotation.test.ts`, `GeneralRotator.test.ts`                                              | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:59`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:58`                        | `pow`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:66`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:65`                        | `log`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:66`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:65`                        | `log`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:67`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:66`                        | `exp`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:73`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:72`                        | `pow`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/options/TopdownSizeApproximatorUtil.ts:79`                 | `org.eclipse.elk.core/src/org/eclipse/elk/core/options/TopdownSizeApproximatorUtil.java:78`                        | `pow`    | `Math`     | unit tests only (`TopdownSizeApproximatorUtil.test.ts`, `TopdownSizeApproximator.test.ts`); no golden, ref replay or sweep test reaches it          | none observed                                                                         |
+| `src/core/util/BoxLayoutProvider.ts:316`                             | `org.eclipse.elk.core/src/org/eclipse/elk/core/util/BoxLayoutProvider.java:286`                                    | `pow`    | `Math`     | box layouts (`computeMaxRowWidth`): `test/golden/layout-goldens.test.ts`, `test/golden/packing-goldens.test.ts`, `RectPackingVectors.test.ts`       | none observed                                                                         |
+| `src/core/util/BoxLayoutProviderGrouping.ts:220`                     | `org.eclipse.elk.core/src/org/eclipse/elk/core/util/BoxLayoutProvider.java:469`                                    | `pow`    | `Math`     | unit test only (`BoxLayoutProviderGrouping.test.ts`); no golden, ref replay or sweep test reaches it                                                | none observed                                                                         |
+
+There is no `StrictMath.ts`. `src/java/lang/JavaMath.ts` `log` is the bit-exact `StrictMath.log` shim and its callers
+(`Random.nextGaussian`, `EadesModel`) are not `Math.log` sites; every site above ports a Java `Math` call, and 8b measured V8
+equal to `StrictMath` on all 160 `sin` and 160 `cos` inputs while HotSpot's `Math` differs from both, so a fdlibm port of
+`sin`, `cos` or `atan2` would not match the oracle any better (TP7). Measuring each site's delta against the 0.01 px bar is
+issue #74's audit.
+
 **Verdicts.** Each case gets one verdict from two separate JVM runs of the oracle (D4, D5, OR-2):
 
 | Verdict            | Meaning                                                                                                                                                      |
@@ -188,6 +247,13 @@ the parity report): spore (`ElkGraphImporter.java:169` jitters with `Math.random
 (default `randomSeed` 0 is unseeded on nested composites; retarget seeds only the root, D2,
 kept by user decision). The exporter's `_g<random>` id renames are not a source: the seam
 patch fixes them.
+
+**Known flicker: `sporeOverlap` verdicts (#79, #86).** The two-run check calls a case deterministic
+when its runs agree, and on inputs with coincident node centres the spore jitter sometimes lets
+them agree. So the verdicts of those cases (`ok`, `throws` or `nondeterministic`), the report rows
+built from them and the TS findings on them can change from one sweep to the next. A re-sweep
+difference confined to such cases is not a regression. This holds until the seeded-generator fix
+(knowvah/elk#14, upstream eclipse-elk/elk#1211) is carried; no sweep-side workaround is used.
 
 ## 3. Goldens and corpus
 
@@ -239,6 +305,18 @@ only with `tools/oracle/regen-generated.sh` (staging directory and rename; a fai
 leaves the old files); a rerun with nothing changed is a git no-op. The TS grandom port must
 reproduce these `.json` files byte for byte; algorithm goldens never depend on it.
 
+**Tree goldens (mission 8a).** `regen-goldens.sh --set trees` adds a set the way `--set layered` does: manifest
+`test/golden/trees.json`, refs `test/golden/refs/elk-trees/` (40 refs, `-XX:hashCode=2` named in `_meta.json`), inputs read from
+`test/golden/trees-inputs/` in the repository (`NEEDS_MODELS=0` skips the elk-models checks for this set only). An entry
+without `retarget` records the default algorithm, so the generated corpus inputs have `*-generated-retarget` entries. The
+sweep tool `tools/corpus/ts-layout-compare.ts` registers the three tree providers (`registerTreeAlgorithms()`); layered is
+not registered there (row 9). See [alg-trees.md](architecture/alg-trees.md).
+
+**Force, stress and disco goldens (mission 8b).** `regen-goldens.sh --set force-disco` is the same additive arm: manifest
+`test/golden/force-disco.json`, refs `test/golden/refs/elk-force-disco/` (45 refs, `-XX:hashCode=2` named in `_meta.json`),
+inputs under `test/golden/force-disco-inputs/`, `NEEDS_MODELS=0`. `ts-layout-compare.ts` registers force, stress and disco
+(with `PolyominoOptions`) and layered. See [alg-force-disco.md](architecture/alg-force-disco.md).
+
 **Sweep.** `tools/oracle/sweep.sh [--filter <substring>] [--limit <n>] [--shards <n>]
 [--out <dir>] [--plan-only]` plans every case, runs each twice in separate JVMs (shards default
 to `min(cpus, 8)` concurrent `run.sh` processes), and writes
@@ -250,9 +328,12 @@ the substring; `--limit` takes an even-stride sample. Exit `0` unless a case is 
 timeout (JVM exit code 75) on the cases without a result line.
 
 **Parity report (D9).** `docs/parity-report.md` is generated from the sweep cache and committed:
-counts per algorithm and verdict, with the ELK and models commits and no timestamps. Regenerate
-with `npx tsx tools/corpus/parity-report.ts --write`; without `--write` the command exits `1`
-when the committed report is stale. Never edit it by hand.
+counts per algorithm and verdict, with the ELK and models commits and no timestamps. It describes
+the sweep it was generated from and is regenerated only when a fresh report is asked for (#86);
+sweeps may run as often as useful in between. Regenerate with
+`npx tsx tools/corpus/parity-report.ts --write`; without `--write` the command exits `1` when the
+committed report differs from the current sweep cache, which is expected after any later sweep
+(the per-sweep timing columns alone differ). Never edit it by hand.
 
 **Corpus tests.** `resolveModelsDir()` in `test/corpus/corpus.ts` returns a
 `skip` reason when the clone is missing or at another commit; tests that need
@@ -280,6 +361,8 @@ Seam patches change the oracle; they are rare and always paired with a TS seam.
    prefix fixes the apply order.
 3. Add the matching TS seam (same behavior, injectable, in `src/`), with tests
    whose expected values come from the patched oracle (AD-13).
+   A seam whose Java site lives in a test bundle has its TS twin in `test/helpers/`, beside that
+   framework's port, not in `src/` (TX5; the row-10 precedent).
 4. Otherwise remove the worktree: `git -C "$ELK_SOURCE_DIR" worktree remove $ELK_ORACLE_DIR`
    (add `--force` if build output makes it dirty).
 5. Rebuild: `tools/oracle/build.sh` (re-applies the series from scratch).
@@ -310,12 +393,13 @@ means run `build.sh` first; `bundle <name> not in p2 cache` means set
 
 Every change:
 
-| Gate               | Command                                                   | Bar                                                                          |
-| ------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Types              | `npm run typecheck`                                       | exit 0                                                                       |
-| Tests and coverage | `npm run coverage`                                        | all tests pass; 90% statements, branches, functions, and lines over `src/**` |
-| Architecture       | `test/architecture/*.fitness.test.ts` (run by `npm test`) | module boundaries, module globals, no Node builtins in `src/`, SPDX headers  |
-| Oracle refs        | `test/golden/oracle-refs.test.ts`                         | committed refs consistent with manifest and `ELK_COMMIT`                     |
+| Gate               | Command                                                   | Bar                                                                                                                                                                 |
+| ------------------ | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Types              | `npm run typecheck`                                       | exit 0                                                                                                                                                              |
+| Tests and coverage | `npm run coverage`                                        | all tests pass; 90% statements, branches, functions, and lines over `src/**`                                                                                        |
+| Architecture       | `test/architecture/*.fitness.test.ts` (run by `npm test`) | module boundaries, module globals, no Node builtins in `src/`, SPDX headers                                                                                         |
+| Oracle refs        | `test/golden/oracle-refs.test.ts`                         | committed refs consistent with manifest and `ELK_COMMIT`                                                                                                            |
+| CodeQL             | `npm run codeql`                                          | exit 0: every finding of GitHub Code Quality's suites (Java recorders and TypeScript) is in `tools/codeql/accepted.json` with a reason, and no entry there is stale |
 
 Changes to `tools/oracle/`, the manifest, or the patch series also need:
 
@@ -328,12 +412,12 @@ Changes to `tools/oracle/`, the manifest, or the patch series also need:
 
 Changes to `tools/oracle/` or `tools/corpus/` also need:
 
-| Gate                | Command                                                                              | Bar                                                          |
-| ------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| Census              | `npx tsx tools/corpus/census.ts`                                                     | exit 0 (no drift)                                            |
-| Generated stability | `tools/oracle/regen-generated.sh`, then `git diff --exit-code test/corpus/generated` | no diff                                                      |
-| Sweep               | `tools/oracle/sweep.sh` (or `--filter`/`--limit` for a sample)                       | exit 0: no `oracle-error`                                    |
-| Parity report       | `npx tsx tools/corpus/parity-report.ts`                                              | exit 0 (committed report current); regenerate with `--write` |
+| Gate                | Command                                                                                    | Bar                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| Census              | `npx tsx tools/corpus/census.ts`                                                           | exit 0 (no drift)                                       |
+| Generated stability | `tools/oracle/regen-generated.sh`, then `git diff --exit-code test/corpus/generated`       | no diff                                                 |
+| Sweep               | `tools/oracle/sweep.sh` (or `--filter`/`--limit` for a sample)                             | exit 0: no `oracle-error`                               |
+| Parity report       | only when a fresh report is asked for: `parity-report.ts --write`, then `parity-report.ts` | exit 0 right after `--write`; not a standing gate (#86) |
 
 ## 7. ELK Text (`.elkt`) {#elk-text-elkt}
 
@@ -669,6 +753,12 @@ behaviour". Detail: [core-engine.md](architecture/core-engine.md).
   (`ElkUtil.java:537-541`), so an other edge without sections throws `IndexOutOfBoundsException`, never the
   documented `IllegalArgumentException`.
 
+**Update 2026-11-13 (roadmap row 9).** After every provider is registered, the same comparison over the oracle sweep of that
+date (18,930 cases; see [TS corpus sweep](#ts-corpus-sweep)) gives `fixed` 869 `ok` and 29 `both-throw` of 898, `box` 898 `ok`
+of 898, and `random` 534 `ok` and 372 `excluded` of 906. All three have 0 `mismatch`, 0 options-only mismatches and 0
+`ts-only-throw`, so the 497 options-only mismatches and the 18 TS-only throws reported above have closed, as the section
+predicted for the registration of the layered and the other algorithm bundles.
+
 ## Core remainder (mission 5b) {#core-remainder}
 
 Mission 5b completed the `core` bundle (R1). Its evidence is JUnit ports, JVM vectors and oracle scenarios; there is
@@ -803,7 +893,8 @@ algorithm exists.
 - `InsidePortLabelTest`: needs layered; closed by mission 7a.
 - `NextToPortLabelPlacementTest`: needs layered; closed by mission 7a.
 - `PortLabelPlacementVariantsTest`: needs layered; closed by mission 7a.
-- `NodeMicroLayoutTest`: needs layered, force, stress, mrtree, radial and rectpacking; closed by mission 8x.
+- `NodeMicroLayoutTest`: needs layered, force, stress, mrtree, radial and rectpacking; closed by mission 8x. Update after
+  mission 8a: layered, mrtree and radial are ported; it still needs force, stress and rectpacking (8x).
 
 ## alg.common, part b: nodespacing (mission 6b) {#alg-common-nodespacing}
 
@@ -930,7 +1021,7 @@ package (32 enums, `InternalProperties`, `Spacings`, `LayeredSpacings`, the gene
 `LayeredPhases`, `IHierarchyAwareLayoutProcessor` and `ComponentOrderingStrategy` (design, staged-class lifecycle and
 runbook in [alg-layered.md](architecture/alg-layered.md)). No layout runs yet: `ElkLayered` and eight other forward
 references are **staged** (`test/architecture/staged-classes.json`, L1) and throw `UnsupportedOperationException`
-naming the mission that completes them. Decisions: `plans/layered-framework/decisions.md` (L1–L7, S1–S4, X1–X7).
+naming the mission that completes them (state at 7a; every staged class is ported since and the list is `[]` after 7h). Decisions: `plans/layered-framework/decisions.md` (L1–L7, S1–S4, X1–X7).
 
 **Evidence.**
 
@@ -1305,7 +1396,8 @@ Decisions: `plans/layered-pipeline/decisions.md` (F1–F16, FX1–FX8).
 
 **What still throws, and which mission lifts it.** Edge labels, comment boxes, `layerUnzipping`, a monitor with logging
 enabled (`DebugUtil`): 7f2. Self loops, wrapping, post compaction, `compaction.connectedComponents`: 7g.
-`INCLUDE_CHILDREN`: 7h. Each throws `UnsupportedOperationException` naming the class and mission, at plan build.
+`INCLUDE_CHILDREN`: 7h. Each throws `UnsupportedOperationException` naming the class and mission, at plan build. (State at 7f;
+7f2, 7g and 7h lifted them, and nothing throws since 7h.)
 
 **Known divergences.** None numeric. Open by design: the pinned rows (FX6, FX7); the `ComponentGroup` key order follows
 the oracle's flag (FX3) and is unobservable in final layouts on the corpus; `EndLabelSorter`'s map order is insertion
@@ -1363,11 +1455,865 @@ corrected to "edge head and tail labels" at the port site (T5); nothing branches
 **What still throws, and which mission lifts it.** Self loops, `MULTI_EDGE` wrapping, post compaction and
 `compaction.connectedComponents`: 7g (9 pending arms and the staged `ComponentsCompactor`). `INCLUDE_CHILDREN`: 7h (1
 pending arm, `HierarchicalNodeResizingProcessor`, and the compound stages). The enum tally is 49 ported, 10 pending
-(7g 9, 7h 1). Each throws `UnsupportedOperationException` naming the class and mission, at plan build.
+(7g 9, 7h 1). Each throws `UnsupportedOperationException` naming the class and mission, at plan build. (State at 7f2; 7g
+and 7h lifted them: 59 ported, 0 pending.)
 
 **Known divergences.** None numeric. Open by design: the debug-JSON property order follows the landed `JavaHashMap`
 and is compared as a multiset (G3); identity hashes in debug strings are normalised on both sides (G3a); the group and
 `END_LABELS` orders are insertion order (G4, FX2); the label metrics remain a macOS JVM snapshot (FX8).
+
+**Reference platform (#52 ruling, row 10).** macOS on Apple Silicon (arm64) with JDK 21.0.1 is the reference platform for
+JVM measurements. `layered-label-metrics.json` (the FX8 snapshot) was recorded there and is never re-recorded on another OS,
+JDK or CPU; CI uses it as stored. Its file records only `jdk`, so this paragraph is where the platform is recorded. The
+text-sizing seam leaves it unchanged ([Text-sizing seam](#text-sizing-seam)).
+
+## alg.layered, part h: self loops, wrapping and compaction (mission 7g) {#alg-layered-loops}
+
+Mission 7g ported the self loop package (`intermediate/loops` with `ordering` and `routing`) and the four self loop
+processors, `DummySelfLoopProcessor`, graph wrapping (`intermediate/wrapping`), `HorizontalGraphCompactor`
+(`intermediate/compaction`), the layered `compaction` package (`oned`, `components`, `recthull`) and
+`ComponentsCompactor`, and wired the nine arms that create them. `LayeredLayoutProvider.layout` now runs graphs with
+self loops, `SINGLE_EDGE` and `MULTI_EDGE` wrapping, post compaction and `compaction.connectedComponents` (design, idioms
+and runbook in [alg-layered-loops.md](architecture/alg-layered-loops.md)). Decisions:
+`plans/layered-loops-wrapping-compaction/decisions.md` (W1-W14). The pending notes of the earlier parts above (7f and 7f2:
+"self loops, wrapping, post compaction, `compaction.connectedComponents`: 7g") are left as they were written; this
+section states the state after 7g.
+
+**Evidence.**
+
+- `test/golden/refs/java/layered-loops.json` (16,358,809 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-loops-vectors.sh`, `-XX:hashCode=2`): byte-stable; `rowCounts` `full` 731 (self-loops 227,
+  wrapping 156, compaction 184, compaction-splines 80, components-compaction 79, converted 1, issues 4), `models` 307,
+  `scenarios` 525, `sites` 64. `LayeredLoopsVectors.test.ts` replays every row of the four groups through
+  the real provider and enum at the AD-4 bar with 0 mismatches and no row skipped or pinned (1,637 tests, about 8 s
+  alone); `LayeredLoopsSites.test.ts` replays the 64 `sites` rows again under their scenario titles (65 tests). Accepted 7h refusals in
+  the ref: 0. The 51 rows where the oracle throws inside ELK are not recorded.
+- The row pinned by 7f, `models/ptolemy-sinewaveoptimization/N1/DIRECTION_PREPROCESSOR/DOWN`, is unpinned: the fresh row
+  equals the landed `layered-pipeline.json` row and replays with `PINNED_PIPELINE_ROWS` empty (W4).
+  `full/labels/ticket-213_componentsCompaction`, refused by `layered-labels.json`, is the row
+  `full/converted/labels/ticket-213_componentsCompaction`.
+- Java suites: the 10 of `plans/layered-loops-wrapping-compaction/java-baseline.md` (16, 2, 5, 3, 2, 1, 1, 1, 1 and 1
+  oracle runs: `CompactionTest`, `RectlinearConvexHullTest`, `SelfLoopPreprocessorTest`, `SelfLoopHolderTest`,
+  `PolylineSelfLoopRouterTest`, `RoutingDirectorTest`, `Issue433Test`, `Issue444Test`, `Issue463Test`, `Issue870Test`)
+  ported with their own assertions. Oracle runs at mission start equal the baseline (`failures=0`); at mission end: equal
+  to the start run, all 10 suites `failures=0`.
+- Corpus-wide runs (`PIPELINE_SUITES_FULL=1`, `ELK_MODELS_DIR` set): `InLayerConstraintProcessorTest` 550,
+  `LongEdgeJoinerTest` 550, `NodeMarginCalculatorTest` 2,200, `LabelDummyRemoverTest` 550 + 1 non-vacuity,
+  `LabelSideSelectorTest` 551 + 1, `PortListSorterTest` 1,114: 0 failures, counts equal to the oracle's. The 195 + 132
+  failures on `SelfLoopPreProcessor` that 7f and 7f2 recorded are gone. `NodeMarginCalculatorTest` runs all 13 vendored
+  ptolemy models with all four hooks; the `SelfLoopRouter` hook fires on 1 of 13.
+- Breadth sweep (W5, gitignored, issue #53): part a 600 cases (the pipeline sweep's refusals), part b 105 (the label
+  sweep's refusals), part c 2,368 (an option family): 3,073 oracle cases, 2,997 ok, 76 throws (all part c), 0 refusals, 0
+  timeouts. TS at stride 1: 3,073 checked, 2,997 hash-equal, 0 mismatches, 76 throws on both sides. Dropped as out of
+  scope: 6,646 part a and 935 part b cases with no 7g arm in the plan, 50 part b cases refused by `INCLUDE_CHILDREN` (7h),
+  15 that throw `UnsupportedConfigurationException` before a plan holds an arm. The hash treats every NaN as the one
+  canonical NaN; every other value keeps its raw IEEE bits.
+- Twins (W6, W7): every iterated identity-keyed container of the 7g classes replays its rows with the iteration reversed:
+  `ComponentsToCGraphTransformer` (`externalExtensions` 86 rows, `externalPlaceholder` 86, `LEFT_RIGHT`/`UP_DOWN` 86),
+  `ComponentsCompactor` (`externalExtensions` 86, union extensions 110), `SelfHyperLoop.slPortsBySide` 331 rows,
+  `SelfHyperLoop.getSLEdges()` 125 router and 125 post-processor rows, `LGraphToCGraphTransformer` maps, and
+  `NetworkSimplexCompaction.lEdgeMap` 4 rows: all order-independent. R9 (issue #54): `SplineEdgeRouter.getSplinePath` 254 rows,
+  all equal the oracle reversed; `collectVerticalSegmentsSplines` 203 rows, 49 of the 56 with a multi-edge segment equal
+  reversed and 7 match only in insertion order, which the port keeps.
+- Coverage map `plans/layered-loops-wrapping-compaction/unreached.md`: over the 7g classes (89 files), 284 untaken
+  branches and 88 uncovered functions partitioned S 97, J 43, U 211, X 21; 64 site rows close S (31 of 34 scenarios); 174
+  anchored cases; mutation checks killed 121 of 137 mutants (5 equivalent or dead, 11 survivors named in follow-up issue
+  #55). Whole-suite coverage after batch 10: 98.78 / 96.75 / 98.77 / 98.79 (lines / branches / functions / statements).
+- Label metrics: `layered-label-metrics.json` grew append-only from 2,258 to 2,301 keys (43 texts), no existing value
+  changed.
+- Landed vectors and goldens are unchanged; the refs diff adds `layered-loops.json`, the sweep test, 40 vendored inputs
+  under `inputs/loops/` and their manifest rows, and appends keys to `layered-label-metrics.json`.
+
+**Known divergences.** None numeric beyond the maintainer's rulings: issue #53 (the NaN-canonical sweep hash amends W5's
+raw IEEE hex for NaN only; the landed sweeps are untouched) and issue #54 (the port keeps insertion order for the spline
+segment's representative edge, as the flagged oracle does). The ELK oddities the port copies are drafted in the journal's
+T22 row (issue #56).
+
+**Upstream typos (CLAUDE.md carve-out).** None: the journal records no prose typo in the 7g sources.
+
+**What still throws, and which mission lifts it.** `INCLUDE_CHILDREN`: 7h (1 pending arm,
+`HierarchicalNodeResizingProcessor`, and the compound stages `CompoundGraphPreprocessor`, `CompoundGraphPostprocessor`,
+`CrossHierarchyEdge`). The enum tally is 58 ported, 1 pending (7h). Each throws `UnsupportedOperationException` naming the
+class and mission, at plan build. (State at 7g; 7h lifted them: 59 ported, 0 pending, `staged-classes.json` is `[]`; see
+[the 7h section](#alg-layered-compound).)
+
+## alg.layered, part i: compound graphs (mission 7h) {#alg-layered-compound}
+
+Mission 7h ported the `compound` package (`CrossHierarchyEdge`, `CrossHierarchyEdgeComparator`,
+`CompoundGraphPreprocessor`, `CompoundGraphPostprocessor`) and `HierarchicalNodeResizingProcessor`, wired the last pending
+arm of `IntermediateProcessorStrategy`, and proved the hierarchical driver ported in 7f (`doCompoundLayout`,
+`hierarchicalLayout`, `ElkLayeredHierarchy.ts`) against the oracle. `LayeredLayoutProvider.layout` now runs every
+hierarchy-handling mode, `INCLUDE_CHILDREN` included (design, idioms and runbook in
+[alg-layered-compound.md](architecture/alg-layered-compound.md)). Decisions: `plans/layered-compound/decisions.md`
+(H1-H14). The pending notes of the earlier parts above ("`INCLUDE_CHILDREN`: 7h") are left as they were written, each with
+a dated note; this section states the state after 7h: the enum tally is **59 ported, 0 pending**,
+`test/architecture/staged-classes.json` is `[]`, and nothing in the layered algorithm throws a "ported in mission" error.
+
+**Evidence.**
+
+- `test/golden/refs/java/layered-compound.json` (12,237,513 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-compound-vectors.sh`, `-XX:hashCode=2`): byte-stable; 540 rows. Row counts per group and family:
+
+  | Group       | Rows | Families                                                                                                                                                                                                                                                                                          |
+  | ----------- | ---: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `full`      |  355 | issues 17, include-children 253, ptolemy-include 48, hierarchy-aware 16, resizer 21                                                                                                                                                                                                               |
+  | `models`    |   73 | `edge_label_placement-hierarchy01` 30, `ticket-455_longHierarchicalEdges` 27, `ptolemy-clockdrifthierarchy` 6, `ticket-160` 5, `ticket-552` 5; by processor: resizer 41, preprocessor 10, postprocessor 10, `LAYER_SWEEP` 9, `MEDIAN_LAYER_SWEEP` 1, one-sided and two-sided greedy switch 1 each |
+  | `scenarios` |   88 | `CompoundGraphPreprocessor` 48, `CompoundGraphPostprocessor` 28, `ElkLayered` 12                                                                                                                                                                                                                  |
+  | `sites`     |   24 | 19 run rows (one logged: `sites/JsonDebugUtil/loggedCompound`, 89 DOT and JSON pairs) and 5 throw rows                                                                                                                                                                                            |
+
+  `LayeredCompoundVectors.test.ts` replays every row of the four groups through the real driver and enum at the AD-4 bar
+  with 0 mismatches (542 tests, 5.3 s alone at batch 7; budget 30 s); `LayeredCompoundSites.test.ts` replays the 24 `sites`
+  rows again under their scenario titles (27 tests). A `models` row is a stop of the hierarchical run with the whole `LGraph`
+  tree dumped from the root (the preprocessor, each hierarchy-aware processor on the root, the resizer on every graph, the
+  postprocessor). The dump carries `layerNodes` (the node objects of layer-only nodes), added by T1 before any TS existed;
+  with it removed the second recording equals the first on all 516 rows. The five throw rows pin `ElkLayered.java:344`,
+  `SplineSegment.java:247` (`DOWN`, `UP`), `ElkGraphImporter.java:1146` and `LGraphUtil.java:944`; the three older groups
+  are byte-identical to the recording made before the `sites` group existed.
+
+- Goldens (H4): `tools/oracle/regen-goldens.sh --set layered` writes `test/golden/refs/elk-layered/`: 24 refs (four
+  ptolemy hierarchical models × `direction-right`, `-left`, `-down`, `-up`, `hierarchy-include`, `hierarchy-separate`),
+  `_meta.json` naming `jvmFlags` `-XX:hashCode=2`, manifest `test/golden/layered.json`. A second run is byte-identical;
+  `refs/elk` (4) and `refs/elk-algorithms` (9) regenerate unchanged. The 24 cases run without the flag are byte-equal to
+  the committed refs on all 24 ids. `test/golden/layered-hierarchy-goldens.test.ts` (27 tests) compares each at AD-4.
+- Java suites, at mission start (load 11) and at mission end (the `End` column is runs / failures of the
+  mission-end run; the start counts equal `plans/layered-compound/java-baseline.md`, `failures=0` for all):
+
+  | Suite                                                    | Oracle runs (start) | Failures (start) | TS cases | End   |
+  | -------------------------------------------------------- | ------------------: | ---------------: | -------: | ----- |
+  | `issues.Issue316Test`                                    |                   4 |                0 |        4 | 4 / 0 |
+  | `issues.Issue455Test`                                    |                   2 |                0 |        2 | 2 / 0 |
+  | `issues.Issue552Test`                                    |                   1 |                0 |        1 | 1 / 0 |
+  | `issues.Issue596Test`                                    |                   1 |                0 |        1 | 1 / 0 |
+  | `issues.Issue628Test`                                    |                   4 |                0 |        4 | 4 / 0 |
+  | `issues.Issue665Test`                                    |                   1 |                0 |        0 | 1 / 0 |
+  | `issues.Issue700Test`                                    |                   4 |                0 |        2 | 4 / 0 |
+  | `issues.Issue701Test`                                    |                   6 |                0 |        6 | 6 / 0 |
+  | `issues.Issue734Test`                                    |                   3 |                0 |        3 | 3 / 0 |
+  | `org.eclipse.elk.graph.json.test.EdgeCoordsTest`         |                   1 |                0 |        1 | 1 / 0 |
+  | `org.eclipse.elk.graph.json.test.LayoutOptionsTest`      |                   4 |                0 |        4 | 4 / 0 |
+  | `org.eclipse.elk.graph.json.test.IndividualSpacingsTest` |                   3 |                0 |        3 | 3 / 0 |
+
+  The nine issue suites run through the F7 runner with the Java's own assertions (`Issue628Test`'s four `@Configurator`s
+  kept). The graph.json suites run through a scratch copy of `tools/oracle/java-tests.sh` with
+  `org.eclipse.elk.graph.json.test` added (the landed script is not edited); the three methods deferred to 7h are ported
+  into the existing files and their "Deferred" header lines are "Ported" lines. All 97 `alg.layered.test` Java files now
+  have a port. The TS case counts of `Issue665Test` and `Issue700Test` are below the oracle's by the three H13 cases.
+
+- The three H13 pending cases, issue #58 (`needs-ruling`): `Issue665Test` (1 case, `tickets/layered/665_includeChildrenDoesntStop.elkt`)
+  and `Issue700Test` (2 of 4 cases, the same file and `examples/hierarchy/hierarchicalLayoutMixing.elkt`) lay a child out
+  with `elk.stress` (roadmap 8b, unported). The suites are ported whole; `STRESS_PENDING` (`test/helpers/stress-pending.ts`)
+  drops exactly those two inputs and a test pins it; `Issue665Test` reports one skipped test. A third `elk.stress` input,
+  `tickets/layered/588_hierarchicalLayoutNPE.elkt`, is read by no 7h suite and is never vendored.
+- Breadth sweep (H5, gitignored `test/corpus/.compound-sweep/`): part a 45 cases swept (50 candidates before the stress
+  filter), part b 100 (115 candidates), part c 1,024 (256 ptolemy hierarchical files with `INCLUDE_CHILDREN` applied at the
+  root × 4 directions; no file sets it itself): 1,169 oracle cases, 1,164 ok, 5 throws (part b: all
+  `tickets/layered/425_selfLoopInCompoundNode.elkt`), 0 timeouts, 0 refusals. TS at stride 1: 1,164 hash-equal, 5 throws
+  equal (a `TypeError` at the import step against the oracle's `NullPointerException`), 0 mismatches, 47.8 s. Out of scope
+  for `elk.stress`: 1 model in part a, 3 in part b. The hash is 7g's (raw IEEE hex, NaN canonical, issue #53).
+- Twins (H3): every iterated identity-keyed container of the 7h classes replays its rows with the iteration reversed, over
+  the 516 rows of `full`, `models` and `scenarios`: preprocessor `dummyNodeMap.entrySet()` 369 rows reached, 0 differ;
+  preprocessor `crossHierarchyMap.keySet()` 297, 0; preprocessor values before the sort 67, 0; postprocessor values 197, 0;
+  postprocessor `dummyEdges` 321, 0; postprocessor `crossHierarchyMap.keySet()` 238, of which 7 differ (13 ids with the six
+  `sites` run rows). The one observable order: re-attaching the original edges in key order lists a shared port's edges in
+  key order in the intermediate tree; the exported layout of both runs is string-identical. Largest containers: `dummyNodeMap`
+  23 (47 rows above 10), `dummyEdges` 29 (62 rows), `crossHierarchyMap` keys 16 (4 rows), sorted value lists 6; the observable
+  site has at most 6 keys. The order a treeified bucket would use is not established.
+- Coverage map `plans/layered-compound/unreached.md`: in-scope untaken items S 43, J 31, U 187, open 26 (E 721 not listed);
+  7h classes from the whole compound evidence 99.6 % statements, 98.0 % branches, 100 % functions, 99.6 % lines (the five
+  untaken arms are dead by the Java). 16 site scenarios (`Sc1`-`Sc16`) plus 17 H8 closure rows. 42 anchored cases.
+- Mutation checks (T15): 206 mutants in scratch copies of the worktree; the replay stage killed 168, class tests and twins 17
+  more, 21 survived. The survivors are equivalent mutants, or reached but not observed by any recorded field; the latter are
+  follow-up issue #60 with probe-verified oracle graphs. The anchored files alone kill 129 of the 206.
+- Whole suite after batch 8: coverage 98.82 / 96.83 / 98.78 / 98.82 (lines / branches / functions / statements), 956 files,
+  45,206 tests. `npm test` at mission start: 923 files, 44,185 tests, 82.4 s at load 11.
+- Label metrics: 16 label texts appended to `layered-label-metrics.json` by its script (16 added keys, no existing value
+  changed). Landed vectors, goldens and refs are unchanged; the refs diff adds `layered-compound.json`, `refs/elk-layered/**`,
+  `golden/layered.json`, 31 vendored inputs under `inputs/compound/` with their manifest rows, and the sweep test.
+
+**Known divergences.** None found. Checked: every one of the 540 rows at the AD-4 bar (numeric within 1e-6, everything else
+exact, tree level paths and `crossHierarchyMap` included); the 24 goldens, with and without `-XX:hashCode=2`; the 1,164 ok
+and 5 throw sweep cases; the reversal twins of every hashed container of the 7h classes. Two reports that disagreed during the
+run were reconciled and are not divergences: `ticket-425_selfLoopInCompoundNode` completes through the recorder's inline export
+and throws in the sweep's `.elkt` load, on the oracle and in the port alike. Helper defects found by the replays (the
+comparator's value forms, the `layerNodes` encoding) and the missing `toString` of the TS multimaps (`src/guava/Multimap.ts`,
+the debug JSON printed `LinkedHashMultimap@H` for the root's `crossHierarchyMap`) were fixed at their origin; none was a
+layout divergence.
+
+**Oracle throws the port reproduces (issue #61, `needs-ruling`).** U1: `SPLINES` in `DOWN` or `UP` under `INCLUDE_CHILDREN`
+throws `NullPointerException` at `SplineSegment.java:247` (inputs `040`, `160`, `701`; the port throws a `TypeError` in
+`SplineSegment.anchorY`). U2: `425_selfLoopInCompoundNode.elkt` throws `NullPointerException` at `ElkGraphImporter.java:1146`.
+U3: `FIXED_RATIO` with a hierarchical port throws `NullPointerException` at `LGraphUtil.java:944`, because
+`CompoundGraphPreprocessor.java:182-185` passes `null` for `portNodeSize`. Each is pinned by a `sites` throw row. U4
+(`LayerSweepCrossingMinimizer.java:193-194` tests one option twice) and U5 (`moveExternalPorts`, `HierarchicalNodeResizingProcessor.java:207-220`,
+is overwritten for every nested graph) are oddities the port keeps. Nothing is filed upstream.
+
+**Open arms (issue #59, `needs-ruling`).** 25 arms handed over by earlier missions are neither reached nor proven dead: six of
+`NorthToSouthRoutingStrategy`/`SouthToNorthRoutingStrategy` and 19 of 7c's list. They stay as they are.
+
+**Upstream typos (CLAUDE.md carve-out).** None: the journal records no prose typo in the 7h sources.
+
+**What still throws.** Nothing in the layered algorithm. The enum tally is 59 ported, 0 pending; the staged list is empty.
+Three cases wait for `elk.stress` (row 8b, issue #58).
+
+## Tree algorithms: mrtree, radial, vertiflex (mission 8a) {#alg-trees}
+
+Mission 8a ported the bundles `alg.mrtree`, `alg.radial` and `alg.vertiflex`, generated their option classes and providers,
+and proved them against the oracle (design, splits, shims and runbook in [alg-trees.md](architecture/alg-trees.md)).
+Decisions: `plans/alg-trees/decisions.md` (TR1-TR10). `test/architecture/staged-classes.json` is `[]` and `PENDING_TYPES`
+is `[]`. The providers are registered explicitly (`registerLayoutMetaDataProviders`), not by `getInstance()` (TR5, deviated:
+staged provider classes, not `PENDING_TYPES`, because of the tripwire `test/melk/model-algorithms.test.ts:121-123`).
+
+**Evidence.**
+
+- Vector refs under `test/golden/refs/java/` (oracle `8aaa3c14`, `-XX:hashCode=2`, two cold JVMs byte-identical; the mission-end
+  cold re-records are `cmp`-identical):
+
+  | Ref                 | Rows | full | stops | throws | Recorder                              |
+  | ------------------- | ---: | ---: | ----: | -----: | ------------------------------------- |
+  | `mrtree.json`       |  188 |  122 |    54 |     12 | `tools/vectors/MrTreeVectors.java`    |
+  | `mrtree-extra.json` |  213 |  140 |    68 |      5 | the same launcher, second output      |
+  | `radial.json`       |  309 |  148 |   150 |     11 | `tools/vectors/RadialVectors.java`    |
+  | `vertiflex.json`    |  471 |  247 |   216 |      8 | `tools/vectors/VertiFlexVectors.java` |
+
+  `mrtree-units.json` (`tools/vectors/MrTreeUnitVectors.java`): 2,656 rows: `edgeRouter` 422, `cyrusBeck` 46, `orderBalance` 18,
+  `average` 2,170. The two files beyond the three refs the brief names were added during the run (journaled; queue gate 6).
+  The recorded throws of `mrtree.json` are 9 `IllegalArgumentException` at `ElkUtil.java:938`, 2
+  `StringIndexOutOfBoundsException` at `FanProcessor.java:128` and 1 `NullPointerException` at `NodePlacer.java:219`.
+
+- Replays: `MrTreeVectors.test.ts` (both mrtree refs, 401 rows), `RadialVectors.test.ts` (309), `VertiFlexVectors.test.ts` (471)
+  run every row through the real provider: 0 mismatches except the two classified radial rows below. Isolated transitions
+  for each mrtree processor (88 each) and for every radial and vertiflex step match at 1e-6.
+- Goldens (TR2): `tools/oracle/regen-goldens.sh --set trees` writes `test/golden/refs/elk-trees/`: 40 refs (the `trees` set
+  of `test/golden/trees.json`; 37 from T4 and 3 retargeted `*-generated-retarget` entries added by T4's `fix`), equal to the
+  TS layout at AD-4 in `test/golden/tree-goldens.test.ts`. `default`, `algorithms` and `layered` regenerate byte-identically.
+- JUnit: `MrTreeGraphSizeTest` 6 of 6 and `CenterOnRootTest` 2 of 2 ported with the Java's assertions; the oracle runs at the
+  start and at the end of the mission are 6 / 0 and 2 / 0 (`plans/alg-trees/java-baseline.md`). `alg.vertiflex` has no
+  test bundle.
+- Sweep (TR6), 906 cases per algorithm (898 retarget and 8 generated); oracle throws mrtree 89, radial 365, vertiflex 553 and
+  1 timeout (`de_trilateration_Trilateration`, counted, not chased). With layered registered in a scratch driver (what row 9
+  will do): mrtree ok 814, mismatch 3, both-throw 89; radial ok 538, mismatch 3, both-throw 365; vertiflex ok 350, mismatch 2,
+  both-throw 553, excluded 1; 0 `ts-only-throw`, 0 `oracle-only-throw`. With the tool as committed (core and the three tree
+  providers): mrtree ok 657, mismatch 153, both-throw 89, ts-only 7; radial ok 417, mismatch 131, both-throw 358; vertiflex
+  ok 279, mismatch 73, both-throw 553, excluded 1. Every non-ok case is diagnosed: option keys of providers the tool does
+  not register (153 / 124 / 73), seven models that need layered as the child default, the eight residual cases listed under
+  the divergences, nothing else. A both-throw case compares the class.
+- Coverage: whole project 98.87 / 96.91 / 98.82 / 98.87 (lines / branches / functions / statements); mrtree 99.6 / 98.7 /
+  99.5 / 99.6, radial 99.3 / 96.7 / 98.8 / 99.3, vertiflex 99.5 / 97.4 / 100 / 99.5. The branches and functions no recorded
+  scenario reaches are in `plans/alg-trees/unreached.md`.
+- Hashed containers (TR3): vertiflex has none; mrtree's iterated sites are `ComponentsProcessor.java:240-262` (`JavaHashMap`,
+  `PROPERTY`) and `FanProcessor.java:39, 42, 123` (`JavaHashMap`, `STRING`; a reversed twin reproduces all 88 stops, so the
+  order is unobservable); radial's iterated identity sets are the I30 sites (`RadialUtil.java:77, 224`), whose order is
+  observable on one treeified row (see below). Two JVMs without `-XX:hashCode=2` differ from the mrtree ref on 0 of 188 rows
+  and from the radial ref on 54 rows.
+- Recursion (TR7): kept verbatim; a 2,000-deep path and caterpillar per algorithm complete in oracle and port, with and without
+  `--jitless`, with layouts equal at 1e-6.
+
+### Upstream quirks kept (mission 8a) {#alg-trees-quirks}
+
+Each is read from the Java and reproduced; all are "kept: upstream behaviour". Java paths are under
+`org.eclipse.elk.alg.<bundle>`.
+
+mrtree:
+
+- `ComponentsProcessor.java:240-262`: the doubled `!isHierarchical()` test and the never-read `broadestRow`.
+- `ElkGraphImporter.java:213`: the private `toNodeBorder`, never called.
+- `TGraph.toString`: the text starts with "null"; an empty graph returns null.
+- `TEdge.toString`: the `hashCode()` fallback prints `e_<identityHashCode>`, stable per edge and not the JVM's number (never
+  compared with the oracle).
+- `TreeUtil.java:115-116, 163-164`: `TREE_LEVEL` compared by boxed reference (the `Integer` cache boundary at 127 is visible: an
+  edge between two nodes of one level above 127 routes with bend points; the oracle and the port agree).
+- `ComponentsProcessor.java:249`: a property default compared by reference (unobservable, see alg-trees.md § 5).
+- `FanProcessor.java:105`: `String` reference comparison; the port models the identity of the `String` objects.
+- `FanProcessor.java:128`: `substring` throws `StringIndexOutOfBoundsException` (BFS two-parent rows); `CompactionProcessor.java:53-55`
+  returns after `begin` without `done`; its direction `switch` (`:78`, `:110`) has no case for `UNDEFINED`; `indexOf` by
+  `Pair.equals` can return an earlier level with equal bounds.
+- `NodeOrderer.java:116` sorts ascending although the comment says the leaves go last, so the fill-gaps loop (`:151-160`)
+  never runs.
+- `OrderBalance` is referenced by nothing at the pin and `OrderBalance.process` never calls `done()`; `NodePlacer` threads a
+  `level` through `firstWalk` and `apportion` and never reads it; `NodePlacer.java:341` recurses forever on a node that is its own
+  right sibling (`StackOverflowError`).
+- `NeighborsProcessor.java:104`: a node with two parents in one level becomes its own sibling (BFS treeifying).
+- `DirectionProcessor.java:41`: `UNDEFINED` rewrites unchanged values; `NodePlacer.java:101-105` writes `DIRECTION = DOWN` into the
+  graph.
+- `LevelProcessor.java:50` (journaled as `:48-49`): a double lookup with a fallback to 0 that no node reaches.
+- `EdgeRouter.java:215` `start.y < first.x` mixes axes; `:695` `scale(1 / 2)` is an integer division (scales by 0); `:698`
+  `i += 2*2*2*2*2`; `:648` a non-short-circuit `&`; `:368-371` the final `else` also takes `DOWN` and `UNDEFINED`; gap bend
+  placeholders stay (0, 0) when both neighbours are null; unused `root` and `nodeBendpointPadding` locals (the `getRoot` call stays,
+  it can throw); `cyrusBeck` (`:603`) is private and has no caller.
+- `MultiLevelEdgeNodeNodeGap` reads `LEVELMIN` and `LEVELMAX` from `neighborTwo` in the first-node arm.
+- `EdgeRouter.java:313-315, 328-330`: `DoubleStream.average` (a compensated sum; vector-proven, alg-trees.md § 6).
+- `edgeRoutingMode=NONE` with an edge throws `IllegalArgumentException` at `ElkUtil.java:938` (9 recorded rows).
+- `MrTree.java:77-83` and `:184-193` are `elkjs-exclude` blocks, dropped (core-engine M2). `InteractiveMrTreeGraphVisitor`
+  is referenced by no class; the `interactive` rows are inert. `TreeUtil.depth`, `rootDistance`, `getSubtree`, `turnLeft`,
+  `turnRight`, `TLabel`, `CompactionMode` and `GraphProperties` are ported and unused.
+- `GraphBoundsProcessor.java:35-41`: the `min` throw shadows the `max` arm.
+
+radial:
+
+- `EadesRadial.java:108`: operator precedence (`currentRadius / currentRadius + radius`), so `tau` is NaN for every child while
+  `RADIUS > 0` and the `tau < maxAlpha - minAlpha` arm is reached only for a negative `RADIUS`.
+- `CrossingMinimizationPosition.java:64` computes `rootY` from `root.getX()`; `:71-73, 83-85` mutate the node's `POSITION`
+  vector in place across the evaluations.
+- `GeneralRotator.java:30-45` calls `begin` and never `done`.
+- `RadiusExtensionOverlapRemoval.java:91` sorts and discards the result; `:73` cannot be false inside `:59`.
+- `RadialUtil.shiftClosestEdgeToRadi` (`:277`) and `AbstractRadiusExtensionCompaction.getCompactionStep` (`:184`) have no
+  caller; `OverlapRemovalStrategy` is unused and ported anyway (TR9).
+- The fuzzy polar comparator is not transitive, so a list of 32 or more elements could sort differently from Java's `TimSort`
+  (no recorded row is that large; the sweep is the check).
+- `PolarCoordinateSorter.java:84`: the `arc <= DEGREE_135` false arm is reachable only for a NaN arc.
+- Radial position-based options need `org.eclipse.elk.position` on every node (`NullPointerException` at `RadialUtil.java:154`
+  otherwise); `compactor=RADIAL_COMPACTION` with `sorter=POLAR_COORDINATE` throws it too.
+
+vertiflex:
+
+- `RelativeXPlacer.java`: the fall-through in `splitNodesWithModelOrder`; the `splitGroup` loop that never advances `i`; the
+  always-true `if (i < childrenSize)` (`:352`); `considerNodeModelOrder` read once on the root and once as a node property
+  (`:197`).
+- `NodeComparator.java:45-46` and `RelativeXPlacer.java:455-456` unbox `NODE_MODEL_ORDER`, null for nodes reached through
+  hierarchy-crossing edges: a `NullPointerException`, a `TypeError` in the port (the shim `src/java/lang/Unbox.ts`).
+- `BendEdgeRouter.java:70` unboxes `EDGE_BEND_HEIGHT` (null: `NullPointerException`); the BEND epsilon `1e-4` is not
+  distinguished by any recorded row.
+- The vertiflex throws at `:65` (cycle without a root), `:72` (two parents, self loop), `:151` (vertical constraints) and `:147`
+  (`ClassCastException` for an edge to a port) are reproduced by class.
+
+### Known divergences (mission 8a) {#alg-trees-divergences}
+
+- Radial `stops/i30/rand-chain-big` and `full/i30/rand-chain-big` of `radial.json` (issue #64, `needs-ruling`). The next-level
+  sets of levels 2 and 3 hold 12 identity-hashed nodes each; under `-XX:hashCode=2` they share one bin of the oracle's `HashSet`
+  and iterate in that bin's tree order, which sets the cyclic neighbour pairs `overlapLayer` tests and so the number of
+  extension steps (`n16.x` expected 299.01798935, port 305.85611690). The port keeps insertion order (AD-10). 449 of 3,000 seeded
+  permutations of the three `getNextLevelNodeSet` results reproduce the oracle stop at 1e-6. Both rows are classified in
+  `TREEIFIED_DIVERGENCES` (`RadialVectors.test.ts`), which asserts the stops row equals the oracle up to the step before
+  `RadiusExtensionOverlapRemoval` and differs at it, so the list cannot hide another defect. The other two treeified rows
+  (`shapes/binary4-sym`, `i30/four-parents-big-12`) match.
+- The last-ulp `Math.sin` case in the sweep: `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`. HotSpot's
+  `Math.sin(1.6073462520335293)` is ...4178, V8 and `StrictMath` give ...4177 (`EadesRadial.java:102`); the only difference
+  is the string `layoutOptions.childAreaHeight` ("2561.1171089266686" against "2561.117108926668"); geometry agrees within 1e-13
+  and no discrete decision flips. Known-divergences list of AD-4.
+- Seven sweep cases whose option keys belong to unported providers: `hierarchicalLayoutMixing` (mrtree) and
+  `interactiveRectpacking_{hierarchy,oneBigNode}` (each algorithm), `missing layoutOptions.desiredPosition` and
+  `desiredEdgeLength` (rectpacking and force; mission 8x). With the three mislabelled golden entries (`*-generated`,
+  recorded with layered) they are issue #68 (`needs-ruling`).
+- Stack depth: the port overflows at 2,500-3,500 deep in four of six probe shapes where the oracle overflows at 3,500-7,000
+  (issue #67, `follow-up`).
+
+**Upstream typos (CLAUDE.md carve-out).** Two progress-monitor task names, message strings nothing branches on and no ref
+records: `AbsoluteXPlacer.java:32` "AbsolutPlacer" is "AbsolutePlacer" in the port (asserted by `VertiFlexPhases.test.ts`), and
+`GeneralRotator.java:30` "General 'Rotator" (a stray quote) is "General Rotator" (asserted by `GeneralRotator.test.ts`). Each
+port site carries a comment naming the upstream text.
+
+**Upstream defects the ports copy (issue #65, `needs-ruling`).** BFS two-parent trees, `edgeRoutingMode=NONE`, the boxed and
+`String` reference comparisons, `EadesRadial.java:108`, cyclic graphs that pass the tree checks and others; drafts for upstream,
+nothing filed upstream.
+
+**What still throws.** Nothing in the three algorithms is staged. `NodeMicroLayoutTest` still needs force, stress and
+rectpacking (mission 8x).
+
+## Force, stress and disco (mission 8b) {#alg-force-disco}
+
+Mission 8b ported the bundles `alg.force` (the force layout `elk.force` and the stress layout `elk.stress`) and `alg.disco`,
+generated their option classes and providers, and proved them against the oracle (design, evidence tables, `JavaMath.log`, the
+hashed-container table and runbook in [alg-force-disco.md](architecture/alg-force-disco.md)). Decisions:
+`plans/alg-force-disco/decisions.md` (FD1-FD10). `test/architecture/staged-classes.json` is `[]` and `PENDING_TYPES` is `[]`.
+The providers are registered explicitly (`registerLayoutMetaDataProviders`), not by `getInstance()` (FD5); `PolyominoOptions` is
+registered beside `DisCoMetaDataProvider`, as `ElkOracle.java:218-221` does.
+
+**Evidence.**
+
+- Vector refs under `test/golden/refs/java/` (oracle `8aaa3c14` with patches 0001 and 0002, `-XX:hashCode=2`; three cold runs
+  by the recording agent and one by the orchestrator `cmp`-identical to each committed ref):
+
+  | Ref           |   Rows | full | stops | throws | log    | Recorder                          |
+  | ------------- | -----: | ---: | ----: | -----: | ------ | --------------------------------- |
+  | `force.json`  | 20,804 |  594 |   194 |      2 | 20,014 | `tools/vectors/ForceVectors.java` |
+  | `stress.json` |    431 |  320 |   108 |      3 |        | the same launcher, second output  |
+  | `disco.json`  |    185 |   92 |    88 |      5 |        | `tools/vectors/DiscoVectors.java` |
+
+  The recorded throws: force `UnsupportedGraphException` "Graph must not contain hyperedges." at `ElkGraphImporter.java:122`
+  (force 2 rows, stress 3); disco `IndexOutOfBoundsException` at `TwoBitGrid.java:95` and `:225`, `NullPointerException` at
+  `ElkGraphComponentsProcessor.java:108`, `IllegalArgumentException` "Passed edge is not 'simple'." at `ElkGraphUtil.java:633`
+  and `NegativeArraySizeException` "-4" at `TwoBitGrid.java:117`.
+
+- Replays: `ForceVectors.test.ts` (594 full, 194 stops, 2 throws: 259,243 hex doubles, all raw-bit identical),
+  `StressVectors.test.ts` (320, 108, 3: 135,229 hex doubles, all raw-bit identical), `DiscoVectors.test.ts` (92, 88 with all
+  seven stops, 5: 75,002 fields raw-bit identical and 32 within 1e-6 only, maximum 8.5e-14, none beyond; the known divergence
+  below). Isolated replays of the graph classes: 906 force and stress stops raw-bit identical; 518 polyominoes raw-bit
+  identical.
+- Goldens (FD2): `tools/oracle/regen-goldens.sh --set force-disco` writes `test/golden/refs/elk-force-disco/`: 45 refs (force 15,
+  stress 10, disco 20), twice byte-identically; `resolvedAlgorithm` equals the entry's algorithm in 45 of 45;
+  `test/golden/force-disco-goldens.test.ts` (51 tests) compares every entry with its ref at AD-4. `default` (4), `algorithms`
+  (9), `layered` (24) and `trees` (40) regenerate byte-identically.
+- JUnit: `ForceImportTest` 3 of 3 and `TwoBitGridTest` 3 of 3 ported with the Java's assertions; the oracle runs at mission start
+  are 3 / 0 and 3 / 0 (`plans/alg-force-disco/java-baseline.md`); at mission end:
+  3 / 0 and 3 / 0 again.
+- Sweep (FD6), oracle `sweep.sh --filter /<alg>/`, TS through `ts-layout-compare.ts` (layered registered): force planned 906,
+  ok 815, mismatch 2, both-throw 89; stress planned 898, ok 807, mismatch 2, both-throw 89; disco planned 906, ok 0, mismatch
+  819 (all `optionsOnly`), both-throw 87; 0 `ts-only-throw` and 0 `oracle-only-throw` in all three. The oracle throw counts
+  (89, 89, 87) equal `docs/parity-report.md`. 0 mismatches are without a mechanism (below).
+- Coverage: the two bundles 99.93 % statements (1,480 of 1,481), 98.67 % branches (298 of 302), 100 % functions (295 of 295),
+  99.93 % lines; the whole project at the batch 5 gate 98.9 / 96.94 / 98.86 / 98.91 (statements / branches / functions /
+  lines) over 47,912 tests; at mission end 98.9 / 96.95 / 98.86 / 98.91 over 47,913 tests.
+- Hashed containers (FD4): the one order-observable site is `ElkGraphTransformer.java:70-71` (`incoming/outgoingExtensionsMapping`,
+  read at `adjustedPorts`). A reversed-order twin changes the result in 2 of the 41 `stops` rows with extension entries
+  (`stops/extShared/default`, `stops/extSharedInOut/default`) and there differs from the oracle beyond 1e-6, so the oracle used
+  insertion order; the other 39 are bit-identical either way; no row matches neither order. The force bundle has none.
+- `Math.log` (FD3): `EadesModel.attractive` calls the fdlibm `JavaMath.log`; the 20,014 `log` rows are raw-bit equal (native V8
+  differs on 101, 0.50 %); proven on the oracle's arm64 JVM 21.0.1, unverified on x86_64.
+- Recursion (FD7): kept verbatim; a 2,000-node path completes in the oracle, in TS and under `--jitless` for force, stress and
+  disco. Beyond it TS overflows before the oracle (issue #70, `follow-up`).
+- `U` rows: `plans/alg-force-disco/unreached.md` lists the 16 `U` rows (branches proven dead from the Java, each with its Java
+  line and whether a unit test forces the arm); "neither reached nor proven dead" is empty. The four branches coverage reports
+  unreached are rows 7, 8, 12 and 16.
+
+### Upstream quirks kept (mission 8b) {#alg-force-disco-quirks}
+
+Each is read from the Java and reproduced; all are "kept: upstream behaviour". Java paths are under
+`org.eclipse.elk.alg.<bundle>`.
+
+force:
+
+- `AbstractForceModel.java:187-208` `avoidSamePosition`: `triedForBendPoints` is declared inside the `while` body, so it is
+  always `false` at its test, and `triedForBendPoints = true` (`:189-196`) is a dead write. For two coincident `FBendpoint`s
+  (antiparallel edges, `repulsivePower` > 0) the loop never ends: the port hangs on the same input (issue #69). `uVector ==
+vVector` (`:184` block) compares two distinct objects and is always false, so the `-2` arm of `:200` is dead.
+- `ComponentsProcessor.java:136-139` `dfs` lists an edge that closes a cycle twice in `component.getEdges()`, as the same
+  object; the first `rebuildGraph` of a replay creates two `FEdge`s for it unless it rebuilds by name.
+- `ComponentsProcessor.recombine` with several components returns an `FGraph` whose bend-point list is empty (`moveGraph`
+  does not fill it).
+- `ComponentsProcessor.java:227`, `:238`: `broadestRow` is written and never read. `:222` multiplies in binary32 after a
+  `(float)` narrowing, then widens into `Math.max`.
+- `ComponentsProcessor.split`'s `separate == null` arm, `ForceLayoutProvider.java:96` (`else` of `randomSeed != null`) and
+  `FBendpoint.java:53` (`"b_" + hashCode()`) cannot be reached (`U` rows 4, 5, 7).
+- `ElkGraphImporter.java:122` rejects hyperedges with `UnsupportedGraphException`.
+- `ElkGraphElement.getProperty` stores a copy of a cloneable default (`ElkPadding`, `ElkMargin`) on first read, so reading
+  `CoreOptions.PADDING` mid-run changes what `ElkGraphImporter.applyLayout` later reads for `ForceOptions.PADDING`.
+- stress: `StressMajorization.java:261` (the final `else` throw of `getOther`) is dead through the API (`U` row 15).
+
+disco:
+
+- `DisCoPolyominoCompactor.java:224` builds `new Polyominoes<>(polys, aspectRatio, fill)`, a fresh holder, so
+  `polyomino.lowLevelSort`, `highLevelSort` and `traversalStrategy` have no effect (issue #69; 12 goldens pin it).
+- `ElkGraphUtil.firstEdgeSection(edge, false, false)` creates a (0,0)-(0,0) section for an edge without one; it does not
+  throw (rows `noSection` and `corpus20` are `full` and `stops` rows).
+- `ElkGraphComponentsProcessor.java:108`: `sameHierarchyLevel` dereferences `getParent()` of a parentless layout node, so a
+  parent-port edge on a root layout node throws `NullPointerException` (port: `TypeError` with the HotSpot message; the
+  `ext*` rows nest `g` in a root).
+- `CoreOptions.ASPECT_RATIO` defaults to null, so an unset aspect ratio takes `compact()`'s null arm.
+- `DCPolyomino.fillCells` blocks only the cells that cross or contain the shape boundary: a grid-aligned component blocks none,
+  `getFilledBounds` then returns sentinels and `applyToDCGraph` wraps in 32 bits (the `extBoundary*InRange` rows), so `Int32`
+  operations are mandatory there. A negative `aspectRatio` makes `TwoBitGrid` allocate a negative-size array
+  (`NegativeArraySizeException`, `TwoBitGrid.java:117`).
+- `DEBUG_DISCO_POLYS` and `DEBUG_DISCO_GRAPH` are set on the layout node (programmatic options, recorded in the rows' `debug`
+  list) and are kept (FD9). `DisCoLayoutProvider.java:78-79` has a `default` arm with a `System.out.println` that one enum value
+  makes unreachable (`console.log` in the port). `DisCoPolyominoCompactor.java:187` `denominator == 0.0`, `JUNCTION_POINTS !=
+null` and `adjacentNodes != null` false arms are dead (`U` rows 10-14).
+- Parallel streams in `ElkGraphComponentsProcessor` rethrow a copy whose stack is the caller's; the recorded throws use the
+  root cause. The port is sequential in encounter order.
+
+### Known divergences (mission 8b) {#alg-force-disco-divergences}
+
+- Last-ulp `Math.sin` and `Math.cos` in `ElkGraphTransformer.getOrthogonalPoints` (`ElkGraphTransformer.java:627-642`), inside
+  the 1e-6 bar (AD-4 known-divergences list). 32 numeric fields, all in `import` stops of `multi6/spacing60`, `multi6/combo2`
+  and `bends/{default,thickness3,thickMixed,junctions}` (edge contours); every later stop is bit-exact. A controlled experiment
+  replayed the 491 distinct call inputs of the 88 disco runs in the oracle JVM (21.0.1, arm64): `atan2` (171 inputs) is
+  bit-identical in V8, `Math` and `StrictMath`; V8 equals `StrictMath` on all 160 `cos` and all 160 `sin` inputs; HotSpot's
+  `Math.cos` differs from it on 9 and `Math.sin` on 5, by one ulp. No tolerance was loosened; no contour cell flips in any
+  row.
+- `layoutOptions.debug.discoGraph` (issue #71 item 1, `needs-ruling`): the oracle writes the `Object.toString()` of the
+  `DCGraph` (`DisCoLayoutProvider.java:86`; no `toString`), `...DCGraph@1` under `-XX:hashCode=2`; the port writes
+  `[object Object]`. In all 20 disco goldens and every disco sweep row that lays out (819 of 906; 1,503 occurrences). The
+  goldens test asserts the ref value matches the identity pattern and neutralises that one key; geometry is compared in full.
+  The 819 disco sweep mismatches are options-only for this key; a scratch classification finds 817 equal in full, and the
+  other 2 are the rectpacking models below. A TS `toString` would add what the Java lacks.
+- Option keys that depend on the unported rectpacking provider (issue #71 item 2, `needs-ruling`; issue #68's family): golden
+  `force--iterations-50` (the ref names the option `force.iterations`, the port `iterations`, because
+  `rectpacking.packing.compaction.iterations` shares the suffix; an explicit `SUFFIX_DIFFERENCES` row with a tripwire that
+  fails once rectpacking is registered) and 6 sweep cases `retarget/{force,stress,disco}/default/examples/user-hints/
+interactive-constraints/interactiveRectpacking_{hierarchy,oneBigNode}` (`layoutOptions.desiredPosition`). Closed by 8c.
+- Upstream defects the ports copy (issue #69, `needs-ruling`): the `avoidSamePosition` hang and DisCo's no-op polyomino options,
+  as listed under the kept quirks; drafts for upstream, nothing filed upstream.
+- Stack depth: TS overflows on a path of 16,000 nodes (4,000 under `--jitless`) where the oracle completes (issue #70,
+  `follow-up`).
+- `Math.log` is bit-exact on the oracle's arm64 JVM 21.0.1 and unverified on x86_64 (FD3).
+- The held-back stress cases (issue #58, `needs-ruling`): `STRESS_PENDING` is untouched; the three cases pass from temporary
+  copies with `elk.force` and `elk.stress` registered; two further blockers are `layered-label-metrics.json` (four label texts
+  missing) and the two models that are not vendored.
+
+**Upstream typos (CLAUDE.md carve-out).** None: the journal records no prose typo in the `alg.force` and `alg.disco` sources.
+
+**Landed code fixed at the origin.** `TwoBitGrid.newWords` now throws `NegativeArraySizeException` (new shim
+`src/java/lang/NegativeArraySizeException.ts`) for a computed negative size; `JsonExporter` writes a list-valued option as
+`AbstractCollection.toString`. No landed expected value changed. See [translation-rules.md](translation-rules.md).
+
+**What still throws.** Nothing in force, stress or disco is staged. `NodeMicroLayoutTest` still needs rectpacking (mission 8x);
+`PlainJavaInitializationTest` and `ElkReflectTest` wait for the remaining algorithms (8x, after 8c).
+
+## Rectpacking, spore and topdownpacking (mission 8c) {#alg-packing}
+
+Mission 8c ported the bundles `alg.rectpacking` (`elk.rectpacking`), `alg.spore` (`elk.sporeOverlap` and `elk.sporeCompaction`) and
+`alg.topdownpacking` (`elk.topdownpacking`), generated their option classes and providers, and proved them against the oracle
+(design, evidence tables, decisions as built and runbook in [alg-packing.md](architecture/alg-packing.md)). Decisions:
+`plans/alg-packing/decisions.md` (PK1-PK12). `test/architecture/staged-classes.json` is `[]` and `PENDING_TYPES` is `[]`. The
+providers are registered explicitly, not by `getInstance()` (PK8); `SporeMetaDataProvider` registers both spore algorithms.
+
+**Evidence.**
+
+- Vector refs under `test/golden/refs/java/` (oracle `8aaa3c14` with patches 0001 and 0002, `-XX:hashCode=2`; an orchestrator cold
+  rerun of each recorder is `cmp`-identical to the committed ref):
+
+  | Ref                   |  Rows | full | stops | throws | other                          | Recorder                                   |
+  | --------------------- | ----: | ---: | ----: | -----: | ------------------------------ | ------------------------------------------ |
+  | `rectpacking.json`    | 1,356 |  558 |   151 |      7 | sort 640                       | `tools/vectors/RectPackingVectors.java`    |
+  | `spore-layout.json`   |   339 |  113 |    60 |      4 | minst 95, jitter 4, objects 63 | `tools/vectors/SporeLayoutVectors.java`    |
+  | `topdownpacking.json` |   898 |  296 |   288 |     18 | predicted 296                  | `tools/vectors/TopdownPackingVectors.java` |
+
+  Two of the counts are the result of additive extensions (rows appended at the end of the scenario lists; every earlier row
+  byte-identical as JSON text and in the same order): `rectpacking.json` 1,343 to 1,356 and `spore-layout.json` 274 to 276
+  (T14b: arms no row reached), then 276 to 339 (the `objects` group).
+
+- Replays: `RectPackingVectors.test.ts` (at T12, before the extension: 552 full rows with 66,304 doubles bit-exact, 145 stops
+  rows with 1,069 stops and 132,339 doubles bit-exact, 6 throws; now 558, 151, 7, and the sort group), `SporeLayoutVectors.test.ts`
+  (at T11: full 111 of 112, stops 59, minst 95, throws 4, jitter 4 by invariants; 67,980 doubles, all raw-bit identical),
+  `TopdownPackingVectors.test.ts` (296 full, 288 stops with the real row-list lengths, 296 predicted, 18 throws).
+  `JavaObjects.test.ts` replays the 63 `objects` rows. Isolated replays of the classes: rectpacking p1 165 stops (149 greedy),
+  p3 34 stops (2,960 hex values bit-exact), p2 165 stops; spore 34,992 hex doubles over the stops and 13,636 over the `minst` rows.
+- Goldens (PK2): `tools/oracle/regen-goldens.sh --set packing` writes `test/golden/refs/elk-packing/`: 44 refs (rectpacking 17,
+  sporeCompaction 13, sporeOverlap 7, topdownpacking 7), regenerated `diff -r` identical by the orchestrator; `resolvedAlgorithm`
+  equals the entry's algorithm in 44 of 44; `test/golden/packing-goldens.test.ts` (49 tests) compares every entry at AD-4 and the
+  four `--minst-ties-<n>` entries are named in one test title. The five landed sets regenerate byte-identically.
+- JUnit: `PaddingTest` 4, `CompactionTest` 10, `Issue583Test` 1, `UtilsTest` 3, `ScanlineOverlapRemovalTest` 1,
+  `TopdownPackingTest` 4, `TopdownLayoutTest` 5, `PortPlacementCalculationTest` 2: 30 runs ported with the Java's assertions;
+  the oracle runs at mission start are the same 30 runs, 0 failures (`plans/alg-packing/java-baseline.md`).
+- Sweep (PK9), oracle `sweep.sh --filter /<alg>/` under `-XX:hashCode=2`, TS through `ts-layout-compare.ts`:
+
+  | Algorithm       | planned |    ok | mismatch | both-throw | ts-only-throw | oracle-only-throw | nondeterministic (excluded) |
+  | --------------- | ------: | ----: | -------: | ---------: | ------------: | ----------------: | --------------------------: |
+  | rectpacking     |     919 |   830 |        0 |         89 |             0 |                 0 |                           0 |
+  | sporeOverlap    |     906 | 94-97 |      0-3 |      20-21 |             0 |               0-1 |                         788 |
+  | sporeCompaction |     906 |    99 |        0 |          0 |             0 |                 0 |                         807 |
+  | topdownpacking  |     906 |   906 |        0 |          0 |             0 |                 0 |                           0 |
+
+  The sporeOverlap ranges are four cases (below). No timeout and no hang; nothing from the sweep is committed (AD-5). The 6
+  residual cases of 8b (`interactiveRectpacking_{hierarchy,oneBigNode}` under force, stress and disco) and the 7 tree
+  residuals of issue #68 item A are `ok` with every provider registered. The `force--iterations-50` row of `SUFFIX_DIFFERENCES`
+  in `test/golden/force-disco-goldens.test.ts` is removed (51 tests pass against the unchanged ref).
+
+- Coverage, each bundle from its own tests: rectpacking 99.38 % statements, 98.12 % branches (418 of 426), 98.46 % functions;
+  spore 99.21 %, 100 % (85 of 85); topdownpacking 98.61 %, 96.42 % (54 of 56); the whole project at the batch 5 gate 98.92 / 96.99 /
+  98.84 / 98.92 (statements / branches / functions / lines) over 49,156 tests. `plans/alg-packing/unreached.md` lists 18 `U` rows and
+  one arm neither reached nor proven dead (`Compaction.java:364`, issue #81).
+
+### Upstream quirks kept (mission 8c) {#alg-packing-quirks}
+
+Each is read from the Java and reproduced; all are "kept: upstream behaviour". Java paths are under
+`org.eclipse.elk.alg.<bundle>`.
+
+rectpacking:
+
+- `p2packing/Compaction.java:412` `placeNextBeside` adds the next block to the row without `nextBlock.setParentRow(row)` (the
+  other two sites set it, `:165` and `:323-324`), so the block keeps its old parent row and is appended out of x order. When
+  the row is compacted again (`RowFillingAndCompaction.java:117` `rowIdx--`), `wasFromNextRow` (`Compaction.java:101`) is true
+  for a block already in the row, the block is added twice, and `absorbBlocks` (`:266-269`) moves a rectangle from a block into
+  itself forever: a hang on the oracle and in the port (issue #73).
+- `util/RectRow.java:170-178` `removeBlock` reduces the row width even when the block is not in the row; the Compactor sets row
+  width and height directly, so 35 of 381 recorded row widths (at T6) differ from `notifyAboutNodeChange`; block `minWidth`,
+  `maxHeight` and `averageHeight` depend on the call history.
+- `Compactor.java:69-93`: with `compaction.iterations` above 1 the ROWS list at `after:Compactor` is the first iteration's
+  while node positions are a later accepted iteration's.
+- `util/BlockStack.java:155-168` `placeRectsIn` stores `currentY` (with the trailing spacing) as the stack height.
+- `util/RectRow.java:98-108` `calculateBlockStacks` has no caller; on four recorded rows it does not rebuild the recorded
+  stacks (below).
+- `p2packing/Compactor.java:193-194` `copyPosition`'s child loop is dead: `clone()` copies only direct children.
+- `p1widthapproximation/AreaApproximation.java:154-157` `findBestCandidate` returns null when more than two placement options
+  tie, and `:98` dereferences it: two 0 by 0 children with `spacing.nodeNode = 0` throw `NullPointerException` (a `TypeError` in the
+  port; row `throws/arm/noBestCandidate`).
+- `RectPackingLayoutProvider.java:223-224` adds `MIN_SIZE_POST_PROCESSOR` before P2. `InteractiveRectPackingGraphVisitor` is
+  applied by no code under `plugins/` (so `interactiveLayout` has no effect in a headless run), and its `endsWith` at `:47` tests
+  the id against the option value in the reversed direction (kept).
+- `Compaction.java:74` writes "There should not be an empty block..." to `System.err` on recorded inputs: `console.error`.
+- `util/Block.java:176` (the `rows.size() > 0 ? ... : 0` else arm) is dead: `getLastRow()` at `:168` has already thrown.
+
+spore:
+
+- `ElkGraphImporter.java:167-169`: `(Math.random() - 0.5) * 0.001` shifts a centre that equals one already in `nodeMap`; unseeded
+  (PK4, the policy of the one-argument `Collections.shuffle`).
+- `ElkGraphImporter.java:227-241` `updateGraph`: two nodes at identical centres collapse in `nodeMap`; `put` replaces the value and
+  only the last-put node is placed.
+- `ElkGraphImporter.java:69` `minRootDistance` without a root throws `NullPointerException`; `MaxSTPhase.java:44-46` takes
+  `vertices.get(0)` when the fixed preferred root names no child.
+- `OverlapRemovalLayoutProvider.java:67-72` overwrites the `processingOrder.*` options of sporeOverlap; `:59-60` reads
+  `hasProperty` on the compaction option and `getProperty` on the overlap option (verbatim).
+- `NodeMarginCalculator.java:218-223` overwrites explicit `CoreOptions.MARGINS` on children: spore ignores them.
+- `ScanlineOverlapCheck.java:166` ("Invalid hitboxes for scanline overlap calculation.", `IllegalStateException`) is reachable
+  from ordinary small overlapping inputs (897 of 200,000 in the recorder's search; row `throws/overlap/scanlineHitboxes`).
+- `ElkUtil.debugFolderPath('spore')` is `null` in the port and the Java concatenates the string `"null..."`; the five sites write
+  `String(...)` (`DelaunayTriangulationPhase.java:46`, `MinSTPhase.java:62`, `MaxSTPhase.java:48`, `GrowTreePhase.java:52`,
+  `ShrinkTreeCompactionPhase.java:46`); nothing is written to disk. `DEBUG_SVG` is a programmatic option and is kept.
+- `ElkGraphUtil.java:633` rejects a hyperedge (`IllegalArgumentException` "Passed edge is not 'simple'.").
+
+topdownpacking:
+
+- `GridElkNode.java:67-76` `put` **inserts** with `add(col, item)` (`:73`): every row list is `cols` plus its node count long,
+  and `BottomRowEqualWhitespaceEliminator.java:58` walks back over the nulls.
+- `NodeArrangementStrategy.java:38-40` and `WhitespaceEliminationStrategy.java:40-42`: single-constant enums whose `default` arms
+  no input reaches (`U` row 15).
+- The engine never calls a provider for a childless node, so `full/n0/default` is the untouched 0 by 0 root; a direct provider call
+  (`stops/n0/default`) gives a 4 by 4 root.
+- `ArrayList.add(index)` and `get(index)` throw with different texts ("Index: -1, Size: 2" against "Index -1 out of bounds for length
+  2"); both are JVM texts recorded in `topdownpacking.json`, compared by class and frame.
+
+### Known divergences and classified rows (mission 8c) {#alg-packing-divergences}
+
+- **PK7: 213 of the 640 `sort` rows (issue #75, `needs-ruling`).** `InteractiveNodeReorderer.java:56-63` returns `-1` for equal
+  `desiredPosition`s in both directions. `Array.prototype.sort` with the verbatim comparator reproduces 427 rows (all 310 of length
+  1-31 and 117 of the 330 of length 32-64). The 213 that differ are listed in `test/helpers/rectpacking-sort-classified.ts` and the
+  test asserts the two lists equal the computed differing set exactly:
+  - `JAVA_ONLY_THROW_ROWS`, 34 rows where only the JVM throws `IllegalArgumentException` "Comparison method violates its general
+    contract!": ids `sort/L<n>/v2` for every length `n` from 32 to 64 (33 rows) and `sort/L34/v8`.
+  - `ORDER_DIFFERENCE_ROWS`, 179 rows where both sorts finish and the orders differ, all of length 32 or more: ids
+    `sort/L<n>/v<k>` with `k` = 1 (33 rows), 3 (20), 4 (12), 5 (16), 7 (33), 8 (32), 9 (33).
+    No TimSort was written and no OpenJDK source was read (AD-9).
+- **Four `RectRow.test.ts` rows (issue #78, `needs-ruling`).** The T6 test "resetStacks followed by calculateBlockStacks rebuilds
+  the recorded stacks of every row" held for the first recording; the four rows added by T14b make it fail:
+  `stops/arm/fixedBlockSkip/default`, `.../fixedBlockSkipSpaced/default`, `.../staleParentRow/default` and
+  `.../staleParentRowNoSpacing/default` (children not in x order, `Compaction.java:309-325`, `:411-413`; the rebuilt stacks number
+  3, 3, 5, 4 against 2, 2, 4, 3 recorded). A JVM probe of the Java method on the oracle gives the same counts as the port, so the
+  expectation was a premise and not an oracle observation. The test now collects the differing rows and asserts the set equals
+  `CHILDREN_NOT_X_GROUPED_ROWS` (those four ids) exactly.
+- **Four nondeterministic sporeOverlap sweep cases (issue #79, `needs-ruling`).** Oracle-nondeterministic through the PK4 jitter,
+  yet both sweep runs agreed, so they carry `ok` or `throws` and flicker in the TS comparison: `retarget/sporeOverlap/default/`
+  `tests/layered/node_placement/flexible_ports/graph01`, `.../tests/layered/edge_label_placement/layerSelection_widest`,
+  `.../tickets/layered/401_portConstraintsOfCompoundNodes` and the ptolemy model
+  `.../realworld/ptolemy/hierarchical/ptolemy_electricpowersystem_GeneratorRegulatorProtectorSimXRhapsodyFMUMetronomy`. Twelve oracle
+  runs of `graph01` wrote 10 distinct outputs. They are never compared and the tool does not classify them (row 9 owns it).
+- **Jitter rows (PK4).** The 4 `jitter` rows (corpus inputs x2, `dup5` x2) record invariants only: node count, no remaining
+  overlap and an input-derived displacement bound; the TS test checks the same over three runs. Recorded `full` and `stops` rows and
+  the spore goldens have distinct centres. The 788 and 807 `nondeterministic` sweep cases are counted, not compared.
+- **The flag-gated chain row.** `full/compaction/chain2000/default` (a 2,000-node path, `DepthFirstCompaction` cubic) runs only with
+  `SPORE_CHAIN_FULL=1`; with the flag it equals the oracle row (8,004 doubles), measured at 321 s under vitest. The explicit-stack
+  conversions of `DepthFirstCompaction.compactTree` and `GrowTreePhase.growAt` (PK6) are proven against verbatim recursive copies
+  (`*.explicit-stack.test.ts`); beyond 2,000 nodes the port's stack limit is below the oracle's at the unconverted sites (issue #76,
+  `follow-up`).
+- **Upstream defects the ports copy.** Issue #73 (`follow-up`, the `absorbBlocks` hang, no row or golden reaches it), issue #80
+  (`needs-ruling`, seven further defects: the `AreaApproximation.java:98` NPE, the unused visitor and its reversed `endsWith`,
+  `RectRow.removeBlock`, the stale parent row, dead `calculateBlockStacks` and `copyPosition`, spore's overwritten margins,
+  `ScanlineOverlapCheck.java:166`); drafts for upstream, nothing filed upstream.
+- **Open arm.** `Compaction.java:364` (`placeBeside`, `shouldRowHeigthBeReevalauted && nextBlockHeight > nextBlock.getMinHeight()`)
+  is neither reached by any row nor proven dead (issue #81, `follow-up`).
+
+**Landed shim fixed at the origin.** `src/java/util/JavaObjects.ts` `equals` called `a.equals(b)` without an identity test. The JVM's
+`Objects.equals` is true for one and the same object, so a vector with a NaN component (not equal to itself under
+`KVector.equals`) was not recognised by `TTriangle.contains` (`TTriangle.java:138-141`) in `BowyerWatsonTriangulation`; the
+super-triangle edges stayed in the set and `ElkGraphImporter.nodeOf` found no node (`TypeError`) where Java went on. The sweep
+found it (14 sporeOverlap mismatches and 5 `ts-only-throw` across sporeOverlap and sporeCompaction, all ptolemy hierarchical
+models). The fix returns true for `typeof a === 'object' && a === b` before `a.equals(b)` (objects only, so `0` and `-0` stay
+unequal as under `Double.equals`). The Javadoc of `Objects.equals` does not state the identity test, so AD-9 required a vector: the
+group `objects` of `spore-layout.json` (63 rows appended after every existing row; `rowCounts` gains `objects: 63`) records that
+`Objects.equals(v, v)` is true and `v.equals(v)` false for a `KVector` with a NaN component, that two distinct vectors with equal
+NaN bits are unequal under both, that `TTriangle.contains` is true for its own NaN vertex object and false for a distinct copy, that
+a `TEdge` with a NaN endpoint equals itself and an edge over the same vertex objects in either order and not one over distinct
+copies, and that a boxed `Double` NaN equals NaN while `0.0` and `-0.0` are unequal. `src/java/util/JavaObjects.test.ts` replays all
+63; the eight landed `JavaObjects` tests pass unchanged. After the fix sporeCompaction has 0 findings and the affected sporeOverlap
+cases are both-throw.
+
+**Landed code changed for PK3 and PK6.** `src/graph/ElkGraphPackage.ts` holds a list of classes per interface name (`registerImpl`
+appends once, `isInstance` is true for any registered class; `GridElkNode` registers under `ElkNode` and its super-interfaces);
+`src/alg/common/spore/DepthFirstCompaction.ts` `compactTree` is an explicit-stack loop. No landed expected value changed.
+`test/golden/force-disco-goldens.test.ts` registers the new providers and drops the `force--iterations-50` suffix row; its ref is
+unchanged. `tools/corpus/ts-layout-compare.ts` registers the three metadata providers and gains `neutraliseIdentity` (the
+maintainer's ruling on issue #71 item 1: assert the oracle value matches `DCGraph@<hex>`, neutralise that one key on both sides).
+
+**Upstream typos (CLAUDE.md carve-out).** One progress-monitor task name, a message string nothing branches on and no ref records:
+`ToAspectratioNodeExpander.java:51` reads "To Aspect Ratio Whitesapce Eliminator"; the port reads "To Aspect Ratio Whitespace
+Eliminator" (`ToAspectratioNodeExpander.ts:26`), with a comment at the site naming the upstream text;
+`ToAspectratioNodeExpander.test.ts` asserts the corrected string. No other prose typo in
+the three bundles is recorded in the journal.
+
+**What still throws.** Nothing in rectpacking, spore or topdownpacking is staged. `NodeMicroLayoutTest`,
+`PlainJavaInitializationTest` and `ElkReflectTest` (mission 8x) are unblocked.
+
+## TS corpus sweep (roadmap row 9) {#ts-corpus-sweep}
+
+Roadmap row 9 (issue #40, mission `ts-parity-dashboard`, 2026-11-13) ran every case of the oracle sweep through the TS engine, for
+all 14 algorithms, in one sharded run, and published the per-algorithm result in the parity report. Design, runner protocol,
+summary contract and runbook: [parity-dashboard.md](architecture/parity-dashboard.md). Decisions: `plans/ts-parity-dashboard/decisions.md`
+(TP1-TP8).
+
+**Inputs.** Oracle: ELK `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` plus seam patches 0001 and 0002, run with
+`JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:hashCode=2"`; models commit `ac5af2ba511c0037e4f347e8bd91f013950951c7`;
+macOS arm64, JDK 21.0.1, Node v26.3.1. The oracle sweep has 18,930 cases (wall 110 s, 8 shards, no parse errors, 0 `oracle-error`,
+1 `timeout`: `retarget/vertiflex/default/realworld/ptolemy/flattened/de_trilateration_Trilateration`). It replaced a stale
+10,881-row filtered partial (2026-11-05) that a `sweep.sh` run with a filter and no `--out` had written over the full sweep. The
+previous committed report had 18,023 cases (patch 0001 only); this one has 907 more (layered native 6,265 to 7,160, rectpacking
+native 21 to 24, one more generated input for each of nine algorithms). The TS sweep ran with the defaults: 14 algorithms, 8
+shards, 120 s per case; wall 44.7 s, 18,930 cases with one category each, 0 `ts-aborted`, slowest case about 5.0 s
+(`retarget/force/…/de_trilateration_Trilateration`).
+
+**Result** (from the TS summary the report was generated with; `TS conformant` is `ok` + `both-throw` out of planned minus
+`excluded`):
+
+| algorithm         | planned |    ok | mismatch | both-throw | ts-only-throw | oracle-only-throw | ts-aborted | excluded | options-only mismatches |          TS conformant |
+| ----------------- | ------: | ----: | -------: | ---------: | ------------: | ----------------: | ---------: | -------: | ----------------------: | ---------------------: |
+| `box`             |     898 |   898 |        0 |          0 |             0 |                 0 |          0 |        0 |                       0 |     898 / 898 (100.0%) |
+| `disco`           |     906 |   819 |        0 |         87 |             0 |                 0 |          0 |        0 |                       0 |     906 / 906 (100.0%) |
+| `fixed`           |     898 |   869 |        0 |         29 |             0 |                 0 |          0 |        0 |                       0 |     898 / 898 (100.0%) |
+| `force`           |     906 |   817 |        0 |         89 |             0 |                 0 |          0 |        0 |                       0 |     906 / 906 (100.0%) |
+| `layered`         |    7163 |  7144 |        0 |         19 |             0 |                 0 |          0 |        0 |                       0 |   7163 / 7163 (100.0%) |
+| `mrtree`          |     906 |   817 |        0 |         89 |             0 |                 0 |          0 |        0 |                       0 |     906 / 906 (100.0%) |
+| `radial`          |     906 |   540 |        1 |        365 |             0 |                 0 |          0 |        0 |                       1 |      905 / 906 (99.9%) |
+| `random`          |     906 |   534 |        0 |          0 |             0 |                 0 |          0 |      372 |                       0 |     534 / 534 (100.0%) |
+| `rectpacking`     |     919 |   830 |        0 |         89 |             0 |                 0 |          0 |        0 |                       0 |     919 / 919 (100.0%) |
+| `sporeCompaction` |     906 |    99 |        0 |          0 |             0 |                 0 |          0 |      807 |                       0 |       99 / 99 (100.0%) |
+| `sporeOverlap`    |     906 |    94 |        0 |         21 |             0 |                 1 |          0 |      790 |                       0 |      115 / 116 (99.1%) |
+| `stress`          |     898 |   809 |        0 |         89 |             0 |                 0 |          0 |        0 |                       0 |     898 / 898 (100.0%) |
+| `topdownpacking`  |     906 |   906 |        0 |          0 |             0 |                 0 |          0 |        0 |                       0 |     906 / 906 (100.0%) |
+| `vertiflex`       |     906 |   352 |        0 |        553 |             0 |                 0 |          0 |        1 |                       0 |     905 / 905 (100.0%) |
+| total             |   18930 | 15528 |        1 |       1430 |             0 |                 1 |          0 |     1970 |                       1 | 16958 / 16960 (99.99%) |
+
+**Categories** (`classify` and `abortedOutcome` in `tools/corpus/ts-layout-classify.ts`; every case gets exactly one).
+
+- `ok`: the oracle verdict is `ok` and the TS output equals the oracle output at the AD-4 bar (`compareLayout`).
+- `mismatch`: both laid out and the outputs differ, or both threw but different exception classes. `optionsOnly` marks a
+  mismatch whose every difference is under a `layoutOptions` object (no geometry).
+- `both-throw`: the oracle threw and TS threw the same class (`NullPointerException` and `TypeError`, `StackOverflowError`
+  and `RangeError`; every other class by its Java simple name).
+- `ts-only-throw`: the oracle laid out, TS threw.
+- `oracle-only-throw`: the oracle threw, TS laid out.
+- `ts-aborted`: the TS run was cut short. The detail is `timeout` (past `--timeout-ms`; the child got SIGKILL), `exit <code or
+signal>` (the child died mid-case) or `startup timeout` (a fresh child did not announce `ready` within 60 s). The case
+  was never compared, so it is a finding, not a pass.
+- `excluded`: the oracle verdict is `nondeterministic` or `timeout`; there is nothing to compare against. The exclusions here
+  are the 372 unseeded `random` cases (§ Core layouts), the spore cases whose two oracle runs differ through the
+  `Math.random` jitter (§ Rectpacking, spore and topdownpacking), and the one oracle `timeout` case of `vertiflex`.
+- Reported (listed under `## TS findings`): `mismatch`, `ts-only-throw`, `oracle-only-throw`, `ts-aborted`.
+
+The in-process path (`summarize`, `runComparison`, `execute`) keeps the six categories without `ts-aborted`, because a landed
+test pins that key set (AD-13); the sharded sweep (`SWEEP_CATEGORIES`, `summarizeSweep`) has seven. Whether to fold the two
+lists is issue #82 (maintainer's decision).
+
+**Residual re-runs (TP8): all 13 are `ok`.**
+
+- Issue #68 item A (7 cases): `retarget/mrtree/default/examples/hierarchy/hierarchicalLayoutMixing`;
+  `retarget/{mrtree,radial,vertiflex}/default/examples/user-hints/interactive-constraints/interactiveRectpacking_{hierarchy,oneBigNode}`.
+- Issue #71 item 2 (6 cases):
+  `retarget/{force,stress,disco}/default/examples/user-hints/interactive-constraints/interactiveRectpacking_{hierarchy,oneBigNode}`.
+
+**Findings by mechanism.**
+
+1. **A landed-port defect, fixed here (one module).** `native/layered/hierarchy-include/examples/user-hints/model-order/modelOrderCycleBreaking`
+   was `oracle-only-throw`. The oracle throws `NullPointerException: Cannot invoke "java.lang.Integer.intValue()" because the
+return value of "org.eclipse.elk.alg.layered.graph.LGraph.getProperty(org.eclipse.elk.graph.properties.IProperty)" is
+null` at `ModelOrderCycleBreaker.java:70`. Under `hierarchyHandling: INCLUDE_CHILDREN`, `ElkGraphImporter.java:380-384` sets
+   `MAX_MODEL_ORDER_NODES` and `CB_NUM_MODEL_ORDER_GROUPS` on the top-level graph only, and the property has no default
+   (`InternalProperties.java:425`), so a nested graph with `cycleBreaking.strategy: MODEL_ORDER` unboxes null. The port read
+   it inside `Math.max(n, null)`, which is `n` in JavaScript, and laid the graph out. The fix is in
+   `src/alg/layered/p1cycles/ModelOrderCycleBreaker.ts`: both properties are read through `unboxInteger`
+   (`src/java/lang/Unbox.ts`), with a unit test carrying the oracle's message in `ModelOrderCycleBreaker.test.ts`. The case is
+   now `both-throw`; layered is 7,144 `ok` and 19 `both-throw` of 7,163.
+   - Sibling sites, not fixed here (two more modules; issue #83, `follow-up`): `GreedyModelOrderCycleBreaker.java:37` and
+     `SCCModelOrderCycleBreaker.java:97` throw the same NPE in the oracle on a crafted nested graph, and the port lays out. No
+     corpus case reaches them.
+   - The upstream defect itself, that nested graphs get no `MAX_MODEL_ORDER_NODES`, is issue #84 (`needs-ruling`, with a draft
+     upstream issue). The port keeps the Java behaviour; the maintainer decides whether to file it.
+2. **A known last-ulp `Math.sin` divergence (issue #68 item B, accepted).** `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`
+   is the one `mismatch`, options-only: `layoutOptions.childAreaHeight` is `"2561.1171089266686"` in the oracle and
+   `"2561.117108926668"` in the port. It is already listed in § Known divergences (mission 8a) and annotated `#68`; the 0.01 px
+   audit is issue #74.
+3. **Spore jitter (issue #79, oracle nondeterminism, not a port defect).** `ElkGraphImporter.java:167-169` (spore) shifts
+   coincident centres by `(Math.random() - 0.5) * 0.001`, unseeded. In this oracle sweep the four cases of #79 are
+   `nondeterministic` (their two oracle runs differed), so they are `excluded`. Two further cases have verdict `throws`,
+   because both oracle runs threw by chance:
+   `retarget/sporeOverlap/default/realworld/ptolemy/hierarchical/ptolemy_electricpowersystem_GeneratorRegulatorProtectorSimXFMU`
+   (24 repeated oracle runs: 20 throws, 4 layouts, all 4 distinct; 12 TS runs: 6 `both-throw`, 6 `oracle-only-throw`) and
+   `retarget/sporeOverlap/default/realworld/ptolemy/hierarchical/ptolemy_test_auto32_GeneratorRegulatorProtectorSimXFMU` (24
+   oracle runs: 16 throws, 8 distinct layouts; 12 TS runs: 9 and 3). So a TS sweep shows 0, 1 or 2 `oracle-only-throw`
+   findings from these two; the final run shows 1 (`test_auto32`), and two earlier runs of the same oracle sweep differed in
+   exactly this one case. All six cases are annotated `#79` in `tools/corpus/ts-findings.json`; annotations change no
+   category or count. How the sweep treats them (a wider determinism check, a list of known cases, or leaving them) is the maintainer's decision under #79.
+
+No `ts-only-throw` and no `ts-aborted` case exists in this run.
+
+**Reproduce.** Run from the repository root with the oracle built (§ 4); `ELK_ORACLE_DIR` and `ELK_MODELS_DIR` as in
+`CLAUDE.md`. Expected exit codes are in the runbook of [parity-dashboard.md](architecture/parity-dashboard.md#parity-dashboard-runbook).
+
+1. Oracle sweep, full, into the default directory `$ELK_ORACLE_DIR/sweep/<elk>-<models>/` (about 2 minutes):
+   `JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:hashCode=2" nice -n 10 tools/oracle/sweep.sh`.
+2. TS sweep, all algorithms, `min(cores, 8)` shards, 120 s per case; it exits 1 while findings exist:
+   `npx tsx tools/corpus/ts-layout-compare.ts --out "$TMPDIR/ts-final.json"`. Narrower or slower runs take
+   `--algorithms radial,box`, `--filter examples/`, `--shards 4` and `--timeout-ms 300000`.
+3. Write the report, then check that it is current (exit 0 current or written, 1 stale, 2 usage or tool error):
+   `npx tsx tools/corpus/parity-report.ts --write --ts-summary "$TMPDIR/ts-final.json"`, then the same command without
+   `--write`.
+4. Mirror the report into the site and build it: `npm run docs:build`.
+
+The commands are a list, not a fenced block, on purpose: `test/docs/translation-lint.test.ts` requires every translated copy
+of this page to carry the same code fences as this file, and the page has none.
+
+A filtered oracle sweep (`--filter`, `--limit`) must pass `--out <scratch dir>`; without it, it overwrites the default
+directory that the report reads.
+
+**Supersedes.** `parity-report.ts` now requires `--ts-summary <file>` (exit 2 without it). The report command shown in § 3
+("Parity report (D9)") and in the § 6 gates table is without the flag and is older than this section; use the commands above.
+
+## Text-sizing seam (roadmap row 10) {#text-sizing-seam}
+
+Roadmap row 10 (issue #41, mission `text-sizing-seam`, 2026-11-13) made the oracle's label-text measurement pluggable, so that
+a platform-independent measure can be compared between the oracle and the TS port. Design and runbook:
+[text-sizing-seam.md](architecture/text-sizing-seam.md). Decisions: `plans/text-sizing-seam/decisions.md` (TX1-TX8).
+
+**What was patched, and why only the test bundle (TX1).** Patch `0003` changes only `test/org.eclipse.elk.alg.test`. At the pin
+the one place that measures text is `TestConfiguration.computeLabelSize` (AWT font metrics). No plugin measures text:
+`Core.melk` declares `font.name` and `font.size` as programmatic options, and no plugin reads them for sizing. The patch adds
+no class or method to a plugin bundle, and the golden harness and the vector recorders never size a label.
+
+**Two modes, and which side uses which (TX3).** With the property unset the oracle measures through AWT as before, and the TS
+runner keeps the FX8 snapshot (`layered-label-metrics.json`) as its default measurer. Fixed mode is the normalized,
+platform-independent path; both sides use it only for the oracle-against-TS comparison of label-bearing models. The snapshot
+is neither replaced, re-recorded nor extended.
+
+**The fixed measure (TX4).** `width = text.length() * 6.0` and `height = 12.0`, where `length()` counts UTF-16 units as JS
+`.length` does. Both constants are integers, so every result is exact and no `Math.*` call is involved. Line breaks are not
+special. This is not a font model.
+
+**Evidence.**
+
+- Non-impact of the patch on the default mode (TX7), three checks. Class hashes: 1,348 `.class` entries before the rebuild and
+  1,351 after; the only differences are `TestConfiguration.class` (changed) and `AwtTextMeasurer`, `FixedAdvanceTextMeasurer`
+  and `TextMeasurer` (added), so every class of the 16 jars of `oracle-build.json` and of every other test bundle is
+  byte-identical. JUnit in
+  default mode over the 43 runner suites: 5,619 runs, 0 failures, and the output equals the one before the patch. The AWT
+  re-measure through the patched `TextMeasurer.fromSystemProperty()` equals the FX8 snapshot on 2,317 of 2,317 texts, and the
+  output file is byte-identical to the committed snapshot. No vector recorder is rerun, because none has
+  `org.eclipse.elk.alg.test` on its classpath.
+- `test/golden/refs/java/label-sizing.json` (TX6a; recorder `tools/vectors/label-sizing-vectors.sh`, fixed mode; macOS arm64,
+  JDK 21.0.1, `-XX:hashCode=2`): 17 `texts` rows and 119 vendored label-bearing models (108 under `test/golden/inputs/labels/`,
+  19 under `test/corpus/elkt-curated/`, 8 content duplicates dropped), 1,052 label rows of which 131 are `preset` by the model,
+  no `throws`. `test/golden/label-sizing.test.ts` (239 tests) checks, for all 119 models, the label keys in order and every text,
+  size and `preset` flag exactly, and the TS layout against the oracle's at 1e-6. With the fixed advance mutated to 7 in
+  scratch, 230 of the 266 tests of the two new test files fail.
+- Corpus comparison (TX6b): 759 label-bearing elk-models (209 `elkt`, 550 `json`) with 21,753 label rows, of which 1,513 are
+  sized by the measurer and 20,240 are preset by the model. The oracle's sizes are local only (AD-5), under
+  `$ELK_ORACLE_DIR/sweep/label-sizing/`; `test/corpus/label-sizing-sweep.test.ts` compares every row exactly and skips without
+  its input directory. Result: 759 of 759 models and 21,753 labels equal. The directory lies under `sweep/` because
+  `tools/oracle/build.sh` treats a new untracked directory at the oracle root as a stale worktree (issue #85).
+- Runner parity in fixed mode (TX6c), 43 suites. The oracle ran 5,619 JUnit runs with 0 failures, per class equal to default
+  mode; the TS runner ran 5,669 tests with 0 failures and 1 skipped. The TS runner describe equals the JUnit line for 41 of 43
+  classes. The other two, `Issue665Test` (JUnit 1, TS 0) and `Issue700Test` (JUnit 4, TS 2), are the three stress-dependent
+  cases of issue #58 and differ identically in default mode, so the measurer is not the cause. These runs used a scratch copy
+  of `tools/oracle/java-tests.sh` with `org.eclipse.elk.alg.common.test` added to its test bundles, because three suites live
+  there; the committed script covers the `alg.layered.test` and `alg.test` bundles only.
+- Regenerated refs (TX8), by script only: the `patches` array of the nine `_meta.json` files gained
+  `0003-alg.test-pluggable-label-text-measurer.patch`, and nothing else moved (`regen-generated.sh` left no diff). The parity
+  report changed in its patch line only. A fresh oracle sweep also moves six `sporeOverlap` verdicts (unseeded jitter, issue
+  #79) and every timing column, so those rows were not regenerated and wait for the ruling in issue #86; the committed report
+  was not regenerated from the fresh sweep, and `parity-report.ts` without `--write` reports it stale against the live cache.
+
+**Reference platform (#52 ruling).** The row's evidence is recorded on macOS on Apple Silicon (arm64) with JDK 21.0.1, which
+the maintainer ruled the reference platform for JVM measurements.
+
+**Left out.** A font model (not wanted: the fixed measure approximates nothing); the four label texts that
+`layered-label-metrics.json` lacks (issue #58, unchanged, and the runner still throws naming a missing text); the snapshot
+itself, which this mission does not re-record, extend or edit.
 
 ## Temporary gaps
 
@@ -1393,14 +2339,14 @@ the registry check subtracts them (`test/melk/held-back.ts`).
 **Deferred graph.json JUnit cases (J6).** `transferLayout` is covered meanwhile by the JVM replay
 `test/graph-json/transfer-replay.test.ts` (13 cases); 31 of the 36 upstream methods are ported.
 
-- `EdgeCoordsTest` (whole file, one method): needs the layered algorithm; closed by mission 7h.
-- `IndividualSpacingsTest.importIndividualSpacingsTest`: needs layered; closed by mission 7h.
+- `EdgeCoordsTest` (whole file, one method): needs the layered algorithm; closed by mission 7h (ported, T11).
+- `IndividualSpacingsTest.importIndividualSpacingsTest`: needs layered; closed by mission 7h (ported, T11).
 - `SectionsTest.preserveSectionIdsTest`: needs the `random` algorithm; closed by mission 5.
 - `TransferLayoutTest.transferLayoutEdgeSectionExistsTest`: needs the `random` algorithm; closed by
   mission 5.
 - `LayoutOptionsTest.exportLayoutOptions`: layered's `priority.direction` (`Layered.melk:732`) makes
   the suffix `direction` ambiguous on the JVM, so `getShortOptionKey` writes `elk.direction`; the
-  CoreOptions-only port (J10) writes `direction`; closed by mission 7h.
+  CoreOptions-only port (J10) writes `direction`; closed by mission 7h (ported, T11).
 - Converter rows for the algorithms `fixed`, `box`, `random` and the `""`/"Other" category
   (`MISSION5_PROVIDERS`; `CoreOptions.ts` withholds them): closed by mission 5.
 - Parse inputs strip `layering.layerId` and `crossingMinimization.positionId` (J7 amendment,

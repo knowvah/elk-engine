@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
-import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
@@ -52,6 +51,16 @@ import { PortSideProcessor } from './PortSideProcessor.js';
 import { ReversedEdgeRestorer } from './ReversedEdgeRestorer.js';
 import { SemiInteractiveCrossMinProcessor } from './SemiInteractiveCrossMinProcessor.js';
 import { SortByInputModelProcessor } from './SortByInputModelProcessor.js';
+import { SelfLoopPreProcessor } from './SelfLoopPreProcessor.js';
+import { SelfLoopPortRestorer } from './SelfLoopPortRestorer.js';
+import { SelfLoopRouter } from './SelfLoopRouter.js';
+import { SelfLoopPostProcessor } from './SelfLoopPostProcessor.js';
+import { BreakingPointInserter } from './wrapping/BreakingPointInserter.js';
+import { BreakingPointProcessor } from './wrapping/BreakingPointProcessor.js';
+import { BreakingPointRemover } from './wrapping/BreakingPointRemover.js';
+import { SingleEdgeGraphWrapper } from './wrapping/SingleEdgeGraphWrapper.js';
+import { HierarchicalNodeResizingProcessor } from './HierarchicalNodeResizingProcessor.js';
+import { HorizontalGraphCompactor } from './compaction/HorizontalGraphCompactor.js';
 
 /**
  * Section of `IntermediateProcessorStrategy` (mission 7e decision R5, P1): the body of the Java `create()` switch.
@@ -94,7 +103,7 @@ function createBeforePhase2(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'LABEL_DUMMY_INSERTER':
       return new LabelDummyInserter();
     case 'SELF_LOOP_PREPROCESSOR':
-      throw notPorted('SelfLoopPreProcessor', '7g');
+      return new SelfLoopPreProcessor();
     case 'LAYER_CONSTRAINT_PREPROCESSOR':
       return new LayerConstraintPreprocessor();
     case 'PARTITION_MIDPROCESSOR':
@@ -120,7 +129,7 @@ function createBeforePhase3(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'SEMI_INTERACTIVE_CROSSMIN_PROCESSOR':
       return new SemiInteractiveCrossMinProcessor();
     case 'BREAKING_POINT_INSERTER':
-      throw notPorted('BreakingPointInserter', '7g');
+      return new BreakingPointInserter();
     case 'LONG_EDGE_SPLITTER':
       return new LongEdgeSplitter();
     case 'PORT_SIDE_PROCESSOR':
@@ -150,17 +159,17 @@ function createBeforePhase32(strategy: IntermediateProcessorStrategy): ILayoutPr
 function createBeforePhase4(strategy: IntermediateProcessorStrategy): ILayoutProcessor<LGraph> {
   switch (strategy.name()) {
     case 'BREAKING_POINT_PROCESSOR':
-      throw notPorted('BreakingPointProcessor', '7g');
+      return new BreakingPointProcessor();
     case 'ONE_SIDED_GREEDY_SWITCH':
       return new LayerSweepCrossingMinimizer(CrossMinType.ONE_SIDED_GREEDY_SWITCH);
     case 'TWO_SIDED_GREEDY_SWITCH':
       return new LayerSweepCrossingMinimizer(CrossMinType.TWO_SIDED_GREEDY_SWITCH);
     case 'SELF_LOOP_PORT_RESTORER':
-      throw notPorted('SelfLoopPortRestorer', '7g');
+      return new SelfLoopPortRestorer();
     case 'ALTERNATING_LAYER_UNZIPPER':
       return new AlternatingLayerUnzipper();
     case 'SINGLE_EDGE_GRAPH_WRAPPER':
-      throw notPorted('SingleEdgeGraphWrapper', '7g');
+      return new SingleEdgeGraphWrapper();
     case 'IN_LAYER_CONSTRAINT_PROCESSOR':
       return new InLayerConstraintProcessor();
     case 'END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR':
@@ -178,7 +187,7 @@ function createBeforePhase42(strategy: IntermediateProcessorStrategy): ILayoutPr
     case 'INNERMOST_NODE_MARGIN_CALCULATOR':
       return new InnermostNodeMarginCalculator();
     case 'SELF_LOOP_ROUTER':
-      throw notPorted('SelfLoopRouter', '7g');
+      return new SelfLoopRouter();
     case 'COMMENT_NODE_MARGIN_CALCULATOR':
       return new CommentNodeMarginCalculator();
     case 'END_LABEL_PREPROCESSOR':
@@ -226,13 +235,13 @@ function createAfterPhase5(strategy: IntermediateProcessorStrategy): ILayoutProc
     case 'LONG_EDGE_JOINER':
       return new LongEdgeJoiner();
     case 'SELF_LOOP_POSTPROCESSOR':
-      throw notPorted('SelfLoopPostProcessor', '7g');
+      return new SelfLoopPostProcessor();
     case 'BREAKING_POINT_REMOVER':
-      throw notPorted('BreakingPointRemover', '7g');
+      return new BreakingPointRemover();
     case 'NORTH_SOUTH_PORT_POSTPROCESSOR':
       return new NorthSouthPortPostprocessor();
     case 'HORIZONTAL_COMPACTOR':
-      throw notPorted('HorizontalGraphCompactor', '7g');
+      return new HorizontalGraphCompactor();
     default:
       return createAfterPhase52(strategy);
   }
@@ -252,7 +261,7 @@ function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutPro
     case 'END_LABEL_POSTPROCESSOR':
       return new EndLabelPostprocessor();
     case 'HIERARCHICAL_NODE_RESIZER':
-      throw notPorted('HierarchicalNodeResizingProcessor', '7h');
+      return new HierarchicalNodeResizingProcessor();
     case 'DIRECTION_POSTPROCESSOR':
       // IntermediateProcessorStrategy.java:211-212: the postprocessor goes back to the internal left-to-right layout
       return new GraphTransformer(Mode.TO_INTERNAL_LTR);
@@ -261,9 +270,4 @@ function createAfterPhase52(strategy: IntermediateProcessorStrategy): ILayoutPro
         `No implementation is available for the layout processor ${strategy.toString()}`,
       );
   }
-}
-
-/** The L1 placeholder for a `create()` arm whose class is not ported yet. */
-function notPorted(className: string, mission: string): UnsupportedOperationException {
-  return new UnsupportedOperationException(`${className} is ported in mission ${mission}`);
 }

@@ -7,6 +7,7 @@ import { join } from 'node:path';
  * them is held back from the generated registry until the class exists; emptied in mission 5 (T14).
  * Mission 7a held back `LayeredLayoutProvider` from T3 until T7 ported it (L7). Fully qualified;
  * the nested `BoxLayoutProvider.PackingMode` is a different name and is not pending.
+ * Mission 8a staged the three tree layout providers (`@staged 8a`) instead of holding them back.
  */
 export const PENDING_TYPES: readonly string[] = [];
 
@@ -17,7 +18,13 @@ export const PENDING_TYPES: readonly string[] = [];
  * `NodeFlexibility.getNodeFlexibility` reads `LayeredOptions` (decision journal, T3). Mission 7b: the strategy enums
  * `CycleBreakingStrategy` and `LayeringStrategy` create the phase classes, which read `LayeredOptions` (stop 1).
  * Mission 7c (C5): `CrossingMinimizationStrategy` does the same for the crossing-minimization phases. Mission 7d (N4):
- * `NodePlacementStrategy` does the same for the node placement phases.
+ * `NodePlacementStrategy` does the same for the node placement phases. Mission 8a (T7): `radial.SortingStrategy`
+ * creates `IDSorter`, which reads `RadialOptions.ORDER_ID`. Mission 8a (T10): `radial.CompactionStrategy` and
+ * `radial.OverlapRemovalStrategy` create the compactors and the overlap removal, which read `RadialOptions`.
+ * Mission 8c (T8): `topdownpacking.NodeArrangementStrategy` creates `LeftRightTopDownNodePlacer`, which reads
+ * `TopdownpackingOptions`. Mission 8c (T9): `rectpacking.WidthApproximationStrategy` and
+ * `rectpacking.WhiteSpaceEliminationStrategy` create the p1 and p3 phases, which read `RectPackingOptions`.
+ * Mission 8c (T10): `rectpacking.PackingStrategy` creates the p2 phases, which read `RectPackingOptions`.
  */
 export const NON_LEAF_DEFAULT_TYPES: readonly string[] = [
   'org.eclipse.elk.alg.layered.options.CrossingMinimizationStrategy',
@@ -25,6 +32,13 @@ export const NON_LEAF_DEFAULT_TYPES: readonly string[] = [
   'org.eclipse.elk.alg.layered.options.LayeringStrategy',
   'org.eclipse.elk.alg.layered.options.NodeFlexibility',
   'org.eclipse.elk.alg.layered.options.NodePlacementStrategy',
+  'org.eclipse.elk.alg.radial.options.CompactionStrategy',
+  'org.eclipse.elk.alg.radial.options.OverlapRemovalStrategy',
+  'org.eclipse.elk.alg.radial.options.SortingStrategy',
+  'org.eclipse.elk.alg.rectpacking.p1widthapproximation.WidthApproximationStrategy',
+  'org.eclipse.elk.alg.rectpacking.p2packing.PackingStrategy',
+  'org.eclipse.elk.alg.rectpacking.p3whitespaceelimination.WhiteSpaceEliminationStrategy',
+  'org.eclipse.elk.alg.topdownpacking.NodeArrangementStrategy',
 ];
 
 /** Where the vendored sources and their manifest live. */

@@ -11,8 +11,14 @@ Run these in order before you push and keep them green. They are the same comman
 npm run format:check   # prettier --check .
 npm run typecheck      # native TypeScript, must be clean
 npm run coverage       # npm test + the 90% line/branch/function/statement thresholds
-npm run docs:build     # docs site: locale completeness, dead links, showcase and parity pages
+npm run publish:check  # typecheck, build, npm pack --dry-run (publishes nothing)
+npm run pack:smoke     # pack, install the tarball in a clean project, import it
+npm run docs:build     # docs site: API reference, locale completeness, dead links, showcase and parity pages
+npm run docs:linkcheck # internal links and fragments of the built site
 ```
+
+CI also runs `npm run complexity` (needs `lizard`) and
+`npm run pack:smoke -- --entry test/public-api/candidate-index.ts`.
 
 The golden suite runs inside `npm test` (and therefore `npm run coverage`). Its expected values come
 from the oracle (ELK built from source), JVM vectors, or the Java source, and they are written
@@ -94,6 +100,25 @@ Verify a signature:
 
 ```bash
 git log --show-signature -1     # expect: Good "git" signature ... ED25519-SK
+```
+
+## Releasing
+
+Nothing is published yet, and releases are the maintainer's: see [`PUBLISHING.md`](PUBLISHING.md). The release workflow
+([`.github/workflows/release.yml`](.github/workflows/release.yml)) runs only when dispatched by hand until the first
+publish is done.
+
+Once the maintainer switches it to run on every merge to `main`, semantic-release derives the version from the
+Conventional Commits that reach `main`: the merge commit (the PR title, which `lint-title` checks) and every per-task
+commit the PR brings in, since merge commits keep them. `fix:` releases a patch, `feat:` a minor, `feat!:` or a
+`BREAKING CHANGE:` footer a major; `docs:`, `chore:`, `ci:`, `test:` and `refactor:` release nothing. Choose commit
+types accordingly.
+
+Before a release-relevant change, these show what would ship without publishing anything:
+
+```bash
+npm run publish:check   # typecheck, build, npm pack --dry-run
+npm run pack:smoke      # pack, install the tarball in a clean project, import it
 ```
 
 ## Documentation

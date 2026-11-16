@@ -1,52 +1,82 @@
 // SPDX-License-Identifier: EPL-2.0
-// @staged 7g
-import { UnsupportedOperationException } from '../../../../java/lang/UnsupportedOperationException.js';
+import type { PortSide } from '../../../../core/options/PortSide.js';
 import type { LEdge } from '../../graph/LEdge.js';
+import { LayeredOptions } from '../../options/LayeredOptions.js';
+import type { SelfHyperLoop } from './SelfHyperLoop.js';
+import type { SelfLoopPort } from './SelfLoopPort.js';
 
 /**
- * Staged class (L1): mission 7a ports only `getLEdge()` (read by `LGraphAdapters`); every other member, including the
- * constructor, throws until mission 7g ports the class.
+ * Represents a single self loop edge. The Java constructor and `setSLHyperLoop` are package-private; TypeScript has no
+ * package scope, so both are public here and only `SelfLoopHolder` and `SelfHyperLoop` call them.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/loops/SelfLoopEdge.java
  */
 export class SelfLoopEdge {
-  /** The original edge represented by this instance. */
-  private readonly lEdge!: LEdge;
+  /** The edge represented by this instance. */
+  private readonly lEdge: LEdge;
+  /** The self hyper loop this edge belongs to. */
+  private slHyperLoop: SelfHyperLoop | null = null;
+  /** The edge's source port. */
+  private readonly slSource: SelfLoopPort;
+  /** The edge's target port. */
+  private readonly slTarget: SelfLoopPort;
 
-  constructor() {
-    throw staged('SelfLoopEdge');
+  /**
+   * Creates a new instance that represents the given edge. Also adds the instance to the source and target port's list
+   * of incoming and outgoing edges. (Java lines 38-40, the three `assert`s, are omitted: assertions are off.)
+   *
+   * @see SelfLoopEdge.java:37
+   */
+  constructor(lEdge: LEdge, slSource: SelfLoopPort, slTarget: SelfLoopPort) {
+    this.lEdge = lEdge;
+    this.slSource = slSource;
+    this.slTarget = slTarget;
+
+    slSource.getOutgoingSLEdges().push(this);
+    slTarget.getIncomingSLEdges().push(this);
   }
 
-  /** Returns the original edge represented by this instance. */
+  // Accessors
+
+  /** Returns the edge represented by this instance. */
   getLEdge(): LEdge {
     return this.lEdge;
   }
 
-  getSLHyperLoop(): never {
-    throw staged('SelfLoopEdge.getSLHyperLoop');
+  /**
+   * Returns the {@link SelfHyperLoop} this edge belongs to. This will only be `null` shortly after creation, but gets set
+   * to a non-`null` value during self loop initialization.
+   */
+  getSLHyperLoop(): SelfHyperLoop | null {
+    return this.slHyperLoop;
   }
 
-  setSLHyperLoop(): never {
-    throw staged('SelfLoopEdge.setSLHyperLoop');
+  /** Sets the {@link SelfHyperLoop} this edge should belong to. (Java line 68 `assert` omitted.) */
+  setSLHyperLoop(slLoop: SelfHyperLoop): void {
+    this.slHyperLoop = slLoop;
   }
 
-  getSLSource(): never {
-    throw staged('SelfLoopEdge.getSLSource');
+  /** Returns the edge's source port. */
+  getSLSource(): SelfLoopPort {
+    return this.slSource;
   }
 
-  getSLTarget(): never {
-    throw staged('SelfLoopEdge.getSLTarget');
+  /** Returns the edge's target port. */
+  getSLTarget(): SelfLoopPort {
+    return this.slTarget;
   }
 
-  isInline(): never {
-    throw staged('SelfLoopEdge.isInline');
+  isInline(): boolean {
+    for (const label of this.lEdge.getLabels()) {
+      if (label.getProperty(LayeredOptions.EDGE_LABELS_INLINE)) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  getLabelSide(): never {
-    throw staged('SelfLoopEdge.getLabelSide');
+  /** Java dereferences `slHyperLoop` and its labels without a null check: a missing one is a `TypeError`. */
+  getLabelSide(): PortSide | null {
+    return this.slHyperLoop!.getSLLabels()!.getSide();
   }
-}
-
-function staged(member: string): UnsupportedOperationException {
-  return new UnsupportedOperationException(`${member} is ported in mission 7g`);
 }

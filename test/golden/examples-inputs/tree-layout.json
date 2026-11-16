@@ -1,0 +1,22 @@
+{
+  "id": "root",
+  "layoutOptions": {
+    "org.eclipse.elk.algorithm": "org.eclipse.elk.mrtree",
+    "org.eclipse.elk.spacing.nodeNode": "30"
+  },
+  "children": [
+    { "id": "ceo", "width": 60, "height": 30 },
+    { "id": "cto", "width": 60, "height": 30 },
+    { "id": "cfo", "width": 60, "height": 30 },
+    { "id": "dev1", "width": 60, "height": 30 },
+    { "id": "dev2", "width": 60, "height": 30 },
+    { "id": "acct", "width": 60, "height": 30 }
+  ],
+  "edges": [
+    { "id": "e1", "sources": ["ceo"], "targets": ["cto"] },
+    { "id": "e2", "sources": ["ceo"], "targets": ["cfo"] },
+    { "id": "e3", "sources": ["cto"], "targets": ["dev1"] },
+    { "id": "e4", "sources": ["cto"], "targets": ["dev2"] },
+    { "id": "e5", "sources": ["cfo"], "targets": ["acct"] }
+  ]
+}

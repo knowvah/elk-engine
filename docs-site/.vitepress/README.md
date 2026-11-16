@@ -116,3 +116,20 @@ A Pages deploy failure leaves the previous deployment live; nothing is torn down
   `Locale "<p>" is registered ... missing N of M pages`, listing each missing path.
 - **Mitigation:** write the missing pages, or delete `docs-site/.vitepress/locales/<p>.ts` to
   de-register the locale until they exist.
+
+### Link check
+
+- **Detection:** `npm run docs:linkcheck` (CI, after `docs:build`) exits non-zero and lists each broken link under the
+  page that holds it, with `[404]` for a missing page or a "Fragment identifier … not found" detail for a dead anchor.
+- **Mitigation:** fix the link or the heading it targets. Three things this check depends on:
+  - It runs linkinator over `docs-site/.vitepress/dist` with `docs-site/linkinator.config.json`: internal links and
+    fragments only, clean URLs on (the site sets `cleanUrls: true`).
+  - linkinator follows links only below the root they were found from. The roots in the `docs:linkcheck` script are the
+    site root, `guide/getting-started.html` and `reference/`: the last two are pages no nav links. A new page outside
+    the nav needs a root of its own, and a directory root (trailing `/`) to have its sub-pages crawled.
+  - The language switcher links each locale's home page (`themeConfig.i18nRouting: false`). With corresponding-page
+    links, every English-only page had one dead link per locale.
+- The generated API reference gets its heading ids from `referenceHeadingSlug` in `config.ts`, the rule its generator
+  writes link anchors with; every other page uses `headingSlug` (GitHub's rule).
+- **External links** are checked weekly by the `Links` workflow (`npm run docs:linkcheck:external`), never on pull
+  requests. A failure there is triaged as a follow-up; GitHub `blob/main` links to files not merged yet report 404.

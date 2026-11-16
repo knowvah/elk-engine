@@ -1,0 +1,11 @@
+{
+  "recurse": true,
+  "cleanUrls": true,
+  "checkFragments": false,
+  "serverRoot": "docs-site/.vitepress/dist",
+  "concurrency": 10,
+  "timeout": 20000,
+  "retry": true,
+  "retryErrors": true,
+  "retryErrorsCount": 2
+}

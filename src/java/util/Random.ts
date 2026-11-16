@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { log } from '../lang/JavaMath.js';
 
 // BigInt(hex), not a hex bigint literal: GitHub Code Quality reads `0x...n` operands as undefined.
 /** Multiplier of the 48-bit linear congruential generator. */
@@ -17,68 +18,6 @@ const TWO_POW_27 = 2 ** 27;
 /** 2^-53, the scale of a 53-bit random mantissa. */
 const DOUBLE_UNIT = 2 ** -53;
 const SEED_SPACE = 2 ** 48;
-
-const LN2_HI = 6.9314718036912381649e-1;
-const LN2_LO = 1.90821492927058770002e-10;
-const LG1 = 6.66666666666673513e-1;
-const LG2 = 3.999999999940941908e-1;
-const LG3 = 2.857142874366239149e-1;
-const LG4 = 2.222219843214978396e-1;
-const LG5 = 1.818357216161805012e-1;
-const LG6 = 1.531383769920937332e-1;
-const LG7 = 1.479819860511658591e-1;
-const HI_MANTISSA_MASK = 0x000fffff;
-const EXPONENT_BIAS = 1023;
-const ONE_HI_WORD = 0x3ff00000;
-const bitView = new DataView(new ArrayBuffer(8));
-
-/**
- * Natural log matching `StrictMath.log` (the Javadoc of `nextGaussian`
- * specifies StrictMath). `Math.log` is allowed to differ by 1 ulp, which the
- * JVM vectors expose, so this implements the netlib fdlibm `log` algorithm
- * (public algorithm, not OpenJDK source). Domain here: finite, normal,
- * `0 < x < 1` (a polar-method radius, at least 2^-106), so subnormal, zero,
- * negative, infinite and NaN handling is unnecessary.
- */
-function strictLog(x: number): number {
-  bitView.setFloat64(0, x);
-  const hx = bitView.getUint32(0) & HI_MANTISSA_MASK;
-  let k = (bitView.getUint32(0) >>> 20) - EXPONENT_BIAS;
-  const i = (hx + 0x95f64) & 0x100000;
-  bitView.setUint32(0, hx | (i ^ ONE_HI_WORD));
-  k += i >>> 20;
-  const f = bitView.getFloat64(0) - 1.0;
-  if ((HI_MANTISSA_MASK & (2 + hx)) < 3) {
-    return logNearOne(f, k);
-  }
-  return logPolynomial(f, hx, k);
-}
-
-/** Branch for |f| < 2^-20, including f = 0 (x an exact power of two). */
-function logNearOne(f: number, k: number): number {
-  if (f === 0) return k * LN2_HI + k * LN2_LO;
-  const r = f * f * (0.5 - 0.33333333333333333 * f);
-  if (k === 0) return f - r;
-  return k * LN2_HI - (r - k * LN2_LO - f);
-}
-
-function logPolynomial(f: number, hx: number, k: number): number {
-  const s = f / (2.0 + f);
-  const dk = k;
-  const z = s * s;
-  const w = z * z;
-  const t1 = w * (LG2 + w * (LG4 + w * LG6));
-  const t2 = z * (LG1 + w * (LG3 + w * (LG5 + w * LG7)));
-  const r = t2 + t1;
-  if (((hx - 0x6147a) | (0x6b851 - hx)) > 0) {
-    // Mantissa in this band (x near sqrt 2) with s < 1 implies k = -1, so
-    // fdlibm's k === 0 sub-branch is unreachable for this function's domain.
-    const hfsq = 0.5 * f * f;
-    return dk * LN2_HI - (hfsq - (s * (hfsq + r) + dk * LN2_LO) - f);
-  }
-  if (k === 0) return f - s * (f - r);
-  return dk * LN2_HI - (s * (f - r) - dk * LN2_LO - f);
-}
 
 /**
  * Port of `java.util.Random`: a 48-bit linear congruential generator.
@@ -167,7 +106,7 @@ export class Random {
       v2 = 2 * this.nextDouble() - 1;
       s = v1 * v1 + v2 * v2;
     } while (s >= 1 || s === 0);
-    const multiplier = Math.sqrt((-2 * strictLog(s)) / s);
+    const multiplier = Math.sqrt((-2 * log(s)) / s);
     this.#nextNextGaussian = v2 * multiplier;
     this.#haveNextNextGaussian = true;
     return v1 * multiplier;

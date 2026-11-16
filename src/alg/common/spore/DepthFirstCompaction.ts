@@ -7,6 +7,12 @@ import { SVGImage } from '../utils/SVGImage.js';
 import { InternalProperties } from './InternalProperties.js';
 import type { Node } from './Node.js';
 
+/** One level of the explicit stack of {@link DepthFirstCompaction.compactTree}: the tree and its next child to enter. */
+interface CompactFrame {
+  readonly tree: Tree<Node>;
+  next: number;
+}
+
 /**
  * This class implements a compaction method that expects a spanning tree of a graph.
  * While traversing the spanning tree in an depth-first manner the nodes of each subtree are shifted as one unit
@@ -43,14 +49,29 @@ export class DepthFirstCompaction {
   }
 
   /**
-   * Recursive function to compact a tree depth-first.
+   * Compacts a tree depth-first. The Java is recursive (children first, then the root's own underlap removal); an
+   * explicit stack visits the same nodes in the same order, so a path tree as deep as the 2,000-node chain no longer
+   * exhausts V8's call stack (mission 8c, PK6). The verbatim recursive form is the reference of
+   * `DepthFirstCompaction.explicit-stack.test.ts`.
    *
    * @param tree root of a tree
    */
   private static compactTree(tree: Tree<Node>): void {
-    // first compact the children of the current node
-    tree.children.forEach((c) => DepthFirstCompaction.compactTree(c));
+    const stack: CompactFrame[] = [{ tree, next: 0 }];
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      if (frame.next < frame.tree.children.length) {
+        // first compact the children of the current node
+        stack.push({ tree: frame.tree.children[frame.next++]!, next: 0 });
+      } else {
+        DepthFirstCompaction.removeUnderlap(frame.tree);
+        stack.pop();
+      }
+    }
+  }
 
+  /** The loop of {@link compactTree} that runs after its children are compacted: split out at the Java statement group. */
+  private static removeUnderlap(tree: Tree<Node>): void {
     // remove underlap between root and its children
     for (const child of tree.children) {
       // find the direction and distance the subtree has to be moved to close the gap to the root node

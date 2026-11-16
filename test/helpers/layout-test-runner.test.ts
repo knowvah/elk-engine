@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 // Structural tests of the layout test runner against a fake engine: the processors it notifies are two stub classes,
-// so nothing here depends on an ELK literal. The 7g failure test goes through the real provider.
+// so nothing here depends on an ELK literal. The self-loop run test goes through the real provider.
 import { describe, expect, it } from 'vitest';
 // CoreOptions first: it and TopdownSizeApproximator import each other, and CoreOptions must be the entry module.
 import { CoreOptions } from '../../src/core/options/CoreOptions.js';
@@ -17,6 +17,10 @@ import {
   type LayoutTestSpec,
 } from './layout-test-runner.js';
 import { LayeredOptions } from '../../src/alg/layered/options/LayeredOptions.js';
+import { SelfLoopPortRestorer } from '../../src/alg/layered/intermediate/SelfLoopPortRestorer.js';
+import { SelfLoopPostProcessor } from '../../src/alg/layered/intermediate/SelfLoopPostProcessor.js';
+import { SelfLoopPreProcessor } from '../../src/alg/layered/intermediate/SelfLoopPreProcessor.js';
+import { SelfLoopRouter } from '../../src/alg/layered/intermediate/SelfLoopRouter.js';
 
 class FirstProcessor implements ILayoutProcessor<object> {
   process(): void {}
@@ -186,7 +190,7 @@ describe('layout test runner', () => {
     expect(() => cases[1]!.run()).toThrow(failure);
   });
 
-  it('names SelfLoopPreProcessor and 7g when the real plan needs a later mission', () => {
+  it('completes a run of the self-loop graph through the real plan, which includes the four self-loop arms', () => {
     function selfLoopGraph(): ElkNode {
       const graph = newGraph();
       const node = ElkGraphUtil.createNode(graph);
@@ -196,8 +200,18 @@ describe('layout test runner', () => {
       edge.getTargets().add(node);
       return graph;
     }
-    const cases = buildLayoutTests({ name: 'real', graphs: [selfLoopGraph], afterLayout: { run: () => {} } });
-    expect(() => cases[0]!.run()).toThrow(/SelfLoopPreProcessor[\s\S]*7g|7g[\s\S]*SelfLoopPreProcessor/);
+    const ran: string[] = [];
+    const arms = [SelfLoopPreProcessor, SelfLoopPortRestorer, SelfLoopRouter, SelfLoopPostProcessor];
+    const cases = buildLayoutTests({
+      name: 'real',
+      algorithm: ALGORITHM,
+      graphs: [selfLoopGraph],
+      afterLayout: { run: () => ran.push('layout') },
+      afterProcessor: arms.map((cls) => ({ cls, check: () => ran.push(cls.name), failIfNotExecuted: true })),
+    });
+    for (const testCase of cases) testCase.run();
+    expect(ran).toContain('layout');
+    expect(new Set(ran)).toEqual(new Set(['layout', ...arms.map((cls) => cls.name)]));
   });
 
   it('rejects whitebox checks without an algorithm, graphs without sources and suites without checks', () => {

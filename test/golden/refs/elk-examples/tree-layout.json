@@ -1,0 +1,261 @@
+{
+  "id": "root",
+  "children": [
+    {
+      "id": "ceo",
+      "layoutOptions": {
+        "portLabels.placement": "[OUTSIDE]",
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "treeLevel": "0"
+      },
+      "x": 133.0,
+      "y": 20.0,
+      "width": 60.0,
+      "height": 30.0
+    },
+    {
+      "id": "cto",
+      "layoutOptions": {
+        "portLabels.placement": "[OUTSIDE]",
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "treeLevel": "1"
+      },
+      "x": 65.0,
+      "y": 80.0,
+      "width": 60.0,
+      "height": 30.0
+    },
+    {
+      "id": "cfo",
+      "layoutOptions": {
+        "portLabels.placement": "[OUTSIDE]",
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "treeLevel": "1"
+      },
+      "x": 200.0,
+      "y": 80.0,
+      "width": 60.0,
+      "height": 30.0
+    },
+    {
+      "id": "dev1",
+      "layoutOptions": {
+        "portLabels.placement": "[OUTSIDE]",
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "treeLevel": "2"
+      },
+      "x": 20.0,
+      "y": 140.0,
+      "width": 60.0,
+      "height": 30.0
+    },
+    {
+      "id": "dev2",
+      "layoutOptions": {
+        "portLabels.placement": "[OUTSIDE]",
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "treeLevel": "2"
+      },
+      "x": 110.0,
+      "y": 140.0,
+      "width": 60.0,
+      "height": 30.0
+    },
+    {
+      "id": "acct",
+      "layoutOptions": {
+        "portLabels.placement": "[OUTSIDE]",
+        "nodeSize.constraints": "[]",
+        "nodeLabels.placement": "[]",
+        "nodeSize.options": "[DEFAULT_MINIMUM_SIZE]",
+        "margins": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+        "treeLevel": "2"
+      },
+      "x": 200.0,
+      "y": 140.0,
+      "width": 60.0,
+      "height": 30.0
+    }
+  ],
+  "layoutOptions": {
+    "algorithm": "org.eclipse.elk.mrtree",
+    "childAreaHeight": "150.0",
+    "elk.padding": "[top=20.0,left=20.0,bottom=20.0,right=20.0]",
+    "nodeSize.constraints": "[]",
+    "spacing.portsSurrounding": "[top=0.0,left=0.0,bottom=0.0,right=0.0]",
+    "childAreaWidth": "240.0",
+    "spacing.nodeNode": "30.0",
+    "resolvedAlgorithm": "Layout Algorithm: org.eclipse.elk.mrtree",
+    "nodeLabels.padding": "[top=5.0,left=5.0,bottom=5.0,right=5.0]",
+    "hierarchyHandling": "SEPARATE_CHILDREN"
+  },
+  "x": 0.0,
+  "y": 0.0,
+  "width": 280.0,
+  "height": 190.0,
+  "edges": [
+    {
+      "id": "e1",
+      "sources": [
+        "ceo"
+      ],
+      "targets": [
+        "cto"
+      ],
+      "sections": [
+        {
+          "id": "s0",
+          "startPoint": {
+            "x": 153.0,
+            "y": 50.0
+          },
+          "endPoint": {
+            "x": 95.0,
+            "y": 80.0
+          },
+          "bendPoints": [
+            {
+              "x": 153.0,
+              "y": 53.0
+            },
+            {
+              "x": 98.5,
+              "y": 78.67924528301887
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e2",
+      "sources": [
+        "ceo"
+      ],
+      "targets": [
+        "cfo"
+      ],
+      "sections": [
+        {
+          "id": "s1",
+          "startPoint": {
+            "x": 173.0,
+            "y": 50.0
+          },
+          "endPoint": {
+            "x": 230.0,
+            "y": 80.0
+          },
+          "bendPoints": [
+            {
+              "x": 173.0,
+              "y": 53.0
+            },
+            {
+              "x": 226.5,
+              "y": 78.67924528301887
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e3",
+      "sources": [
+        "cto"
+      ],
+      "targets": [
+        "dev1"
+      ],
+      "sections": [
+        {
+          "id": "s2",
+          "startPoint": {
+            "x": 85.0,
+            "y": 110.0
+          },
+          "endPoint": {
+            "x": 50.0,
+            "y": 140.0
+          },
+          "bendPoints": [
+            {
+              "x": 85.0,
+              "y": 113.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e4",
+      "sources": [
+        "cto"
+      ],
+      "targets": [
+        "dev2"
+      ],
+      "sections": [
+        {
+          "id": "s3",
+          "startPoint": {
+            "x": 105.0,
+            "y": 110.0
+          },
+          "endPoint": {
+            "x": 140.0,
+            "y": 140.0
+          },
+          "bendPoints": [
+            {
+              "x": 105.0,
+              "y": 113.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "e5",
+      "sources": [
+        "cfo"
+      ],
+      "targets": [
+        "acct"
+      ],
+      "sections": [
+        {
+          "id": "s4",
+          "startPoint": {
+            "x": 230.0,
+            "y": 110.0
+          },
+          "endPoint": {
+            "x": 230.0,
+            "y": 140.0
+          },
+          "bendPoints": [
+            {
+              "x": 230.0,
+              "y": 113.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

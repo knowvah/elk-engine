@@ -18,8 +18,8 @@ import type { GraphInfoHolder } from './GraphInfoHolder.js';
  *
  * C7 verdict: `countCurrentNumberOfCrossings` is a true self-recursion (it calls itself with the child holder of each
  * child graph, not an overload), and `countCurrentNumberOfCrossingsNodePortOrder` calls it for the children. Its
- * depth is the nesting depth of the graph hierarchy; no recorded row nests graphs (U until 7h), so the recursion is
- * kept as the Java has it, with the same `ArrayDeque` loop around it.
+ * depth is the nesting depth of the graph hierarchy; the nested rows of `layered-compound.json` (mission 7h) prove it, so the
+ * recursion is kept as the Java has it, with the same `ArrayDeque` loop around it.
  */
 
 /**

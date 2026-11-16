@@ -55,7 +55,9 @@ values before hypothesizing — the default stance is "my port differs — find 
   journal the regeneration with the patch id.
 - Gates before any commit: `npm run typecheck` clean, `npm run coverage`
   green (90% lines/branches/functions/statements), golden suite green,
-  `npm run complexity` clean (plain lizard skips functions; never trust its exit code).
+  `npm run complexity` clean (plain lizard skips functions; never trust its exit code),
+  `npm run codeql` clean (every finding of GitHub Code Quality's CodeQL suites is
+  accepted in `tools/codeql/accepted.json` with a reason, such as a Java-faithful quirk).
 - Journal every fix in the active mission's `decision-journal.md`.
 
 ## Tests Are Immutable (AD-13)

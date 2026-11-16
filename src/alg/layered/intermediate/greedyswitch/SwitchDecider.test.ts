@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 // Unit cases of SwitchDecider (mission 7c, T7), decided by hand from SwitchDecider.java:124-250; the greedy-switch rows
 // (GreedySwitchHeuristic.test.ts) prove the class on the oracle's graphs. The parent-graph counters
-// (`countCrossingsCausedByPortSwitch`, `initParentCrossingsCounters`) need a nested graph and are U until 7h.
+// (`countCrossingsCausedByPortSwitch`, `initParentCrossingsCounters`) need a nested graph and are proven by the `layered-compound.json` rows (7h).
 import { beforeAll, describe, expect, it } from 'vitest';
 import { addLayer, addNode, addPort, connect } from '../../../../../test/helpers/lgraph-builders.js';
 import { LayoutMetaDataService } from '../../../../core/data/LayoutMetaDataService.js';

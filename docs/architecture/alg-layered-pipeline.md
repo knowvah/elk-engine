@@ -5,7 +5,7 @@
 What mission 7f (`layered-pipeline`, the first brief of roadmap row 7f) ported of `org.eclipse.elk.alg.layered`: the
 driver (`ElkLayered`, `GraphConfigurator`), the connected-components package, the direction transformer, the
 hierarchical-port router and three small processors. From here `LayeredLayoutProvider.layout` runs a whole layered
-layout, except where a later mission's processor is planned (the table in § 7). This page covers how that is proven, the
+layout, except where a later mission's processor was planned (the table in § 7; no such processor remains since mission 7h). This page covers how that is proven, the
 Java idioms the port reproduces, the evidence and a runbook. Decisions cited are `plans/layered-pipeline/decisions.md`
 (F1–F16 and the execution decisions FX1–FX8 the user took during the run); task ids T1–T17 are in that mission's
 `decision-journal.md`; R-rows are 7e's, N-rows 7d's, C-rows 7c's, B/E-rows 7b's, L/S/X-rows 7a's, AD-n
@@ -33,7 +33,7 @@ in [conformance.md](../conformance.md#alg-layered-pipeline).
 | `intermediate.GraphTransformer`                                              | `intermediate/GraphTransformer.ts` + `…Mode`, `…MirrorX`, `…MirrorY`, `…Transpose`, `…Support`                                                                                                                                                                                                                  | T5   |
 | `intermediate.HierarchicalPortOrthogonalEdgeRouter`                          | `intermediate/HierarchicalPortOrthogonalEdgeRouter.ts` + `…Restore`, `…Coordinates`, `…Routing`, `…Removal`, `…Fix`                                                                                                                                                                                             | T6   |
 | `intermediate.{EndLabelSorter,HypernodesProcessor,ConstraintsPostprocessor}` | `intermediate/…` (+ M15 `EndLabelSorterLabelGroup.ts`)                                                                                                                                                                                                                                                          | T7   |
-| stages (L1)                                                                  | `components/ComponentsCompactor.ts` (7g), `compound/CompoundGraph{Pre,Post}processor.ts` (7h)                                                                                                                                                                                                                   | T2   |
+| stages (L1; both ported since: 7g, 7h)                                       | `components/ComponentsCompactor.ts` (7g), `compound/CompoundGraph{Pre,Post}processor.ts` (7h)                                                                                                                                                                                                                   | T2   |
 
 **The split of row 7f (F1).** Row 7f became two briefs: this one, and 7f2 `layered-labels` (the label family,
 comments, `AlternatingLayerUnzipper`, `InteractiveLayeredGraphVisitor`, the debug utilities). `components` moved here
@@ -61,7 +61,7 @@ One recorder, `tools/vectors/LayeredPipelineVectors.java` (a JDK 21 single-file 
 flagged recorder reproduces them byte for byte, so the flagged rows are trustworthy against them.
 
 **Pinned rows (FX6, FX7).** All recorders refuse a row by its prefix, but `AlgorithmAssembler.build` instantiates the
-whole plan before the first step, so a row whose later plan holds a staged arm throws at plan build. 58 `models` rows
+whole plan before the first step, so a row whose later plan held a staged arm threw at plan build (no staged arm remains since 7h). 58 `models` rows
 of this ref and 2 landed `layered-phases.json` rows are listed in `test/helpers/layered-pipeline-pinned-rows.ts` and
 asserted to throw their stage's message; 7f2 and 7g delete their entries and the recorded expectations then apply,
 with no re-recording. The `sites` rows refuse on the whole plan and need no pin.
@@ -104,7 +104,7 @@ ptolemy models, or the whole corpus with `PIPELINE_SUITES_FULL=1` and `ELK_MODEL
 | Identity-hashed `Set<PortSide>` keys         | `ComponentGroup.components`                                                             | hashed by set size, the constant enum hash under `-XX:hashCode=2` (FX3); insertion order fails 3 rows in intermediate `layerless` order but no final layout of the 6,646 sweep cases |
 | Iterated identity-hashed `HashMap<LEdge, …>` | `EndLabelSorter.java:176`                                                               | insertion order (FX2); 7f2 records a parallel-edge scenario                                                                                                                          |
 | `KVectorChain.remove(vector)` by `equals`    | `HypernodesProcessor.java:178`                                                          | a local `removeEqual`; the landed `LinkedList` compares by identity                                                                                                                  |
-| Plans built eagerly                          | `AlgorithmAssembler.build`                                                              | a staged arm throws at plan build, before any processor or cancellation check                                                                                                        |
+| Plans built eagerly                          | `AlgorithmAssembler.build`                                                              | a staged arm threw at plan build, before any processor or cancellation check (none remains since 7h)                                                                                 |
 
 ## 6. Evidence {#part-f-evidence}
 
@@ -139,4 +139,4 @@ The S1 suites are not in `java-tests.sh`'s bundle list; a scratch copy with `org
 | A refusal outside the categories                   | the recorder exits 1 naming the row                                                                                         | a later mission's processor reached the plan: it belongs to that mission                                                         |
 | `ReferenceError … before initialization`           | the entry-point fitness test                                                                                                | the E1 recipe (cached static getters, lazy enum reads); never an entry-order import                                              |
 | A cap exceeded                                     | the recorder's size or line check                                                                                           | 16 MiB per ref, 5,000 lines per launcher: a decision                                                                             |
-| `layout` throws `… is ported in mission 7f2/7g/7h` | edge labels, comment boxes, `layerUnzipping`, logging (7f2); self loops, wrapping, compaction (7g); `INCLUDE_CHILDREN` (7h) | expected until that mission                                                                                                      |
+| `layout` throws `… is ported in mission 7f2/7g/7h` | edge labels, comment boxes, `layerUnzipping`, logging (7f2); self loops, wrapping, compaction (7g); `INCLUDE_CHILDREN` (7h) | expected until that mission; since 7h no layered layout throws it                                                                |

@@ -4,43 +4,31 @@
 // is vacuous on empty rectangles). AWT has no place here, so the sizes come from the JVM through a recorded table,
 // test/golden/refs/java/layered-label-metrics.json (tools/vectors/layered-label-metrics-vectors.sh). A text missing from the table
 // throws rather than staying zero-sized: add it to tools/vectors/layered-label-metrics-texts.txt and re-record.
-import { readFileSync } from 'node:fs';
 import type { ElkLabel } from '../../src/graph/ElkLabel.js';
 import type { ElkNode } from '../../src/graph/ElkNode.js';
-import { repoRoot } from '../corpus/corpus.js';
+import { AWT_SNAPSHOT_TEXT_MEASURER, LABEL_SIZES, type TextMeasurer } from './layout-test-text-measurer.js';
 
-const METRICS_REF = `${repoRoot()}/test/golden/refs/java/layered-label-metrics.json`;
-const WIDTH = 0;
-const HEIGHT = 1;
-
-/** The recorded size of each label text, `[width, height]`. */
-export const LABEL_SIZES = (
-  JSON.parse(readFileSync(METRICS_REF, 'utf8')) as {
-    readonly sizes: Readonly<Record<string, readonly [number, number]>>;
-  }
-).sizes;
+export { LABEL_SIZES };
 
 /**
- * `TestConfiguration.computeLabelSize`: a label with no size and a non-empty text takes the recorded one.
+ * `TestConfiguration.computeLabelSize`: a label with no size and a non-empty text takes the measured one (patch 0003 routes
+ * the measurement through a `TextMeasurer`).
  *
  * @see org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/framework/config/TestConfiguration.java
  */
-function computeLabelSize(label: ElkLabel): void {
+function computeLabelSize(label: ElkLabel, measurer: TextMeasurer): void {
   const text = label.getText();
   if (label.getHeight() === 0 && label.getWidth() === 0 && text !== null && text !== '') {
-    if (!Object.hasOwn(LABEL_SIZES, text)) {
-      throw new Error(`label text ${JSON.stringify(text)} is not in layered-label-metrics.json; add it and re-record`);
-    }
-    const size = LABEL_SIZES[text]!;
-    label.setHeight(size[HEIGHT]);
-    label.setWidth(size[WIDTH]);
+    const size = measurer.measure(text);
+    label.setHeight(size.y);
+    label.setWidth(size.x);
   }
 }
 
-function sizeLabelsOf(element: { getLabels(): Iterable<ElkLabel> }): void {
+function sizeLabelsOf(element: { getLabels(): Iterable<ElkLabel> }, measurer: TextMeasurer): void {
   for (const label of element.getLabels()) {
-    computeLabelSize(label);
-    sizeLabelsOf(label);
+    computeLabelSize(label, measurer);
+    sizeLabelsOf(label, measurer);
   }
 }
 
@@ -48,15 +36,15 @@ function sizeLabelsOf(element: { getLabels(): Iterable<ElkLabel> }): void {
  * Every label under the graph, as `graph.eAllContents()` reaches them: the labels of the graph, its ports, its contained
  * edges and its children, at every level, and the labels of labels.
  */
-export function ensureSensibleLabelSize(graph: ElkNode): void {
-  sizeLabelsOf(graph);
+export function ensureSensibleLabelSize(graph: ElkNode, measurer: TextMeasurer = AWT_SNAPSHOT_TEXT_MEASURER): void {
+  sizeLabelsOf(graph, measurer);
   for (const port of graph.getPorts()) {
-    sizeLabelsOf(port);
+    sizeLabelsOf(port, measurer);
   }
   for (const edge of graph.getContainedEdges()) {
-    sizeLabelsOf(edge);
+    sizeLabelsOf(edge, measurer);
   }
   for (const child of graph.getChildren()) {
-    ensureSensibleLabelSize(child);
+    ensureSensibleLabelSize(child, measurer);
   }
 }

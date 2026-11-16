@@ -51,7 +51,15 @@ function valueText(key: IProperty<unknown>, value: unknown): string {
       return DoubleToString.toString(value);
     }
   }
-  return (value as object).toString();
+  return Array.isArray(value) ? collectionText(value) : (value as object).toString();
+}
+
+/**
+ * Java `AbstractCollection.toString` of a list value (e.g. DisCo's `debug.discoPolys`, an `ArrayList`): `[a, b]`, elements by their
+ * own `toString`. `Array.prototype.toString` would give `a,b`.
+ */
+function collectionText(list: readonly unknown[]): string {
+  return `[${list.map((element) => (Array.isArray(element) ? collectionText(element) : (element as object).toString())).join(', ')}]`;
 }
 
 /** Java `Object.equals` of two properties, which both compare by id (D5). */

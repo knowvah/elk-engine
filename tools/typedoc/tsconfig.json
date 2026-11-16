@@ -1,0 +1,14 @@
+{
+  "//": "TypeScript 6 view of the sources for typedoc only (DP3). The project compiler stays TypeScript 7 (AD-6).",
+  "//2": "rootDir is the repository so that the proposed entry module under test/public-api is inside it.",
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "noEmit": true,
+    "emitDeclarationOnly": false,
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": ["../../test/public-api/candidate-index.ts", "../../src/**/*"],
+  "exclude": ["../../src/**/*.test.ts"]
+}

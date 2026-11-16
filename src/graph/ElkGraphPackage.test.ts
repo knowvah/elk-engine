@@ -169,6 +169,19 @@ describe('isInstance / registerImpl', () => {
     expect(isInstance('ElkGraphFactory', {})).toBe(false);
     expect(isInstance('ElkGraphFactory', null)).toBe(false);
   });
+
+  it('admits every class registered under a name, each registered once (alg-packing PK3)', () => {
+    class Impl {}
+    class Delegate {}
+    class Unrelated {}
+    registerImpl('ElkEdgeSection', Impl);
+    registerImpl('ElkEdgeSection', Delegate);
+    registerImpl('ElkEdgeSection', Delegate);
+    expect(isInstance('ElkEdgeSection', new Impl())).toBe(true);
+    expect(isInstance('ElkEdgeSection', new Delegate())).toBe(true);
+    expect(isInstance('ElkEdgeSection', new Unrelated())).toBe(false);
+    expect(isInstance('ElkEdgeSection', undefined)).toBe(false);
+  });
 });
 
 describe('ElkGraphFactory.eINSTANCE', () => {
