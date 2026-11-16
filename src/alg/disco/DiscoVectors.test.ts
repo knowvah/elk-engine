@@ -13,7 +13,7 @@ import { IllegalArgumentException } from '../../java/lang/IllegalArgumentExcepti
 import { IndexOutOfBoundsException } from '../../java/lang/IndexOutOfBoundsException.js';
 import { portedTop } from '../../../test/helpers/layered-compound-replay-sites.js';
 import { compareJson, formatDifferences, TOLERANCE, type Comparison } from '../../../test/helpers/disco-replay-dump.js';
-import { dumpElk, importInput } from '../../../test/helpers/disco-replay-elk.js';
+import { importInput } from '../../../test/helpers/disco-replay-elk.js';
 import {
   DISCO_STEPS,
   loadDiscoRows,
