@@ -222,7 +222,7 @@ public class MrTreeVectors {
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String CORPUS_INPUT = "test/corpus/generated/mrtree-tree-small.json";
     static final long SHAPE_SEED = 8101L, RANDOM_SEED = 8102L, EXTRA_SHAPE_SEED = 8201L, EXTRA_RANDOM_SEED = 8202L;
-    static final long MAX_BYTES = 16L * 1024 * 1024, EXTRA_MAX_BYTES = (System.getenv("MRTREE_CAP_MB") == null ? 8L : Long.parseLong(System.getenv("MRTREE_CAP_MB"))) * 1024 * 1024;
+    static final long MAX_BYTES = 16L * 1024 * 1024, EXTRA_MAX_BYTES = (System.getenv("MRTREE_CAP_MB") == null ? 8L : parseLongArg("MRTREE_CAP_MB", System.getenv("MRTREE_CAP_MB"))) * 1024 * 1024;
     static final String FULL = "full", STOPS = "stops", THROWS = "throws";
     static final double LABEL_CHAR_WIDTH = 6.5, LABEL_HEIGHT = 13.0;
     static final String ELK_PACKAGE = "org.eclipse.elk.";
@@ -451,6 +451,24 @@ d002e5a2eac3086de326c108f6582caa66356ffcc2e707ad7faf59778d92df49  repo:test/corp
                 root.setProperty(MrTreeOptions.NODE_LABELS_PLACEMENT, NodeLabelPlacement.insideCenter());
             }
             default -> throw new Bug("unknown option key " + o.key());
+        }
+    }
+
+    /** {@link Integer#parseInt}, with a malformed value reported by name (GitHub Code Quality; f0481475 pattern). */
+    static int parseIntArg(String what, String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not an integer: " + s, e);
+        }
+    }
+
+    /** {@link Long#parseLong}, with a malformed value reported by name (GitHub Code Quality; f0481475 pattern). */
+    static long parseLongArg(String what, String s) {
+        try {
+            return Long.parseLong(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not a long: " + s, e);
         }
     }
 
@@ -1516,7 +1534,7 @@ d002e5a2eac3086de326c108f6582caa66356ffcc2e707ad7faf59778d92df49  repo:test/corp
                 splitGraphs = (List<?>) s.get("graphs");
             }
             if (!last.containsKey(key) && !key.equals("-1") && splitGraphs != null) {
-                last.put(key, json(List.of(splitGraphs.get(Integer.parseInt(key)))));
+                last.put(key, json(List.of(splitGraphs.get(parseIntArg("split graph index", key)))));
             }
             if (last.containsKey(key)) {
                 c[1]++;

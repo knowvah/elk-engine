@@ -309,7 +309,6 @@ beforeAll(() => {
   LayoutMetaDataService.initElkReflect();
 });
 
-const SITE_ROWS = [ID_LONE_FOUR, ID_LONE_NS, ID_ESW, ID_NSW];
 const DIRECTION_OF: Record<string, string> = { WEST: 'LEFT', EAST: 'RIGHT', NORTH: 'UP', SOUTH: 'DOWN' };
 
 describe('ComponentsToCGraphTransformer: locks', () => {

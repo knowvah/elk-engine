@@ -532,7 +532,7 @@ public class RectPackingVectors {
             Matcher m = BEFORE.matcher(tag);
             if (m.matches()) {
                 Entry e = graphs.computeIfAbsent(id(g), Entry::new);
-                int k = Integer.parseInt(m.group(1));
+                int k = parseIntArg("processor index", m.group(1));
                 String name = m.group(2);
                 if (k != e.processors.size()) {
                     throw new Bug("processor index " + k + " out of order on " + e.graph);
@@ -1799,5 +1799,14 @@ public class RectPackingVectors {
             }
         }
         sb.append('"');
+    }
+
+    /** {@link Integer#parseInt}, with a malformed value reported by name (GitHub Code Quality; f0481475 pattern). */
+    static int parseIntArg(String what, String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(what + " is not an integer: " + s, e);
+        }
     }
 }

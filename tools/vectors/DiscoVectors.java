@@ -564,7 +564,7 @@ public class DiscoVectors {
         // importGraph
         ElkGraphTransformer transformer = new ElkGraphTransformer(spacing);
         DCGraph dc = transformer.importGraph(layout);
-        stops.add(importStop(layout, dc, transformer, split, spacing, layoutId, flags));
+        stops.add(importStop(dc, transformer, split, spacing, layoutId, flags));
 
         // compaction (POLYOMINO, the only CompactionStrategy)
         if (layout.getProperty(DisCoMetaDataProvider.COMPONENT_COMPACTION_STRATEGY) != CompactionStrategy.POLYOMINO) {
@@ -657,7 +657,7 @@ public class DiscoVectors {
         return e instanceof ElkNode ? 3 : e instanceof ElkEdge ? 2 : 1;
     }
 
-    static String importStop(ElkNode layout, DCGraph dc, ElkGraphTransformer tr, List<List<ElkNode>> split, double cs, String layoutId,
+    static String importStop(DCGraph dc, ElkGraphTransformer tr, List<List<ElkNode>> split, double cs, String layoutId,
             Map<String, Integer> flags) {
         Map<ElkGraphElement, DCElement> mapping = getField(tr, ElkGraphTransformer.class, "elementMapping");
         Map<ElkEdge, DCExtension> in = getField(tr, ElkGraphTransformer.class, "incomingExtensionsMapping");
@@ -1600,8 +1600,8 @@ public class DiscoVectors {
                 DEFAULT_ONLY));
         long s3 = rnd.nextLong();
         out.add(new Spec("isolated12", () -> multi(s3, new int[12], all(12, false), 4, 160), null, true, DEFAULT_ONLY));
-        long s4 = rnd.nextLong();
-        out.add(new Spec("identical8", () -> identical(s4), null, true, List.of(new Factor("default", g -> { }),
+        rnd.nextLong(); // the identical8 seed: identical() uses none, but the draw keeps every later seed unchanged
+        out.add(new Spec("identical8", () -> identical(), null, true, List.of(new Factor("default", g -> { }),
                 new Factor("highCorner", g -> g.setProperty(PolyominoOptions.POLYOMINO_HIGH_LEVEL_SORT,
                         HighLevelSortingCriterion.CORNER_CASES_THAN_SINGLE_SIDE_LAST)),
                 new Factor("lowBySize", g -> g.setProperty(PolyominoOptions.POLYOMINO_LOW_LEVEL_SORT, LowLevelSortingCriterion.BY_SIZE)),
@@ -1649,7 +1649,7 @@ public class DiscoVectors {
     }
 
     /** Eight identical single-node components (ties in every comparator: the stable sorts decide the order). */
-    static ElkNode identical(long seed) {
+    static ElkNode identical() {
         ElkNode root = newRoot();
         for (int i = 0; i < 8; i++) {
             ElkNode n = node(root, "n" + i, (i % 4) * 120, (i / 4) * 120, 40, 30);
