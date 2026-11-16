@@ -248,6 +248,13 @@ the parity report): spore (`ElkGraphImporter.java:169` jitters with `Math.random
 kept by user decision). The exporter's `_g<random>` id renames are not a source: the seam
 patch fixes them.
 
+**Known flicker: `sporeOverlap` verdicts (#79, #86).** The two-run check calls a case deterministic
+when its runs agree, and on inputs with coincident node centres the spore jitter sometimes lets
+them agree. So the verdicts of those cases (`ok`, `throws` or `nondeterministic`), the report rows
+built from them and the TS findings on them can change from one sweep to the next. A re-sweep
+difference confined to such cases is not a regression. This holds until the seeded-generator fix
+(knowvah/elk#14, upstream eclipse-elk/elk#1211) is carried; no sweep-side workaround is used.
+
 ## 3. Goldens and corpus
 
 AD-5. Reference outputs are committed so CI needs no JVM.
@@ -321,9 +328,12 @@ the substring; `--limit` takes an even-stride sample. Exit `0` unless a case is 
 timeout (JVM exit code 75) on the cases without a result line.
 
 **Parity report (D9).** `docs/parity-report.md` is generated from the sweep cache and committed:
-counts per algorithm and verdict, with the ELK and models commits and no timestamps. Regenerate
-with `npx tsx tools/corpus/parity-report.ts --write`; without `--write` the command exits `1`
-when the committed report is stale. Never edit it by hand.
+counts per algorithm and verdict, with the ELK and models commits and no timestamps. It describes
+the sweep it was generated from and is regenerated only when a fresh report is asked for (#86);
+sweeps may run as often as useful in between. Regenerate with
+`npx tsx tools/corpus/parity-report.ts --write`; without `--write` the command exits `1` when the
+committed report differs from the current sweep cache, which is expected after any later sweep
+(the per-sweep timing columns alone differ). Never edit it by hand.
 
 **Corpus tests.** `resolveModelsDir()` in `test/corpus/corpus.ts` returns a
 `skip` reason when the clone is missing or at another commit; tests that need
@@ -401,12 +411,12 @@ Changes to `tools/oracle/`, the manifest, or the patch series also need:
 
 Changes to `tools/oracle/` or `tools/corpus/` also need:
 
-| Gate                | Command                                                                              | Bar                                                          |
-| ------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| Census              | `npx tsx tools/corpus/census.ts`                                                     | exit 0 (no drift)                                            |
-| Generated stability | `tools/oracle/regen-generated.sh`, then `git diff --exit-code test/corpus/generated` | no diff                                                      |
-| Sweep               | `tools/oracle/sweep.sh` (or `--filter`/`--limit` for a sample)                       | exit 0: no `oracle-error`                                    |
-| Parity report       | `npx tsx tools/corpus/parity-report.ts`                                              | exit 0 (committed report current); regenerate with `--write` |
+| Gate                | Command                                                                                    | Bar                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| Census              | `npx tsx tools/corpus/census.ts`                                                           | exit 0 (no drift)                                       |
+| Generated stability | `tools/oracle/regen-generated.sh`, then `git diff --exit-code test/corpus/generated`       | no diff                                                 |
+| Sweep               | `tools/oracle/sweep.sh` (or `--filter`/`--limit` for a sample)                             | exit 0: no `oracle-error`                               |
+| Parity report       | only when a fresh report is asked for: `parity-report.ts --write`, then `parity-report.ts` | exit 0 right after `--write`; not a standing gate (#86) |
 
 ## 7. ELK Text (`.elkt`) {#elk-text-elkt}
 

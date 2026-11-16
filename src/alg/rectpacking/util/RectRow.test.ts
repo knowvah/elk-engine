@@ -27,11 +27,12 @@ const EXACT = 0;
 const num = decodeHex;
 
 /**
- * Stops rows on which `resetStacks` + `calculateBlockStacks` does not rebuild the recorded stacks (mission 8c, T14; needs-ruling
- * issue #78). `calculateBlockStacks` groups ADJACENT blocks of equal x (RectRow.java:98-108) and has no caller in the Java; the
- * compaction appends a moved block to the row's children after blocks of other stacks (`placeBelow`, `placeNextBeside`:
- * Compaction.java:309-325, 411-413), so in these rows the blocks of one stack are not adjacent (children x order such as
- * 0, 0, 55, 0). The rows stay exactly as the oracle recorded them, and the port replays them at raw bits through the phases.
+ * Stops rows on which `resetStacks` + `calculateBlockStacks` does not rebuild the recorded stacks (mission 8c, T14;
+ * issue #78, ruled 2026-11-14: this classified list is the final form). `calculateBlockStacks` groups ADJACENT blocks
+ * of equal x (RectRow.java:98-108) and has no caller in the Java; the compaction appends a moved block to the row's
+ * children after blocks of other stacks (`placeBelow`, `placeNextBeside`: Compaction.java:309-325, 411-413), so in
+ * these rows the blocks of one stack are not adjacent (children x order such as 0, 0, 55, 0). The rows stay exactly as
+ * the oracle recorded them, and the port replays them at raw bits through the phases.
  */
 const CHILDREN_NOT_X_GROUPED_ROWS: readonly string[] = [
   'stops/arm/fixedBlockSkip/default',
