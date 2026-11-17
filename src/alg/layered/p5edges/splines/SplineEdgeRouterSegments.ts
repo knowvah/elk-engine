@@ -25,12 +25,11 @@ import { SplinesMath } from './SplinesMath.js';
  *
  * Containers (AD-10, R9): `leftPortsLayer`, `rightPortsLayer` and `selfLoopsLayer` are `LinkedHashSet`s (insertion
  * ordered `Set`s of identity-hashed ports and edges, iterated); `edgeToSegmentMap` and `successingEdge` are
- * `HashMap<LEdge, …>` that are only probed (plain `Map`). `upEdges` and `downEdges` are `HashSet<Pair<SideToProcess,
- * LEdge>>` whose iteration order the `SplineSegment` constructor sees (`SplineSegment.java:161`); `Pair.hashCode` mixes
- * identity hashes, so the JVM order is neither insertion nor sortable. The port keeps insertion order in a plain `Set`
- * (decision R9; the hyperedge spline rows are the proof). A `HashSet` also drops a pair equal to one it holds; two
- * equal pairs would need the same edge twice in `getConnectedEdges`, which only a self loop at the port gives, and that
- * edge is skipped as straight before it is added.
+ * `HashMap<LEdge, …>` that are only probed (plain `Map`). `upEdges` and `downEdges` are
+ * `LinkedHashSet<Pair<SideToProcess, LEdge>>` whose insertion order the `SplineSegment` constructor sees
+ * (`SplineSegment.java:161`): a plain `Set`. The Java set also drops a pair equal to one it holds; two equal pairs
+ * would need the same edge twice in `getConnectedEdges`, which only a self loop at the port gives, and that edge is
+ * skipped as straight before it is added.
  */
 
 /**

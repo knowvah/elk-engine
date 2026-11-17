@@ -6,7 +6,12 @@ import { dumpLGraph } from '../../../../test/helpers/layered-framework-replay.js
 import { compareExpected, compareFullDump } from '../../../../test/helpers/layered-phase-replay-compare.js';
 import { phaseDump, type Expected } from '../../../../test/helpers/layered-phase-replay-dump.js';
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
-import { importRow, loadRows, type PhaseRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
+import {
+  importRow,
+  loadRefusalRows,
+  loadRows,
+  type PhaseRow,
+} from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { UnsupportedGraphException } from '../../../core/UnsupportedGraphException.js';
 import { NoSuchElementException } from '../../../java/util/NoSuchElementException.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
@@ -98,32 +103,29 @@ describe('BreadthFirstModelOrderLayerer structure', () => {
   });
 });
 
-/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
-const siteRows = loadRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
-
-function siteRow(id: string): PhaseRow {
-  const row = siteRows.find((candidate) => candidate.id === id);
-  if (row === undefined) {
-    throw new Error(`no site row ${id}`);
-  }
-  return row;
-}
-
 describe('BreadthFirstModelOrderLayerer on the site rows', () => {
-  it('skips the external port dummies of a hierarchical target and layers the real nodes', () => {
-    // oracle: sites/ModelOrderLayerers/externalPorts/BF_MODEL_ORDER; BreadthFirstModelOrderLayerer.java:73
-    const result = replay(siteRow('sites/ModelOrderLayerers/externalPorts/BF_MODEL_ORDER'), () =>
-      LayeringStrategy.BF_MODEL_ORDER.create(),
-    ).expected;
-    expect(result.layers).toEqual([['g0/n2'], ['g0/n3', 'g0/n4'], ['g0/n5'], ['g0/n6', 'g0/n7', 'g0/n8']]);
-    expect(result.layerless).toEqual([]);
-    expect(result.changed).toEqual([]);
+  it('skips the external port dummies of a hierarchical target, then refuses the backward edge c6 > c3', () => {
+    // oracle: sites/ModelOrderLayerers/externalPorts/BF_MODEL_ORDER; BreadthFirstModelOrderLayerer.java:75, :150
+    // (eclipse-elk/elk#1219: without the MODEL_ORDER cycle breaker the edge from c6 ends in an earlier layer)
+    const row = loadRefusalRows(ROWS_FILE).find(
+      (r) => r.id === 'sites/ModelOrderLayerers/externalPorts/BF_MODEL_ORDER',
+    );
+    expect(row?.expected.throws).toEqual({
+      class: 'UnsupportedGraphException',
+      message:
+        'The BF model order layer assigner placed the edge from n_root.T.c6 to n_root.T.c3 in the same or an earlier' +
+        ' layer. It requires edges that follow the model order, which the cycle breaking strategy MODEL_ORDER' +
+        ' (org.eclipse.elk.layered.cycleBreaking.strategy) ensures.',
+    });
+    expect(() => replay(row as unknown as PhaseRow, () => LayeringStrategy.BF_MODEL_ORDER.create())).toThrow(
+      new UnsupportedGraphException(row!.expected.throws.message),
+    );
   });
 });
 
 describe('BreadthFirstModelOrderLayerer Java semantics', () => {
   it('sorts the real nodes ascending by model order (Integer.compare)', () => {
-    // Java: BreadthFirstModelOrderLayerer.java:79 (`Integer.compare` of the model orders)
+    // Java: BreadthFirstModelOrderLayerer.java:81 (`Integer.compare` of the model orders)
     const graph = new LGraph();
     const names = new Map<LNode, string>();
     [3, 2, 1, 0].forEach((order) => ordered(graph, names, `n${String(order)}`, order));
@@ -134,7 +136,7 @@ describe('BreadthFirstModelOrderLayerer Java semantics', () => {
   });
 
   it('keeps nodes with equal model orders in their list order (Integer.compare is 0)', () => {
-    // Java: BreadthFirstModelOrderLayerer.java:79 (`Integer.compare` of equal model orders; `Collections.sort` is stable)
+    // Java: BreadthFirstModelOrderLayerer.java:81 (`Integer.compare` of equal model orders; `Collections.sort` is stable)
     const graph = new LGraph();
     const names = new Map<LNode, string>();
     ordered(graph, names, 'a', 1);
@@ -147,7 +149,7 @@ describe('BreadthFirstModelOrderLayerer Java semantics', () => {
   });
 
   it('throws NoSuchElementException for a label dummy without an incoming edge', () => {
-    // Java: BreadthFirstModelOrderLayerer.java:100-101 (`getIncomingEdges().iterator().next()` on an empty iterable)
+    // Java: BreadthFirstModelOrderLayerer.java:102-103 (`getIncomingEdges().iterator().next()` on an empty iterable)
     const graph = new LGraph();
     const names = new Map<LNode, string>();
     ordered(graph, names, 'a', 0);

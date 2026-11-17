@@ -18,7 +18,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 ## elk-engine nedir
 
 `@knowvah/elk-engine`, Eclipse Layout Kernel'in (ELK) aslına sadık bir TypeScript taşımasıdır. Sabitlenmiş
-`8aaa3c145c2a18a38aabbc725aa3791ddc517a76` commit'indeki Java belirtimdir (AD-1, AD-2). Bir kütüphanedir:
+`e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` commit'indeki Java belirtimdir (AD-1, AD-2). Bir kütüphanedir:
 tarayıcıda güvenle çalışır, sıfır çalışma zamanı bağımlılığı vardır, Java veya WASM içermez. Herkese açık sözleşmesi
 ElkGraph nesne modeli ile `ElkGraphUtil` fabrikalarıdır; ELK JSON bir G/Ç bağdaştırıcısıdır (AD-14). Toplam yaklaşık
 134.600 elle yazılmış satırlık on üç bundle kapsamdadır (envantere bakın). Bu görev yalnızca iskeleti teslim eder:

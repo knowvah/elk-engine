@@ -3,7 +3,8 @@
 # Java to TypeScript translation rules (ELK port)
 
 Surveyed: the 13 in-scope bundles (decisions.md "Bundle scope") at ELK
-`8aaa3c145c2a18a38aabbc725aa3791ddc517a76` (677 .java, 5 .xtend, 13 .melk). Java semantics come
+`8aaa3c145c2a18a38aabbc725aa3791ddc517a76` (677 .java, 5 .xtend, 13 .melk); line references are to that commit. The
+pin moved to `e7eaea57` (#99), whose net Java diff changes 13 files and no rule here. Java semantics come
 from the Javadoc/JLS only (AD-9). See also [overview](architecture/overview.md),
 [port map](architecture/port-map.md), [section 2 detail](translation-rules-collections.md).
 

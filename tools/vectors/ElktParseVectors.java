@@ -90,7 +90,7 @@ import org.eclipse.xtext.parser.antlr.SyntaxErrorMessageProvider;
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic;
 
 public class ElktParseVectors {
-    static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
+    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String CONVERSION_CODE = "elkt.vectors.ValueConversion";
     static final String SCENARIO_DIR = "elkt-parse-scenarios", EXTENSION = ".elkt", OUTPUT = "graph-text-parse.json";

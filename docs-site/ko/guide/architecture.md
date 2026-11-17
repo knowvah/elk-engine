@@ -18,7 +18,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 ## elk-engine이란
 
 `@knowvah/elk-engine`은 Eclipse Layout Kernel(ELK)을 충실하게 포팅한 TypeScript 구현입니다. 고정된 커밋
-`8aaa3c145c2a18a38aabbc725aa3791ddc517a76`의 Java가 명세입니다(AD-1, AD-2). 이것은 라이브러리로서 브라우저에서 안전하게
+`e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`의 Java가 명세입니다(AD-1, AD-2). 이것은 라이브러리로서 브라우저에서 안전하게
 동작하고, 런타임 의존성이 없으며, Java나 WASM도 쓰지 않습니다. 공개 계약은 ElkGraph 객체 모델과 `ElkGraphUtil`
 팩토리이며, ELK JSON은 I/O 어댑터입니다(AD-14). 직접 작성된 코드 약 134,600줄에 해당하는 번들 13개가 범위에 포함됩니다
 (인벤토리 참고). 이 미션은 기반 구조만 제공하며, 아직 포팅된 레이아웃 알고리즘은 없습니다.

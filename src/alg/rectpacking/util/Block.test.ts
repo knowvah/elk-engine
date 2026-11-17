@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
-// Proof of Block (mission 8c, T6): every expectation is a recorded p2 stop row (rectpacking.json, 167 stops, 658 blocks) or the arithmetic
+// Proof of Block (mission 8c, T6): every expectation is a recorded p2 stop row (rectpacking.json, 168 stops, 659 blocks) or the arithmetic
 // of Block.java applied to recorded sizes where a method is not observable through a stop. Blocks are rebuilt from the rows
 // (test/helpers/rectpacking-replay-*.ts) and compared at raw-bit equality (the same IEEE operations as the Java).
 import { describe, expect, it } from 'vitest';
@@ -47,7 +47,7 @@ function buildByAdding(
 }
 
 describe('Block (Block.java)', () => {
-  it('rebuilds 658 blocks from the p2 stop rows and exposes the recorded state through its getters', LOOP, () => {
+  it('rebuilds 659 blocks from the p2 stop rows and exposes the recorded state through its getters', LOOP, () => {
     const visited = eachBlock((entry, block) => {
       expect([
         block.getX(),
@@ -66,7 +66,7 @@ describe('Block (Block.java)', () => {
       expect([block.isFixed(), block.isPositionFixed()]).toEqual([entry.fixed, entry.positionFixed]);
       expect(block.getChildren().map((n) => n.getIdentifier())).toEqual(entry.children);
     });
-    expect(visited).toBe(658);
+    expect(visited).toBe(659);
   });
 
   it(
@@ -89,7 +89,7 @@ describe('Block (Block.java)', () => {
           expect(row.getNodes().map((n) => n.getIdentifier())).toEqual(rowEntry.rects);
         });
       });
-      expect(visited).toBe(658);
+      expect(visited).toBe(659);
     },
   );
 
@@ -116,7 +116,7 @@ describe('Block (Block.java)', () => {
   );
 
   it(
-    'resetBlock reproduces the recorded width, height, minHeight and smallest rectangle sizes of all 658 blocks (Block.java:327-364)',
+    'resetBlock reproduces the recorded width, height, minHeight and smallest rectangle sizes of all 659 blocks (Block.java:327-364)',
     LOOP,
     () => {
       eachBlock((entry, block) => {
@@ -183,7 +183,7 @@ describe('Block (Block.java)', () => {
         const comparison = compareJson(entry, dumpRectRows(replay.rebuilt.list).blocks[index], EXACT);
         expect(formatDifferences(comparison)).toBe('');
       });
-      expect(visited).toBe(658);
+      expect(visited).toBe(659);
     },
   );
 

@@ -309,8 +309,7 @@ export class LabelPlacer {
     // A side is not completely covered if either the leftmost or the rightmost port is placed on that side, so
     // that's easy to distinguish
     const leftmostPortSide = slLoop.getLeftmostPort()!.getLPort().getSide();
-    // Java reads `getLeftmostPort()` for the rightmost side as well (`:249`); preserved
-    const rightmostPortSide = slLoop.getLeftmostPort()!.getLPort().getSide();
+    const rightmostPortSide = slLoop.getRightmostPort()!.getLPort().getSide();
 
     // Remove inline edge label property since it is not valid in this case.
     this.removeInlineProperty(slLoop);

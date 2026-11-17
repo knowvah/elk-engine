@@ -13,7 +13,13 @@ import { repoRoot } from '../../../test/corpus/corpus.js';
 import { compareExpected, compareFullDump } from '../../../test/helpers/layered-phase-replay-compare.js';
 import { phaseDump } from '../../../test/helpers/layered-phase-replay-dump.js';
 import { runPrefix, runSteps, type Factories } from '../../../test/helpers/layered-phase-replay-ops.js';
-import { importRow, loadRows, ROW_GROUPS, type PhaseRow } from '../../../test/helpers/layered-phase-replay-rows.js';
+import {
+  importRow,
+  loadRefusalRows,
+  loadRows,
+  ROW_GROUPS,
+  type PhaseRow,
+} from '../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpLGraph } from '../../../test/helpers/layered-framework-replay.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-phases.json`;
@@ -21,6 +27,8 @@ const CYCLE_PHASE = 'P1_CYCLE_BREAKING';
 const LAYERING_PHASE = 'P2_LAYERING';
 
 const rows = loadRows(ROWS_FILE);
+const refusalRows = loadRefusalRows(ROWS_FILE);
+const allIds = [...rows, ...refusalRows].map((row) => row.id);
 const rowCounts = (JSON.parse(readFileSync(ROWS_FILE, 'utf8')) as { rowCounts: Record<string, number> }).rowCounts;
 
 const factories: Factories = {
@@ -45,15 +53,31 @@ function replay(row: PhaseRow): ReturnType<typeof phaseDump> {
 
 describe('layered-phases.json replay', () => {
   it('has unique row ids', () => {
-    expect(new Set(rows.map((row) => row.id)).size).toBe(rows.length);
+    expect(new Set(allIds).size).toBe(allIds.length);
   });
 
   it('has the recorded total row count', () => {
-    expect(rows.length).toBe(Object.values(rowCounts).reduce((sum, n) => sum + n, 0));
+    expect(allIds.length).toBe(Object.values(rowCounts).reduce((sum, n) => sum + n, 0));
   });
 
   it.each(ROW_GROUPS)('has the recorded %s row count', (group) => {
-    expect(rows.filter((row) => row.group === group).length).toBe(rowCounts[group]);
+    const inGroup = [...rows, ...refusalRows].filter((row) => row.group === group);
+    expect(inGroup.length).toBe(rowCounts[group]);
+  });
+
+  // eclipse-elk/elk#1219: a model order layerer refuses an edge that does not point to a later layer.
+  it.each(refusalRows.map((row) => [row.id, row] as const))('%s: throws as the oracle does', (_id, row) => {
+    const thrown = ((): unknown => {
+      try {
+        runSteps(row as unknown as PhaseRow, factories);
+      } catch (e) {
+        return e;
+      }
+      return null;
+    })();
+    expect(thrown).toBeInstanceOf(Error);
+    expect((thrown as Error).constructor.name).toBe(row.expected.throws.class);
+    expect((thrown as Error).message).toBe(row.expected.throws.message);
   });
 
   it.each(rows.map((row) => [row.id, row] as const))('%s: replays the recorded result', (_id, row) => {

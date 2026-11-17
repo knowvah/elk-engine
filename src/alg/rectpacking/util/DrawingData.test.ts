@@ -48,7 +48,7 @@ describe('DrawingData (DrawingData.java)', () => {
       expect([data.getNextXcoordinate(), data.getNextYcoordinate()]).toEqual([d.nextX, d.nextY].map(num));
       expect(data.getPlacementOption().name()).toBe(d.placementOption);
     });
-    expect(visited).toBe(155);
+    expect(visited).toBe(156);
   });
 
   it('the four-argument constructor sets the next coordinates to 0.0 (DrawingData.java:80-82)', LOOP, () => {

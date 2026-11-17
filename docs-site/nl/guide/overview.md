@@ -20,7 +20,7 @@ In de [routekaart](/guide/roadmap) staat in welke volgorde de algoritmen volgen.
 
 ## De Java is de specificatie
 
-De Java-broncode op de vastgepinde ELK-commit `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` is de
+De Java-broncode op de vastgepinde ELK-commit `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` is de
 leidende specificatie. De portering volgt die nauwgezet:
 
 - Algoritmen worden niet geoptimaliseerd of vereenvoudigd. Als de Java redundant lijkt, blijft de redundantie behouden.

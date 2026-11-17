@@ -33,7 +33,7 @@ Ambele se află în afara acestui depozit; niciunul nu este inclus.
 
 | Element               | Unde                                                                                    |
 | --------------------- | --------------------------------------------------------------------------------------- |
-| Commit ELK fixat      | `tools/oracle/ELK_COMMIT` (în prezent `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)       |
+| Commit ELK fixat      | `tools/oracle/ELK_COMMIT` (în prezent `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)       |
 | Seria de patch-uri    | `tools/oracle/patches/*.patch`, aplicate în ordine lexicală cu `git am --3way`          |
 | Compilare             | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho descarcă artefacte p2)             |
 | Executor de loturi    | `tools/oracle/run.sh <outDir> <input>...` sau `run.sh --cases <cases.jsonl> <outDir>`   |

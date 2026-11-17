@@ -24,9 +24,9 @@ const LOOP = { timeout: 60_000 };
 const EXACT = 0;
 
 describe('p1 width approximation replay', () => {
-  it('every greedy and target-width stop replays at raw bits (155 + 16 stops)', LOOP, () => {
+  it('every greedy and target-width stop replays at raw bits (156 + 16 stops)', LOOP, () => {
     const stops = stopsWithPrevious(P1_STOPS);
-    expect(stops.filter((s) => s.stop.stop === STOP_AFTER_GREEDY).length).toBe(155);
+    expect(stops.filter((s) => s.stop.stop === STOP_AFTER_GREEDY).length).toBe(156);
     expect(stops.filter((s) => s.stop.stop === STOP_AFTER_TARGET_WIDTH).length).toBe(16);
     const total: Comparison = { differences: [], hexExact: 0, hexClose: 0 };
     let drawings = 0;
@@ -41,7 +41,7 @@ describe('p1 width approximation replay', () => {
     expect(formatDifferences(total)).toBe('');
     expect(total.hexClose).toBe(0);
     expect(total.hexExact).toBeGreaterThan(0);
-    expect(drawings).toBe(155);
+    expect(drawings).toBe(156);
   });
 
   it('targetWidthMissing: class and message equal the row', () => {

@@ -210,20 +210,23 @@ describe('wrapping classes on the oracle rows (F12)', () => {
     });
   });
 
-  // oracle: sites/GraphStats/forbiddenOutOfRange/{greedy,lookBack}; GraphStats.java:293-302
-  it.each(['greedy', 'lookBack'] as const)('a forbidden-indices property makes every cut forbidden (%s)', (variant) => {
+  // oracle: sites/GraphStats/forbiddenOutOfRange/{greedy,lookBack}; GraphStats.java:293-317. The forbidden indices 0 and
+  // 99 are out of range. Before eclipse-elk/elk#1223 the property skipped the default `isCutAllowed` pass, so every cut was
+  // forbidden; now the default pass runs first and out-of-range indices forbid nothing.
+  it.each(['greedy', 'lookBack'] as const)('forbidden indices out of range leave the default cuts (%s)', (variant) => {
     const id = `sites/GraphStats/forbiddenOutOfRange/${variant}`;
     const graph = graphBefore(id, WRAPPER_STEP);
     const gs = new GraphStats(graph);
     const allowed = Array.from({ length: gs.longestPath }, (_, i) => gs.isCutAllowed(i));
-    expect(allowed.slice(1).some(Boolean)).toBe(false);
+    expect(allowed).toEqual([false, ...Array.from({ length: gs.longestPath - 1 }, () => true)]);
     const validified =
       variant === 'greedy'
         ? SingleEdgeGraphWrapper.validifyIndexesGreedily(gs, recordedCuts(id))
         : SingleEdgeGraphWrapper.validifyIndexesLookingBack(gs, recordedCuts(id));
-    expect(validified).toEqual([]);
+    expect(recordedCuts(id)).toEqual([3]);
+    expect(validified).toEqual([3]);
     expect(dumpOf(id).layers).toEqual(recordedLayers(id));
-    expect(wrappedWidth(recordedLayers(id))).toBe(0);
+    expect(wrappedWidth(recordedLayers(id))).toBe(3);
   });
 
   // oracle: sites/GraphStats/northSouthHeight; GraphStats.java:249

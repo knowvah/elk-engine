@@ -29,7 +29,7 @@ export class EndLabelSorter implements ILayoutProcessor<LGraph> {
   /**
    * Compares label groups by source port id, then target node id, then (backwards) target port id.
    *
-   * @see EndLabelSorter.java:216
+   * @see EndLabelSorter.java:215
    */
   private static readonly LABEL_GROUP_COMPARATOR = (
     group1: EndLabelSorterLabelGroup,
@@ -167,9 +167,8 @@ export class EndLabelSorter implements ILayoutProcessor<LGraph> {
   }
 
   /**
-   * Creates a list of label groups that group labels from the same edge. `edgeToGroupMap` is lookup-only except for
-   * the final `values()` copy, whose insertion order is the AD-10 stand-in for the identity-hashed Java `HashMap`; it
-   * can matter only for groups the comparator calls equal (parallel edges). Decision FX2: 7f2 records that scenario.
+   * Creates a list of label groups that group labels from the same edge. The Java map is a `LinkedHashMap`, so its
+   * `values()` come in insertion order, as a `Map`'s do.
    *
    * @see EndLabelSorter.java:150
    */

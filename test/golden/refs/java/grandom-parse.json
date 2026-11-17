@@ -1,5 +1,5 @@
 {
-  "elkCommit": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "elkCommit": "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c",
   "xtextVersion": "2.36.0",
   "cases": [
     {"id":"blank-lines-around-errors","input":"\n\n\ngenerate 1 graphs { nodes 2 }\n\n","syntaxErrors":[{"message":"missing '=' at '2'","line":4,"offset":29,"length":1}],"conversionErrors":[],"model":{"class":"RandGraph","features":[{"name":"configs","value":[{"class":"Configuration","features":[{"name":"samples","value":1},{"name":"form","value":"graphs"},{"name":"nodes","value":{"class":"Nodes","features":[{"name":"nNodes","value":{"class":"DoubleQuantity","features":[{"name":"quant","value":"2.0"},{"name":"min","value":null},{"name":"minMax","value":false},{"name":"max","value":null},{"name":"mean","value":null},{"name":"gaussian","value":false},{"name":"stddv","value":null}]}},{"name":"ports","value":null},{"name":"labels","value":false},{"name":"size","value":null},{"name":"removeIsolated","value":false}]}},{"name":"edges","value":null},{"name":"mW","value":false},{"name":"maxWidth","value":null},{"name":"mD","value":false},{"name":"maxDegree","value":null},{"name":"pF","value":false},{"name":"fraction","value":null},{"name":"hierarchy","value":null},{"name":"seed","value":null},{"name":"format","value":"elkt"},{"name":"filename","value":null}]}]}]}},

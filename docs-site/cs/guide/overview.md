@@ -20,7 +20,7 @@ Pořadí, v jakém algoritmy přibudou, najdete v [plánu vývoje](/guide/roadma
 
 ## Java je specifikace
 
-Zdrojový kód Javy v zafixovaném commitu ELK `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` je kanonickou
+Zdrojový kód Javy v zafixovaném commitu ELK `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` je kanonickou
 specifikací. Portování ji těsně následuje:
 
 - Algoritmy se neoptimalizují ani nezjednodušují. Pokud Java působí nadbytečně, nadbytečnost zůstává zachována.

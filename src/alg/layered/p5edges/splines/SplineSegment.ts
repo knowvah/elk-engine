@@ -75,8 +75,8 @@ const ONE_HALF = 0.5;
  * Furthermore only hyperedges are considered for vertical alignment of edges. All other edges are assumed to go
  * straight to the target port.
  *
- * Containers (AD-10, R9): `edges` is the Java `HashSet<LEdge>` iterated by `FinalSplineBendpointsCalculator`: an
- * insertion-ordered `Set` (identity-hashed elements; journaled); `leftPorts`, `rightPorts` and `edgeInformation` are only
+ * Containers (AD-10, R9): `edges` is the Java `LinkedHashSet<LEdge>` iterated by `FinalSplineBendpointsCalculator`: an
+ * insertion-ordered `Set`; `leftPorts`, `rightPorts` and `edgeInformation` are only
  * probed, plain `Set`/`Map`. The two Java constructors are one overloaded constructor told apart by the first argument
  * (an `LEdge` or an `LPort`); the edge pairs of the first form are iterated twice, so they must be re-iterable (a `Set`
  * or an array, as the Java `Set`).

@@ -51,6 +51,16 @@ export interface PhaseRow {
   readonly expected: Expected;
 }
 
+/** What a step row records when the oracle refuses the graph (eclipse-elk/elk#1219, a model order layerer). */
+export interface Refusal {
+  readonly throws: { readonly class: string; readonly message: string };
+}
+
+/** A step row whose last phase throws in the oracle: `expected` holds the exception instead of a dump. */
+export interface RefusalRow extends Omit<PhaseRow, 'expected'> {
+  readonly expected: Refusal;
+}
+
 /** The graph an import produced and its dump (T1's whole-graph dump with every property value encoded). */
 export interface ImportedRow {
   readonly graph: LGraph;
@@ -77,13 +87,24 @@ function checkRow(row: unknown, index: number): PhaseRow {
   return row as unknown as PhaseRow;
 }
 
-/** The rows of a `layered-phases.json` file, structurally checked (the file is external data). */
-export function loadRows(file: string): PhaseRow[] {
+function allRows(file: string): PhaseRow[] {
   const parsed: unknown = JSON.parse(readFileSync(file, JSON_ENCODING));
   if (!isObject(parsed) || !Array.isArray(parsed.rows)) {
     throw new Error(`${file}: no "rows" array`);
   }
   return parsed.rows.map((row, i) => checkRow(row, i));
+}
+
+const isRefusal = (row: PhaseRow): boolean => 'throws' in row.expected;
+
+/** The rows of a `layered-phases.json` file that record a result, structurally checked (the file is external data). */
+export function loadRows(file: string): PhaseRow[] {
+  return allRows(file).filter((row) => !isRefusal(row));
+}
+
+/** The step rows of a `layered-phases.json` file whose last phase throws in the oracle. */
+export function loadRefusalRows(file: string): RefusalRow[] {
+  return allRows(file).filter(isRefusal) as unknown as RefusalRow[];
 }
 
 function readVerified(input: FileInput): string {

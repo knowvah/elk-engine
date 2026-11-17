@@ -180,8 +180,10 @@ export class AreaApproximation {
     if (candidates.length === 1) {
       return candidates[candidates.length - 1]!;
     }
-    // Multiple options have the same value for every benchmark. These special cases are caught in the following.
-    if (candidates.length === 2) {
+    // Two or more options have the same value for every benchmark. These special cases are caught in the following.
+    // If more than two options remain, for example for a rectangle without a size and no spacing between the
+    // nodes, the first two are compared.
+    if (candidates.length >= 2) {
       return this.checkSpecialCases(candidates[0]!, candidates[1]!, lastPlaced, toPlace);
     }
     return null;

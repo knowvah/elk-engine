@@ -20,7 +20,7 @@ Veja o [roteiro](/guide/roadmap) para a ordem em que os algoritmos chegam.
 
 ## O Java é a especificação
 
-O código-fonte Java no commit fixado do ELK `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` é a
+O código-fonte Java no commit fixado do ELK `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` é a
 especificação canônica. O port a segue de perto:
 
 - Os algoritmos não são otimizados nem simplificados. Se o Java parece redundante, a redundância é mantida.

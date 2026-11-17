@@ -131,8 +131,8 @@ function noEmptyLayers(lGraph: LGraph): void {
 }
 
 describe('LayerConstraintProcessorTest on the replayed rows', () => {
-  it('covers the 58 models rows and the 3 scenario rows ending in the postprocessor', () => {
-    expect(rows.filter((row) => row.group === 'models')).toHaveLength(58);
+  it('covers the 52 models rows and the 3 scenario rows ending in the postprocessor', () => {
+    expect(rows.filter((row) => row.group === 'models')).toHaveLength(52);
     expect(rows.filter((row) => row.group === 'scenarios')).toHaveLength(3);
   });
 

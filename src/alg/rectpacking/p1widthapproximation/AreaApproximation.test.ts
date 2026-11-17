@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 // Branches of `AreaApproximation` the recorded rows do not reach (replay-alone coverage): the tie arms of `checkSpecialCases`
-// (AreaApproximation.java:192-235), the null result of `findBestCandidate` (:157) and its two dereferences (:98, :143), the `switch`
+// (AreaApproximation.java:194-237), the null result of `findBestCandidate` (:159) and its two dereferences (:98, :143), the `switch`
 // default arms (:139, :301). The geometry is the smallest that makes the Java rule pick each arm; the expected values are which of the
 // two drawings the rule returns.
 import { describe, expect, it } from 'vitest';
@@ -80,11 +80,13 @@ describe('AreaApproximation.findBestCandidate and calcValuesForOpt', () => {
   const root = ElkGraphUtil.createGraph();
   const padding = new ElkPadding(0);
 
-  it('four candidates equal in every measure remain, and no best option is found (java:157)', () => {
+  it('four candidates equal in every measure remain, and the first two are compared (java:156)', () => {
     const approximation = internals(new AreaApproximation(1, OptimizationGoal.AREA_DRIVEN, false));
     const same = (): DrawingData => drawing(D.CANDIDATE_POSITION_LAST_PLACED_RIGHT);
     const nodes = [box(root, 0, 0, 1, 1), box(root, 0, 0, 1, 1)] as const;
-    expect(approximation.findBestCandidate([same(), same(), same(), same()], nodes[0], nodes[1], padding)).toBeNull();
+    const candidates = [same(), same(), same(), same()] as const;
+    // Two last-placed-right options: checkSpecialCases takes the second unless the first is whole-drawing-right.
+    expect(approximation.findBestCandidate(candidates, nodes[0], nodes[1], padding)).toBe(candidates[1]);
   });
 
   it('a null best option is dereferenced: approxBoundingBox throws a TypeError (java:98)', () => {

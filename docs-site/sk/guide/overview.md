@@ -20,7 +20,7 @@ Poradie, v akom algoritmy pribúdajú, nájdete v [pláne vývoja](/guide/roadma
 
 ## Java je špecifikácia
 
-Zdrojový kód Javy na pripnutom commite ELK `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` je kanonická
+Zdrojový kód Javy na pripnutom commite ELK `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` je kanonická
 špecifikácia. Port ju dôsledne sleduje:
 
 - Algoritmy sa neoptimalizujú ani nezjednodušujú. Ak sa Java javí ako redundantná, redundancia sa zachová.

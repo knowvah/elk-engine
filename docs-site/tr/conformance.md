@@ -32,7 +32,7 @@ derlenmiş** upstream ELK'dir; `tools/oracle/build.sh` bunu `$ELK_ORACLE_DIR` al
 
 | Öğe                      | Konum                                                                                  |
 | ------------------------ | -------------------------------------------------------------------------------------- |
-| Sabitlenmiş ELK commit'i | `tools/oracle/ELK_COMMIT` (şu an `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)           |
+| Sabitlenmiş ELK commit'i | `tools/oracle/ELK_COMMIT` (şu an `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)           |
 | Yama serisi              | `tools/oracle/patches/*.patch`, sözlük sırasıyla `git am --3way` ile uygulanır         |
 | Derleme                  | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho p2 yapıtlarını indirir)           |
 | Toplu çalıştırıcı        | `tools/oracle/run.sh <outDir> <input>...` veya `run.sh --cases <cases.jsonl> <outDir>` |

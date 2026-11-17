@@ -56,7 +56,9 @@
 //   ["runPhase", "P1_CYCLE_BREAKING"|"P2_LAYERING", "<STRATEGY>"]   CycleBreakingStrategy|LayeringStrategy.<STRATEGY>
 //        .create().process(lgraph, monitor)
 //   ["dump"]                              last step, exactly once: records expected (below)
-//   An ELK or JDK exception thrown by a step stops the recording (no row records one).
+//   An ELK or JDK exception thrown by a step stops the recording (no row records one), with one exception: an
+//   UnsupportedGraphException of a "runPhase" step right before the dump (a model order layerer's refusal,
+//   eclipse-elk/elk#1219) is recorded as expected = {"throws": {"class": <simple name>, "message": ...}}.
 //
 // Positional paths (7a): fixed at import and NEVER recomputed when nodes move into layers: "g0" the LGraph, "g0/n3" the
 //   4th node (layerless nodes in list order), "g0/n3/p1" a port, "g0/e2" an edge (per graph in the order node, port,
@@ -161,7 +163,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 public class LayeredPhaseVectors {
-    static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
+    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
     static final String OUTPUT = "layered-phases.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String REPO_PREFIX = "repo:";
@@ -1205,7 +1207,23 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
                 case "layers" -> layers(graph, base, (List<Object>) s.get(1));
                 case "reverseEdge" -> ((LEdge) need(base).element((String) s.get(1))).reverse(graph, true);
                 case "runProcessor" -> runProcessor(graph, (String) s.get(1));
-                case "runPhase" -> runPhase(graph, (String) s.get(1), (String) s.get(2));
+                case "runPhase" -> {
+                    try {
+                        runPhase(graph, (String) s.get(1), (String) s.get(2));
+                    } catch (org.eclipse.elk.core.UnsupportedGraphException e) {
+                        // eclipse-elk/elk#1219: a model order layerer refuses an edge that does not point to a later
+                        // layer. The row records the refusal; it must be the step right before the dump.
+                        if (i + 2 != steps.size() || !"dump".equals(((List<Object>) steps.get(i + 1)).get(0))) {
+                            throw new Bug("UnsupportedGraphException before the last step: " + e.getMessage());
+                        }
+                        Map<String, Object> thrown = new LinkedHashMap<>();
+                        thrown.put("class", e.getClass().getSimpleName());
+                        thrown.put("message", e.getMessage());
+                        Map<String, Object> refusal = new LinkedHashMap<>();
+                        refusal.put("throws", thrown);
+                        return refusal;
+                    }
+                }
                 case "dump" -> {
                     expected = phaseDump(base);
                     if (need(base).nodes.size() < FULL_DUMP_BELOW) {
@@ -2657,14 +2675,17 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
                 }
                 REFUSED_ROWS.merge(key, 1, Integer::sum);
                 continue;
-            } catch (org.eclipse.elk.core.UnsupportedConfigurationException e) {
+            } catch (org.eclipse.elk.core.UnsupportedConfigurationException
+                    | org.eclipse.elk.core.UnsupportedGraphException e) {
                 if (!s.group.equals("models")) {
                     throw e;
                 }
                 // ELK rejects the configuration itself (e.g. InteractiveLayerer has no edge reverser, so a FIRST node
-                // with an incoming edge throws in LayerConstraintPostprocessor): a row records no exception.
+                // with an incoming edge throws in LayerConstraintPostprocessor; since eclipse-elk/elk#1219 the BF and
+                // DF model order layerers refuse an edge that does not point to a later layer, which only the
+                // MODEL_ORDER cycle breaker rules out): a row records no exception.
                 System.err.println("skipped row " + s.id.substring("models/".length()) + " (oracle throws "
-                        + "UnsupportedConfigurationException: " + e.getMessage() + ")");
+                        + e.getClass().getSimpleName() + ": " + e.getMessage() + ")");
                 continue;
             }
             counts.merge(s.group, 1, Integer::sum);

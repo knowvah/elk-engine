@@ -19,7 +19,7 @@ See the [roadmap](/guide/roadmap) for the order in which algorithms arrive.
 
 ## The Java is the specification
 
-The Java source at the pinned ELK commit `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` is the canonical
+The Java source at the pinned ELK commit `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` is the canonical
 specification. The port follows it closely:
 
 - Algorithms are not optimized or simplified. If the Java looks redundant, the redundancy is kept.

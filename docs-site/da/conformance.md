@@ -33,7 +33,7 @@ Begge ligger uden for dette repository; ingen af dem er vendoret.
 
 | Element             | Hvor                                                                                    |
 | ------------------- | --------------------------------------------------------------------------------------- |
-| Fastlåst ELK-commit | `tools/oracle/ELK_COMMIT` (aktuelt `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)          |
+| Fastlåst ELK-commit | `tools/oracle/ELK_COMMIT` (aktuelt `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)          |
 | Patch-serie         | `tools/oracle/patches/*.patch`, anvendt i leksikalsk rækkefølge med `git am --3way`     |
 | Build               | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho henter p2-artefakter)              |
 | Batch-runner        | `tools/oracle/run.sh <outDir> <input>...` eller `run.sh --cases <cases.jsonl> <outDir>` |

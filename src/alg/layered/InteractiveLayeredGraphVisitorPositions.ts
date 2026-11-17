@@ -2,6 +2,7 @@
 import { KVector } from '../../core/math/KVector.js';
 import { Direction } from '../../core/options/Direction.js';
 import type { ElkNode } from '../../graph/ElkNode.js';
+import type { IProperty } from '../../graph/properties/IProperty.js';
 import { add, mul, sub } from '../../java/lang/Int32.js';
 import { d2i } from '../../java/lang/JavaMath.js';
 import {
@@ -113,9 +114,9 @@ interface LayerLists {
 }
 
 /**
- * Separates the nodes of a layer with and without constraints (`:534-551`).
+ * Separates the nodes of a layer with and without constraints (`:542-559`).
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:527
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:535
  */
 function classifyLayerNodes(nodesOfLayer: readonly ElkNode[]): LayerLists {
   const lists: LayerLists = {
@@ -147,9 +148,9 @@ const positionIdOf = (node: ElkNode): number => node.getProperty(LayeredOptions.
 
 /**
  * Each node should only have one relative constraint: a pred constraint is translated to a succ constraint for the node
- * it refers to. The loop runs over a list that grows inside it (`add(n + 1, target)`, `:578`), as in Java.
+ * it refers to. The loop runs over a list that grows inside it (`add(n + 1, target)`, `:586`), as in Java.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:560
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:568
  */
 function translateNodesWithBothRC(lists: LayerLists): void {
   const { allNodes, nodesWithoutC, nodesWithPCAndRC, nodesWithOneRC, nodesWithBothRC } = lists;
@@ -157,7 +158,7 @@ function translateNodesWithBothRC(lists: LayerLists): void {
     // pred cons is translated to succ cons for the following node
     const node = JList.get(nodesWithBothRC, n);
     const t = stringProperty(node, LayeredOptions.CROSSING_MINIMIZATION_IN_LAYER_PRED_OF);
-    // a missing target is the `NullPointerException` of `target.hasProperty` (`:566`)
+    // a missing target is the `NullPointerException` of `target.hasProperty` (`:574`)
     const target = requireNode(getElkNode(allNodes, t), 'target');
     node.setProperty(LayeredOptions.CROSSING_MINIMIZATION_IN_LAYER_PRED_OF, null);
     if (hasPositionChoice(target)) {
@@ -179,10 +180,10 @@ function translateNodesWithBothRC(lists: LayerLists): void {
 }
 
 /**
- * The target nodes and position constraints a node with pos and rel cons hands on (`:687-704`): the pred target gets
+ * The target nodes and position constraints a node with pos and rel cons hands on (`:695-712`): the pred target gets
  * `val + 1`, the succ target `val - 1`; both relative constraints are removed from the node.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:687
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:695
  */
 function collectTargets(
   node: ElkNode,
@@ -210,9 +211,9 @@ function collectTargets(
 
 /**
  * Handles nodes with pos and rel cons by adding pos cons to all nodes that are connected to them by rel cons. The loop
- * runs over a list that grows inside it (`nodesWithPCAndRC.add(target)`, `:715`), as in Java.
+ * runs over a list that grows inside it (`nodesWithPCAndRC.add(target)`, `:723`), as in Java.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:680
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:688
  */
 function handleNodesWithPCAndRC(
   allNodes: readonly ElkNode[],
@@ -229,7 +230,7 @@ function handleNodesWithPCAndRC(
 
     // targets should be in the correct lists
     for (let t = 0; t < targets.length; t++) {
-      // a missing target is the `NullPointerException` of `target.setProperty` (`:710`)
+      // a missing target is the `NullPointerException` of `target.setProperty` (`:718`)
       const target = requireNode(JList.get(targets, t), 'target');
       if (!JList.contains(nodesWithPositionConstraint, target)) {
         target.setProperty(LayeredOptions.CROSSING_MINIMIZATION_POSITION_CHOICE_CONSTRAINT, JList.get(vals, t));
@@ -249,7 +250,7 @@ function handleNodesWithPCAndRC(
  * Sorts the `nodesWithPositionConstraint` according their position constraint and `nodes` according to the relevant
  * coordinate (y for left, right, x for up, down); `(int) (a.getY() - b.getY())` is a saturating `d2i`.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:836
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:844
  */
 function sortNodesInLayer(nodesWithPositionConstraint: ElkNode[], nodes: ElkNode[], direction: Direction): void {
   // Sort nodes with constraint by their position constraint.
@@ -274,7 +275,7 @@ function sortNodesInLayer(nodesWithPositionConstraint: ElkNode[], nodes: ElkNode
  * The body of the inner loop of `addNodesWithOneRC` for the target `t` (0: pred, 1: succ): the node follows or precedes the
  * target in `nodesWithoutC`, or takes a position constraint next to a target that has one.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:606
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:614
  */
 function addNodeNextToTarget(node: ElkNode, t: number, target: ElkNode, lists: LayerLists): void {
   const { nodesWithoutC, nodesWithPC } = lists;
@@ -297,9 +298,9 @@ function addNodeNextToTarget(node: ElkNode, t: number, target: ElkNode, lists: L
 }
 
 /**
- * The loop over `nodesWithOneRC` (`:592-624`).
+ * The loop over `nodesWithOneRC` (`:600-632`).
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:591
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:599
  */
 function addNodesWithOneRC(lists: LayerLists): void {
   const { allNodes } = lists;
@@ -326,9 +327,9 @@ function addNodesWithOneRC(lists: LayerLists): void {
 }
 
 /**
- * Add the nodes with position constraint at the desired position in their layer (`:626-643`).
+ * Add the nodes with position constraint at the desired position in their layer (`:634-651`).
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:626
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:634
  */
 function addNodesWithPC(nodesWithPC: ElkNode[], nodesWithoutC: ElkNode[]): void {
   // Sort nodes with constraint by their position constraint.
@@ -348,11 +349,11 @@ function addNodesWithPC(nodesWithPC: ElkNode[], nodesWithoutC: ElkNode[]): void 
 }
 
 /**
- * Set the y/x positions according to the order of the nodes (`:645-664`). `nodesWithoutC.get(0)` throws the Java
+ * Set the y/x positions according to the order of the nodes (`:653-672`). `nodesWithoutC.get(0)` throws the Java
  * `IndexOutOfBoundsException` on an empty list; the `x` offset is `2 * layerId * PSEUDO_POSITION_SPACING` in `int`
  * arithmetic, added to a `double`.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:645
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:653
  */
 function setPositionsInOrder(nodesWithoutC: readonly ElkNode[], layerId: number, direction: Direction): void {
   switch (direction) {
@@ -391,6 +392,14 @@ export function setCoordinatesOrthogonalToLayoutDirection(
   layerId: number,
   direction: Direction,
 ): void {
+  // A relative constraint whose target is not in this layer cannot be met, for example because the target is
+  // connected to the node by an edge and was shifted to the next layer. Ignore it, so that the node is placed
+  // like a node without that constraint instead of being left out of the layer's order.
+  for (const node of nodesOfLayer) {
+    removeConstraintToOtherLayer(node, LayeredOptions.CROSSING_MINIMIZATION_IN_LAYER_PRED_OF, nodesOfLayer);
+    removeConstraintToOtherLayer(node, LayeredOptions.CROSSING_MINIMIZATION_IN_LAYER_SUCC_OF, nodesOfLayer);
+  }
+
   // Separate nodes with and without constraints.
   const lists = classifyLayerNodes(nodesOfLayer);
 
@@ -425,7 +434,7 @@ export function setCoordinatesOrthogonalToLayoutDirection(
  * Swaps nodes such that a node that should be placed at `position` does not interrupt nodes that are connected with a
  * relative constraint.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:730
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:738
  */
 export function swapNodes(nodes: ElkNode[], position: number): void {
   // Get surrounding nodes for node put at the given position.
@@ -463,5 +472,23 @@ export function swapNodes(nodes: ElkNode[], position: number): void {
 
     // add swapNodes
     JList.addAllAt(nodes, position - count, swapNodeList);
+  }
+}
+
+/**
+ * Removes the relative constraint `property` of `node` if its target is not one of the `nodesOfLayer`.
+ *
+ * @param node The node whose constraint is checked
+ * @param property The relative constraint, `IN_LAYER_PRED_OF` or `IN_LAYER_SUCC_OF`
+ * @param nodesOfLayer The nodes of the layer the node is in
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:891
+ */
+function removeConstraintToOtherLayer(
+  node: ElkNode,
+  property: IProperty<string>,
+  nodesOfLayer: readonly ElkNode[],
+): void {
+  if (node.hasProperty(property) && getElkNode(nodesOfLayer, stringProperty(node, property)) === null) {
+    node.setProperty(property, null);
   }
 }

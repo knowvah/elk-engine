@@ -14,11 +14,13 @@ Decisions: `plans/elk-upgrade-runbook/decisions.md` (UP1-UP9). Related runbooks:
 ([melk-codegen.md § 6](melk-codegen.md#regenerating)) and the oracle failure table
 ([conformance.md § 5](../conformance.md)).
 
-**Last rehearsal.** 2026-11-14, pin `8aaa3c14` → `b715fb10` (upstream `master`, 22 commits, net Java diff one
-description string), in scratch space. Verdict: no content difference; 57 re-recorded files, all stamp-only; every
-sweep, JUnit suite and repo-wide check the same on both oracles apart from the known `sporeOverlap` jitter; a triaged
-list of nine items, none blocking. Journal: `plans/elk-upgrade-runbook/decision-journal.md` (the T5 `finding` row). The
-pin did not move; the move is issue #99.
+**Last move.** 2026-11-16, pin `8aaa3c14` → `e7eaea57` (upstream `master`, issue #99): 13 changed in-scope Java files
+and their upstream JUnit classes ported. Five refs changed content, each traced to an upstream PR (`layered-loops` #1223,
+`layered-labels` and `label-sizing` #1233, `rectpacking` #1215, `layered-phases` #1219); every other re-recorded file is
+stamp-only. The sweeps equal the old oracle's apart from the known `sporeOverlap` jitter, the BF/DF `phase` cases that
+now throw (#1219) and five `labels` variants of ticket 273 (#1233); the 92 ported JUnit classes run identically.
+Journal: the `#99` rows of `plans/elk-upgrade-runbook/decision-journal.md`. The rehearsal before it (2026-11-14, to
+`b715fb10`, the T5 `finding` row) found no content difference.
 
 ## 1. When and who {#elk-upgrade-who}
 
@@ -242,44 +244,44 @@ JAVA_TOOL_OPTIONS="-XX:+UseSerialGC -Xmn3g -Xmx16g" nohup nice -n 10 bash -c \
 
 ### 7.1 Recorders that run ELK {#elk-upgrade-vectors-elk}
 
-"Cold" is the wall time measured in the last rehearsal on the reference platform under `nice -n 10`, one recorder at a
-time beside the `elkj` lane, with a 1-minute load of 9 to 15.
+"Cold" is the wall time measured in the last move (`e7eaea57`, issue #99) on the reference platform under `nice -n 10`,
+one recorder at a time beside the `elkj` lane, each started once the 1-minute load was below 12.
 
 | Script                                                                                                  | Refs written under `test/golden/refs/java/`                                             | Needs `$ELK_MODELS_DIR` | Cold       |
 | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ----------------------- | ---------- |
-| `tools/vectors/metadata-vectors.sh "$REFS"`                                                             | `metadata.json`                                                                         |                         | 2 s        |
-| `tools/vectors/graph-vectors.sh "$REFS"`                                                                | `graph.json`                                                                            |                         | 1 s        |
+| `tools/vectors/metadata-vectors.sh "$REFS"`                                                             | `metadata.json`                                                                         |                         | 1 s        |
+| `tools/vectors/graph-vectors.sh "$REFS"`                                                                | `graph.json`                                                                            |                         | 3 s        |
 | `tools/vectors/graph-json-vectors.sh "$REFS"`                                                           | `graph-json.json`                                                                       |                         | 2 s        |
-| `tools/vectors/transfer-vectors.sh "$REFS"`                                                             | `graph-json-transfer.json`                                                              |                         | 2 s        |
-| `tools/vectors/elkt-vectors.sh "$REFS"`                                                                 | `graph-text-lexer.json`, `-parse`, `-validate`, `-write`                                |                         | 9 s        |
-| `tools/vectors/elkj-vectors.sh "$REFS"`                                                                 | `graph-json-text-lexer.json`, `-parse`, `-validate`, `-write`, `-inverse`, `-roundtrip` |                         | 4 h 23 min |
+| `tools/vectors/transfer-vectors.sh "$REFS"`                                                             | `graph-json-transfer.json`                                                              |                         | 1 s        |
+| `tools/vectors/elkt-vectors.sh "$REFS"`                                                                 | `graph-text-lexer.json`, `-parse`, `-validate`, `-write`                                |                         | 10 s       |
+| `tools/vectors/elkj-vectors.sh "$REFS"`                                                                 | `graph-json-text-lexer.json`, `-parse`, `-validate`, `-write`, `-inverse`, `-roundtrip` |                         | 4 h 28 min |
 | `tools/vectors/elkr-vectors.sh "$REFS"`                                                                 | `grandom-lexer.json`, `-parse`, `-validate`, `-generate`                                |                         | 6 s        |
 | `tools/vectors/comment-vectors.sh "$REFS"`                                                              | `comments.json`                                                                         |                         | 2 s        |
 | `tools/vectors/alg-common-vectors.sh "$REFS"`                                                           | `alg-common.json`                                                                       |                         | 2 s        |
 | `tools/vectors/node-micro-layout-vectors.sh "$REFS"`                                                    | `node-micro-layout.json`                                                                | yes                     | 5 s        |
 | `tools/vectors/nodespacing-site-vectors.sh "$REFS"`                                                     | `nodespacing-sites.json`                                                                |                         | 2 s        |
-| `tools/vectors/layered-framework-vectors.sh "$REFS"`                                                    | `layered-framework.json`                                                                |                         | 6 s        |
+| `tools/vectors/layered-framework-vectors.sh "$REFS"`                                                    | `layered-framework.json`                                                                |                         | 5 s        |
 | `tools/vectors/layered-site-vectors.sh "$REFS"`                                                         | `layered-sites.json`                                                                    |                         | 4 s        |
-| `tools/vectors/layered-phase-vectors.sh "$REFS"`                                                        | `layered-phases.json`                                                                   |                         | 10 s       |
-| `tools/vectors/layered-order-vectors.sh "$REFS"`                                                        | `layered-order.json`                                                                    |                         | 15 s       |
-| `tools/vectors/layered-placement-vectors.sh "$REFS"`                                                    | `layered-placement.json`                                                                |                         | 16 s       |
-| `tools/vectors/layered-routing-vectors.sh "$REFS"`                                                      | `layered-routing.json`, `layered-routing-steps.json`                                    |                         | 19 s       |
-| `tools/vectors/layered-pipeline-vectors.sh "$REFS"`                                                     | `layered-pipeline.json`                                                                 |                         | 25 s       |
-| `tools/vectors/layered-labels-vectors.sh "$REFS"`                                                       | `layered-labels.json`                                                                   |                         | 61 s       |
-| `tools/vectors/layered-loops-vectors.sh "$REFS"`                                                        | `layered-loops.json`                                                                    |                         | 30 s       |
-| `tools/vectors/layered-compound-vectors.sh "$REFS"`                                                     | `layered-compound.json`                                                                 | yes                     | 15 s       |
+| `tools/vectors/layered-phase-vectors.sh "$REFS"`                                                        | `layered-phases.json`                                                                   |                         | 9 s        |
+| `tools/vectors/layered-order-vectors.sh "$REFS"`                                                        | `layered-order.json`                                                                    |                         | 14 s       |
+| `tools/vectors/layered-placement-vectors.sh "$REFS"`                                                    | `layered-placement.json`                                                                |                         | 13 s       |
+| `tools/vectors/layered-routing-vectors.sh "$REFS"`                                                      | `layered-routing.json`, `layered-routing-steps.json`                                    |                         | 18 s       |
+| `tools/vectors/layered-pipeline-vectors.sh "$REFS"`                                                     | `layered-pipeline.json`                                                                 |                         | 22 s       |
+| `tools/vectors/layered-labels-vectors.sh "$REFS"`                                                       | `layered-labels.json`                                                                   |                         | 59 s       |
+| `tools/vectors/layered-loops-vectors.sh "$REFS"`                                                        | `layered-loops.json`                                                                    |                         | 21 s       |
+| `tools/vectors/layered-compound-vectors.sh "$REFS"`                                                     | `layered-compound.json`                                                                 | yes                     | 9 s        |
 | `tools/vectors/mrtree-vectors.sh "$REFS"`                                                               | `mrtree.json`, `mrtree-extra.json`                                                      |                         | 4 s        |
-| `tools/vectors/mrtree-unit-vectors.sh "$REFS"`                                                          | `mrtree-units.json`                                                                     |                         | 3 s        |
-| `tools/vectors/radial-vectors.sh "$REFS"`                                                               | `radial.json`                                                                           |                         | 3 s        |
-| `tools/vectors/vertiflex-vectors.sh "$REFS"`                                                            | `vertiflex.json`                                                                        |                         | 9 s        |
-| `tools/vectors/force-vectors.sh "$REFS"`                                                                | `force.json`, `stress.json`                                                             |                         | 53 s       |
+| `tools/vectors/mrtree-unit-vectors.sh "$REFS"`                                                          | `mrtree-units.json`                                                                     |                         | 2 s        |
+| `tools/vectors/radial-vectors.sh "$REFS"`                                                               | `radial.json`                                                                           |                         | 2 s        |
+| `tools/vectors/vertiflex-vectors.sh "$REFS"`                                                            | `vertiflex.json`                                                                        |                         | 8 s        |
+| `tools/vectors/force-vectors.sh "$REFS"`                                                                | `force.json`, `stress.json`                                                             |                         | 54 s       |
 | `tools/vectors/disco-vectors.sh "$REFS"`                                                                | `disco.json`                                                                            |                         | 8 s        |
-| `tools/vectors/rectpacking-vectors.sh "$REFS"`                                                          | `rectpacking.json`                                                                      | yes                     | 8 s        |
-| `tools/vectors/spore-layout-vectors.sh "$REFS"`                                                         | `spore-layout.json`                                                                     |                         | 70 s       |
+| `tools/vectors/rectpacking-vectors.sh "$REFS"`                                                          | `rectpacking.json`                                                                      | yes                     | 7 s        |
+| `tools/vectors/spore-layout-vectors.sh "$REFS"`                                                         | `spore-layout.json`                                                                     |                         | 82 s       |
 | `tools/vectors/topdownpacking-vectors.sh "$REFS"`                                                       | `topdownpacking.json`                                                                   |                         | 7 s        |
 | `tools/vectors/label-sizing-vectors.sh "$REFS"`                                                         | `label-sizing.json` (fixed measurer, patch 0003; reference platform only)               |                         | 4 s        |
-| `tools/vectors/label-sizing-vectors.sh --remeasure-awt "$TMPDIR/awt"`                                   | none: writes `$TMPDIR/awt/awt-remeasure.json` (section 7.2)                             |                         | 3 s        |
-| `tools/vectors/label-sizing-vectors.sh --corpus "$ELK_MODELS_DIR" "$ELK_ORACLE_DIR/sweep/label-sizing"` | none: `label-sizing-corpus.json`, a sweep input (section 9)                             | yes                     | 3 s        |
+| `tools/vectors/label-sizing-vectors.sh --remeasure-awt "$TMPDIR/awt"`                                   | none: writes `$TMPDIR/awt/awt-remeasure.json` (section 7.2)                             |                         | 2 s        |
+| `tools/vectors/label-sizing-vectors.sh --corpus "$ELK_MODELS_DIR" "$ELK_ORACLE_DIR/sweep/label-sizing"` | none: `label-sizing-corpus.json`, a sweep input (section 9)                             | yes                     | 4 s        |
 
 The evidence modes (`radial-vectors.sh --unpinned`, the `*_UNPINNED=1` variables of the packing, tree and force
 recorders, the `--sweep` and `--dump` modes of the layered recorders) are diagnosis aids, never a ref.
@@ -344,16 +346,16 @@ leaves the old refs. After each: `git diff --stat test/golden/refs test/corpus`.
 | ------------------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------- | ----- |
 | `tools/oracle/regen-goldens.sh`                   | `test/golden/refs/elk/` (set `default`)                                          | `_meta.json` `elkCommit`, `patches`      | 2 s   |
 | `tools/oracle/regen-goldens.sh --set algorithms`  | `test/golden/refs/elk-algorithms/`                                               | `_meta.json`                             | 1 s   |
-| `tools/oracle/regen-goldens.sh --set layered`     | `test/golden/refs/elk-layered/`                                                  | `_meta.json`                             | 2 s   |
+| `tools/oracle/regen-goldens.sh --set layered`     | `test/golden/refs/elk-layered/`                                                  | `_meta.json`                             | 1 s   |
 | `tools/oracle/regen-goldens.sh --set trees`       | `test/golden/refs/elk-trees/`                                                    | `_meta.json`                             | 2 s   |
 | `tools/oracle/regen-goldens.sh --set force-disco` | `test/golden/refs/elk-force-disco/`                                              | `_meta.json`                             | 1 s   |
-| `tools/oracle/regen-goldens.sh --set packing`     | `test/golden/refs/elk-packing/`                                                  | `_meta.json`                             | 2 s   |
-| `tools/oracle/regen-goldens.sh --set examples`    | `test/golden/refs/elk-examples/`                                                 | `_meta.json`                             | 2 s   |
+| `tools/oracle/regen-goldens.sh --set packing`     | `test/golden/refs/elk-packing/`                                                  | `_meta.json`                             | 1 s   |
+| `tools/oracle/regen-goldens.sh --set examples`    | `test/golden/refs/elk-examples/`                                                 | `_meta.json`                             | 1 s   |
 | `tools/oracle/regen-parse-refs.sh`                | `test/golden/refs/elk-parse/` (run after the `default` set: it reads `refs/elk`) | `_meta.json`                             | 1 s   |
-| `tools/oracle/regen-elkt-refs.sh`                 | `test/golden/refs/elkt-parse/`, `test/corpus/elkt-curated/`                      | `_meta.json`                             | 5 s   |
+| `tools/oracle/regen-elkt-refs.sh`                 | `test/golden/refs/elkt-parse/`, `test/corpus/elkt-curated/`                      | `_meta.json`                             | 3 s   |
 | `tools/oracle/regen-elkj-refs.sh`                 | `test/golden/refs/elkj-parse/`, `test/corpus/elkj-curated/`                      | `_meta.json`                             | 6 min |
 | `tools/oracle/regen-generated.sh`                 | `test/corpus/generated/*.json` (grandom output of the `.elkr` configs)           | none: byte-stable unless grandom changed | 1 s   |
-| `npx tsx tools/corpus/census.ts --write`          | `test/corpus/census.json`                                                        | `elkCommit`                              | 5 s   |
+| `npx tsx tools/corpus/census.ts --write`          | `test/corpus/census.json`                                                        | `elkCommit`                              | 3 s   |
 
 `npx tsx tools/corpus/census.ts` without `--write` exits `1` after a bump until the census is rewritten; a diff beyond
 `elkCommit` is a model the new oracle parses differently.
@@ -395,21 +397,21 @@ without it. Run the sweep, then the test.
 
 | Sweep                             | Output directory                                         | Override variable        | Consumer test                            | Wall    |
 | --------------------------------- | -------------------------------------------------------- | ------------------------ | ---------------------------------------- | ------- |
-| `tools/oracle/json-sweep.sh`      | `test/corpus/.json-sweep/`                               | none                     | `test/corpus/json-sweep.test.ts`         | 10 s    |
-| `tools/oracle/elkt-sweep.sh`      | `$ELK_ORACLE_DIR/sweep/elkt-<elkCommit>-<modelsCommit>/` | `ELKT_SWEEP_DIR`         | `test/corpus/elkt-sweep.test.ts`         | 7.5 min |
+| `tools/oracle/json-sweep.sh`      | `test/corpus/.json-sweep/`                               | none                     | `test/corpus/json-sweep.test.ts`         | 9 s     |
+| `tools/oracle/elkt-sweep.sh`      | `$ELK_ORACLE_DIR/sweep/elkt-<elkCommit>-<modelsCommit>/` | `ELKT_SWEEP_DIR`         | `test/corpus/elkt-sweep.test.ts`         | 7 min   |
 | `tools/oracle/elkj-sweep.sh`      | `$ELK_ORACLE_DIR/sweep/elkj-<elkCommit>-<modelsCommit>/` | `ELKJ_SWEEP_DIR`         | `test/corpus/elkj-sweep.test.ts`         | 5.5 h   |
-| `tools/oracle/phase-sweep.sh`     | `test/corpus/.phase-sweep/`                              | `PHASE_SWEEP_DIR`        | `test/corpus/phase-sweep.test.ts`        | 8 min   |
+| `tools/oracle/phase-sweep.sh`     | `test/corpus/.phase-sweep/`                              | `PHASE_SWEEP_DIR`        | `test/corpus/phase-sweep.test.ts`        | 8.5 min |
 | `tools/oracle/order-sweep.sh`     | `test/corpus/.order-sweep/`                              | `ORDER_SWEEP_DIR`        | `test/corpus/order-sweep.test.ts`        | 39 s    |
-| `tools/oracle/placement-sweep.sh` | `test/corpus/.placement-sweep/`                          | `PLACEMENT_SWEEP_DIR`    | `test/corpus/placement-sweep.test.ts`    | 39 s    |
+| `tools/oracle/placement-sweep.sh` | `test/corpus/.placement-sweep/`                          | `PLACEMENT_SWEEP_DIR`    | `test/corpus/placement-sweep.test.ts`    | 40 s    |
 | `tools/oracle/routing-sweep.sh`   | `test/corpus/.routing-sweep/`                            | `ROUTING_SWEEP_DIR`      | `test/corpus/routing-sweep.test.ts`      | 43 s    |
-| `tools/oracle/pipeline-sweep.sh`  | `test/corpus/.pipeline-sweep/`                           | `PIPELINE_SWEEP_DIR`     | `test/corpus/pipeline-sweep.test.ts`     | 54 s    |
-| `tools/oracle/labels-sweep.sh`    | `test/corpus/.labels-sweep/`                             | `LABELS_SWEEP_DIR`       | `test/corpus/labels-sweep.test.ts`       | 10 s    |
-| `tools/oracle/loops-sweep.sh`     | `test/corpus/.loops-sweep/`                              | `LOOPS_SWEEP_DIR`        | `test/corpus/loops-sweep.test.ts`        | 60 s    |
-| `tools/oracle/compound-sweep.sh`  | `test/corpus/.compound-sweep/`                           | `COMPOUND_SWEEP_DIR`     | `test/corpus/compound-sweep.test.ts`     | 15 s    |
-| the `--corpus` row of section 7.1 | `$ELK_ORACLE_DIR/sweep/label-sizing/`                    | `LABEL_SIZING_SWEEP_DIR` | `test/corpus/label-sizing-sweep.test.ts` | 3 s     |
+| `tools/oracle/pipeline-sweep.sh`  | `test/corpus/.pipeline-sweep/`                           | `PIPELINE_SWEEP_DIR`     | `test/corpus/pipeline-sweep.test.ts`     | 59 s    |
+| `tools/oracle/labels-sweep.sh`    | `test/corpus/.labels-sweep/`                             | `LABELS_SWEEP_DIR`       | `test/corpus/labels-sweep.test.ts`       | 12 s    |
+| `tools/oracle/loops-sweep.sh`     | `test/corpus/.loops-sweep/`                              | `LOOPS_SWEEP_DIR`        | `test/corpus/loops-sweep.test.ts`        | 64 s    |
+| `tools/oracle/compound-sweep.sh`  | `test/corpus/.compound-sweep/`                           | `COMPOUND_SWEEP_DIR`     | `test/corpus/compound-sweep.test.ts`     | 17 s    |
+| the `--corpus` row of section 7.1 | `$ELK_ORACLE_DIR/sweep/label-sizing/`                    | `LABEL_SIZING_SWEEP_DIR` | `test/corpus/label-sizing-sweep.test.ts` | 4 s     |
 
-`tools/oracle/elkj-sweep.sh` runs for hours (its serializer kind; with `--jobs 6` it took 5 h 31 min of running time in
-the rehearsal and 7 h 34 min in the run before it); start it detached as section 2 shows and let it resume if
+`tools/oracle/elkj-sweep.sh` runs for hours (its serializer kind; with `--jobs 6` it took 5 h 30 min of running time in
+the `e7eaea57` move, 5 h 31 min in the rehearsal before it); start it detached as section 2 shows and let it resume if
 interrupted. Run it alone: its six JVMs beside another long job pass the load bar on a shared machine, and it may only
 be paused while no `parse` chunk runs (those cases have a wall-clock timeout). The others take between 3 seconds and 8
 minutes each. The stamped sweep directories of `elkt` and `elkj` carry the commit in their name, so the tests find the
@@ -535,7 +537,7 @@ A new `Math.*` call is listed in `test/architecture/math-call-sites.json` (secti
    comment in `src/graph/properties/GraphFeature.ts` goes, and the ported test's string then equals upstream); a known
    divergence or an oracle patch that upstream merged.
 4. Regenerate the parity report from the new sweep (section 9) and commit it with the move.
-5. Replace the "Last rehearsal" line at the top of this page and the "Cold" columns with the move's own numbers.
+5. Replace the "Last move" line at the top of this page and the "Cold" columns with the move's own numbers.
 
 ## 14. Rehearsal mode {#elk-upgrade-rehearsal}
 

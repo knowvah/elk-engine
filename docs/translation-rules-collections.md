@@ -8,6 +8,11 @@ Citation format and the `cite` helper are defined in the main doc ("Conventions"
 
 ## 2.0 How the inventory was built
 
+The census and its line references are at `8aaa3c145c2a...`. At the `e7eaea57` pin (#99) upstream made three of the
+listed sites linked collections: I11 and I12 (`upEdges`/`downEdges`,
+[eclipse-elk/elk#1229](https://github.com/eclipse-elk/elk/pull/1229), which also changed `SplineSegment.edges`) and I20
+([#1217](https://github.com/eclipse-elk/elk/pull/1217)); the port's insertion order is now the Java's there.
+
 Setup (bash or zsh; `$ELK_SOURCE_DIR` is the ELK checkout at `8aaa3c145c2a...`):
 
 ```bash

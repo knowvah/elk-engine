@@ -33,7 +33,7 @@ scollegato di `$ELK_SOURCE_DIR`, creato in `$ELK_ORACLE_DIR` da
 
 | Elemento           | Dove                                                                                     |
 | ------------------ | ---------------------------------------------------------------------------------------- |
-| Commit ELK fissato | `tools/oracle/ELK_COMMIT` (attualmente `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)       |
+| Commit ELK fissato | `tools/oracle/ELK_COMMIT` (attualmente `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)       |
 | Serie di patch     | `tools/oracle/patches/*.patch`, applicate in ordine lessicale con `git am --3way`        |
 | Build              | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho scarica gli artefatti p2)           |
 | Runner batch       | `tools/oracle/run.sh <outDir> <input>...` oppure `run.sh --cases <cases.jsonl> <outDir>` |

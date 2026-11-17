@@ -289,7 +289,10 @@ named in follow-up issue #55 (`PortSideAssigner.ts:141`, the `BreakingPointInser
 `ComponentsCompactor.ts:95,96,169`, `ComponentsToCGraphTransformer.ts:263`, `SplineEdgeRouterSegments.ts:137 if[1]`, `Sc28`, and
 the root-level `distribution`/`ordering` options of 27 `full/self-loops` rows, which the loop nodes do not read).
 
-**Copied ELK oddities (issue #56, journal T22 `upstream`).** The port copies each verbatim; nothing is filed upstream:
+**Copied ELK oddities (issue #56, journal T22 `upstream`).** The port copied each verbatim. Items 1 to 4 were fixed
+upstream ([#1223](https://github.com/eclipse-elk/elk/pull/1223), [#1225](https://github.com/eclipse-elk/elk/pull/1225),
+[#1227](https://github.com/eclipse-elk/elk/pull/1227), [#1229](https://github.com/eclipse-elk/elk/pull/1229)) and the port
+follows the fixes since the `e7eaea57` pin (#99):
 (1) `GraphStats.java:295-302` forbids every cut when `wrapping.validify.forbiddenIndices` is set; (2) `LabelPlacer.java:296`
 reads `getLeftmostPort()` for `rightmostPortSide`; (3) `PortRestorer.java:180-188` can never return `nonNegativeNetFlowIndex`;
 (4) `SplineSegment.java:82` `edges` is a `HashSet` whose first element is a segment's representative edge (issue #54);

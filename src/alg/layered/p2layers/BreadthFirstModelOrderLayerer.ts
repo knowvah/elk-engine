@@ -11,7 +11,9 @@ import type { LNode } from '../graph/LNode.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
 import { Layer } from '../graph/Layer.js';
 import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
+import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { InternalProperties } from '../options/InternalProperties.js';
+import { LayeredOptions } from '../options/LayeredOptions.js';
 
 /** Java `Integer.compare`. */
 const integerCompare = (a: number, b: number): number => (a < b ? -1 : a === b ? 0 : 1);
@@ -92,7 +94,35 @@ export class BreadthFirstModelOrderLayerer implements ILayoutPhase<LayeredPhases
     // Empty the list of unlayered nodes.
     thelayeredGraph.getLayerlessNodes().length = 0;
     this.deleteEmptyLayers(thelayeredGraph);
+    this.checkEdgesPointToLaterLayers();
     monitor.done();
+  }
+
+  /**
+   * Checks the postcondition that every edge points to a later layer. The layering assumes that edges follow the model
+   * order, which only a model order cycle breaker guarantees. An edge against the model order can end in the same or an
+   * earlier layer, and the following phases are not prepared for such edges.
+   *
+   * @throws UnsupportedGraphException if an edge does not point to a later layer.
+   * @see BreadthFirstModelOrderLayerer.java:150
+   */
+  private checkEdgesPointToLaterLayers(): void {
+    for (const layer of this.layeredGraph!.getLayers()) {
+      for (const node of layer.getNodes()) {
+        for (const edge of node.getOutgoingEdges()) {
+          const target = edge.getTarget()!.getNode()!;
+          const targetLayer = target.getLayer();
+          if (target !== node && targetLayer !== null && targetLayer.id <= layer.id) {
+            throw new UnsupportedGraphException(
+              'The BF model order layer assigner placed the edge' +
+                ` from ${node.toString()} to ${target.toString()} in the same or an earlier layer. It requires` +
+                ' edges that follow the model order, which the cycle breaking strategy ' +
+                `${CycleBreakingStrategy.MODEL_ORDER.toString()} (${LayeredOptions.CYCLE_BREAKING_STRATEGY.getId()}) ensures.`,
+            );
+          }
+        }
+      }
+    }
   }
 
   /** The tail of `process`: delete all empty dummy layers, then adjust the layer ids. */

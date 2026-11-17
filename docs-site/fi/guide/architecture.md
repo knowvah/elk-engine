@@ -18,7 +18,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 ## Mikä elk-engine on
 
 `@knowvah/elk-engine` on alkuperäiselle uskollinen TypeScript-porttaus Eclipse Layout Kernelistä (ELK). Java
-kiinnitetyssä commitissa `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` on määritelmä (AD-1, AD-2). Se on kirjasto:
+kiinnitetyssä commitissa `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` on määritelmä (AD-1, AD-2). Se on kirjasto:
 selainturvallinen, ei ajonaikaisia riippuvuuksia, ei Javaa eikä WASMia. Sen julkinen sopimus on ElkGraph-oliomalli
 sekä `ElkGraphUtil`-tehtaat; ELK JSON on I/O-adapteri (AD-14). Kolmetoista bundlea, yhteensä noin 134 600
 käsin kirjoitettua riviä, kuuluu laajuuteen (katso inventaario). Tämä tehtävä toimittaa vain rungon: yhtään

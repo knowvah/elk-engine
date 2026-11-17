@@ -33,7 +33,7 @@ Beide staan buiten deze repository; geen van beide wordt meegeleverd.
 
 | Onderdeel              | Waar                                                                                 |
 | ---------------------- | ------------------------------------------------------------------------------------ |
-| Vastgepinde ELK-commit | `tools/oracle/ELK_COMMIT` (momenteel `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)     |
+| Vastgepinde ELK-commit | `tools/oracle/ELK_COMMIT` (momenteel `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)     |
 | Patchreeks             | `tools/oracle/patches/*.patch`, in lexicale volgorde toegepast met `git am --3way`   |
 | Build                  | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho downloadt p2-artefacten)        |
 | Batch-runner           | `tools/oracle/run.sh <outDir> <input>...` of `run.sh --cases <cases.jsonl> <outDir>` |

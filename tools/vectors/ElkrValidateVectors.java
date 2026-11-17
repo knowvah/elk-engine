@@ -51,7 +51,7 @@ import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.validation.Issue;
 
 public class ElkrValidateVectors {
-    private static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
+    private static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
     private static final String SCENARIOS = "elkr-validate-scenarios", EXTENSION = ".elkr", OUTPUT = "grandom-validate.json";
     /** Issue -> feature name, filled by the capturing converter during one validate call. */
     private static final Map<Issue, String> FEATURES = new IdentityHashMap<>();

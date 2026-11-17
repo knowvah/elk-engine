@@ -20,7 +20,7 @@ Järjestyksen, jossa algoritmit saapuvat, näet [tiekartasta](/guide/roadmap).
 
 ## Java on määritelmä
 
-Java-lähdekoodi kiinnitetyssä ELK-commitissa `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` on ensisijainen
+Java-lähdekoodi kiinnitetyssä ELK-commitissa `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` on ensisijainen
 määritelmä. Porttaus seuraa sitä tarkasti:
 
 - Algoritmeja ei optimoida eikä yksinkertaisteta. Jos Java näyttää turhalta toistolta, toisto säilytetään.

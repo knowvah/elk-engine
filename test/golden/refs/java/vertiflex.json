@@ -1,6 +1,6 @@
 {
   "jdk": "21.0.1",
-  "oracle": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "oracle": "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c",
   "seed": 8101,
   "rowCounts": {"full": 247, "stops": 216, "throws": 8},
   "optionCoverage": {"considerNodeModelOrder": {"false": {"full": 48, "stops": 44, "throws": 0}, "true": {"full": 199, "stops": 172, "throws": 8}}, "edgeLabelsInline": {"false": {"full": 246, "stops": 215, "throws": 8}, "true": {"full": 1, "stops": 1, "throws": 0}}, "interactive": {"false": {"full": 246, "stops": 215, "throws": 8}, "true": {"full": 1, "stops": 1, "throws": 0}}, "layerDistance": {"10.0": {"full": 12, "stops": 10, "throws": 0}, "120.0": {"full": 12, "stops": 10, "throws": 0}, "50.0": {"full": 223, "stops": 196, "throws": 8}}, "layoutStrategy": {"BEND": {"full": 18, "stops": 16, "throws": 1}, "STRAIGHT": {"full": 229, "stops": 200, "throws": 7}}, "omitNodeMicroLayout": {"false": {"full": 234, "stops": 205, "throws": 8}, "true": {"full": 13, "stops": 11, "throws": 0}}, "padding": {"default": {"full": 235, "stops": 206, "throws": 8}, "explicit": {"full": 12, "stops": 10, "throws": 0}}, "portConstraints": {"FIXED_SIDE": {"full": 1, "stops": 1, "throws": 0}, "UNDEFINED": {"full": 246, "stops": 215, "throws": 8}}, "spacingNodeNode": {"20.0": {"full": 223, "stops": 196, "throws": 8}, "40.0": {"full": 12, "stops": 10, "throws": 0}, "5.0": {"full": 12, "stops": 10, "throws": 0}}, "verticalConstraint": {"set on some node": {"full": 104, "stops": 90, "throws": 3}, "unset": {"full": 143, "stops": 126, "throws": 5}}},

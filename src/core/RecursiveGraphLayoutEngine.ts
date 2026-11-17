@@ -469,6 +469,10 @@ export class RecursiveGraphLayoutEngine implements IGraphLayoutEngine {
         bend.set(bend.getX() + xOffset, bend.getY() + yOffset);
       }
 
+      for (const label of selfLoop.getLabels()) {
+        label.setLocation(label.getX() + xOffset, label.getY() + yOffset);
+      }
+
       // Offset junction points by the node position
       selfLoop.getProperty(CoreOptions.JUNCTION_POINTS).offset(xOffset, yOffset);
     }

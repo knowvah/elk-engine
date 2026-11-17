@@ -19,7 +19,7 @@ Se [färdplanen](/guide/roadmap) för i vilken ordning algoritmerna kommer.
 
 ## Java är specifikationen
 
-Java-källkoden vid den fastlåsta ELK-committen `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` är den
+Java-källkoden vid den fastlåsta ELK-committen `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` är den
 auktoritativa specifikationen. Porteringen följer den noga:
 
 - Algoritmer optimeras eller förenklas inte. Om Java ser redundant ut behålls redundansen.

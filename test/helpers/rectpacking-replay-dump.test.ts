@@ -12,15 +12,17 @@ const LOOP = { timeout: 60_000 };
 const EXACT = 0;
 
 describe('rectpacking replay helpers', () => {
-  it('loads the ref: 151 stops rows, 558 full rows, 7 throws rows, 640 sort rows', () => {
+  // eclipse-elk/elk#1215: the noBestCandidate throws row is a full and a stops row since the e7eaea57 pin (#99).
+  it('loads the ref: 152 stops rows, 559 full rows, 6 throws rows, 640 sort rows', () => {
     const counts = ['full', 'stops', 'throws', 'sort'].map((g) => loadRectPackingRows(g as 'full').length);
-    expect(counts).toEqual([558, 151, 7, 640]);
+    expect(counts).toEqual([559, 152, 6, 640]);
   });
 
-  it('rebuilds every p2 stop row and dumps it back to the recorded rows (167 stops)', LOOP, () => {
+  // eclipse-elk/elk#1215: the new noBestCandidate stops row adds one p2 stop.
+  it('rebuilds every p2 stop row and dumps it back to the recorded rows (168 stops)', LOOP, () => {
     const stops = p2Stops();
     expect(stops.length).toBe(collectStops(P2_ROW_STOPS).length);
-    expect(stops.length).toBe(167);
+    expect(stops.length).toBe(168);
     for (const found of stops) {
       const { rebuilt } = replayRows(found);
       const comparison = compareJson(found.rec, dumpRectRows(rebuilt.list), EXACT);
