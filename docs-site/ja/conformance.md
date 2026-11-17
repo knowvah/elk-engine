@@ -26,7 +26,7 @@ sourceHash: 1c16c2c481111ebe772362128cf8f3e800f6e482a5ba14cadcb0f135f1872461
 
 | 項目                    | 場所                                                                                       |
 | ----------------------- | ------------------------------------------------------------------------------------------ |
-| 固定された ELK コミット | `tools/oracle/ELK_COMMIT` (現在は `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)              |
+| 固定された ELK コミット | `tools/oracle/ELK_COMMIT` (現在は `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)              |
 | パッチシリーズ          | `tools/oracle/patches/*.patch`。辞書順に `git am --3way` で適用                            |
 | ビルド                  | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21。Tycho が p2 アーティファクトをダウンロード) |
 | バッチランナー          | `tools/oracle/run.sh <outDir> <input>...` または `run.sh --cases <cases.jsonl> <outDir>`   |

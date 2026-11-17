@@ -104,7 +104,7 @@ export class InteractiveLayeredGraphVisitor implements IGraphElementVisitor {
    * Sets the (semi) interactive strategies in the phases crossing minimization, layer assignment, cycle breaking for the
    * given parent node.
    *
-   * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:865
+   * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:873
    */
   private setInteractiveStrategies(parent: ElkNode): void {
     parent.setProperty(LayeredOptions.CROSSING_MINIMIZATION_SEMI_INTERACTIVE, true);

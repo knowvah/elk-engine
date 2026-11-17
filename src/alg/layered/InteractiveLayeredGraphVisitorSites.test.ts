@@ -118,7 +118,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['c', 128, 12, 2, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/positionRelative/pred; InteractiveLayeredGraphVisitor.java:687-717 (:711 else arm)
+  // oracle: sites/InteractiveLayeredGraphVisitor/positionRelative/pred; InteractiveLayeredGraphVisitor.java:695-725 (:719 else arm)
   [
     'positionRelative/pred',
     [
@@ -129,7 +129,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['e', 12, 112, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/positionRelative/succ; InteractiveLayeredGraphVisitor.java:687-717 (:709 else arm)
+  // oracle: sites/InteractiveLayeredGraphVisitor/positionRelative/succ; InteractiveLayeredGraphVisitor.java:695-725 (:717 else arm)
   [
     'positionRelative/succ',
     [
@@ -140,7 +140,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['e', 12, 112, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/positionRelative/bothTargetChoice; InteractiveLayeredGraphVisitor.java:560-581 (:566)
+  // oracle: sites/InteractiveLayeredGraphVisitor/positionRelative/bothTargetChoice; InteractiveLayeredGraphVisitor.java:568-589 (:574)
   [
     'positionRelative/bothTargetChoice',
     [
@@ -151,7 +151,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['w', 12, 112, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/positionRelative/bothTargetPred; InteractiveLayeredGraphVisitor.java:560-581 (:573 else arm)
+  // oracle: sites/InteractiveLayeredGraphVisitor/positionRelative/bothTargetPred; InteractiveLayeredGraphVisitor.java:568-589 (:581 else arm)
   [
     'positionRelative/bothTargetPred',
     [
@@ -162,7 +162,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['v', 12, 112, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/positionRelative/oneTargetChoice; InteractiveLayeredGraphVisitor.java:607-621
+  // oracle: sites/InteractiveLayeredGraphVisitor/positionRelative/oneTargetChoice; InteractiveLayeredGraphVisitor.java:615-629
   [
     'positionRelative/oneTargetChoice',
     [
@@ -173,7 +173,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['e', 12, 112, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/circle/pred; InteractiveLayeredGraphVisitor.java:786-820
+  // oracle: sites/InteractiveLayeredGraphVisitor/circle/pred; InteractiveLayeredGraphVisitor.java:794-828
   [
     'circle/pred',
     [
@@ -182,7 +182,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['c', 12, 62, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/circle/succ; InteractiveLayeredGraphVisitor.java:786-820
+  // oracle: sites/InteractiveLayeredGraphVisitor/circle/succ; InteractiveLayeredGraphVisitor.java:794-828
   [
     'circle/succ',
     [
@@ -191,7 +191,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['c', 12, 62, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/swap/unrelated; InteractiveLayeredGraphVisitor.java:730-764
+  // oracle: sites/InteractiveLayeredGraphVisitor/swap/unrelated; InteractiveLayeredGraphVisitor.java:738-772
   [
     'swap/unrelated',
     [
@@ -201,7 +201,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['c', 62, 62, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/swap/chain; InteractiveLayeredGraphVisitor.java:736,752,898-925
+  // oracle: sites/InteractiveLayeredGraphVisitor/swap/chain; InteractiveLayeredGraphVisitor.java:744,752,898-925
   [
     'swap/chain',
     [
@@ -212,7 +212,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['u2', 12, 112, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/swap/chainAtEnd; InteractiveLayeredGraphVisitor.java:748
+  // oracle: sites/InteractiveLayeredGraphVisitor/swap/chainAtEnd; InteractiveLayeredGraphVisitor.java:756
   [
     'swap/chainAtEnd',
     [
@@ -221,7 +221,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['u0', 12, 62, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/swap/backward; InteractiveLayeredGraphVisitor.java:898-925
+  // oracle: sites/InteractiveLayeredGraphVisitor/swap/backward; InteractiveLayeredGraphVisitor.java:921-948
   [
     'swap/backward',
     [
@@ -231,7 +231,7 @@ const SITE_ROWS: readonly RowCase[] = [
       ['z', 62, 62, 0, 0, null, null],
     ],
   ],
-  // oracle: sites/InteractiveLayeredGraphVisitor/swap/longChain; InteractiveLayeredGraphVisitor.java:754
+  // oracle: sites/InteractiveLayeredGraphVisitor/swap/longChain; InteractiveLayeredGraphVisitor.java:762
   [
     'swap/longChain',
     [

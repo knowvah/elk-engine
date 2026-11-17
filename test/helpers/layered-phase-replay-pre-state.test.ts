@@ -54,11 +54,12 @@ function valueDeviations(actual: LGraphDump, recorded: LGraphDump): string[] {
 const rows = loadRows(REF).filter((row) => row.steps !== null && row.expected.dump !== undefined);
 
 describe('pre-state twin of the recorded step rows', () => {
-  // 51 scenario step dumps (T1) and the 30 site step dumps T11 added (rows under 10 nodes carry a dump, B2).
-  it('has the 51 scenario and 30 site step dumps', () => {
+  // 51 scenario step dumps (T1) and the 30 site step dumps T11 added (rows under 10 nodes carry a dump, B2), less
+  // sites/ModelOrderLayerers/externalPorts/BF_MODEL_ORDER, a refusal since eclipse-elk/elk#1219 (the e7eaea57 pin, #99).
+  it('has the 51 scenario and 29 site step dumps', () => {
     const count = (group: string): number => rows.filter((row) => row.group === group).length;
-    expect({ scenarios: count('scenarios'), sites: count('sites') }).toEqual({ scenarios: 51, sites: 30 });
-    expect(rows.length).toBe(81);
+    expect({ scenarios: count('scenarios'), sites: count('sites') }).toEqual({ scenarios: 51, sites: 29 });
+    expect(rows.length).toBe(80);
   });
 
   // Every recorded step dump follows a processor or phase, which may add graph properties and move nodes into layers:

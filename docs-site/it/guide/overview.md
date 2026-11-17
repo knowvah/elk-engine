@@ -20,7 +20,7 @@ Per l'ordine in cui arrivano gli algoritmi vedi la [roadmap](/guide/roadmap).
 
 ## Il Java è la specifica
 
-Il sorgente Java al commit ELK fissato `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` è la specifica
+Il sorgente Java al commit ELK fissato `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` è la specifica
 canonica. Il porting la segue da vicino:
 
 - Gli algoritmi non vengono ottimizzati né semplificati. Se il Java sembra ridondante, la ridondanza viene mantenuta.

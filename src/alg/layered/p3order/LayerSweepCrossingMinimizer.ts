@@ -195,9 +195,10 @@ export class LayerSweepCrossingMinimizer
     // In order to only copy graphs whose node order has changed, save them in a set.
     this.state.graphsWhoseNodeOrderChanged.clear();
 
-    // The Java condition is `node != 0 || node != 0`: it repeats the node influence and never reads the port
-    // influence. One operand gives the same result; the port influence stays unread, as in the Java.
-    if (gData.lGraph().getProperty(LayeredOptions.CONSIDER_MODEL_ORDER_CROSSING_COUNTER_NODE_INFLUENCE) !== 0) {
+    if (
+      gData.lGraph().getProperty(LayeredOptions.CONSIDER_MODEL_ORDER_CROSSING_COUNTER_NODE_INFLUENCE) !== 0 ||
+      gData.lGraph().getProperty(LayeredOptions.CONSIDER_MODEL_ORDER_CROSSING_COUNTER_PORT_INFLUENCE) !== 0
+    ) {
       this.compareLayoutsWithNodePortOrderCounter(gData);
     } else {
       this.compareLayoutsWithCounter(gData);

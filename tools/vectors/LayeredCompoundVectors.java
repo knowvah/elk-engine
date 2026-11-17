@@ -303,7 +303,7 @@ import org.eclipse.elk.core.util.IElkProgressMonitor;
 import org.eclipse.elk.core.util.LoggedGraph;
 
 public class LayeredCompoundVectors {
-    static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
+    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
     static final String OUTPUT = "layered-compound.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed", REPO_PREFIX = "repo:";
     static final String INPUTS = "test/golden/inputs/";

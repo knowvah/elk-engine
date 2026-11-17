@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: EPL-2.0
 // Replay of `test/golden/refs/java/rectpacking.json` through `RecursiveGraphLayoutEngine` with the real `RectPackingLayoutProvider`
 // (mission 8c, T12; the contract is the header of tools/vectors/RectPackingVectors.java):
-//   full    558 rows  the final dump of the root equals the row at the AD-4 bar (ids, counts, strings exact; doubles within 1e-6);
-//   stops   151 rows  every stop of every graph entry, taken at the provider's own logGraph points, and `final`, from ONE run;
-//   throws    7 rows  the root cause by class name and message (`emptyGreedy` calls the provider directly, mode "provider"; a JVM
+//   full    559 rows  the final dump of the root equals the row at the AD-4 bar (ids, counts, strings exact; doubles within 1e-6);
+//   stops   152 rows  every stop of every graph entry, taken at the provider's own logGraph points, and `final`, from ONE run;
+//   throws    6 rows  the root cause by class name and message (`emptyGreedy` calls the provider directly, mode "provider"; a JVM
 //                     NullPointerException is a TypeError, its message is JVM text, so its ported frame file is compared instead);
 //   sort    640 rows  PK7: `Array.prototype.sort` with the verbatim comparator of InteractiveNodeReorderer.java:56-63.
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -31,9 +31,9 @@ import { RectPackingOptions } from './options/RectPackingOptions.js';
 import { Compactor } from './p2packing/Compactor.js';
 
 const LOOP = { timeout: 60_000 };
-const FULL_ROWS = 558;
-const STOPS_ROWS = 151;
-const THROWS_ROWS = 7;
+const FULL_ROWS = 559; // 558 at the old pin; eclipse-elk/elk#1215 turns throws/arm/noBestCandidate into a full row
+const STOPS_ROWS = 152;
+const THROWS_ROWS = 6; // 151 stops and 7 throws at the old pin (eclipse-elk/elk#1215)
 const SORT_ROWS = 640;
 /** `compaction.iterations` values that occur only in full rows (the stops rows replay the others). */
 const FULL_ONLY_ITERATIONS = [0, 6];

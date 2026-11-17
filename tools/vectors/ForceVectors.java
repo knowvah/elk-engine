@@ -183,7 +183,7 @@ import org.eclipse.elk.graph.text.ElkGraphStandaloneSetup;
 import org.eclipse.elk.graph.util.ElkGraphUtil;
 
 public class ForceVectors {
-    static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
+    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String IDENTIFIER_SEED_PROPERTY = "org.eclipse.elk.graph.util.identifierSeed";
     static final String FORCE_ID = "org.eclipse.elk.force", STRESS_ID = "org.eclipse.elk.stress";

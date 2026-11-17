@@ -211,17 +211,16 @@ export class PortRestorer {
       return positiveNetFlowIndex;
     }
 
-    // Find index of the first port with a non-negative net flow (the Java compares `> 0` here as well; preserved)
+    // Find index of the first port with a non-negative net flow
     let nonNegativeNetFlowIndex = 0;
     for (; nonNegativeNetFlowIndex < sortedPorts.length; nonNegativeNetFlowIndex++) {
-      if (sortedPorts[nonNegativeNetFlowIndex]!.getSLNetFlow() > 0) {
+      if (sortedPorts[nonNegativeNetFlowIndex]!.getSLNetFlow() >= 0) {
         break;
       }
     }
 
-    // If this is neither the first, nor the last port, return its index (the Java tests `positiveNetFlowIndex` in the
-    // second operand; preserved)
-    if (nonNegativeNetFlowIndex > 0 && positiveNetFlowIndex < sortedPorts.length - 1) {
+    // If this is neither the first, nor the last port, return its index
+    if (nonNegativeNetFlowIndex > 0 && nonNegativeNetFlowIndex < sortedPorts.length - 1) {
       return nonNegativeNetFlowIndex;
     }
 

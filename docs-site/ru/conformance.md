@@ -33,7 +33,7 @@ sourceHash: 1c16c2c481111ebe772362128cf8f3e800f6e482a5ba14cadcb0f135f1872461
 
 | Элемент                    | Где                                                                                     |
 | -------------------------- | --------------------------------------------------------------------------------------- |
-| Зафиксированный коммит ELK | `tools/oracle/ELK_COMMIT` (сейчас `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)           |
+| Зафиксированный коммит ELK | `tools/oracle/ELK_COMMIT` (сейчас `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)           |
 | Серия патчей               | `tools/oracle/patches/*.patch`, применяются в лексическом порядке через `git am --3way` |
 | Сборка                     | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho загружает артефакты p2)            |
 | Пакетный запуск            | `tools/oracle/run.sh <outDir> <input>...` или `run.sh --cases <cases.jsonl> <outDir>`   |

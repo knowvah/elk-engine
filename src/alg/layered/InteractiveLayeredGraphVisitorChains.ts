@@ -37,7 +37,7 @@ export function requireNode(node: ElkNode | null, what: string): ElkNode {
  * Gets the ElkNode with `id` as identifier, or null if it could not be found. A `null` id is the `NullPointerException`
  * of `id.equals(...)`.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:882
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:905
  */
 export function getElkNode(nodes: readonly ElkNode[], id: string | null): ElkNode | null {
   if (id === null) {
@@ -55,7 +55,7 @@ export function getElkNode(nodes: readonly ElkNode[], id: string | null): ElkNod
  * Sorts `nodesWithRC` such that referred nodes that have also relative constraints come first. A circle loses one
  * constraint: the node becomes a node without constraints.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:780
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:788
  */
 export function sortRCNodes(nodesWithRC: ElkNode[], allNodes: readonly ElkNode[], nodesWithoutC: ElkNode[]): ElkNode[] {
   const nodes: ElkNode[] = [];
@@ -80,7 +80,7 @@ export function sortRCNodes(nodesWithRC: ElkNode[], allNodes: readonly ElkNode[]
  * The body of the `for` loop of `sortRCNodes`: moves `nodesWithRC[i]` to `nodes` when the node it refers to is no longer
  * in `nodesWithRC` (the caller then runs `i--` and clears `circle`).
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:786
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:794
  */
 function moveIfReferenceIsSorted(
   i: number,
@@ -109,7 +109,7 @@ function moveIfReferenceIsSorted(
   return false;
 }
 
-/** The `if (circle)` block of `sortRCNodes`. @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:811 */
+/** The `if (circle)` block of `sortRCNodes`. @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:819 */
 function breakCircle(nodesWithRC: ElkNode[], nodesWithoutC: ElkNode[]): void {
   const cur = JList.get(nodesWithRC, 0);
   if (cur.hasProperty(LayeredOptions.CROSSING_MINIMIZATION_IN_LAYER_PRED_OF)) {
@@ -125,7 +125,7 @@ function breakCircle(nodesWithRC: ElkNode[], nodesWithoutC: ElkNode[]): void {
  * Determines the nodes that are connected to `node` by relative constraints. The returned list of nodes is sorted based on
  * the position of the nodes.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:898
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:921
  */
 export function getChainByLayerNodes(node: ElkNode, layerNodes: readonly ElkNode[]): ElkNode[] {
   const pos = JList.indexOf(layerNodes, node);
@@ -160,9 +160,9 @@ export function getChainByLayerNodes(node: ElkNode, layerNodes: readonly ElkNode
 
 /**
  * Determines nodes that are connected to `node` by relative constraints (unsorted). The second loop advances with
- * `IN_LAYER_PRED_OF` of `predNode` (`:950`), not `IN_LAYER_SUCC_OF`, as in Java.
+ * `IN_LAYER_PRED_OF` of `predNode` (`:973`), not `IN_LAYER_SUCC_OF`, as in Java.
  *
- * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:934
+ * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/InteractiveLayeredGraphVisitor.java:957
  */
 export function getChainByAllNodes(node: ElkNode, allNodes: readonly ElkNode[]): ElkNode[] {
   const chain: ElkNode[] = [node];

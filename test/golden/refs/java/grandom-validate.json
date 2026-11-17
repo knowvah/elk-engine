@@ -1,5 +1,5 @@
 {
-  "elkCommit": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "elkCommit": "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c",
   "xtextVersion": "2.36.0",
   "cases": [
     {"id":"all-three-allowed-never-together","input":"generate 1 trees { maxWidth = 3 maxDegree = 4 }\ngenerate 1 bipartite graphs { partitionFraction = 0.5 }\n","issues":[]},

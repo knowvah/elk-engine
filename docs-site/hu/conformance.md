@@ -33,7 +33,7 @@ Mindkettő ezen a tárolón kívül van; egyiket sem szállítjuk a tárolóval.
 
 | Elem                 | Hely                                                                                        |
 | -------------------- | ------------------------------------------------------------------------------------------- |
-| Rögzített ELK-commit | `tools/oracle/ELK_COMMIT` (jelenleg `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)             |
+| Rögzített ELK-commit | `tools/oracle/ELK_COMMIT` (jelenleg `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)             |
 | Patch-sorozat        | `tools/oracle/patches/*.patch`, lexikális sorrendben, `git am --3way` paranccsal alkalmazva |
 | Build                | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; a Tycho p2-artefaktumokat tölt le)           |
 | Kötegelt futtató     | `tools/oracle/run.sh <outDir> <input>...` vagy `run.sh --cases <cases.jsonl> <outDir>`      |

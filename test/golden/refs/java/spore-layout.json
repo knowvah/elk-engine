@@ -1,6 +1,6 @@
 {
   "jdk": "21.0.1",
-  "oracle": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "oracle": "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c",
   "seed": 8301,
   "stopNames": ["underlying", "import", "scanline", "triangulation", "tree", "grow", "update", "compaction", "end"],
   "rowCounts": {"full": 113, "stops": 60, "throws": 4, "minst": 95, "jitter": 4, "objects": 63},

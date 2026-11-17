@@ -160,8 +160,10 @@ own `logGraph` points through a logging `BasicProgressMonitor`. spore: `underlyi
 
 **Throw rows.** rectpacking: `targetWidthMissing` (`TargetWidthWidthApproximator.java:47`), `equalWithoutRows` and
 `toAspectWithoutRows` (`EqualWhitespaceEliminator.java:50`), `emptyGreedy` (`AreaApproximation.java:70`), `desiredMinus1` and
-`desiredMinus5` (`InteractiveNodeReorderer.java:68`), and `throws/arm/noBestCandidate` (`AreaApproximation.java:157`, `:98`: a
-`NullPointerException`, a `TypeError` in the port, so the test compares the ported frame file, not the JVM message). spore:
+`desiredMinus5` (`InteractiveNodeReorderer.java:68`). Until the `e7eaea57` pin (#99) a sixth, `throws/arm/noBestCandidate`
+(`AreaApproximation.java:157`, `:98`: a `NullPointerException`), recorded the null best option; since
+[eclipse-elk/elk#1215](https://github.com/eclipse-elk/elk/pull/1215) the graph lays out and is the rows
+`full/arm/noBestCandidate/default` and `stops/arm/noBestCandidate/default`. spore:
 `hyperedge` (2, `ElkGraphUtil.java:633`), `scanlineHitboxes` (`ScanlineOverlapCheck.java:166`), `minRootDistanceNoRoot`
 (`ElkGraphImporter.java:69`). topdownpacking: 16 direct-call rows at the grid bounds (`GridElkNode.java:69-113`) and the walk-back
 loop (`BottomRowEqualWhitespaceEliminator.java:58`), 2 engine rows with frames in `RecursiveGraphLayoutEngine`. A JDK-text

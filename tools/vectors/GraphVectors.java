@@ -56,7 +56,7 @@ import org.eclipse.emf.ecore.InternalEObject;
 
 public class GraphVectors {
     private static final String JDK = System.getProperty("java.version");
-    private static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
+    private static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
     private static final String NULL_TOKEN = "~", ARG_SEP = ",", LIST_SEP = " ", SCENARIO = "scenario ";
     private static final String COMMENT = "#", ENTRY_CLASS = "ElkPropertyToValueMapEntry";
     private static final String PROXY_HASH = "@[0-9a-f]+(?= \\(eProxyURI: )";

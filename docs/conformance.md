@@ -43,7 +43,7 @@ worktree of `$ELK_SOURCE_DIR`, created at `$ELK_ORACLE_DIR` by
 
 | Item              | Where                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------ |
-| Pinned ELK commit | `tools/oracle/ELK_COMMIT` (currently `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)     |
+| Pinned ELK commit | `tools/oracle/ELK_COMMIT` (currently `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)     |
 | Patch series      | `tools/oracle/patches/*.patch`, applied in lexical order with `git am --3way`        |
 | Build             | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho downloads p2 artifacts)         |
 | Batch runner      | `tools/oracle/run.sh <outDir> <input>...` or `run.sh --cases <cases.jsonl> <outDir>` |
@@ -156,10 +156,10 @@ test or fixture it affects. Accepted classes:
   upstream text. Each case is listed here; the ported test asserts the
   corrected string. Behaviour, identifiers, and oracle-compared values are
   never in this class (policy set 2026-10-12, `CLAUDE.md` carve-out).
-  - `GraphFeature.COMPOUND` description: upstream concatenates
-    `"...hierarchy levels" + "and are..."` with no space ("levelsand");
-    the port reads "levels and". Decided 2026-10-12 on PR 3; fix proposed
-    upstream as [eclipse-elk/elk#1202](https://github.com/eclipse-elk/elk/pull/1202).
+  No case is open. The last one, the `GraphFeature.COMPOUND` description
+  ("levelsand"), was fixed upstream by
+  [eclipse-elk/elk#1202](https://github.com/eclipse-elk/elk/pull/1202) and
+  closed by the pin move to `e7eaea57` (#99).
 - **Time-seeded `Random`.** With `randomSeed = 0` ELK seeds from the clock
   (`core/Core.melk:608`), so output is not reproducible. Golden inputs must
   leave the seed unset or non-zero (layered default seed is `1`).
@@ -1323,9 +1323,11 @@ pipeline recorded at the P5 stop of each router and at each processor. Decisions
   byte.
 
 **AD-10 sites.** `SplineSegment.java:60-121` (`edges`, iterated by the bend-point calculator) and
-`SplineEdgeRouter.java:588-589` (`upEdges`/`downEdges`, a `HashSet<Pair<…>>` the segment constructor iterates) are
-insertion-ordered `Set`s; the JVM `Pair` order proved unobservable on the rows (every multi-edge segment has two edges
-and the per-edge bodies are independent; a reversal test pins it), with `getSplinePath` under compaction left to 7g.
+`SplineEdgeRouter.java:588-589` (`upEdges`/`downEdges`, the `Pair<…>` sets the segment constructor iterates) are
+insertion-ordered `Set`s. They were identity-hashed `HashSet`s at the old pin, whose JVM `Pair` order proved
+unobservable on the rows; upstream made all three `LinkedHashSet`s
+([eclipse-elk/elk#1229](https://github.com/eclipse-elk/elk/pull/1229)), so since the `e7eaea57` pin (#99) the port's
+order is the Java's.
 `BaseRoutingDirectionStrategy.java:44` and `PolylineEdgeRouter.java:188` (`createdJunctionPoints`) use `KVector.equals`
 semantics, membership only; `HyperEdgeCycleDetector.java:152` keeps its `TreeSet` order by `mark`;
 `OrthogonalRoutingGenerator.java:164`, `SplineEdgeRouter.java:156-159` are lookup maps.
@@ -1446,8 +1448,11 @@ G3a, G11a).
 no-op) and its `HashMap<LEdge, LabelGroup>` order makes parallel end labels nondeterministic on an unflagged JVM
 (`h0` at y 40 or 54). Two fix branches, `fix/end-label-group-self-add` and `fix/end-label-group-order`, exist as
 worktrees of the local `../elk` checkout: local, unsigned, not pushed. An issue draft (never filed) covers
-`BF_MODEL_ORDER`/`DF_MODEL_ORDER` leaving same-layer or backward edges under the default cycle breaker. The port keeps
-the Java behaviour and the insertion order (AD-10).
+`BF_MODEL_ORDER`/`DF_MODEL_ORDER` leaving same-layer or backward edges under the default cycle breaker. All three were
+later fixed upstream ([#1216](https://github.com/eclipse-elk/elk/pull/1216),
+[#1217](https://github.com/eclipse-elk/elk/pull/1217): `LinkedHashMap`;
+[#1219](https://github.com/eclipse-elk/elk/pull/1219): the two layerers now throw `UnsupportedGraphException` for such
+an edge); the port follows the fixes since the `e7eaea57` pin (#99).
 
 **Upstream typos (CLAUDE.md carve-out).** `LabelManagementProcessor.java`: the comment "edge Unand tail labels" is
 corrected to "edge head and tail labels" at the port site (T5); nothing branches on it.
@@ -1644,7 +1649,8 @@ throws `NullPointerException` at `SplineSegment.java:247` (inputs `040`, `160`, 
 `SplineSegment.anchorY`). U2: `425_selfLoopInCompoundNode.elkt` throws `NullPointerException` at `ElkGraphImporter.java:1146`.
 U3: `FIXED_RATIO` with a hierarchical port throws `NullPointerException` at `LGraphUtil.java:944`, because
 `CompoundGraphPreprocessor.java:182-185` passes `null` for `portNodeSize`. Each is pinned by a `sites` throw row. U4
-(`LayerSweepCrossingMinimizer.java:193-194` tests one option twice) and U5 (`moveExternalPorts`, `HierarchicalNodeResizingProcessor.java:207-220`,
+(`LayerSweepCrossingMinimizer.java:193-194` tests one option twice; fixed upstream by
+[#1210](https://github.com/eclipse-elk/elk/pull/1210), followed since the `e7eaea57` pin, #99) and U5 (`moveExternalPorts`, `HierarchicalNodeResizingProcessor.java:207-220`,
 is overwritten for every nested graph) are oddities the port keeps. Nothing is filed upstream.
 
 **Open arms (issue #59, `needs-ruling`).** 25 arms handed over by earlier missions are neither reached nor proven dead: six of
@@ -2026,7 +2032,9 @@ rectpacking:
 - `p2packing/Compactor.java:193-194` `copyPosition`'s child loop is dead: `clone()` copies only direct children.
 - `p1widthapproximation/AreaApproximation.java:154-157` `findBestCandidate` returns null when more than two placement options
   tie, and `:98` dereferences it: two 0 by 0 children with `spacing.nodeNode = 0` throw `NullPointerException` (a `TypeError` in the
-  port; row `throws/arm/noBestCandidate`).
+  port; row `throws/arm/noBestCandidate`). Fixed upstream by
+  [#1215](https://github.com/eclipse-elk/elk/pull/1215) (more than two tied options compare the first two); followed since
+  the `e7eaea57` pin (#99).
 - `RectPackingLayoutProvider.java:223-224` adds `MIN_SIZE_POST_PROCESSOR` before P2. `InteractiveRectPackingGraphVisitor` is
   applied by no code under `plugins/` (so `interactiveLayout` has no effect in a headless run), and its `endsWith` at `:47` tests
   the id against the option value in the reversed direction (kept).

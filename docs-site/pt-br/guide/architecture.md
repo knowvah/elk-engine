@@ -18,7 +18,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 ## O que é o elk-engine
 
 `@knowvah/elk-engine` é um port fiel do Eclipse Layout Kernel (ELK) para TypeScript. O Java no commit fixado
-`8aaa3c145c2a18a38aabbc725aa3791ddc517a76` é a especificação (AD-1, AD-2). É uma biblioteca: segura para o
+`e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` é a especificação (AD-1, AD-2). É uma biblioteca: segura para o
 navegador, sem dependências de runtime, sem Java nem WASM. Seu contrato público é o modelo de objetos ElkGraph
 mais as fábricas `ElkGraphUtil`; ELK JSON é um adaptador de E/S (AD-14). Treze bundles, com cerca de 134.600
 linhas escritas à mão no total, estão no escopo (veja o inventário). Esta missão entrega apenas a estrutura de

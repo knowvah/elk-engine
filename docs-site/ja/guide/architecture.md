@@ -17,7 +17,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 
 ## elk-engine とは
 
-`@knowvah/elk-engine` は、Eclipse Layout Kernel（ELK）の忠実な TypeScript 移植です。固定コミット `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` の Java が仕様です（AD-1、AD-2）。これはライブラリであり、ブラウザで安全に動作し、ランタイム依存はなく、Java も WASM も使いません。公開コントラクトは ElkGraph オブジェクトモデルと `ElkGraphUtil` ファクトリで、ELK JSON は I/O アダプターです（AD-14）。手書きの合計約 134,600 行にのぼる 13 個のバンドルがスコープに入っています（インベントリを参照）。このミッションが提供するのは足場だけで、レイアウトアルゴリズムはまだ移植されていません。
+`@knowvah/elk-engine` は、Eclipse Layout Kernel（ELK）の忠実な TypeScript 移植です。固定コミット `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` の Java が仕様です（AD-1、AD-2）。これはライブラリであり、ブラウザで安全に動作し、ランタイム依存はなく、Java も WASM も使いません。公開コントラクトは ElkGraph オブジェクトモデルと `ElkGraphUtil` ファクトリで、ELK JSON は I/O アダプターです（AD-14）。手書きの合計約 134,600 行にのぼる 13 個のバンドルがスコープに入っています（インベントリを参照）。このミッションが提供するのは足場だけで、レイアウトアルゴリズムはまだ移植されていません。
 
 ## ELK Java とオラクルの関係
 

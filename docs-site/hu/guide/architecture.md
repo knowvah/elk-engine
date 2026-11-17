@@ -18,7 +18,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 ## Mi az elk-engine
 
 A `@knowvah/elk-engine` az Eclipse Layout Kernel (ELK) hű TypeScript-portolása. A rögzített
-`8aaa3c145c2a18a38aabbc725aa3791ddc517a76` commit Java kódja a specifikáció (AD-1, AD-2). Könyvtár:
+`e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` commit Java kódja a specifikáció (AD-1, AD-2). Könyvtár:
 böngészőbiztos, futásidejű függőségek nélkül, Java vagy WASM nélkül. Nyilvános szerződése az ElkGraph
 objektummodell és az `ElkGraphUtil` factoryk; az ELK JSON I/O-adapter (AD-14). Tizenhárom bundle, összesen
 mintegy 134 600 kézzel írt sorral tartozik a hatókörbe (lásd a leltárt). Ez a küldetés csak a vázat szállítja:

@@ -76,7 +76,6 @@ defineLayoutTest({
                   error,
                 ).toBe(true);
               }
-              // InLayerConstraintProcessorTest.java:113 repeats the assignment at :116 below; collapsed (F16, CodeQL)
             }
 
             lastConstraint = currentConstraint;

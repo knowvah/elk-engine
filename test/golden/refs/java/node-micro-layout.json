@@ -1,6 +1,6 @@
 {
   "jdk": "21.0.1",
-  "oracle": "8aaa3c145c2a18a38aabbc725aa3791ddc517a76",
+  "oracle": "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c",
   "labelSize": "width = 6.5 * text.length(), height = 13.0, applied to every label with non-empty text and width = height = 0.0; explicit sizes are kept",
   "rowCounts": {"corpus": 16, "curated": 70, "variants": 4, "sweep": 236},
   "rows": [

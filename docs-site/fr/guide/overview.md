@@ -20,7 +20,7 @@ Consultez la [feuille de route](/guide/roadmap) (en anglais) pour l’ordre d’
 
 ## Le Java est la spécification
 
-Le code source Java au commit ELK épinglé `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` est la
+Le code source Java au commit ELK épinglé `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` est la
 spécification canonique. Le portage la suit de près :
 
 - Les algorithmes ne sont ni optimisés ni simplifiés. Si le Java semble redondant, la redondance est conservée.

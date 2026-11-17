@@ -48,7 +48,7 @@ import org.eclipse.elk.graph.json.JsonImporter;
 import org.eclipse.emf.ecore.EObject;
 
 public class TransferVectors {
-    private static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
+    private static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
     private static final String GSON_VERSION = "2.11.0";
     private static final String OUT_NAME = "graph-json-transfer.json";
     private static final String CASES_FILE = "cases.txt";

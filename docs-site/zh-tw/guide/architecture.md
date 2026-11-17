@@ -17,7 +17,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 
 ## elk-engine 是什麼
 
-`@knowvah/elk-engine` 是 Eclipse Layout Kernel（ELK）的忠實 TypeScript 移植。固定提交 `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` 上的 Java 即是規格（AD-1、AD-2）。它是一個程式庫：可安全用於瀏覽器、零執行階段相依、沒有 Java 或 WASM。其公開契約是 ElkGraph 物件模型加上 `ElkGraphUtil` 工廠；ELK JSON 是 I/O 轉接器（AD-14）。範圍內共有十三個 bundle，手寫程式碼合計約 134,600 行（請見清單）。本任務只交付骨架：尚未移植任何版面配置演算法。
+`@knowvah/elk-engine` 是 Eclipse Layout Kernel（ELK）的忠實 TypeScript 移植。固定提交 `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` 上的 Java 即是規格（AD-1、AD-2）。它是一個程式庫：可安全用於瀏覽器、零執行階段相依、沒有 Java 或 WASM。其公開契約是 ElkGraph 物件模型加上 `ElkGraphUtil` 工廠；ELK JSON 是 I/O 轉接器（AD-14）。範圍內共有十三個 bundle，手寫程式碼合計約 134,600 行（請見清單）。本任務只交付骨架：尚未移植任何版面配置演算法。
 
 ## 與 ELK Java 及基準實作的關係
 

@@ -33,7 +33,7 @@ ce dépôt ; aucun n’est vendorisé.
 
 | Élément            | Emplacement                                                                          |
 | ------------------ | ------------------------------------------------------------------------------------ |
-| Commit ELK épinglé | `tools/oracle/ELK_COMMIT` (actuellement `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)  |
+| Commit ELK épinglé | `tools/oracle/ELK_COMMIT` (actuellement `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)  |
 | Série de patchs    | `tools/oracle/patches/*.patch`, appliqués par ordre lexical avec `git am --3way`     |
 | Build              | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21 ; Tycho télécharge les artefacts p2)   |
 | Exécuteur par lots | `tools/oracle/run.sh <outDir> <input>...` ou `run.sh --cases <cases.jsonl> <outDir>` |

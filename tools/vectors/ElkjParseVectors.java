@@ -75,7 +75,7 @@ import org.eclipse.xtext.resource.XtextSyntaxDiagnostic;
 import org.eclipse.xtext.util.CancelIndicator;
 
 public class ElkjParseVectors {
-    static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
+    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String CONVERSION_CODE = "elkj.vectors.ValueConversion";
     static final String SCENARIO_DIR = "elkj-parse-scenarios", EXTENSION = ".elkj", OUTPUT = "graph-json-text-parse.json";

@@ -111,7 +111,7 @@ function siteRow(id: string): PhaseRow {
 
 describe('DepthFirstModelOrderLayerer on the site rows', () => {
   it('skips the external port dummies of a hierarchical target and layers the real nodes', () => {
-    // oracle: sites/ModelOrderLayerers/externalPorts/DF_MODEL_ORDER; DepthFirstModelOrderLayerer.java:98
+    // oracle: sites/ModelOrderLayerers/externalPorts/DF_MODEL_ORDER; DepthFirstModelOrderLayerer.java:100
     const result = replay(siteRow('sites/ModelOrderLayerers/externalPorts/DF_MODEL_ORDER'), () =>
       LayeringStrategy.DF_MODEL_ORDER.create(),
     ).expected;
@@ -123,7 +123,7 @@ describe('DepthFirstModelOrderLayerer on the site rows', () => {
 
 describe('DepthFirstModelOrderLayerer Java semantics', () => {
   it('sorts the real nodes ascending by model order (Integer.compare)', () => {
-    // Java: DepthFirstModelOrderLayerer.java:103 (`Integer.compare` of the model orders)
+    // Java: DepthFirstModelOrderLayerer.java:105 (`Integer.compare` of the model orders)
     const graph = new LGraph();
     const names = new Map<LNode, string>();
     [3, 2, 1, 0].forEach((order) => ordered(graph, names, `n${String(order)}`, order));
@@ -134,7 +134,7 @@ describe('DepthFirstModelOrderLayerer Java semantics', () => {
   });
 
   it('keeps nodes with equal model orders in their list order (Integer.compare is 0)', () => {
-    // Java: DepthFirstModelOrderLayerer.java:103 (`Integer.compare` of equal model orders; `Collections.sort` is stable)
+    // Java: DepthFirstModelOrderLayerer.java:105 (`Integer.compare` of equal model orders; `Collections.sort` is stable)
     const graph = new LGraph();
     const names = new Map<LNode, string>();
     ordered(graph, names, 'a', 1);
@@ -147,7 +147,7 @@ describe('DepthFirstModelOrderLayerer Java semantics', () => {
   });
 
   it('throws NoSuchElementException for a label dummy without an incoming edge while nodes await placement', () => {
-    // Java: DepthFirstModelOrderLayerer.java:245-246 (`getIncomingEdges().iterator().next()` on an empty iterable)
+    // Java: DepthFirstModelOrderLayerer.java:272-273 (`getIncomingEdges().iterator().next()` on an empty iterable)
     const graph = new LGraph();
     const names = new Map<LNode, string>();
     ordered(graph, names, 'a', 0);

@@ -20,7 +20,7 @@ Se [veikartet](/guide/roadmap) for rekkefølgen algoritmene kommer i.
 
 ## Java-koden er spesifikasjonen
 
-Java-kildekoden ved den festede ELK-committen `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` er den
+Java-kildekoden ved den festede ELK-committen `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` er den
 kanoniske spesifikasjonen. Porteringen følger den tett:
 
 - Algoritmer blir ikke optimalisert eller forenklet. Ser Java-koden overflødig ut, beholdes overflødigheten.

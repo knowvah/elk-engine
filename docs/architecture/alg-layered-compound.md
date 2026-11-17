@@ -362,7 +362,8 @@ dead are issue #59 (`needs-ruling`): six arms of `NorthToSouthRoutingStrategy`/`
 recorder's inline export of the same model completes); (U3) `FIXED_RATIO` with a hierarchical port throws
 `NullPointerException` at `LGraphUtil.java:944` because `CompoundGraphPreprocessor.java:182-185` passes `null` for
 `portNodeSize`. Also drafted: (U4) `LayerSweepCrossingMinimizer.java:193-194` tests the node influence twice (the port,
-landed in 7c, collapses the operand under the CodeQL rule; behaviour equal) and (U5) the `moveExternalPorts` redundancy above.
+landed in 7c, collapses the operand under the CodeQL rule; behaviour equal; fixed upstream by
+[#1210](https://github.com/eclipse-elk/elk/pull/1210) and ported with the `e7eaea57` pin, #99) and (U5) the `moveExternalPorts` redundancy above.
 The drafts are issue #61; nothing is filed upstream. The oracle's throw for `child-strategy-median` (`UnsupportedGraphException`,
 `ElkLayered.java:344`) is pinned by `sites/ElkLayered/childStrategyThrow`.
 

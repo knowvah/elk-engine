@@ -77,10 +77,10 @@ describe('p2 packing replay', () => {
   const named = (stopName: string): readonly Observed[] => observed.filter((o) => o.found.stop.stop === stopName);
 
   it('replays every p2 stop at raw bits: positions, props and state.rows', LOOP, () => {
-    expect(named(STOP_AFTER_COMPACTOR).length).toBe(157);
+    expect(named(STOP_AFTER_COMPACTOR).length).toBe(158);
     expect(named(STOP_AFTER_SIMPLE_PLACEMENT).length).toBe(10);
     expect(named(STOP_AFTER_NO_PLACEMENT).length).toBe(4);
-    expect(new Set(observed.map((o) => o.found.row.id)).size).toBe(149);
+    expect(new Set(observed.map((o) => o.found.row.id)).size).toBe(150);
     const total: Comparison = { differences: [], hexExact: 0, hexClose: 0 };
     for (const o of observed) {
       compareJson(recordedState(o.found.stop), o.replay.state, EXACT, `${o.found.row.id} ${o.found.stop.stop}`, total);

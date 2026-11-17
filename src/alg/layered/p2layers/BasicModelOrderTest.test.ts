@@ -41,9 +41,10 @@ const MODEL_ORDER_LAYERERS: ReadonlySet<string> = new Set(['P2_LAYERING/BF_MODEL
 const rows = allRows.filter((row) => row.group === 'models' && MODEL_ORDER_LAYERERS.has(lastEntry(row) ?? ''));
 
 describe('BasicModelOrderTest on the replayed models rows', () => {
-  it('covers the 27 BF and the 27 DF models rows', () => {
-    expect(rows.filter((row) => lastEntry(row) === 'P2_LAYERING/BF_MODEL_ORDER')).toHaveLength(27);
-    expect(rows.filter((row) => lastEntry(row) === 'P2_LAYERING/DF_MODEL_ORDER')).toHaveLength(27);
+  // 27 and 27 at the old pin; since eclipse-elk/elk#1219 the oracle refuses the other rows (no row recorded).
+  it('covers the 10 BF and the 11 DF models rows', () => {
+    expect(rows.filter((row) => lastEntry(row) === 'P2_LAYERING/BF_MODEL_ORDER')).toHaveLength(10);
+    expect(rows.filter((row) => lastEntry(row) === 'P2_LAYERING/DF_MODEL_ORDER')).toHaveLength(11);
   });
 
   it.each(rows.map((row) => [row.id, row] as const))(

@@ -29,7 +29,7 @@ Kumpikin on tämän repositorion ulkopuolella; kumpaakaan ei toimiteta mukana.
 
 | Kohde                  | Sijainti                                                                                              |
 | ---------------------- | ----------------------------------------------------------------------------------------------------- |
-| Kiinnitetty ELK-commit | `tools/oracle/ELK_COMMIT` (tällä hetkellä `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)                 |
+| Kiinnitetty ELK-commit | `tools/oracle/ELK_COMMIT` (tällä hetkellä `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)                 |
 | Patch-sarja            | `tools/oracle/patches/*.patch`, sovelletaan leksikaalisessa järjestyksessä komennolla `git am --3way` |
 | Käännös                | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho lataa p2-artefaktit)                             |
 | Eräajuri               | `tools/oracle/run.sh <outDir> <input>...` tai `run.sh --cases <cases.jsonl> <outDir>`                 |

@@ -19,7 +19,7 @@ Consultați [foaia de parcurs](/guide/roadmap) pentru ordinea în care sosesc al
 
 ## Java este specificația
 
-Codul sursă Java de la commit-ul ELK fixat `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` este specificația
+Codul sursă Java de la commit-ul ELK fixat `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` este specificația
 canonică. Portarea o urmează îndeaproape:
 
 - Algoritmii nu sunt optimizați și nici simplificați. Dacă Java pare redundant, redundanța este păstrată.

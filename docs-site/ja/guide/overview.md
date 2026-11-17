@@ -16,7 +16,7 @@ Kernel](https://www.eclipse.org/elk)（ELK）の忠実な TypeScript 移植で�
 
 ## Java が仕様である
 
-固定された ELK コミット `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` の Java ソースが正式な仕様です。移植はそれに忠実に従います。
+固定された ELK コミット `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` の Java ソースが正式な仕様です。移植はそれに忠実に従います。
 
 - アルゴリズムの最適化や単純化は行いません。Java が冗長に見えても、その冗長さは残します。
 - すべての分岐を移植し、TypeScript の制約で変更が必要な場合を除いてメソッドの境界を維持します。

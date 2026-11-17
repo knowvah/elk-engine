@@ -33,7 +33,7 @@ Mõlemad asuvad sellest hoidlast väljaspool; ükski neist ei ole kaasatud.
 
 | Element                | Asukoht                                                                                      |
 | ---------------------- | -------------------------------------------------------------------------------------------- |
-| Fikseeritud ELK commit | `tools/oracle/ELK_COMMIT` (praegu `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)                |
+| Fikseeritud ELK commit | `tools/oracle/ELK_COMMIT` (praegu `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)                |
 | Paikade seeria         | `tools/oracle/patches/*.patch`, rakendatakse leksikaalses järjekorras käsuga `git am --3way` |
 | Ehitus                 | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho laadib alla p2 artefaktid)              |
 | Pakettkäitaja          | `tools/oracle/run.sh <outDir> <input>...` või `run.sh --cases <cases.jsonl> <outDir>`        |

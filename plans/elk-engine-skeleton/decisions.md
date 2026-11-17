@@ -37,6 +37,13 @@ oracle and dump values before hypothesizing.
 Chosen over the 0.12.0 release because the oracle will be rebuilt with
 seams anyway. Upgrading ELK is a future roadmap mission.
 
+**Amended 2026-11-16 (maintainer ruling on #99):** the pin moves to upstream
+`master` `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`, which carries this
+project's ten merged upstream PRs and two third-party fixes. The text above
+is kept as the original decision; the move followed
+`docs/architecture/elk-upgrade.md` and is journaled in
+`plans/elk-upgrade-runbook/decision-journal.md`.
+
 ## AD-3: Oracle built from source with a patch series
 - `tools/oracle/build.sh` creates a **detached git worktree** of
   `$ELK_SOURCE_DIR` at `$ELK_ORACLE_DIR` (default `../elk-oracle`) at the

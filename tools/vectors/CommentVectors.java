@@ -67,7 +67,7 @@ import org.eclipse.elk.graph.ElkNode;
 import org.eclipse.elk.graph.json.ElkGraphJson;
 
 public class CommentVectors {
-    private static final String ELK_COMMIT = "8aaa3c145c2a18a38aabbc725aa3791ddc517a76";
+    private static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
     private static final String SCENARIO_DIR = "comment-scenarios";
     private static final String CONFIG_SUFFIX = ".config.json";
     private static final String GRAPH_SUFFIX = ".json";

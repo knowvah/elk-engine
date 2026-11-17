@@ -20,7 +20,7 @@ Se [køreplanen](/guide/roadmap) for den rækkefølge, algoritmerne kommer i.
 
 ## Java er specifikationen
 
-Java-kildekoden ved den fastlåste ELK-commit `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` er den
+Java-kildekoden ved den fastlåste ELK-commit `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` er den
 kanoniske specifikation. Porteringen følger den tæt:
 
 - Algoritmer bliver hverken optimeret eller forenklet. Ser Java-koden redundant ud, bevares redundansen.

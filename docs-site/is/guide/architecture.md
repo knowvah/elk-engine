@@ -18,7 +18,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 ## Hvað elk-engine er
 
 `@knowvah/elk-engine` er trú yfirfærsla Eclipse Layout Kernel (ELK) yfir í TypeScript. Java-kóðinn
-á fasta commitinu `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` er skilgreiningin (AD-1, AD-2). Þetta er
+á fasta commitinu `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` er skilgreiningin (AD-1, AD-2). Þetta er
 safn: öruggt í vafra, án keyrsluháðinda, án Java eða WASM. Opinber samningur þess er
 ElkGraph-hlutalíkanið ásamt `ElkGraphUtil`-smiðjum; ELK JSON er I/O-millistykki (AD-14). Þrettán
 búntar með alls um 134.600 handskrifuðum línum eru innan umfangs (sjá yfirlitsskrána). Þetta verkefni

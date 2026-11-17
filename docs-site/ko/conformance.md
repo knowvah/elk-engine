@@ -32,7 +32,7 @@ ELK JSON으로 파싱한 뒤 구조와 모든 숫자가 아닌 값이 정확히 
 
 | 항목            | 위치                                                                                   |
 | --------------- | -------------------------------------------------------------------------------------- |
-| 고정된 ELK 커밋 | `tools/oracle/ELK_COMMIT` (현재 `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`)            |
+| 고정된 ELK 커밋 | `tools/oracle/ELK_COMMIT` (현재 `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)            |
 | 패치 시리즈     | `tools/oracle/patches/*.patch`, `git am --3way`로 사전순 적용                          |
 | 빌드            | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho가 p2 아티팩트를 다운로드)         |
 | 배치 러너       | `tools/oracle/run.sh <outDir> <input>...` 또는 `run.sh --cases <cases.jsonl> <outDir>` |

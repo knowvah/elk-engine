@@ -291,6 +291,19 @@ export class GraphStats {
     checkArrayIndex(0, cutsAllowed.length);
     cutsAllowed[0] = false;
 
+    // 'default' behavior as implemented by 'isCutAllowed(..)'
+    const layerIt = new ArrayListIterator<Layer>(layers);
+    // skip the first layer
+    if (layerIt.hasNext()) {
+      layerIt.next();
+    }
+    // now check for valid cut indexes
+    let i = 1; // plain number: bounded by layers.length
+    while (layerIt.hasNext()) {
+      const layer = layerIt.next();
+      cutsAllowed[i++] = this.isCutAllowedForLayer(layer);
+    }
+
     if (this.graph.hasProperty(LayeredOptions.WRAPPING_VALIDIFY_FORBIDDEN_INDICES)) {
       // user-specified forbidden indices
       const forbidden = this.graph.getProperty(LayeredOptions.WRAPPING_VALIDIFY_FORBIDDEN_INDICES);
@@ -298,19 +311,6 @@ export class GraphStats {
         if (f > 0 && f < cutsAllowed.length) {
           cutsAllowed[f] = false;
         }
-      }
-    } else {
-      // 'default' behavior as implemented by 'isCutAllowed(..)'
-      const layerIt = new ArrayListIterator<Layer>(layers);
-      // skip the first layer
-      if (layerIt.hasNext()) {
-        layerIt.next();
-      }
-      // now check for valid cut indexes
-      let i = 1; // plain number: bounded by layers.length
-      while (layerIt.hasNext()) {
-        const layer = layerIt.next();
-        cutsAllowed[i++] = this.isCutAllowedForLayer(layer);
       }
     }
   }
