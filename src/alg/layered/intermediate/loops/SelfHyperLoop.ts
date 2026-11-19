@@ -2,6 +2,7 @@
 import { PortSide } from '../../../../core/options/PortSide.js';
 import { ArrayListMultimap } from '../../../../guava/ArrayListMultimap.js';
 import type { Multimap } from '../../../../guava/Multimap.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { HashStrategy } from '../../../../java/util/HashStrategy.js';
 import { EnumSet } from '../../../../java/util/EnumSet.js';
 import { identity } from '../../../../java/util/HashStrategy.js';
@@ -71,11 +72,13 @@ export class SelfHyperLoop {
   /**
    * Fills our `slPortsBySide` multimap and determines this self loop's type. This method is called by `PortRestorer`
    * right before it gets to work since it has to know which ports are on which side. (Java line 91
-   * `assert slPortsBySide == null` and line 98 `assert portSide != PortSide.UNDEFINED` are omitted: assertions are off.)
+   * `assert slPortsBySide == null` and line 98 `assert portSide != PortSide.UNDEFINED` are `devAssert` calls.)
    *
    * @see SelfHyperLoop.java:90
    */
   computePortsPerSide(): void {
+    devAssert(() => this.slPortsBySide === null);
+
     // Remember ports for each side
     const bySide = ArrayListMultimap.create<PortSide, SelfLoopPort>(
       INSERTION_ORDER_SIDES,
@@ -86,6 +89,7 @@ export class SelfHyperLoop {
     this.slPortsBySide = bySide;
     for (const slPort of this.slPorts) {
       const portSide = slPort.getLPort().getSide();
+      devAssert(() => portSide !== PortSide.UNDEFINED);
 
       bySide.put(portSide, slPort);
     }

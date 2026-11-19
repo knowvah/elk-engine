@@ -5,6 +5,7 @@ import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import * as Lists from '../../../guava/Lists.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { ArrayListIterator } from '../../../java/util/ListIterator.js';
 import { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
@@ -133,7 +134,7 @@ export class InvertedPortProcessor implements ILayoutProcessor<LGraph> {
    *   node is added to this list and must be assigned to the layer later.
    */
   #createEastPortSideDummies(layeredGraph: LGraph, eastwardPort: LPort, edge: LEdge, layerNodeList: LNode[]): void {
-    // (Java `assert edge.getTarget() == eastwardPort`: disabled without -ea, translation rules 6.8)
+    devAssert(() => edge.getTarget() === eastwardPort);
 
     // Ignore self loops
     if (edge.getSource()!.getNode() === eastwardPort.getNode()) {
@@ -202,7 +203,7 @@ export class InvertedPortProcessor implements ILayoutProcessor<LGraph> {
    *   node is added to this list and must be assigned to the layer later.
    */
   #createWestPortSideDummies(layeredGraph: LGraph, westwardPort: LPort, edge: LEdge, layerNodeList: LNode[]): void {
-    // (Java `assert edge.getSource() == westwardPort`: disabled without -ea, translation rules 6.8)
+    devAssert(() => edge.getSource() === westwardPort);
 
     // Ignore self loops
     if (edge.getTarget()!.getNode() === westwardPort.getNode()) {
@@ -250,7 +251,7 @@ export class InvertedPortProcessor implements ILayoutProcessor<LGraph> {
 
       if (label.getProperty(LayeredOptions.EDGE_LABELS_PLACEMENT) === EdgeLabelPlacement.HEAD) {
         // Remember which edge the label belonged to originally
-        // (Java `assert !label.hasProperty(InternalProperties.END_LABEL_EDGE)`: disabled without -ea)
+        devAssert(() => !label.hasProperty(InternalProperties.END_LABEL_EDGE));
         label.setProperty(InternalProperties.END_LABEL_EDGE, edge);
 
         labelIterator.remove();

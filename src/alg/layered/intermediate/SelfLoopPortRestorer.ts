@@ -2,6 +2,7 @@
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
 import { InternalProperties } from '../options/InternalProperties.js';
@@ -45,8 +46,7 @@ export class SelfLoopPortRestorer implements ILayoutProcessor<LGraph> {
     // Restore and order pure self loop ports if they were previously hidden
     if (slHolder.arePortsHidden()) {
       const constraints = slHolder.getLNode().getProperty(InternalProperties.ORIGINAL_PORT_CONSTRAINTS);
-      // The Java `switch` falls through from UNDEFINED/FREE into FIXED_SIDE; the `default` arm (`assert false`) does
-      // nothing with assertions off.
+      // The Java `switch` falls through from UNDEFINED/FREE into FIXED_SIDE; its `default` arm is the final `else`.
       if (
         constraints === PortConstraints.UNDEFINED ||
         constraints === PortConstraints.FREE ||
@@ -61,6 +61,9 @@ export class SelfLoopPortRestorer implements ILayoutProcessor<LGraph> {
         // report false
         this.computeSelfLoopTypes(slHolder);
         this.portRestorer.restorePorts(slHolder, monitor);
+      } else {
+        // This should not happen. If ports were hidden this must have been because their order was not fixed
+        devAssert(() => false);
       }
     } else {
       // Ensure that self loops types are computed

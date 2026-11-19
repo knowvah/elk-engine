@@ -240,7 +240,8 @@ export class NodeContext {
       default:
       // This should never happen since we have already checked whether a port has an undefined side in the
       // constructor of this class
-      // NodeContext.java:277 `assert false` stays a comment (NS5).
+      // Java: `assert false;` (NodeContext.java:277). Not a devAssert yet: a test drives this arm on purpose
+      // (issue #113).
     }
 
     return 0;

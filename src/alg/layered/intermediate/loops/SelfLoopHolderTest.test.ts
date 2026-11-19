@@ -3,12 +3,10 @@
 // on a class without `equals` is identity.
 import { describe, expect, it } from 'vitest';
 import { SelfLoopTestGraphCreator } from '../../../../../test/helpers/SelfLoopTestGraphCreator.js';
+import { AssertionError } from '../../../../java/lang/AssertionError.js';
 import type { LEdge } from '../../graph/LEdge.js';
 import { InternalProperties } from '../../options/InternalProperties.js';
 import { SelfLoopHolder } from './SelfLoopHolder.js';
-
-/** `java.lang.AssertionError`: thrown by JUnit's `fail()` and, with `-ea`, by a failed `assert`. */
-class AssertionError extends Error {}
 
 /** JUnit's `fail()`. */
 function fail(): never {

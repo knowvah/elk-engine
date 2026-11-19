@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { GraphProperties } from '../options/GraphProperties.js';
@@ -93,8 +94,8 @@ export class SelfLoopPreProcessor implements ILayoutProcessor<LGraph> {
         slHolder.setPortsHidden(true);
 
         // Originally, we removed external port dummy this port belongs to, if any (#352). Now, we should never run into
-        // this case. (Java `assert lPort.getProperty(InternalProperties.PORT_DUMMY) == null` omitted: assertions are
-        // off.)
+        // this case.
+        devAssert(() => lPort.getProperty(InternalProperties.PORT_DUMMY) === null);
       }
     }
   }

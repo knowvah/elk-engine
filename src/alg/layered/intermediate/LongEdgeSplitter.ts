@@ -4,6 +4,7 @@ import { EdgeLabelPlacement } from '../../../core/options/EdgeLabelPlacement.js'
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { ArrayListIterator } from '../../../java/util/ListIterator.js';
 import { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
@@ -57,7 +58,7 @@ export class LongEdgeSplitter implements ILayoutProcessor<LGraph> {
             // If the edge doesn't go to the current or next layer, split it
             if (targetLayer !== layer && targetLayer !== nextLayer) {
               // If there is no next layer, something is wrong
-              // (Java `assert layerIter.hasNext()`: disabled without -ea, translation rules 6.8; no devAssert helper)
+              devAssert(() => layerIter.hasNext());
 
               // Split the edge
               LongEdgeSplitter.splitEdge(edge, this.#createDummyNode(layeredGraph, nextLayer, edge));

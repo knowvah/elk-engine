@@ -225,5 +225,6 @@ These look like defects and are preserved verbatim (the oracle is the specificat
   error); none is reachable from a recorded row.
 
 Coverage gaps, journaled for later: the `generateANTEGraph` branches beyond `form-acyclic` (planar, single source,
-hierarchy) are proven by source-derived unit tests only; a vector for them would pin those branches. Java `assert`
-statements are omitted with a comment each (no shared `devAssert` helper exists yet).
+hierarchy) are proven by source-derived unit tests only; a vector for them would pin those branches. The two Java
+`assert` statements (`GeneratorOptions.java:286`, `RandomGraphGenerator.java:1760`) are `devAssert` calls
+(translation rules 6.8).

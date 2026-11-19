@@ -3,7 +3,9 @@ import { NEdge } from '../../common/networksimplex/NEdge.js';
 import { NNode } from '../../common/networksimplex/NNode.js';
 import { ElkMargin } from '../../../core/math/ElkMargin.js';
 import { PortSide } from '../../../core/options/PortSide.js';
-import { d2i } from '../../../java/lang/JavaMath.js';
+import * as DoubleMath from '../../../guava/DoubleMath.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
+import { d2i, round } from '../../../java/lang/JavaMath.js';
 import * as Lists from '../../../guava/Lists.js';
 import * as Iterables from '../../../guava/Iterables.js';
 import type { LEdge } from '../graph/LEdge.js';
@@ -13,7 +15,7 @@ import type { Layer } from '../graph/Layer.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
 import { NodeFlexibility } from '../options/NodeFlexibility.js';
 import { Spacings } from '../options/Spacings.js';
-import { NODE_SIZE_WEIGHT_FLEXIBLE, NODE_SIZE_WEIGHT_STATIC } from './NetworkSimplexPlacerConstants.js';
+import { EPSILON, NODE_SIZE_WEIGHT_FLEXIBLE, NODE_SIZE_WEIGHT_STATIC } from './NetworkSimplexPlacerConstants.js';
 import { EdgeRep } from './NetworkSimplexPlacerEdgeRep.js';
 import { isFlexibleNode } from './NetworkSimplexPlacerFlexibleNode.js';
 import { NodeRep } from './NetworkSimplexPlacerNodeRep.js';
@@ -248,8 +250,10 @@ export function transformEdge(s: NetworkSimplexPlacerState, lEdge: LEdge): void 
 
   const srcOffset = portOffset(srcRep, srcPort);
   const tgtOffset = portOffset(tgtRep, tgtPort);
-  // The Java `assert DoubleMath.fuzzyEquals(srcOffset - tgtOffset, Math.round(srcOffset - tgtOffset), EPSILON)`
-  // ("Port positions must be integral", NetworkSimplexPlacer.java:592) is omitted (N5).
+  devAssert(
+    () => DoubleMath.fuzzyEquals(srcOffset - tgtOffset, round(srcOffset - tgtOffset), EPSILON),
+    () => 'Port positions must be integral',
+  );
 
   const tgtDelta = d2i(Math.max(0, srcOffset - tgtOffset));
   const srcDelta = d2i(Math.max(0, tgtOffset - srcOffset));

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import * as Float32 from '../../../java/lang/Float32.js';
 import { ArrayListIterator } from '../../../java/util/ListIterator.js';
 import { identity } from '../../../java/util/HashStrategy.js';
@@ -286,9 +287,10 @@ export class ForsterConstraintResolver implements IInitializable {
     let activeGroups: ForsterConstraintResolverConstraintGroup[] | null = null;
 
     // Iterate through the constrained vertices
-    // Java also tracks `lastValue = group.getBarycenter()` for `assert group.getBarycenter() != null &&
-    // group.getBarycenter() >= lastValue` (ForsterConstraintResolver.java:237-239); assertions are disabled by default
-    // and omitted (translation-rules 6.8), and the variable is read by nothing else.
+    // Java also tracks `lastValue` (start `Short.MIN_VALUE`, then `group.getBarycenter()`) for `assert
+    // group.getBarycenter() != null && group.getBarycenter() >= lastValue;` (ForsterConstraintResolver.java:237-240);
+    // nothing else reads it. Not a devAssert yet: two tests pass barycenters that are not sorted, which the Java
+    // assert rejects under -ea too (issue #113).
     for (const group of groups) {
       group.resetIncomingConstraints();
 
@@ -324,6 +326,14 @@ export class ForsterConstraintResolver implements IInitializable {
   }
 
   /**
+   * Delta that two barycenters can differ by to still be considered equal. A Java `float`, widened to `double` where
+   * it is added to a barycenter, hence rounded to `float` here and used with plain `double` arithmetic.
+   *
+   * @see ForsterConstraintResolver.java:289
+   */
+  private static readonly BARYCENTER_EQUALITY_DELTA: number = Float32.fromDouble(0.0001);
+
+  /**
    * Handles the case of a violated constraint. The node groups must be sorted by their barycenter values. After this
    * method has finished, the list of node groups is smaller by one element, since two node groups have been unified,
    * but the list is still correctly sorted by barycenter values.
@@ -341,10 +351,29 @@ export class ForsterConstraintResolver implements IInitializable {
     // Create a new vertex from the two constrain-violating vertices; this also
     // automatically calculates the new vertex's barycenter value
     const newNodeGroup = new ForsterConstraintResolverConstraintGroup(this, firstNodeGroup, secondNodeGroup);
-    // Java asserts that the new barycenter lies within `BARYCENTER_EQUALITY_DELTA` (0.0001f, declared at
-    // ForsterConstraintResolver.java:289, read only by these asserts) of both groups' barycenters
-    // (ForsterConstraintResolver.java:309-310); omitted with the constant (translation-rules 6.8)
+    devAssert(
+      () =>
+        newNodeGroup.getBarycenter()! + ForsterConstraintResolver.BARYCENTER_EQUALITY_DELTA >=
+        secondNodeGroup.getBarycenter()!,
+    );
+    devAssert(
+      () =>
+        newNodeGroup.getBarycenter()! - ForsterConstraintResolver.BARYCENTER_EQUALITY_DELTA <=
+        firstNodeGroup.getBarycenter()!,
+    );
+    this.replaceNodeGroups(newNodeGroup, firstNodeGroup, secondNodeGroup, nodeGroups);
+  }
 
+  /**
+   * The rest of `handleViolatedConstraint` after the `assert`s, split out for the complexity limits: replaces the two
+   * unified node groups in the list and updates the constraint relationships. The statements are Java's, in Java order.
+   */
+  private replaceNodeGroups(
+    newNodeGroup: ForsterConstraintResolverConstraintGroup,
+    firstNodeGroup: ForsterConstraintResolverConstraintGroup,
+    secondNodeGroup: ForsterConstraintResolverConstraintGroup,
+    nodeGroups: ForsterConstraintResolverConstraintGroup[],
+  ): void {
     // Iterate through the vertices. Remove the old vertices. Insert the new one
     // according to the barycenter value, thereby keeping the list sorted. Along
     // the way, constraint relationships will be updated

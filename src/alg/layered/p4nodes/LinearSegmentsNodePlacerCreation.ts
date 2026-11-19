@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import * as JavaInteger from '../../../java/lang/JavaInteger.js';
 import { ArrayListIterator } from '../../../java/util/ListIterator.js';
 import { DebugUtil } from '../DebugUtil.js';
@@ -71,7 +72,7 @@ export function sortLinearSegments(layeredGraph: LGraph, monitor: IElkProgressMo
   // apply the new ordering to the array of linear segments
   const linearSegments = new Array<LinearSegment>(segments.length);
   for (let i = 0; i < segments.length; i++) {
-    // Java `assert outgoing[i].isEmpty()` omitted (dev-only assert, LinearSegmentsNodePlacer.java:292)
+    devAssert(() => outgoing[i]!.length === 0);
     const ls = segments[i]!;
     const rank = newRanks[i]!;
     linearSegments[rank] = ls;

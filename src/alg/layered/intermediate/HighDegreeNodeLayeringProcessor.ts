@@ -3,6 +3,7 @@ import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import { Pair } from '../../../core/util/Pair.js';
 import * as Iterables from '../../../guava/Iterables.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { IndexOutOfBoundsException } from '../../../java/lang/IndexOutOfBoundsException.js';
 import * as Int32 from '../../../java/lang/Int32.js';
 import { MAX_VALUE as INTEGER_MAX_VALUE } from '../../../java/lang/JavaInteger.js';
@@ -250,6 +251,7 @@ export class HighDegreeNodeLayeringProcessor implements ILayoutProcessor<LGraph>
    * @see HighDegreeNodeLayeringProcessor.java:225
    */
   private prependLayer(layerIt: ListIterator<Layer>): Layer {
+    devAssert(() => layerIt.hasPrevious());
     layerIt.previous();
 
     const l = new Layer(this.layeredGraph);
@@ -284,6 +286,9 @@ export class HighDegreeNodeLayeringProcessor implements ILayoutProcessor<LGraph>
     const stack: { node: LNode; depth: number }[] = [{ node: root, depth: 0 }];
     while (stack.length > 0) {
       const { node, depth } = stack.pop()!;
+      // Java: `assert layers.size() > 0;` (HighDegreeNodeLayeringProcessor.java:255) of the recursive call, whose list
+      // is `layers.subList(depth, size)`. Not a devAssert yet: a test pins the exception below, which a JVM under -ea
+      // never reaches (issue #113).
       if (depth >= layers.length) {
         throw new IndexOutOfBoundsException(`Index 0 out of bounds for length 0`);
       }

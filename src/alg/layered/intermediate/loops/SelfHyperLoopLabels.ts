@@ -3,6 +3,7 @@ import type { ILabelManager } from '../../../../core/labels/ILabelManager.js';
 import { KVector } from '../../../../core/math/KVector.js';
 import type { Direction } from '../../../../core/options/Direction.js';
 import { PortSide } from '../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { LLabel } from '../../graph/LLabel.js';
 import { LGraphUtil } from '../../graph/LGraphUtil.js';
 import { LayeredOptions } from '../../options/LayeredOptions.js';
@@ -68,7 +69,8 @@ export class SelfHyperLoopLabels {
 
   /** Updates our size under the assumption that the given label was just added to this instance. */
   private updateSize(newLLabel: LLabel): void {
-    // (Java line 112 `assert lLabels.get(lLabels.size() - 1) == newLLabel` omitted: assertions are off.)
+    devAssert(() => this.lLabels[this.lLabels.length - 1] === newLLabel);
+
     const newLLabelSize = newLLabel.getSize();
 
     if (this.layoutDirection.isHorizontal()) {

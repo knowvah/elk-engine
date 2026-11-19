@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { PortSide } from '../../../core/options/PortSide.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { LGraphUtil } from '../graph/LGraphUtil.js';
@@ -196,9 +197,6 @@ function createOldApproachDummies(
  * Edges leaving the `outPort` are rerouted to the dummy node's output port. Both arguments may refer to the same port.
  * The dummy's port have their `ORIGIN` property set to the port whose edges have been rerouted to them.
  *
- * Java asserts (`:564`, `:587`) that each given port has edges; assertions are disabled by default (translation-rules
- * 6.8) and are omitted.
- *
  * @param inPort the input port whose edges to reroute. May be `null`.
  * @param outPort the output port whose edges to reroute. May be `null`.
  * @param dummyNodes list the created dummy node should be added to.
@@ -241,6 +239,9 @@ export function createDummyNode(
 
 /** The input port block of `createDummyNode` (`:563-583`). */
 function createInputPortOfDummy(dummy: LNode, inPort: LPort): void {
+  // The port is expected to have edges connected to it
+  devAssert(() => !(inPort.getIncomingEdges().length === 0 && inPort.getOutgoingEdges().length === 0));
+
   const dummyInputPort = new LPort();
   dummyInputPort.setProperty(InternalProperties.ORIGIN, inPort);
   dummy.setProperty(InternalProperties.ORIGIN, inPort.getNode());
@@ -259,6 +260,9 @@ function createInputPortOfDummy(dummy: LNode, inPort: LPort): void {
 
 /** The output port block of `createDummyNode` (`:586-606`). */
 function createOutputPortOfDummy(dummy: LNode, outPort: LPort): void {
+  // The port is expected to have edges connected to it
+  devAssert(() => !(outPort.getIncomingEdges().length === 0 && outPort.getOutgoingEdges().length === 0));
+
   const dummyOutputPort = new LPort();
   dummy.setProperty(InternalProperties.ORIGIN, outPort.getNode());
   dummyOutputPort.setProperty(InternalProperties.ORIGIN, outPort);

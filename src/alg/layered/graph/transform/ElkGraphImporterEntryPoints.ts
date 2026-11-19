@@ -7,6 +7,7 @@ import { ElkGraphAdapters } from '../../../../core/util/adapters/ElkGraphAdapter
 import { ElkUtil } from '../../../../core/util/ElkUtil.js';
 import type { ElkNode } from '../../../../graph/ElkNode.js';
 import type { ElkPort } from '../../../../graph/ElkPort.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import { NodeLabelAndSizeCalculator } from '../../../common/nodespacing/NodeLabelAndSizeCalculator.js';
 import { LayeredOptions } from '../../options/LayeredOptions.js';
 import type { LGraph } from '../LGraph.js';
@@ -76,7 +77,7 @@ export function calculateMinimumGraphSize(elkgraph: ElkNode, lgraph: LGraph): vo
   const sizeConstraints = lgraph.getProperty(LayeredOptions.NODE_SIZE_CONSTRAINTS);
 
   // The method should only be called if shouldCalculateMinimumGraphSize(...) returns true
-  // (Java: assert !sizeConstraints.isEmpty(); no devAssert helper exists, the JVM runs without -ea)
+  devAssert(() => !sizeConstraints.isEmpty());
 
   // Ensure that the port constraints are not UNDEFINED
   if (elkgraph.getProperty(LayeredOptions.PORT_CONSTRAINTS) === PortConstraints.UNDEFINED) {

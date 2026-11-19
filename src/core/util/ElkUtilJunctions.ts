@@ -10,6 +10,7 @@ import type { ElkEdgeSection } from '../../graph/ElkEdgeSection.js';
 import type { ElkPort } from '../../graph/ElkPort.js';
 import { ElkGraphUtil } from '../../graph/util/ElkGraphUtil.js';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
+import { devAssert } from '../../java/lang/DevAssert.js';
 import { KVector } from '../math/KVector.js';
 import { KVectorChain } from '../math/KVectorChain.js';
 
@@ -191,6 +192,9 @@ function traceJunctionPoints(
  * @see org.eclipse.elk.core/src/org/eclipse/elk/core/util/ElkUtil.java
  */
 function determineJunctionPointsAtPort(edge: ElkEdge, port: ElkPort, reverse: boolean): KVectorChain {
+  // Ensure exactly one section
+  devAssert(() => edge.getSections().size() === 1);
+
   // Grab the edge section
   const section = edge.getSections().get(0);
 

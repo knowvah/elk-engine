@@ -76,8 +76,9 @@ getGraph/getNestedGraph`, `LGraph.getParentNode`); call sites that Java derefere
   random graphs, 200-node chains and nested SCCs, and under `--jitless` at 10,000 nodes where the reference overflows.
   Its two hash containers (`nodeToSCCID`, the per-SCC `HashSet`) are insertion-ordered `Map`/`Set` (AD-10): a 7b
   replay mismatch traced to either is that mission's stop.
-- **Java `assert` sites** (`LNode.setGraph`, `createExternalPortDummy` ×2, `ElkGraphImporter.java:205, 620-621, 789`)
-  are omitted per the `KVector` precedent (the oracle runs without `-ea`). `NodeFlexibility.isAtLeast` keeps Java's
+- **Java `assert` sites** are `devAssert` calls (translation rules 6.8; `ElkGraphImporter.java:205, 620-621, 789`),
+  apart from `LNode.setGraph` and `createExternalPortDummy` ×2, which stay comments (issue #113: tests and site vectors
+  drive them, and the Java asserts fire there under `-ea` too). `NodeFlexibility.isAtLeast` keeps Java's
   missing `return` in the `NODE_SIZE_WHERE_SPACE_PERMITS` arm (it falls through to `isFlexiblePorts`).
 
 ## 3. Transform {#transform}

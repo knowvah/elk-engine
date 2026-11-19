@@ -2,6 +2,7 @@
 import { PortLabelPlacement } from '../../../core/options/PortLabelPlacement.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import { SizeConstraint } from '../../../core/options/SizeConstraint.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { IndexOutOfBoundsException } from '../../../java/lang/IndexOutOfBoundsException.js';
 import { NodeDimensionCalculation } from '../../common/nodespacing/NodeDimensionCalculation.js';
 import { LEdge } from '../graph/LEdge.js';
@@ -59,7 +60,7 @@ export function restoreNorthSouthDummies(layeredGraph: LGraph): LNode[] {
       // `EXT_PORT_REPLACED_DUMMY` has no default: the cast is Java's `(LNode)` of a possibly absent value
       const replacedDummy = node.getProperty(InternalProperties.EXT_PORT_REPLACED_DUMMY) as LNode | null;
       if (replacedDummy !== null) {
-        // Java `assert replacedDummy.getType() == NodeType.EXTERNAL_PORT` (:184) is omitted (no devAssert helper yet)
+        devAssert(() => replacedDummy.getType() === NodeType.EXTERNAL_PORT);
 
         // Restore the origin and connect the node to it
         connectNodeToDummy(layeredGraph, node, replacedDummy);

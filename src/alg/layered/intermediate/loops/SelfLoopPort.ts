@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { LPort } from '../../graph/LPort.js';
 import type { SelfLoopEdge } from './SelfLoopEdge.js';
 
@@ -23,11 +24,13 @@ export class SelfLoopPort {
 
   /**
    * Creates a new instance to represent the given port. (Java line 38 `assert lPort.getConnectedEdges().iterator().hasNext()`
-   * is omitted: assertions are off.)
+   * is a `devAssert`; a fresh iterator is created, as in the Java.)
    *
    * @see SelfLoopPort.java:37
    */
   constructor(lPort: LPort) {
+    devAssert(() => !lPort.getConnectedEdges()[Symbol.iterator]().next().done);
+
     this.lPort = lPort;
 
     // Check if the port is only incident to self loops

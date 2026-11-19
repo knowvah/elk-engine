@@ -114,8 +114,8 @@ hyperedge_merging,hierarchical_ports}/**` and `tickets/layered/{726,341,371}` in
   `Float32.add` and the final width widens; `(int) Math.signum` through `d2i`; the boxed-double streams of the generator
   and the splitter keep `Double.compareTo`/`equals` semantics through the `DoubleCompare` shim; `DecimalFormat("#0.0")`
   in `Rectangle.toString` and `SplinesMath.convertKVectorToString` is a local one-decimal HALF_EVEN formatter (prose
-  only; `Intl.NumberFormat` is a valid twin on exact ties only); Java `assert` lines omitted with a comment naming the
-  line; a Java unboxing of a nullable property (`SPLINE_NS_PORT_Y_COORD` in `SplineSegment.anchorY` and the bend-point
+  only; `Intl.NumberFormat` is a valid twin on exact ties only); Java `assert` lines are `devAssert` calls (translation
+  rules 6.8); a Java unboxing of a nullable property (`SPLINE_NS_PORT_Y_COORD` in `SplineSegment.anchorY` and the bend-point
   calculator) is an explicit null check throwing `TypeError`. No boxed `==` exists in the 7e Java (C6 audit per task).
 - **Randomness (R7).** `HyperEdgeCycleDetector.computeLinearOrderingMarks` and `SplineEdgeRouter.breakCycles` draw
   `nextInt(bound)` from `InternalProperties.RANDOM`; rows keep seed 1 and replay the whole recorded prefix; the `tie`

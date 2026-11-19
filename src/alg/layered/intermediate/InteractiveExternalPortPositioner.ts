@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { IllegalStateException } from '../../../java/lang/IllegalStateException.js';
 import type { LEdge } from '../graph/LEdge.js';
@@ -30,7 +31,7 @@ const JAVA_CLASS_STRING = 'class org.eclipse.elk.alg.layered.intermediate.Intera
  *
  * Guava `Optional<Double>` (and `transform`) becomes `number | null` with an explicit write. The Java `minX`...`maxY`
  * instance fields persist across `process` calls and are kept as fields. The `assert` in `findNorthSouthPortXCoordinate`
- * is omitted (translation-rules 6.8).
+ * is a `devAssert` call.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/InteractiveExternalPortPositioner.java
  */
@@ -127,6 +128,9 @@ export class InteractiveExternalPortPositioner implements ILayoutProcessor<LGrap
   }
 
   private findNorthSouthPortXCoordinate(dummy: LNode): number | null {
+    // external port dummies must have exactly one port
+    devAssert(() => dummy.getPorts().length === 1);
+
     const port = dummy.getPorts()[0]!;
 
     if (port.getOutgoingEdges().length !== 0 && port.getIncomingEdges().length !== 0) {

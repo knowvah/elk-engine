@@ -125,12 +125,12 @@ export class LNode extends LShape {
 
   /**
    * Set the containing graph. This method must not be used when the layer has already been assigned. The graphs'
-   * lists of nodes are _not_ automatically updated. Java's `assert layer == null` is omitted (no dev-assert helper;
-   * the JVM runs without `-ea`).
-   *
+   * lists of nodes are _not_ automatically updated.
    * @param newGraph the new containing graph
    */
   setGraph(newGraph: LGraph | null): void {
+    // Java: `assert layer == null;` (LNode.java:165). Not a devAssert yet: a test sets the graph of a node that has
+    // a layer, which the Java assert rejects under -ea too (issue #113).
     this.graph = newGraph;
   }
 

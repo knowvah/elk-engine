@@ -33,7 +33,11 @@ interface Global {
 }
 
 /** Reviewed module globals: `'src/path.ts::name'` -> why it is safe. */
-const ALLOWLIST: Record<string, string> = {};
+const ALLOWLIST: Record<string, string> = {
+  'src/java/lang/DevAssert.ts::enabled':
+    "the stand-in for the JVM's -ea flag: process-wide configuration, off by default, read by devAssert and never " +
+    'written by a layout, so it carries no state from one run to the next (dev-assert D2)',
+};
 
 /** Top-level `let` declarations in one source file. */
 function findGlobals(relPath: string, source: string): Global[] {

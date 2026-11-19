@@ -5,6 +5,7 @@ import { HierarchyHandling } from '../../../../core/options/HierarchyHandling.js
 import type { ElkEdge } from '../../../../graph/ElkEdge.js';
 import type { ElkNode } from '../../../../graph/ElkNode.js';
 import { ElkGraphUtil } from '../../../../graph/util/ElkGraphUtil.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import { InternalProperties } from '../../options/InternalProperties.js';
 import { LayeredOptions } from '../../options/LayeredOptions.js';
 import { LayeredSpacings } from '../../options/LayeredSpacings.js';
@@ -292,7 +293,8 @@ function findCoordinateSystemOrigin(
   const origin = elkedge.getContainingNode();
 
   // The origin must always be an ancestor of both, source and parent
-  // (Java: two asserts; no devAssert helper exists, the JVM runs without -ea)
+  devAssert(() => source === origin || ElkGraphUtil.isDescendant(source, origin!));
+  devAssert(() => target === origin || ElkGraphUtil.isDescendant(target, origin!));
 
   // Find the associated LGraph
   if (origin === topLevelElkGraph) {

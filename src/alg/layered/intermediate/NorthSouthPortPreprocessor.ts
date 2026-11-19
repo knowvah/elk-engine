@@ -3,6 +3,7 @@ import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import * as Lists from '../../../guava/Lists.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { LGraphUtil } from '../graph/LGraphUtil.js';
 import type { LNode } from '../graph/LNode.js';
@@ -161,7 +162,7 @@ export class NorthSouthPortPreprocessor implements ILayoutProcessor<LGraph> {
 
       // Each dummy node has least one port (there may be two if an odd port
       // has both an incoming and an outgoing edge, however the origin is the same).
-      // (Java `assert dummy.getPorts().size() >= 1` at `:254`: disabled by default, omitted.)
+      devAssert(() => dummy.getPorts().length >= 1);
       const dummyPort = dummy.getPorts()[0]!;
       // The port the dummy node was created for (a checked Java cast: the origin is always an `LPort` here)
       const originPort = dummyPort.getProperty(InternalProperties.ORIGIN) as LPort;
@@ -197,7 +198,7 @@ export class NorthSouthPortPreprocessor implements ILayoutProcessor<LGraph> {
 
       // Each dummy node has at least one port (there may be two if an odd port
       // has both an incoming and an outgoing edge, however the origin is the same).
-      // (Java `assert dummy.getPorts().size() >= 1` at `:307`: disabled by default, omitted.)
+      devAssert(() => dummy.getPorts().length >= 1);
       const dummyPort = dummy.getPorts()[0]!;
       // The port the dummy node was created for (a checked Java cast: the origin is always an `LPort` here)
       const originPort = dummyPort.getProperty(InternalProperties.ORIGIN) as LPort;

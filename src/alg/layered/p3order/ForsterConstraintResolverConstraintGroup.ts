@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { toString as doubleToString } from '../../../java/lang/DoubleToString.js';
 import type { LNode } from '../graph/LNode.js';
 import type { ForsterConstraintResolver } from './ForsterConstraintResolver.js';
@@ -225,7 +226,7 @@ export class ForsterConstraintResolverConstraintGroup {
    * @see ForsterConstraintResolver.java:562
    */
   getNode(): LNode {
-    // Java `assert nodes.length == 1` (ForsterConstraintResolver.java:563) is omitted (translation-rules 6.8)
+    devAssert(() => this.nodes.length === 1);
     return this.nodes[0]!;
   }
 

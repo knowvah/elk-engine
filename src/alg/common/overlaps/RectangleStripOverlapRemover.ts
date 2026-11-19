@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { ElkRectangle } from '../../../core/math/ElkRectangle.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { compare } from '../../../java/lang/DoubleCompare.js';
 import { GreedyRectangleStripOverlapRemover } from './GreedyRectangleStripOverlapRemover.js';
 import type { IRectangleStripOverlapRemovalStrategy } from './IRectangleStripOverlapRemovalStrategy.js';
@@ -128,8 +129,9 @@ export class RectangleStripOverlapRemover {
 
       default:
         // Java: `assert false; return null;` (RectangleStripOverlapRemover.java, importRectangle). Unreachable (the
-        // enum is closed); assertions are omitted (KVector.ts precedent, no devAssert helper) and `null` is not
-        // representable in the return type, so the input rectangle is returned. Uncoverable.
+        // enum is closed); `null` is not representable in the return type, so the input rectangle is returned.
+        // Uncoverable.
+        devAssert(() => false);
         return rectangle;
     }
   }

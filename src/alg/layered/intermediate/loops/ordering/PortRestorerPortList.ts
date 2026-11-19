@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortSide } from '../../../../../core/options/PortSide.js';
 import type { Table } from '../../../../../guava/Table.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import { EnumSet } from '../../../../../java/util/EnumSet.js';
 import type { LNode } from '../../../graph/LNode.js';
 import type { LPort } from '../../../graph/LPort.js';
@@ -25,7 +26,7 @@ export class PortRestorerPortList {
   /**
    * Builds the node's new port list from the target areas and the old ports. (Java private overload
    * `restorePorts(SelfLoopHolder)`, renamed because the public overload shares its name; the Java `assert`s at the end
-   * are omitted.)
+   * are `devAssert` calls.)
    *
    * @see PortRestorer.java:342
    */
@@ -46,6 +47,9 @@ export class PortRestorerPortList {
     nextOldPortIndex = this.restoreEastPorts(lNode, oldPortList, nextOldPortIndex, newPortList);
     nextOldPortIndex = this.restoreSouthPorts(lNode, oldPortList, nextOldPortIndex, newPortList);
     this.restoreWestPorts(lNode, oldPortList, nextOldPortIndex, newPortList);
+
+    devAssert(() => newPortList.length >= oldPortList.length && newPortList.length >= slHolder.getSLPortMap().size);
+    devAssert(() => !slHolder.arePortsHidden() || newPortList.length > oldPortList.length);
   }
 
   /** The north block of {@link restorePortList} (Java lines 353-368). */

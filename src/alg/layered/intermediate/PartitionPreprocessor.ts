@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
@@ -50,6 +51,8 @@ export class PartitionPreprocessor implements ILayoutProcessor<LGraph> {
 
   /** @see PartitionPreprocessor.java:89 */
   private mustBeReversed(lEdge: LEdge, partitionedNodes: readonly LNode[]): boolean {
+    devAssert(() => lEdge.getSource()!.getNode()!.hasProperty(LayeredOptions.PARTITIONING_PARTITION));
+
     const sourceNode = lEdge.getSource()!.getNode()!;
     const targetNode = lEdge.getTarget()!.getNode()!;
 

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { PortSide } from '../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { LEdge } from '../../graph/LEdge.js';
 import { LayeredOptions } from '../../options/LayeredOptions.js';
 import type { SelfHyperLoop } from './SelfHyperLoop.js';
@@ -23,11 +24,15 @@ export class SelfLoopEdge {
 
   /**
    * Creates a new instance that represents the given edge. Also adds the instance to the source and target port's list
-   * of incoming and outgoing edges. (Java lines 38-40, the three `assert`s, are omitted: assertions are off.)
+   * of incoming and outgoing edges. (Java lines 38-40, the three `assert`s, are `devAssert` calls.)
    *
    * @see SelfLoopEdge.java:37
    */
   constructor(lEdge: LEdge, slSource: SelfLoopPort, slTarget: SelfLoopPort) {
+    devAssert(() => lEdge.isSelfLoop());
+    devAssert(() => slSource.getLPort() === lEdge.getSource());
+    devAssert(() => slTarget.getLPort() === lEdge.getTarget());
+
     this.lEdge = lEdge;
     this.slSource = slSource;
     this.slTarget = slTarget;
@@ -51,8 +56,10 @@ export class SelfLoopEdge {
     return this.slHyperLoop;
   }
 
-  /** Sets the {@link SelfHyperLoop} this edge should belong to. (Java line 68 `assert` omitted.) */
+  /** Sets the {@link SelfHyperLoop} this edge should belong to. (Java line 68 `assert`.) */
   setSLHyperLoop(slLoop: SelfHyperLoop): void {
+    devAssert(() => this.slHyperLoop === null);
+
     this.slHyperLoop = slLoop;
   }
 

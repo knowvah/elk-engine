@@ -63,7 +63,8 @@ export class Group {
    * `right` collection as to fit their parent group's width.
    */
   setWidth(w: number): void {
-    // assert w > getWidth(); (Java assertions are disabled by default, JLS 14.10)
+    // Java: `assert w > getWidth();` (BoxLayoutProvider.java:738). Not a devAssert yet: `placeInnerBoxes` passes the
+    // last box of a row a width it may already have (:455), so the Java assert fires under -ea too (issue #112).
     if (this.node !== null) {
       this.node.setWidth(w);
     } else {
@@ -77,7 +78,8 @@ export class Group {
 
   /** Sets (increases) the height of this group. See {@link Group.setWidth} for further details. */
   setHeight(h: number): void {
-    // assert h > getHeight(); (Java assertions are disabled by default, JLS 14.10)
+    // Java: `assert h > getHeight();` (BoxLayoutProvider.java:754). Not a devAssert yet: `placeInnerBoxes` passes the
+    // row height to the tallest box of the row as well (:451), so the Java assert fires under -ea too (issue #112).
     if (this.node !== null) {
       this.node.setHeight(h);
     } else {

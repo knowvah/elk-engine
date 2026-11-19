@@ -2056,3 +2056,71 @@ green: the full suite has 49,476 passed, 93 skipped and 0 failed, coverage 98.92
 unchanged. The mission is done: per-task history under the tag `elk-pin-move-8bca22f4/pre-squash`, one squashed commit on
 `9c420f07`. The halt paragraph and the #105 flag above describe the state on 2026-11-18. Open for the maintainer: the review
 of the D5.6 tie test, and #106 to #109.
+
+## Revision 2026-11-19 (dev-assert)
+
+Appended; no earlier line is edited. Source: issue #45 and D1-D8 in `plans/dev-assert/decisions.md`; the journal is
+`plans/dev-assert/decision-journal.md`, the site table `plans/dev-assert/inventory.md`. Where this section conflicts with
+the text above, this section wins. Task ids are T1-T8; the base is `98085a3ba4988c620699ce2fb613567ede41e64c`.
+
+**The `devAssert` helper of translation rules 6.8 exists, and 130 of the 143 Java `assert` statements are restored.**
+This closes the "Any time: devAssert" follow-ups of the revisions of 2026-10-26 (alg-common, alg-common-nodespacing),
+2026-10-30, 2026-11-03 and 2026-11-05 and the later "still unwritten" notes.
+
+**The helper.** `src/java/lang/DevAssert.ts`: `devAssert(check: () => boolean, detail?: () => unknown)`, both arguments
+thunks (JLS 14.10: a disabled `assert` evaluates nothing, the detail only on failure). One module flag, off by default as
+on a JVM without `-ea`, written by `setAssertionsEnabled`; it is the first reviewed entry of the module-globals fitness
+test, and `src/` reads no environment. A failure throws `src/java/lang/AssertionError.ts` (parent JS `Error` = `Throwable`,
+so a ported `catch (Exception e)` does not catch it). The suite runs with assertions on (`test/setup/dev-assertions.ts`,
+vitest `setupFiles`), as ELK's Tycho build runs JUnit; `ELK_DEV_ASSERTIONS=off` runs it with the production default.
+
+**The sites.** 143 statements at `8bca22f4` in six bundles (core 9, core.debug.grandom 2, alg.common 4, alg.layered 126,
+alg.mrtree 1, alg.force 1), all in ported files.
+
+| Outcome | Sites |
+| --- | --- |
+| restored at the Java position | 124 |
+| restored in front of a `throw` the port already had for `assert false; return x;` | 6 |
+| left a comment naming an issue (the Java assert fires under `-ea` on an input the suite replays) | 13 |
+
+Five sites had no TS arm (an `if` chain for a `switch`, a dropped `else`, a private constructor); each got its arm.
+Supporting code the Java has only for an assert came with it (`ThresholdStrategy.EPSILON`,
+`ForsterConstraintResolver.BARYCENTER_EQUALITY_DELTA`, `PolylineSelfLoopRouter.areOrthogonallyRouted`). Four functions
+were split for the complexity limits, Java order kept. `SelfLoopHolderTest.test.ts` imports the shim in place of its
+local `AssertionError` (D6, the one test edit); `testNonSelfLoopGraph` now passes through `install`'s assert, as in Java.
+
+**No port defect surfaced.** The first run with all 143 sites had 234 failures from thirteen sites. Each was shown
+Java-faithful: the oracle or a recorder under `JAVA_TOOL_OPTIONS=-ea` throws the same `AssertionError` at the same line,
+or the Java source decides it for a direct unit-test input.
+
+**Flags for the maintainer.**
+
+- **#112 (`needs-ruling`)**: four Java asserts fire under `-ea` on layouts ELK runs: `BoxLayoutProvider.java:738` and
+  `:754` (a strict `>` against the current size), `EndLabelPreprocessor.java:377` (unsized end labels, 170 replay rows),
+  `SingleEdgeGraphWrapper.java:193` (int overflow on the `Integer.MIN_VALUE` sentinel; the MANUAL / LOOK_BACK rows).
+  Upstream drafts are in the journal (T7, "Upstream drafts"); nothing is filed upstream.
+- **#113 (`needs-ruling`)**: nine asserts that a port-written unit test or a JVM site vector drives on purpose
+  (`InstancePool.java:59`, `NodeContext.java:277`, `HorizontalPortPlacementSizeCalculator.java:212`, `LGraphUtil.java:821`
+  and `:907`, `LNode.java:165`, `HighDegreeNodeLayeringProcessor.java:255`, `EdgeLabelSideSelection.java:58`,
+  `ForsterConstraintResolver.java:239`). The recommended ruling restores them and lets the named tests run that step
+  with assertions off, which is a test edit (AD-13).
+- **Follow-ups:** #114 (the three older `AssertionError` stand-ins), #115 (six arms that throw where the Java returns
+  after `assert false`), #116 (the corpus sweeps with assertions on), #117 (`ForsterConstraintResolver`: the Java
+  unboxing NPE of a null barycenter is not ported).
+- Three recorder runs with `-ea` into `$TMPDIR` (cache off) were added to the brief's plan as evidence; no ref, cache
+  entry or oracle file was written.
+- `SplineEdgeRouter`'s side chain (#141) now leaves the ports null for a value that is neither `LEFT` nor `RIGHT`, as
+  the Java does; the old ternary sent it to the right ports. The enum has two constants, so nothing reachable changes.
+
+**Gates.** Format, typecheck and complexity clean. Full suite, assertions on: 49,492 passed, 93 skipped, 0 failed (the
+base's 49,476 plus 16 tests of the helper); assertions off: the same 49,492, so the sites are inert in production.
+Coverage 98.81 / 96.99 / 98.56 / 98.86 (statements, branches, functions, lines; the function figure is 0.28 below the
+base's because thunks of unreachable arms are never called). Typedoc: 0 errors, 200 warnings (200 at the base). CodeQL:
+every finding accepted, no new entry. `git diff 98085a3b -- test/golden/refs/` is empty.
+
+**Hand-offs.**
+
+- To whoever rules #112 and #113: the thirteen sites are found with `grep -rn "Not a devAssert yet" src`; each comment
+  carries the Java statement and line.
+- To later ports: write `devAssert(() => expr)` at the Java position from the start, and run a step that drives an
+  asserted-away state with assertions off (`.agent-notes/dev-assert.md`).

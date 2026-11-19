@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import * as Sets from '../../../../guava/Sets.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import * as JavaInteger from '../../../../java/lang/JavaInteger.js';
 import type { Random } from '../../../../java/util/Random.js';
 import type { HyperEdgeSegment } from './HyperEdgeSegment.js';
@@ -16,11 +17,20 @@ import { HyperEdgeSegmentDependencyDependencyType as DependencyType } from './Hy
  *   Letters_, 1993.
  *
  * The Java private constructor (`assert false`, `HyperEdgeCycleDetector.java:43-44`: "no instance required") is
- * omitted: this class only holds static methods and is never instantiated.
+ * ported as a private constructor: this class only holds static methods and is never instantiated.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/orthogonal/HyperEdgeCycleDetector.java
  */
 export class HyperEdgeCycleDetector {
+  /**
+   * No instance required.
+   *
+   * @see HyperEdgeCycleDetector.java:43
+   */
+  private constructor() {
+    devAssert(() => false);
+  }
+
   /**
    * Finds a set of dependencies whose reversal or removal will make the graph acyclic. The method can concentrate on
    * critical dependencies only, or detect cycles among all dependencies. The latter assumes that there are no cycles

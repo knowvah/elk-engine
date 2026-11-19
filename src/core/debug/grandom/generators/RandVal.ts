@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import { l2i, roundToLong } from '../../../../java/lang/JavaMath.js';
 import type { Random } from '../../../../java/util/Random.js';
 
@@ -21,8 +22,7 @@ const NIL: RandValInit = { min: 0, max: 0, mean: 0, stddv: 0, exact: 0, useMinMa
  * `val` consumes one `nextGaussian` and yields 0.
  *
  * Nested class of `GeneratorOptions` in Java; a sibling file here (translation rule 6.4).
- * Java `assert max >= min` in `val` is disabled in the JVM by default and omitted here (no
- * dev-assert helper exists yet; assertions are not executed in the recorded vectors).
+ * Java `assert max >= min` in `val` is a `devAssert` call here.
  *
  * @see org.eclipse.elk.core.debug.grandom/src/org/eclipse/elk/core/debug/grandom/generators/GeneratorOptions.java
  */
@@ -70,6 +70,7 @@ export class RandVal {
     if (this.useExact) {
       result = this.exact_;
     } else if (this.useMinMax) {
+      devAssert(() => this.max_ >= this.min_);
       result = r.nextDouble() * (this.max_ - this.min_) + this.min_;
     } else {
       result = r.nextGaussian() * this.stddv + this.mean;

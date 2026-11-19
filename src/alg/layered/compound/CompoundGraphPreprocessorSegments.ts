@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { EdgeLabelPlacement } from '../../../core/options/EdgeLabelPlacement.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { ArrayListIterator } from '../../../java/util/ListIterator.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
@@ -358,8 +359,8 @@ export function connectSiblings(
       break;
     }
   }
-  // (Java :513: assert targetExternalPort.type == PortType.INPUT; omitted (F11: no devAssert helper; the JVM runs
-  // without -ea). A null port throws below as the Java's NullPointerException would.)
+  // a null port throws here as the Java's NullPointerException would
+  devAssert(() => targetExternalPort!.type === PortType.INPUT);
 
   // add new dummy edge and connect properly
   const dummyEdge = createDummyEdge(graph, origEdge);

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { add as int32Add, div as int32Div, sub as int32Sub } from '../../../java/lang/Int32.js';
 import { Alignment } from '../../../core/options/Alignment.js';
+import { NodeType } from '../graph/LNodeNodeType.js';
 import { CenterEdgeLabelPlacementStrategy } from '../options/CenterEdgeLabelPlacementStrategy.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
@@ -59,7 +61,8 @@ export function findCenterLayerTargetId(
     }
   }
 
-  // This should actually not happen (Java: `assert false;`, omitted)
+  // This should actually not happen
+  devAssert(() => false);
   return int32Add(labelDummyInfo.leftmostLayerId, labelDummyInfo.leftLongEdgeDummies.length);
 }
 
@@ -135,11 +138,17 @@ export function findEndLayerTargetId(labelDummyInfo: LabelDummySwitcherLabelDumm
 
 /**
  * Sets the alignment property for the given label dummy. Its placement strategy is assumed to be one of the end
- * strategies (Java asserts it, line 364; omitted).
+ * strategies.
  *
  * @see LabelDummySwitcher.java:363
  */
 export function setEndLayerNodeAlignment(labelDummyInfo: LabelDummySwitcherLabelDummyInfo): void {
+  devAssert(
+    () =>
+      labelDummyInfo.placementStrategy === CenterEdgeLabelPlacementStrategy.HEAD_LAYER ||
+      labelDummyInfo.placementStrategy === CenterEdgeLabelPlacementStrategy.TAIL_LAYER,
+  );
+
   const isHeadLabel = labelDummyInfo.placementStrategy === CenterEdgeLabelPlacementStrategy.HEAD_LAYER;
   const partOfReversedEdge = isPartOfReversedEdge(labelDummyInfo);
 
@@ -151,12 +160,15 @@ export function setEndLayerNodeAlignment(labelDummyInfo: LabelDummySwitcherLabel
 }
 
 /**
- * Checks if the given label dummy node is part of a reversed edge (Java asserts on the node type and the edges,
- * lines 381-383; omitted).
+ * Checks if the given label dummy node is part of a reversed edge.
  *
  * @see LabelDummySwitcher.java:380
  */
 function isPartOfReversedEdge(labelDummyInfo: LabelDummySwitcherLabelDummyInfo): boolean {
+  devAssert(() => labelDummyInfo.labelDummy.getType() === NodeType.LABEL);
+  devAssert(() => !labelDummyInfo.labelDummy.getIncomingEdges()[Symbol.iterator]().next().done);
+  devAssert(() => !labelDummyInfo.labelDummy.getOutgoingEdges()[Symbol.iterator]().next().done);
+
   // Find incoming and outgoing edge
   const incoming = firstOf(labelDummyInfo.labelDummy.getIncomingEdges());
   const outgoing = firstOf(labelDummyInfo.labelDummy.getOutgoingEdges());

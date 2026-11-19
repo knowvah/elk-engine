@@ -80,8 +80,8 @@ export class EdgeLabelSideSelection {
       case EdgeLabelSideSelection.SMART_DOWN:
         return EdgeLabelSideSelection.SMART_UP;
       default:
-        // Java: `assert false; return null;`. Unreachable (the enum is closed); assertions are omitted
-        // (KVector.ts precedent, no devAssert helper) and the JVM, run without -ea, returns null.
+        // Java: `assert false; return null;` (EdgeLabelSideSelection.java:58). Unreachable (the enum is closed). Not
+        // a devAssert yet: a test drives this arm on purpose (issue #113).
         return null;
     }
   }

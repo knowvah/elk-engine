@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import * as DoubleCompare from '../../../java/lang/DoubleCompare.js';
 import * as Float32 from '../../../java/lang/Float32.js';
 import * as Int32 from '../../../java/lang/Int32.js';
@@ -26,7 +27,7 @@ export class SimpleRowGraphPlacer extends AbstractGraphPlacer {
       target.getSize().y = 0;
       return;
     }
-    // Java line 61 'assert !components.contains(target)' is omitted (dev-only check)
+    devAssert(() => !components.includes(target));
     // Sort components
     this.sortComponents(components, target);
 

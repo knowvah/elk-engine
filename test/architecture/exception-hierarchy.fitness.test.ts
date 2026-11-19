@@ -26,6 +26,7 @@ import { JsonSyntaxException } from '../../src/gson/JsonSyntaxException.js';
 import { MalformedJsonException } from '../../src/gson/stream/MalformedJsonException.js';
 import { EOFException } from '../../src/java/io/EOFException.js';
 import { IOException } from '../../src/java/io/IOException.js';
+import { AssertionError } from '../../src/java/lang/AssertionError.js';
 import { ArithmeticException } from '../../src/java/lang/ArithmeticException.js';
 import { ArrayIndexOutOfBoundsException } from '../../src/java/lang/ArrayIndexOutOfBoundsException.js';
 import { ClassCastException } from '../../src/java/lang/ClassCastException.js';
@@ -77,6 +78,9 @@ const JAVA_PARENTS: ReadonlyMap<ErrorClass, ErrorClass> = new Map<ErrorClass, Er
   [NoSuchElementException, RuntimeException],
   [IOException, Exception],
   [EOFException, IOException],
+  // java.lang.AssertionError extends java.lang.Error, which has no class here: JS Error (= Throwable), so it
+  // stays outside Exception as in Java (dev-assert D3)
+  [AssertionError, Error],
   // Gson
   [JsonParseException, RuntimeException],
   [JsonIOException, JsonParseException],
