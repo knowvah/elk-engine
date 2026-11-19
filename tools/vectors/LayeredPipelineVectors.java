@@ -173,7 +173,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 public class LayeredPipelineVectors {
-    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
+    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
     static final String OUTPUT = "layered-pipeline.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed", REPO_PREFIX = "repo:";
     static final String PTOLEMY = "test/golden/inputs/realworld/ptolemy/", LAYERED_TESTS = "test/golden/inputs/tests/layered/";
@@ -2895,7 +2895,7 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
                 kn("b0", 30, 30, null, "PRIORITY", "5"), kn("c0", 50, 20, null, "PRIORITY", "3")), ""), null);
 
 
-        // Sc14, Sc16, Sc17: HypernodesProcessor. A hypernode's ports are always FREE (ElkGraphImporter.java:961), so PortSideProcessor gives them
+        // Sc14, Sc16, Sc17: HypernodesProcessor. A hypernode's ports are always FREE (ElkGraphImporter.java:1020), so PortSideProcessor gives them
         // WEST / EAST sides only: Sc15 (a NORTH or SOUTH port) cannot be reached. The left branch starts from bendx = Integer.MAX_VALUE
         // (HypernodesProcessor.java:104), so it finds edges only for x beyond 2^31: the sources are 2.2e9 wide.
         String ortho = rr(EdgeRouting.ORTHOGONAL);

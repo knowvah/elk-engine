@@ -5,7 +5,8 @@
 //   stops   152 rows  every stop of every graph entry, taken at the provider's own logGraph points, and `final`, from ONE run;
 //   throws    6 rows  the root cause by class name and message (`emptyGreedy` calls the provider directly, mode "provider"; a JVM
 //                     NullPointerException is a TypeError, its message is JVM text, so its ported frame file is compared instead);
-//   sort    640 rows  PK7: `Array.prototype.sort` with the verbatim comparator of InteractiveNodeReorderer.java:56-63.
+//   sort    640 rows  PK7: `Array.prototype.sort` with the verbatim comparator of InteractiveNodeReorderer.java:63-71 (a total
+//                     order since eclipse-elk/elk#1237) reproduces every row; the classified lists of issue #75 are retired.
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   compareJson,
@@ -22,7 +23,6 @@ import {
   runStopsRow,
   runThrowsRow,
 } from '../../../test/helpers/rectpacking-replay-provider.js';
-import { JAVA_ONLY_THROW_ROWS, ORDER_DIFFERENCE_ROWS } from '../../../test/helpers/rectpacking-sort-classified.js';
 import { loadRectPackingRows } from '../../../test/helpers/rectpacking-replay-rows.js';
 import { ElkGraphUtil } from '../../graph/util/ElkGraphUtil.js';
 import type { ElkNode } from '../../graph/ElkNode.js';
@@ -37,8 +37,6 @@ const THROWS_ROWS = 6; // 151 stops and 7 throws at the old pin (eclipse-elk/elk
 const SORT_ROWS = 640;
 /** `compaction.iterations` values that occur only in full rows (the stops rows replay the others). */
 const FULL_ONLY_ITERATIONS = [0, 6];
-const JAVA_ONLY_THROW = 'java-only-throw';
-const ORDER_DIFFERENCE = 'order-difference';
 
 const emptyComparison = (): Comparison => ({ differences: [], hexExact: 0, hexClose: 0 });
 
@@ -143,30 +141,26 @@ const positionedNodes = (positions: readonly number[]): ElkNode[] => {
 describe('PK7: the sort proof', () => {
   registerRectPackingEngine();
 
-  it(
-    'Array.prototype.sort with the verbatim comparator reproduces every sort row except the classified ones',
-    LOOP,
-    () => {
-      const differing: { id: string; kind: string }[] = [];
-      let reproduced = 0;
-      for (const row of loadRectPackingRows('sort')) {
-        const nodes = positionedNodes(row.input.positions);
-        nodes.sort(compareDesiredPositions);
-        const order = nodes.map((node) => Number(node.getIdentifier()));
-        if ('throws' in row.expected) {
-          differing.push({ id: row.id, kind: JAVA_ONLY_THROW });
-        } else if (JSON.stringify(order) === JSON.stringify(row.expected.order)) {
-          reproduced++;
-        } else {
-          differing.push({ id: row.id, kind: ORDER_DIFFERENCE });
-        }
+  // Until e7eaea57 the comparator returned -1 for a tie in both directions; the JVM sort then threw on 34 rows and gave
+  // another order on 179 (issue #75, `test/helpers/rectpacking-sort-classified.ts`). eclipse-elk/elk#1237 made it a total
+  // order and the rows were re-recorded (#104): every row reproduces, and no row is classified.
+  it('Array.prototype.sort with the verbatim comparator reproduces every sort row', LOOP, () => {
+    const differing: string[] = [];
+    let reproduced = 0;
+    for (const row of loadRectPackingRows('sort')) {
+      const nodes = positionedNodes(row.input.positions);
+      // InteractiveNodeReorderer.java:50-56: the model order of a node is its index among the nodes with a desired position
+      const modelOrder = new Map(nodes.map((node, index) => [node, index]));
+      nodes.sort(compareDesiredPositions(modelOrder));
+      const order = nodes.map((node) => Number(node.getIdentifier()));
+      if (!('throws' in row.expected) && JSON.stringify(order) === JSON.stringify(row.expected.order)) {
+        reproduced++;
+      } else {
+        differing.push(row.id);
       }
-      expect(differing.filter((d) => d.kind === JAVA_ONLY_THROW).map((d) => d.id)).toEqual(JAVA_ONLY_THROW_ROWS);
-      expect(differing.filter((d) => d.kind === ORDER_DIFFERENCE).map((d) => d.id)).toEqual(ORDER_DIFFERENCE_ROWS);
-      expect(reproduced + differing.length).toBe(SORT_ROWS);
-      console.info(
-        `sort rows: ${String(reproduced)} reproduced, ${String(differing.filter((d) => d.kind === JAVA_ONLY_THROW).length)} java-only throws, ${String(differing.filter((d) => d.kind === ORDER_DIFFERENCE).length)} order differences`,
-      );
-    },
-  );
+    }
+    expect(differing).toEqual([]);
+    expect(reproduced).toBe(SORT_ROWS);
+    console.info(`sort rows: ${String(reproduced)} reproduced, ${String(differing.length)} differing`);
+  });
 });

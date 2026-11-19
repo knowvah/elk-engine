@@ -27,7 +27,7 @@ import type { NodeAndPortMap } from './ElkGraphImporterMap.js';
  * `ElkGraphImporterPorts`, `ElkGraphImporterEdges` and `ElkGraphImporterLabels`. The section functions take the
  * importer's node map as their first argument.
  *
- * AD-10: the Java has three hash-based sites (`ElkGraphImporter.java:83` `nodeAndPortMap`, `:237` and `:316`
+ * AD-10: the Java has three hash-based sites (`ElkGraphImporter.java:85` `nodeAndPortMap`, `:239` and `:318`
  * `HashSet<Integer>` of model order groups). The map is only read by key and the sets only by size, so insertion
  * order cannot be observed.
  *

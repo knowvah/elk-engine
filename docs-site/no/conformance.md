@@ -33,7 +33,7 @@ Begge ligger utenfor dette repositoriet; ingen av dem er vendoret.
 
 | Element           | Plassering                                                                              |
 | ----------------- | --------------------------------------------------------------------------------------- |
-| Festet ELK-commit | `tools/oracle/ELK_COMMIT` (for tiden `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)        |
+| Festet ELK-commit | `tools/oracle/ELK_COMMIT` (for tiden `8bca22f4afa3371562d2f702d59929818f7f7b71`)        |
 | Patch-serie       | `tools/oracle/patches/*.patch`, anvendt i leksikalsk rekkefølge med `git am --3way`     |
 | Bygg              | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho laster ned p2-artefakter)          |
 | Batch-kjører      | `tools/oracle/run.sh <outDir> <input>...` eller `run.sh --cases <cases.jsonl> <outDir>` |

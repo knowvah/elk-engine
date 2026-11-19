@@ -19,7 +19,7 @@ Algoritmide lisandumise järjekorra leiate [teekaardilt](/guide/roadmap).
 
 ## Java on spetsifikatsioon
 
-Java lähtekood fikseeritud ELK-i commit'il `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` on kanooniline
+Java lähtekood fikseeritud ELK-i commit'il `8bca22f4afa3371562d2f702d59929818f7f7b71` on kanooniline
 spetsifikatsioon. Portimine järgib seda täpselt:
 
 - Algoritme ei optimeerita ega lihtsustata. Kui Java tundub koondunud liigsena, jääb liiasus alles.

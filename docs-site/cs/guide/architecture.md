@@ -18,7 +18,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 ## Čím elk-engine je
 
 `@knowvah/elk-engine` je věrné portování Eclipse Layout Kernel (ELK) do TypeScriptu. Java
-v zafixovaném commitu `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` je specifikací (AD-1, AD-2). Je to
+v zafixovaném commitu `8bca22f4afa3371562d2f702d59929818f7f7b71` je specifikací (AD-1, AD-2). Je to
 knihovna: bezpečná pro prohlížeč, bez závislostí za běhu, bez Javy či WASM. Jejím veřejným kontraktem je
 objektový model ElkGraph plus továrny `ElkGraphUtil`; ELK JSON je adaptér vstupu a výstupu (AD-14). V rozsahu je
 třináct bundlů s celkem asi 134 600 ručně psanými řádky (viz inventář). Tato mise dodává pouze kostru: zatím není

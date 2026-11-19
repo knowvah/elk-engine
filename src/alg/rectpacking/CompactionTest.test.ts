@@ -6,12 +6,14 @@
  *
  * @see org.eclipse.elk.alg.rectpacking.test/src/org/eclipse/elk/alg/rectpacking/CompactionTest.java
  */
-import { beforeAll, describe, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { assertEqualsWithin } from '../../../test/helpers/junit-delta.js';
 import { LayoutMetaDataService } from '../../core/data/LayoutMetaDataService.js';
 import { ElkPadding } from '../../core/math/ElkPadding.js';
+import { ElkRectangle } from '../../core/math/ElkRectangle.js';
 import { CoreOptions } from '../../core/options/CoreOptions.js';
 import { BasicProgressMonitor } from '../../core/util/BasicProgressMonitor.js';
+import type { ElkNode } from '../../graph/ElkNode.js';
 import { ElkGraphUtil } from '../../graph/util/ElkGraphUtil.js';
 import { RectPackingMetaDataProvider } from './options/RectPackingMetaDataProvider.js';
 import { RectPackingOptions } from './options/RectPackingOptions.js';
@@ -536,4 +538,55 @@ describe('CompactionTest', () => {
     assertEqualsWithin('', 105.0, n6.getX(), 1);
     assertEqualsWithin('', 0.0, n6.getY(), 1);
   });
+
+  /**
+   * Test the compaction step for the case that a block, which was in the next row after placement, is placed next to
+   * the current block and the row is compacted again afterwards because of the row height reevaluation. The moved
+   * block must then be treated as a block of the current row. If it is not, it is added to the row a second time and
+   * the compaction never terminates.
+   *
+   * The Java's `@Test(timeout = 10000)` is the test timeout here. It cannot stop a synchronous loop: before
+   * eclipse-elk/elk#1239 this input did not terminate (issue #73), which was shown in a child process, not in a worker.
+   */
+  it('testPlaceBlockFromNextRowRightWithRowHeightReevaluation', () => {
+    const parent = ElkGraphUtil.createGraph();
+    parent.setProperty(CoreOptions.ALGORITHM, RectPackingOptions.ALGORITHM_ID);
+    parent.setProperty(RectPackingOptions.WIDTH_APPROXIMATION_TARGET_WIDTH, 288.0);
+    parent.setProperty(RectPackingOptions.WIDTH_APPROXIMATION_STRATEGY, WidthApproximationStrategy.TARGET_WIDTH);
+    parent.setProperty(RectPackingOptions.PACKING_COMPACTION_ROW_HEIGHT_REEVALUATION, true);
+    const sizes: readonly (readonly [number, number])[] = [
+      [117, 91],
+      [31, 64],
+      [124, 27],
+      [88, 86],
+      [38, 24],
+      [23, 86],
+      [38, 90],
+    ];
+    const nodes: ElkNode[] = [];
+    for (const size of sizes) {
+      const node = ElkGraphUtil.createNode(parent);
+      node.setDimensions(size[0], size[1]);
+      nodes.push(node);
+    }
+
+    const layoutProvider = new RectPackingLayoutProvider();
+    layoutProvider.layout(parent, new BasicProgressMonitor());
+
+    for (const node of nodes) {
+      const rect = new ElkRectangle(node.getX(), node.getY(), node.getWidth(), node.getHeight());
+      expect(
+        rect.x >= 0 && rect.y >= 0 && rect.getMaxX() <= parent.getWidth() && rect.getMaxY() <= parent.getHeight(),
+        `Node outside of its parent: ${rect.toString()}`,
+      ).toBe(true);
+      for (const other of nodes) {
+        if (other !== node) {
+          const otherRect = new ElkRectangle(other.getX(), other.getY(), other.getWidth(), other.getHeight());
+          expect(rect.intersects(otherRect), `Nodes overlap: ${rect.toString()} and ${otherRect.toString()}`).toBe(
+            false,
+          );
+        }
+      }
+    }
+  }, 10000);
 });

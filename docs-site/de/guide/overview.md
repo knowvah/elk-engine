@@ -20,7 +20,7 @@ Die Reihenfolge, in der Algorithmen hinzukommen, steht in der [Roadmap](/guide/r
 
 ## Das Java ist die Spezifikation
 
-Der Java-Quelltext am fixierten ELK-Commit `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` ist die
+Der Java-Quelltext am fixierten ELK-Commit `8bca22f4afa3371562d2f702d59929818f7f7b71` ist die
 maßgebliche Spezifikation. Die Portierung folgt ihr eng:
 
 - Algorithmen werden weder optimiert noch vereinfacht. Wirkt das Java redundant, bleibt die Redundanz erhalten.

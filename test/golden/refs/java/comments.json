@@ -1,6 +1,6 @@
 {
   "jdk": "21.0.1",
-  "oracle": "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c",
+  "oracle": "8bca22f4afa3371562d2f702d59929818f7f7b71",
   "scenarios": [
     {"name":"alignment-binary","input":"comment-scenarios/alignment-binary.json","config":{"includeHierarchy":true,"keepHeuristicsEnabledWithExplicitAttachments":false,"explicit":"none","boundsProvider":{"type":"ElkGraphBoundsProvider","cached":false},"filters":[],"matchers":[{"type":"AlignmentMatcher","maxOffset":60,"normalization":"BINARY"}],"decider":{"aggregator":"max","lowerBoundary":0,"included":false}},"attachments":[["c1","A"],["c2","B"],["c3","C"]],"minMargin":1.0},
     {"name":"alignment-linear","input":"comment-scenarios/alignment-linear.json","config":{"includeHierarchy":true,"keepHeuristicsEnabledWithExplicitAttachments":false,"explicit":"none","boundsProvider":{"type":"ElkGraphBoundsProvider","cached":true},"filters":[],"matchers":[{"type":"AlignmentMatcher","maxOffset":60,"normalization":"LINEAR"}],"decider":{"aggregator":"max","lowerBoundary":0,"included":false}},"attachments":[["c1","A"],["c2","B"],["c3","C"],["c5","A"]],"minMargin":0.166667},

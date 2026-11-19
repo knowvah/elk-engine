@@ -8,7 +8,7 @@ import { runSiteRow } from '../../../../../test/helpers/transform-site-rows.js';
 
 describe('ElkGraphImporterNodes (oracle site rows)', () => {
   it('imports the labels with text, skips empty ones and nodes excluded from layout, and keeps the label placement', () => {
-    // oracle: site/transform/misc/node-labels-and-placement; ElkGraphImporter.java:905-985 (transformNode)
+    // oracle: site/transform/misc/node-labels-and-placement; ElkGraphImporter.java:964-1044 (transformNode)
     const run = runSiteRow('site/transform/misc/node-labels-and-placement');
     const d = run.dump;
     const elk = run.elk;
@@ -26,7 +26,7 @@ describe('ElkGraphImporterNodes (oracle site rows)', () => {
   });
 
   it('skips a port excluded from layout when importing the ports of a node', () => {
-    // oracle: site/transform/misc/port-labels; ElkGraphImporter.java:940-945 (transformNode, ports)
+    // oracle: site/transform/misc/port-labels; ElkGraphImporter.java:999-1004 (transformNode, ports)
     const run = runSiteRow('site/transform/misc/port-labels');
     const d = run.dump;
     const elk = run.elk;
@@ -39,7 +39,7 @@ describe('ElkGraphImporterNodes (oracle site rows)', () => {
   });
 
   it('copies the node flexibility of a node and leaves the default for the others', () => {
-    // oracle: site/transform/misc/network-simplex-flexibility; ElkGraphImporter.java:905-927 (transformNode, property copy)
+    // oracle: site/transform/misc/network-simplex-flexibility; ElkGraphImporter.java:964-986 (transformNode, property copy)
     const run = runSiteRow('site/transform/misc/network-simplex-flexibility');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'nodePlacement.strategy')).toEqual(undefined);

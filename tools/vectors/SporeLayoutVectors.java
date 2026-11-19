@@ -94,8 +94,9 @@
 //   text: compare class and frame); frame = the first (innermost) org.eclipse.elk frame of the root cause as "File.java:line". The
 //   stepwise path must throw the same.
 //
-// group jitter (PK4): ElkGraphImporter.java:167-169 shifts a node centre by (Math.random() - 0.5) * 0.001 while it equals a key already
-//   in the value-hashed nodeMap. Every planned row is first run through the importer alone (after any underlying layout) and the jitter
+// group jitter (PK4): ElkGraphImporter.java:178 (shiftUntilUnique, :263-268) shifts a node centre by (random.nextDouble() - 0.5) * 0.001
+//   while it equals a key already in the value-hashed nodeMap; random is seeded from randomSeed (default 1) since eclipse-elk/elk#1242
+//   (it was an unseeded Math.random() before, and runsAgree false). Every planned row is first run through the importer alone (after any underlying layout) and the jitter
 //   guard counts the vertices whose Node.originalVertex differs (raw bits) from the child's x + width / 2, y + height / 2; full,
 //   stops and minst rows must count 0 (a planned full row that counts more becomes a jitter row; a planned minst/throws row fails the
 //   recording). expected = { algorithm, invariants: { nodeCount, jitterNodes, overlapFree, maxDisplacementBound, runs, runsAgree } }
@@ -202,7 +203,7 @@ import org.eclipse.elk.graph.properties.IProperty;
 import org.eclipse.elk.graph.util.ElkGraphUtil;
 
 public class SporeLayoutVectors {
-    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
+    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
     static final String OUTPUT = "spore-layout.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String IDENTIFIER_SEED_PROPERTY = "org.eclipse.elk.graph.util.identifierSeed";
@@ -383,7 +384,7 @@ public class SporeLayoutVectors {
             for (Factor f : s.factors) {
                 List<Row> r = stable(s, f, FULL);
                 if (!r.get(0).group.equals(JITTER)) {
-                    throw new Bug("jitter scenario " + s.id + " did not reach the Math.random() loop");
+                    throw new Bug("jitter scenario " + s.id + " did not reach the shiftUntilUnique loop");
                 }
                 rows.addAll(r);
             }
@@ -609,7 +610,7 @@ public class SporeLayoutVectors {
         }
         if (viaImport.jitterNodes > 0) {
             if (!group.equals(FULL) && !group.equals(STOPS)) {
-                throw new Bug("row " + base + " is planned " + group + " but reached the Math.random() loop");
+                throw new Bug("row " + base + " is planned " + group + " but reached the shiftUntilUnique loop");
             }
             if (group.equals(STOPS)) {
                 return List.of(); // the full twin of this scenario records the jitter row
@@ -952,7 +953,7 @@ public class SporeLayoutVectors {
                 + (applied ? ", " + dumpBody(layout) : "") + "}");
     }
 
-    /** Vertices whose originalVertex is not the child's centre: the Math.random() loop shifted them. */
+    /** Vertices whose originalVertex is not the child's centre: the shiftUntilUnique loop of the import shifted them. */
     static int jitterCount(ElkNode layout, Graph graph) {
         int count = 0;
         for (int i = 0; i < graph.vertices.size(); i++) {
@@ -1634,6 +1635,12 @@ public class SporeLayoutVectors {
             g.setProperty(SporeCompactionOptions.PROCESSING_ORDER_ROOT_SELECTION, RootSelection.FIXED);
             g.setProperty(SporeCompactionOptions.PROCESSING_ORDER_PREFERRED_ROOT, "nope");
         }))));
+        // ElkGraphImporter.java:242-249 (eclipse-elk/elk#1244): overlap removal moves two nodes onto one rect centre, and updateGraph shifts
+        // the second with shiftUntilUnique. Until e7eaea57 the scanline TreeSet rejected the second node of the pair in the next iteration
+        // ("Invalid hitboxes for scanline overlap calculation."), and this scenario was the row throws/overlap/scanlineHitboxes (found by a
+        // random search over small overlapping graphs). Re-planned as a full row with its stops; appended last so that the earlier rows, the
+        // seeds and their order do not change
+        l.add(new Spec("scanlineHitboxes", OVERLAP, SporeLayoutVectors::hitboxes, true, DEFAULT_ONLY));
         return l;
     }
 
@@ -1642,9 +1649,6 @@ public class SporeLayoutVectors {
         for (String alg : List.of(OVERLAP, COMPACTION)) {
             l.add(new Spec("hyperedge", alg, SporeLayoutVectors::hyperedge, false, DEFAULT_ONLY));
         }
-        // after updateGraph two nodes share a rect centre and left side: the scanline TreeSet rejects the second (found by a random
-        // search over small overlapping graphs; the stops of the throw are not recorded, the triangulation/tree stops of its full twin are)
-        l.add(new Spec("scanlineHitboxes", OVERLAP, SporeLayoutVectors::hitboxes, false, DEFAULT_ONLY));
         // FIXED root with an id no child has: Graph.preferredRoot stays null and the MINIMUM_ROOT_DISTANCE cost dereferences it
         l.add(new Spec("minRootDistanceNoRoot", COMPACTION, () -> rand(105, 6, 300, false, 4), false, List.of(new Factor("", g -> {
             g.setProperty(SporeCompactionOptions.PROCESSING_ORDER_ROOT_SELECTION, RootSelection.FIXED);
@@ -1861,7 +1865,7 @@ public class SporeLayoutVectors {
         return root;
     }
 
-    /** Five nodes; n1 and n3 share a centre (different sizes), so the importer's Math.random() loop shifts n3. */
+    /** Five nodes; n1 and n3 share a centre (different sizes), so the importer's shiftUntilUnique loop shifts n3. */
     static ElkNode dup() {
         ElkNode root = newRoot();
         node(root, "n0", 0, 0, 30, 30);
@@ -1872,7 +1876,7 @@ public class SporeLayoutVectors {
         return root;
     }
 
-    /** Three overlapping nodes whose overlap removal makes two rects coincide in the scanline comparator's keys. */
+    /** Three overlapping nodes whose overlap removal moves two rects onto one centre (updateGraph then shifts the second). */
     static ElkNode hitboxes() {
         ElkNode root = newRoot();
         node(root, "n0", 10, 10, 40, 30);

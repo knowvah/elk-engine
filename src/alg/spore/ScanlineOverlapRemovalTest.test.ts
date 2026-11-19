@@ -51,7 +51,33 @@ describe('ScanlineOverlapRemovalTest', () => {
     expect(hasOverlaps(graph2)).toBe(true);
   });
 
-  /** @see ScanlineOverlapRemovalTest.java:77 hasOverlaps */
+  /**
+   * Overlap removal must not fail with an IllegalStateException from the ScanlineOverlapCheck on three overlapping
+   * nodes, and must remove their overlaps.
+   *
+   * @see ScanlineOverlapRemovalTest.java:82 scanlineThreeOverlappingNodesTest
+   */
+  it('scanlineThreeOverlappingNodesTest', () => {
+    const graph = ElkGraphUtil.createGraph();
+    const n0 = ElkGraphUtil.createNode(graph);
+    const n1 = ElkGraphUtil.createNode(graph);
+    const n2 = ElkGraphUtil.createNode(graph);
+    n0.setDimensions(40, 30);
+    n1.setDimensions(10, 20);
+    n2.setDimensions(10, 30);
+    n0.setLocation(10, 10);
+    n1.setLocation(10, 0);
+    n2.setLocation(20, 5);
+    graph.setProperty(CoreOptions.ALGORITHM, SporeOverlapRemovalOptions.ALGORITHM_ID);
+    expect(hasOverlaps(graph)).toBe(true);
+
+    LayoutMetaDataService.getInstance().registerLayoutMetaDataProviders(new SporeMetaDataProvider());
+    new RecursiveGraphLayoutEngine().layout(graph, new BasicProgressMonitor());
+
+    expect(hasOverlaps(graph)).toBe(false);
+  });
+
+  /** @see ScanlineOverlapRemovalTest.java:102 hasOverlaps */
   function hasOverlaps(graph: ElkNode): boolean {
     for (const na of graph.getChildren()) {
       for (const nb of graph.getChildren()) {

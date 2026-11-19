@@ -8,7 +8,7 @@ import { runSiteRow } from '../../../../../test/helpers/transform-site-rows.js';
 
 describe('ElkGraphImporterPorts (oracle site rows)', () => {
   it('imports the labels with text and layout of a port and skips empty and noLayout ones', () => {
-    // oracle: site/transform/misc/port-labels; ElkGraphImporter.java:1047-1050 (transformPort, labels)
+    // oracle: site/transform/misc/port-labels; ElkGraphImporter.java:1106-1109 (transformPort, labels)
     const run = runSiteRow('site/transform/misc/port-labels');
     const d = run.dump;
     const elk = run.elk;

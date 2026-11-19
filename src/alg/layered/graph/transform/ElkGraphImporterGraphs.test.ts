@@ -14,7 +14,7 @@ import { createLGraph } from './ElkGraphImporterGraphs.js';
 
 describe('ElkGraphImporterGraphs (oracle site rows)', () => {
   it('takes the padding of the imported node and the origin from the ELK node', () => {
-    // oracle: site/transform/misc/parent-node-layout-flags; ElkGraphImporter.java:592-650 (createLGraph)
+    // oracle: site/transform/misc/parent-node-layout-flags; ElkGraphImporter.java:651-709 (createLGraph)
     const run = runSiteRow('site/transform/misc/parent-node-layout-flags');
     const d = run.dump;
     expect(quad(d.graph('g0').padding)).toEqual([3, 6, 5, 4]);
@@ -26,7 +26,7 @@ describe('ElkGraphImporterGraphs (oracle site rows)', () => {
   });
 
   it('takes the default padding for the root graph', () => {
-    // oracle: site/transform/misc/parent-node-layout-flags-root; ElkGraphImporter.java:592-650 (createLGraph)
+    // oracle: site/transform/misc/parent-node-layout-flags-root; ElkGraphImporter.java:651-709 (createLGraph)
     const run = runSiteRow('site/transform/misc/parent-node-layout-flags-root');
     const d = run.dump;
     expect(quad(d.graph('g0').padding)).toEqual([12, 12, 12, 12]);
@@ -36,7 +36,7 @@ describe('ElkGraphImporterGraphs (oracle site rows)', () => {
   });
 
   // No oracle row sets a label manager (ELK JSON cannot carry one); the expectations follow
-  // ElkGraphImporter.java:602-606.
+  // ElkGraphImporter.java:661-665.
   describe('label manager', () => {
     const manager: ILabelManager = { manageLabelSize: () => null };
     const other: ILabelManager = { manageLabelSize: () => null };

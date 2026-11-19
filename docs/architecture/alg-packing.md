@@ -7,7 +7,7 @@ What mission 8c (`alg-packing`, roadmap row 8c, issue #39) ported: the bundles `
 `org.eclipse.elk.alg.topdownpacking` (`elk.topdownpacking`), with their generated option classes and providers. From here
 `RecursiveGraphLayoutEngine` lays out a graph with each, once a test, replay or tool registers `RectPackingMetaDataProvider`,
 `SporeMetaDataProvider` or `TopdownpackingMetaDataProvider`. This page covers the structure, the evidence, the decisions as built
-(`GridElkNode` and the guard registry, the `Math.random()` jitter, hashed containers, recursion, the contract-violating
+(`GridElkNode` and the guard registry, the jitter of coincident centres, hashed containers, recursion, the desired-position
 comparator, staging), the hazards for the next person, the open issues and a runbook. Decisions cited are
 `plans/alg-packing/decisions.md` (PK1-PK12); task ids T1-T15 are in that mission's `decision-journal.md`; AD-n are
 `plans/elk-engine-skeleton/decisions.md`. Counts live in [conformance.md](../conformance.md#alg-packing). The mission's diagrams are
@@ -20,7 +20,7 @@ the versions below describe what was built.
 | [2. Evidence](#alg-packing-evidence)                      | Recorders and refs, replays, goldens, sweep, JUnit, coverage                   |
 | [3. Decisions as built](#alg-packing-decisions)           | PK3 to PK8: `GridElkNode`, jitter, hashed containers, recursion, sort, TDZ     |
 | [4. Hazards](#alg-packing-hazards)                        | Non-terminating inputs, cubic compaction, `getProperty`, the entry-module case |
-| [5. Known divergences and open issues](#alg-packing-open) | Issues #73, #75, #76, #78, #79, #80, #81                                       |
+| [5. Known divergences and open issues](#alg-packing-open) | Issues #73, #75, #76, #78, #79, #80, #81, #105 to #108                         |
 | [6. Runbook](#alg-packing-runbook)                        | Re-recording, goldens, sweeps, the Java baseline                               |
 
 ## 1. Structure {#alg-packing-structure}
@@ -160,12 +160,14 @@ own `logGraph` points through a logging `BasicProgressMonitor`. spore: `underlyi
 
 **Throw rows.** rectpacking: `targetWidthMissing` (`TargetWidthWidthApproximator.java:47`), `equalWithoutRows` and
 `toAspectWithoutRows` (`EqualWhitespaceEliminator.java:50`), `emptyGreedy` (`AreaApproximation.java:70`), `desiredMinus1` and
-`desiredMinus5` (`InteractiveNodeReorderer.java:68`). Until the `e7eaea57` pin (#99) a sixth, `throws/arm/noBestCandidate`
+`desiredMinus5` (`InteractiveNodeReorderer.java:75`). Until the `e7eaea57` pin (#99) a sixth, `throws/arm/noBestCandidate`
 (`AreaApproximation.java:157`, `:98`: a `NullPointerException`), recorded the null best option; since
 [eclipse-elk/elk#1215](https://github.com/eclipse-elk/elk/pull/1215) the graph lays out and is the rows
 `full/arm/noBestCandidate/default` and `stops/arm/noBestCandidate/default`. spore:
-`hyperedge` (2, `ElkGraphUtil.java:633`), `scanlineHitboxes` (`ScanlineOverlapCheck.java:166`), `minRootDistanceNoRoot`
-(`ElkGraphImporter.java:69`). topdownpacking: 16 direct-call rows at the grid bounds (`GridElkNode.java:69-113`) and the walk-back
+`hyperedge` (2, `ElkGraphUtil.java:633`), `minRootDistanceNoRoot` (`ElkGraphImporter.java:72`). Until the `8bca22f4` pin
+(#104) a fourth, `throws/overlap/scanlineHitboxes` (`ScanlineOverlapCheck.java:166`), recorded the scanline's rejection of two
+nodes on one centre; since [eclipse-elk/elk#1244](https://github.com/eclipse-elk/elk/pull/1244) the input lays out and is the
+rows `full/overlap/scanlineHitboxes/default` and `stops/overlap/scanlineHitboxes/default`. topdownpacking: 16 direct-call rows at the grid bounds (`GridElkNode.java:69-113`) and the walk-back
 loop (`BottomRowEqualWhitespaceEliminator.java:58`), 2 engine rows with frames in `RecursiveGraphLayoutEngine`. A JDK-text
 message (`ArrayList`, the helpful-NPE text) is compared by class and frame, not by message.
 
@@ -237,7 +239,9 @@ not compared, PK4).
 | sporeCompaction |     906 |    99 |        0 |          0 |             0 |                 0 |                         807 |
 | topdownpacking  |     906 |   906 |        0 |          0 |             0 |                 0 |                           0 |
 
-The sporeOverlap ranges are four cases (section 5, issue #79). No timeout and no hang (no corpus case reaches issue #73). The
+The sporeOverlap ranges are four cases (section 5, issue #79). The table is the sweep of mission 8c; since the `8bca22f4` pin
+(#104) the spore rows are sporeOverlap 879 `ok` and 27 `both-throw`, sporeCompaction 906 `ok`, with no excluded case
+(section 3.2). No timeout and no hang (no corpus case reaches issue #73). The
 8b residuals closed by registering rectpacking: the 6 force, stress and disco cases over
 `interactiveRectpacking_{hierarchy,oneBigNode}` are `ok` and so are the 7 tree residuals of issue #68 item A.
 
@@ -281,33 +285,43 @@ as Java's `instanceof` is. No landed guard result changed: `npx vitest run src/g
 as an audit point. Rejected: an adapter exposing `.node` (rewrites every phase call site and the `logGraph` call),
 `extends ElkNodeImpl` (a second node with its own containment and properties), and a narrower interface without the guard.
 
-### 3.2 PK4: the `Math.random()` jitter {#alg-packing-jitter}
+### 3.2 PK4: the jitter of coincident centres {#alg-packing-jitter}
 
-`spore/ElkGraphImporter.java:167-169` shifts a node centre by `(Math.random() - 0.5) * 0.001` while the centre equals one
-already in the value-hashed `nodeMap`. Java's `Math.random()` is unseeded, so two oracle runs on a graph with coincident centres
-differ. The port calls `Math.random()` (same contract, browser-safe), the policy CLAUDE.md names for the unseeded one-argument
-`Collections.shuffle`. "Nondeterministic" is therefore a property of the input: some node centre coincides with another. Its
-consequences:
+`spore/ElkGraphImporter.java:178` shifts a node centre by `(random.nextDouble() - 0.5) * 0.001` while the centre equals one
+already in the value-hashed `nodeMap` (`shiftUntilUnique`, `:263-268`). Since the `8bca22f4` pin (#104) `random` is a
+`java.util.Random` seeded by `randomSeed` ([eclipse-elk/elk#1242](https://github.com/eclipse-elk/elk/pull/1242);
+`:131-136`): the default seed is 1 for both spore algorithms, and a seed of 0 selects the unseeded `new Random()`. The port
+uses the vector-proven `Random` shim and draws x before y, as Java evaluates the two arguments. `updateGraph` (`:233-253`)
+calls the same method when overlap removal has moved a node onto another node's centre, and translates that node by the shift
+([eclipse-elk/elk#1244](https://github.com/eclipse-elk/elk/pull/1244)).
+
+Until `e7eaea57` the shift was an unseeded `Math.random()` (`:167-169` there), so two oracle runs on a graph with coincident
+centres differed, and "nondeterministic" was a property of the input. What that left behind, and where it stands now:
 
 - **Rows.** The recorder runs a real `ElkGraphImporter` on every planned row first and counts the vertices whose
   `originalVertex` differs from the centre; a row that reached the loop becomes a `jitter` row. The 4 `jitter` rows (corpus
   inputs x2 with 11 shifted vertices, `dup5` x2) record invariants only: node count, no remaining overlap, and an input-derived
   displacement bound (a bound derived from a run differed between two builds, so none is). The TS test checks the same
-  invariants over three runs.
+  invariants over three runs. The group keeps that form: `runsAgree` is recorded `true` now and the three runs give one dump;
+  exact `jitter` rows are issue #106.
+- **Exact evidence.** `full/overlap/scanlineHitboxes/default` and its stops row reach the `updateGraph` shift and replay at raw
+  bits; `RandomSeedTest` is ported (default seed, explicit seed, seed selects the shift).
 - **Goldens.** Every `packing` input has distinct centres, so goldens compare in full.
-- **Sweep.** The oracle sweep runs each case twice; a case whose runs disagree is `nondeterministic` and is counted, not compared
-  (sporeOverlap 788, sporeCompaction 807). Four sporeOverlap cases agree in the sweep's two oracle runs, carry the verdict `ok` or
-  `throws`, and still vary between comparisons (issue #79).
-- A seeded source was rejected (an API the Java lacks).
+- **Sweep.** The oracle sweep runs each case twice; a case whose runs disagree is `nondeterministic` and is counted, not
+  compared. That was 788 sporeOverlap and 807 sporeCompaction cases, plus four that flickered (issue #79). Now no spore case
+  is `nondeterministic`: sporeCompaction is 906 `ok`, sporeOverlap 879 `ok` and 27 `throws`, and the port agrees on all 1,812.
+- A seeded source in the port alone had been rejected (an API the Java lacked); the Java has it now.
+- **One replaced test.** The hand-written unit test of `updateGraph`'s old collapse of equal centres contradicted #1244; under
+  the ruling of issue #105 (2026-11-19) it asserts the shift instead: both nodes stay mapped and both are placed.
 
 ### 3.3 PK5: hashed containers {#alg-packing-containers}
 
-| Site (Java, under `alg/spore`)                                                 | Keys                 | Iterated                                           | Port                                                                         |
-| ------------------------------------------------------------------------------ | -------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `OverlapRemovalLayoutProvider.java:86` `overlapEdges`, `clear()` per iteration | `TEdge` (value hash) | yes, via `NaiveMinST`                              | `JavaHashSet` with the `TEdge` strategy; `clear` keeps capacity              |
-| `p1structure/DelaunayTriangulationPhase.java` `addAll(triangulate(...))`       | `TEdge`              | yes                                                | the same set object; the insertion history is replayed                       |
-| `ElkGraphImporter.java:110,228` `nodeMap`, `MinSTPhase.java:39`                | `KVector` (value)    | lookup only; `updateGraph` collapses equal centres | `JavaHashMap` with the `KVector` strategy of `NaiveMinST.ts`                 |
-| landed `NaiveMinST`, `BowyerWatsonTriangulation`                               | `TEdge`, `TTriangle` | tie order = input set order                        | unchanged, proven for triangulation inputs by `TriangulationVectors.test.ts` |
+| Site (Java, under `alg/spore`)                                                 | Keys                 | Iterated                                        | Port                                                                         |
+| ------------------------------------------------------------------------------ | -------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------- |
+| `OverlapRemovalLayoutProvider.java:86` `overlapEdges`, `clear()` per iteration | `TEdge` (value hash) | yes, via `NaiveMinST`                           | `JavaHashSet` with the `TEdge` strategy; `clear` keeps capacity              |
+| `p1structure/DelaunayTriangulationPhase.java` `addAll(triangulate(...))`       | `TEdge`              | yes                                             | the same set object; the insertion history is replayed                       |
+| `ElkGraphImporter.java:113,234` `nodeMap`, `MinSTPhase.java:39`                | `KVector` (value)    | lookup only; `updateGraph` keeps centres unique | `JavaHashMap` with the `KVector` strategy of `NaiveMinST.ts`                 |
+| landed `NaiveMinST`, `BowyerWatsonTriangulation`                               | `TEdge`, `TTriangle` | tie order = input set order                     | unchanged, proven for triangulation inputs by `TriangulationVectors.test.ts` |
 
 The `minst` group records, per row, the edge sequence entering `NaiveMinST`, the tree with child order and `orderSensitive`
 (the recorder re-runs with the edge list reversed): 95 rows, 76 `orderSensitive` (overlap 24 of 35, 7 of them on the scanline
@@ -354,17 +368,25 @@ overflow was a stack limit, not a semantic difference. `full/overlap/chain2000/d
 `SPORE_CHAIN_TIMEOUT` raised: 2,394 s). Beyond 2,000 nodes: issue #76. `Compactor.copyPosition`'s hierarchy
 recursion stays verbatim (it is dead: `clone()` copies only direct children).
 
-### 3.5 PK7: the contract-violating comparator {#alg-packing-sort}
+### 3.5 PK7: the desired-position comparator {#alg-packing-sort}
 
-`InteractiveNodeReorderer.java:56-63` returns `-1` for equal `desiredPosition`s in both directions. The port keeps the comparator
-verbatim (exported as `compareDesiredPositions`) and sorts with `Array.prototype.sort`. The recorder's `sort` group ran
-`Collections.sort` with that comparator on 640 tie-heavy position lists (lengths 1-64 times 10 shapes `v0`-`v9`, seeded; ids
-`sort/L<length>/v<shape>`): `Array.prototype.sort` reproduces 427, all 310 of length 1-31 and 117 of the 330 of length 32-64.
-213 rows differ and stay as recorded (34 where only the JVM throws `IllegalArgumentException` "Comparison method violates its
-general contract!", 179 order differences, all of length 32 or more). They are listed in
-`test/helpers/rectpacking-sort-classified.ts`; `RectPackingVectors.test.ts` asserts the lists equal the computed differing set
-exactly, so a change in either direction fails. No TimSort was written and no OpenJDK source was read (AD-9). Issue #75 asks
-for the ruling; the id patterns are in [conformance.md](../conformance.md#alg-packing-divergences).
+`InteractiveNodeReorderer.java:63-71` compares equal `desiredPosition`s by model order, the later node first (the re-insertion
+below reverses them again), so it is a total order
+([eclipse-elk/elk#1237](https://github.com/eclipse-elk/elk/pull/1237), followed since the `8bca22f4` pin, #104). The port
+exports it as `compareDesiredPositions(modelOrder)`, a function of the model order map the Java lambda captures (`:50`, an
+identity-keyed lookup map, so a plain `Map`), and sorts with `Array.prototype.sort`. The recorder's `sort` group runs
+`Collections.sort` with a verbatim copy of that comparator on 640 tie-heavy position lists (lengths 1-64 times 10 shapes
+`v0`-`v9`, seeded; ids `sort/L<length>/v<shape>`), and `Array.prototype.sort` reproduces all 640.
+
+Until `e7eaea57` the comparator returned `-1` for a tie in both directions, a contract violation. The JVM sort threw
+`IllegalArgumentException` "Comparison method violates its general contract!" on 34 rows and gave another order on 179, all of
+length 32 or more; those 213 rows were classified in `test/helpers/rectpacking-sort-classified.ts` (issue #75). The re-record
+changed exactly those 213 rows. The port's order did not change: `Array.prototype.sort` with the old comparator reproduces the
+640 new rows too, so the classified rows had recorded the JVM sort, not a port difference. The helper is deleted. No TimSort
+was written and no OpenJDK source was read (AD-9).
+
+A recorder that copies Java code instead of calling it must follow the Java on a pin move: this group did not change until
+its copy was updated (the upgrade runbook, section 11).
 
 ### 3.6 PK8: staging and TDZ {#alg-packing-tdz}
 
@@ -388,14 +410,17 @@ modules passes except for that one.
 
 ## 4. Hazards {#alg-packing-hazards}
 
-- **Issue #73: non-terminating inputs.** `Compaction.absorbBlocks` loops forever when a block is listed twice in its row; the oracle
-  and the port hang on the same input (11 children with `widthApproximation.strategy = TARGET_WIDTH`,
-  `widthApproximation.targetWidth = 288`, `packing.compaction.rowHeightReevaluation = true`; the sizes are in the issue). The
-  mechanism is `Compaction.java:412` (`row.addBlock(nextBlock)` without `nextBlock.setParentRow(row)`), then `:101`, `:117` and
-  `:266-269`. A port fuzz over small graphs hit it in about 1 of 1,200 inputs with `rowHeightReevaluation`. **A search must never run
-  in a vitest worker**: vitest cannot stop a synchronous loop, and one such worker spun at 99 % CPU for over an hour during the
-  mission. Run each candidate in a child process under `timeout`, or with a step counter in the loop (T14b used both, about
-  900,000 inputs). `rowHeightReevaluation` is off by default.
+- **Issue #73: non-terminating inputs (fixed upstream, in the port since the `8bca22f4` pin, #104).**
+  `Compaction.absorbBlocks` looped forever when a block was listed twice in its row; the oracle and the port hung on the same
+  input (11 children with `widthApproximation.strategy = TARGET_WIDTH`, `widthApproximation.targetWidth = 288`,
+  `packing.compaction.rowHeightReevaluation = true`; the sizes are in the issue). The mechanism was `Compaction.java:412`
+  (`row.addBlock(nextBlock)` without `nextBlock.setParentRow(row)`), then `:101`, `:117` and `:266-269`.
+  [eclipse-elk/elk#1239](https://github.com/eclipse-elk/elk/pull/1239) adds the missing call (`:413`); the input of the issue and
+  the input of the upstream test now terminate on both sides. A port fuzz over small graphs had hit the loop in about 1 of 1,200
+  inputs with `rowHeightReevaluation`. The rule it taught stays: **a search for hanging inputs must never run in a vitest
+  worker**. vitest cannot stop a synchronous loop, and one such worker spun at 99 % CPU for over an hour during mission 8c. Run
+  each candidate in a child process under `timeout`, or with a step counter in the loop (T14b used both, about 900,000 inputs).
+  `rowHeightReevaluation` is off by default.
 - **Cubic `DepthFirstCompaction`.** Measured at the oracle on a path: 500 non-touching nodes 10.5 s, 1,000 nodes 80.8 s, 2,000
   touching 26.8 s. A 2,000-node non-touching chain is therefore not recorded, and tests of it use touching rectangles. Under
   coverage or machine load the cost multiplies (the T14 explicit-stack test timed out at 30-node trees under load and runs on trees
@@ -411,27 +436,34 @@ modules passes except for that one.
 - **Delaunay set order.** The `TTriangle` set order inside `BowyerWatsonTriangulation` is not observable; a `delaunay` mismatch is
   checked against `TriangulationVectors` first.
 - **NaN centres.** Some ptolemy models have a NaN centre component; `KVector.equals` is false against itself, so the shim
-  `JavaObjects.equals` needs the identity test (section 5, landed shim).
+  `JavaObjects.equals` needs the identity test (section 5, landed shim). The same models are the 27 sporeOverlap cases that throw
+  "Invalid hitboxes for scanline overlap calculation." on both sides: the scanline `TreeSet` compares two `NaN` rectangles as
+  equal (`ScanlineOverlapCheck.java:131-141`), and `shiftUntilUnique` cannot see a `NaN` centre as taken (issue #108).
 
 ## 5. Known divergences and open issues {#alg-packing-open}
 
-| Item                                        | State                                                                                                                   |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| 213 sort rows (PK7)                         | `Array.prototype.sort` does not reproduce them; classified exactly (section 3.5)                                        |
-| 4 `RectRow.test.ts` rows                    | `CHILDREN_NOT_X_GROUPED_ROWS`: the rebuilt stacks differ from the recorded ones; the JVM method gives the port's counts |
-| 4 nondeterministic sporeOverlap sweep cases | oracle-nondeterministic by the PK4 jitter, classified `ok` or `throws` by the sweep                                     |
-| jitter rows, flag-gated chain row           | invariants only; `SPORE_CHAIN_FULL=1`                                                                                   |
-| landed shim `JavaObjects.equals`            | now true for one and the same object before calling `a.equals(b)`; 63 JVM rows (group `objects`) prove it               |
+| Item                                        | State                                                                                                      |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 213 sort rows (PK7)                         | resolved by the `8bca22f4` pin: all 640 rows reproduce, the classified lists are deleted (section 3.5)     |
+| 4 `RectRow.test.ts` rows                    | `CHILDREN_NOT_X_GROUPED_ROWS` is empty since the `8bca22f4` pin: every re-recorded row rebuilds its stacks |
+| 4 nondeterministic sporeOverlap sweep cases | settled by the `8bca22f4` pin: the shift is seeded, no spore case is `nondeterministic` (section 3.2)      |
+| `updateGraph` collapse unit test            | replaced by a test of the shift (eclipse-elk/elk#1244), ruling of issue #105                               |
+| jitter rows, flag-gated chain row           | invariants only (exact rows: issue #106); `SPORE_CHAIN_FULL=1`                                             |
+| landed shim `JavaObjects.equals`            | now true for one and the same object before calling `a.equals(b)`; 63 JVM rows (group `objects`) prove it  |
 
 | Issue | Label          | Asks                                                                                                                                                                                                                                                                                                                                                                                         |
 | ----: | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|   #73 | `follow-up`    | the `absorbBlocks` hang: file it upstream (suggested fix `nextBlock.setParentRow(row)` after `Compaction.java:412`); keep the hang verbatim or add a guard (behaviour the Java lacks); carry the fix as an oracle patch so the retry arms can be recorded                                                                                                                                    |
-|   #75 | `needs-ruling` | the 213 sort rows: keep `Array.prototype.sort` and list them as a known divergence, vector-prove a sort model, or patch the oracle with a contract-abiding comparator and re-record                                                                                                                                                                                                          |
+|   #73 | `follow-up`    | the `absorbBlocks` hang: fixed upstream by eclipse-elk/elk#1239 and ported with the `8bca22f4` pin (#104); the issue's input terminates on the oracle and in the port                                                                                                                                                                                                                        |
+|   #75 | `needs-ruling` | the 213 sort rows: resolved by eclipse-elk/elk#1237 and the `8bca22f4` pin (#104); all 640 rows reproduce                                                                                                                                                                                                                                                                                    |
 |   #76 | `follow-up`    | spore recursion beyond 2,000 nodes: the port's limit at the remaining sites is below the oracle's (section 3.4); whether to convert them                                                                                                                                                                                                                                                     |
 |   #78 | ruled          | the four rows that falsify the `calculateBlockStacks` premise of `RectRow.test.ts`: ruled 2026-11-14, the classified list `CHILDREN_NOT_X_GROUPED_ROWS` is the final form                                                                                                                                                                                                                    |
-|   #79 | `follow-up`    | the nondeterministic sporeOverlap sweep cases: ruled 2026-11-14, fix the cause upstream (a seeded generator, knowvah/elk#14 / eclipse-elk/elk#1211) and carry it; until then the flicker is known (`docs/conformance.md`)                                                                                                                                                                    |
+|   #79 | `follow-up`    | the nondeterministic sporeOverlap sweep cases: ruled 2026-11-14, fix the cause upstream; done by eclipse-elk/elk#1242 and the `8bca22f4` pin (#104), every spore sweep case has one verdict and the port agrees on all 1,812                                                                                                                                                                 |
 |   #80 | `needs-ruling` | seven upstream defects the ports copy (`AreaApproximation.java:98` NPE, the unused visitor and its reversed `endsWith` at `InteractiveRectPackingGraphVisitor.java:47`, `RectRow.removeBlock`, the stale parent row, dead `calculateBlockStacks` and `copyPosition`, spore's overwritten margins, `ScanlineOverlapCheck.java:166`): which to file upstream, which to carry as oracle patches |
 |   #81 | `follow-up`    | `Compaction.java:364`, the one arm neither reached nor proven dead: a constructive input (then an additive recorder row) or a proof from the Java (then a `U` row); a search must guard against #73                                                                                                                                                                                          |
+|  #105 | ruled          | the `updateGraph` collapse unit test of `ElkGraphImporter.test.ts`, which eclipse-elk/elk#1244 contradicts: ruled 2026-11-19, replaced by the test of the shift                                                                                                                                                                                                                              |
+|  #106 | `follow-up`    | exact `jitter` rows for the seeded shift (a recorder redesign)                                                                                                                                                                                                                                                                                                                               |
+|  #107 | `follow-up`    | the `rows.size() > nextRowIndex` false arm of `placeBelow` and `placeBeside` (`Compaction.java:325`, `:416`), unreached since eclipse-elk/elk#1239: an input or a proof                                                                                                                                                                                                                      |
+|  #108 | `follow-up`    | 27 sporeOverlap corpus cases throw "Invalid hitboxes" through `NaN` rectangles (a zero-size compound node, `ElkUtil.resizeNode`): whether to draft an upstream issue                                                                                                                                                                                                                         |
 
 Issues #58 and #68 stay with the maintainer (evidence comments only); #71 was closed with its ruling.
 
@@ -474,7 +506,8 @@ JAVA_TOOL_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:hashCode=2" \
 npx tsx tools/corpus/ts-layout-compare.ts --algorithms rectpacking --sweep-dir "$TMPDIR/sweep-rectpacking" --out "$TMPDIR/rectpacking.json"
 ```
 
-Expect the numbers of section 2. For `sporeOverlap`, repeat the comparison: the four cases of issue #79 move the counts by 0 to 3.
+Expect the numbers of section 2, and since the `8bca22f4` pin the spore numbers of section 3.2 (the seeded shift gives every
+spore case one verdict, so a repeated comparison gives the same counts).
 A long run is started detached, `nohup nice -n 10 bash -c '<command>; echo "exit $?"' >"$TMPDIR/<name>.log" 2>&1 &`, and polled.
 
 **Extend a recorder.** Append the new scenarios at the end of the scenario list, re-record cold, then run the additive proof of
@@ -482,9 +515,11 @@ section 2 against the previous revision, update the count pins of the replay tes
 reach. A new row that does not replay is a finding: instrument the oracle and dump actual values before changing the port.
 
 **The Java baseline.** `tools/oracle/java-tests.sh` lists only the layered and `alg.test` bundles. Use a scratch copy, never an edit
-of the landed script; the recipe is in [java-baseline.md](../../plans/alg-packing/java-baseline.md). Expect 30 runs, 0 failures
-(`CompactionTest` 10, `PaddingTest` 4, `Issue583Test` 1, `UtilsTest` 3, `ScanlineOverlapRemovalTest` 1, `TopdownPackingTest` 4,
-`TopdownLayoutTest` 5, `PortPlacementCalculationTest` 2); any difference is a stop.
+of the landed script; the recipe is in [java-baseline.md](../../plans/alg-packing/java-baseline.md). Expect 0 failures. At the
+`8bca22f4` pin (#104) the rectpacking and spore classes run 34 times (`CompactionTest` 11, `PaddingTest` 4, `Issue583Test` 1,
+`Issue1214Test` 4, `InteractiveNodeReordererTest` 3, `UtilsTest` 3, `ScanlineOverlapRemovalTest` 2, `RandomSeedTest` 6); the
+topdownpacking classes were last run for mission 8c (`TopdownPackingTest` 4, `TopdownLayoutTest` 5,
+`PortPlacementCalculationTest` 2) and their bundle did not change since. Any difference is a stop.
 
 **Failures.** A row that differs: instrument the oracle and dump actual values before changing the port; trace the divergence to
 the first stop where the port departs. A lone module that throws `Cannot access ... before initialization`: section 3.6. A sweep

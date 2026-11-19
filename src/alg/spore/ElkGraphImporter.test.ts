@@ -9,6 +9,7 @@ import { SporeCompactionOptions } from './options/SporeCompactionOptions.js';
 import { ElkGraphImporter } from './ElkGraphImporter.js';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
 import { IllegalStateException } from '../../java/lang/IllegalStateException.js';
+import { Random } from '../../java/util/Random.js';
 import {
   childOrigins,
   compareTo,
@@ -58,8 +59,9 @@ function run(row: SporeRow): StepwiseResult {
 describe('ElkGraphImporter: stops rows (underlying, import, update, end)', () => {
   const rows = loadSporeRows('stops');
 
-  it('the ref has 60 stops rows', () => {
-    expect(rows).toHaveLength(60);
+  // 60 stops and 113 full rows until e7eaea57: eclipse-elk/elk#1244 turns throws/overlap/scanlineHitboxes into a full row with its stops (#104, D4)
+  it('the ref has 61 stops rows', () => {
+    expect(rows).toHaveLength(61);
   });
 
   it.each(rows.map((row) => row.id))('%s: every recorded field equals the port dump', (id) => {
@@ -86,9 +88,9 @@ describe('ElkGraphImporter: stops rows (underlying, import, update, end)', () =>
 describe('ElkGraphImporter: full rows (end dump, tie summary)', () => {
   const rows = loadSporeRows('full').filter((row) => row.id !== COMPACTION_CHAIN);
 
-  it('the ref has 113 full rows, one of them the cubic compaction chain', () => {
-    expect(loadSporeRows('full')).toHaveLength(113);
-    expect(rows).toHaveLength(112);
+  it('the ref has 114 full rows, one of them the cubic compaction chain', () => {
+    expect(loadSporeRows('full')).toHaveLength(114);
+    expect(rows).toHaveLength(113);
   });
 
   it.each(rows.map((row) => row.id))('%s: the end dump and tie summary equal the row', TIMEOUT, (id) => {
@@ -164,9 +166,10 @@ describe('ElkGraphImporter: jitter rows (PK4, invariants only)', () => {
     }
     // the bound is computed from the input alone
     expect(displacementBound(importInput(row))).toBe(decodeHex(invariants.maxDisplacementBound));
-    // Math.random() shifts the coincident centres differently in every run
-    expect(invariants.runsAgree).toBe(false);
-    expect(dumps.size).toBe(RUNS);
+    // the coincident centres are shifted by a Random seeded with randomSeed (default 1) since eclipse-elk/elk#1242, so every run
+    // gives the same dump; until e7eaea57 an unseeded Math.random() made runsAgree false and every dump distinct (#104, D5.7)
+    expect(invariants.runsAgree).toBe(true);
+    expect(dumps.size).toBe(1);
   });
 });
 
@@ -182,24 +185,38 @@ const TWO_NODES = {
   ],
 };
 
-/** The default of `SporeCompactionOptions.PADDING` (SPOrE.melk). */
-const PADDING = 8;
-
 const unit = (input: Record<string, unknown>) => ({ input, expected: { algorithm: COMPACTION_ALGORITHM } });
 
-describe('ElkGraphImporter.updateGraph (ElkGraphImporter.java:227-241)', () => {
-  it('two nodes ending at identical centres collapse into one nodeMap entry (HashMap.put replaces the value); applyPositions then moves only the last node', () => {
+describe('ElkGraphImporter.updateGraph (ElkGraphImporter.java:233-253)', () => {
+  it('two nodes ending at identical centres stay two nodeMap entries: the second centre is shifted (shiftUntilUnique) and its node translated by the shift; applyPositions then places both', () => {
     const root = importInput(unit(TWO_NODES));
     const importer = new ElkGraphImporter();
     const graph = importer.importGraph(root);
     const [first, second] = graph.vertices as [(typeof graph.vertices)[number], (typeof graph.vertices)[number]];
     second.rect.x = first.rect.x;
     second.rect.y = first.rect.y;
+    const secondVertex = second.vertex.clone();
 
     importer.updateGraph(graph);
 
+    // the default randomSeed is 1 (SPOrE.melk); the import drew nothing (the input centres differ), so the shift is the first
+    // two draws of Random(1): x first, then y (ElkGraphImporter.java:266)
+    const random = new Random(1);
+    const dx = (random.nextDouble() - 0.5) * 0.001;
+    const dy = (random.nextDouble() - 0.5) * 0.001;
+    const centre = first.rect.getCenter();
+    const shifted = [centre.x + dx, centre.y + dy] as const;
+    // n.translate(center.clone().sub(oldCenter)): the node moves by the difference of the two centres
+    const translation = [shifted[0] - centre.x, shifted[1] - centre.y] as const;
     const nodeMap = (importer as unknown as { nodeMap: { size: number } }).nodeMap;
-    expect(nodeMap.size).toBe(1);
+    expect(nodeMap.size).toBe(2);
+    expect([first.originalVertex.x, first.originalVertex.y]).toEqual([centre.x, centre.y]);
+    expect([second.originalVertex.x, second.originalVertex.y]).toEqual(shifted);
+    expect([second.rect.x, second.rect.y]).toEqual([first.rect.x + translation[0], first.rect.y + translation[1]]);
+    expect([second.vertex.x, second.vertex.y]).toEqual([
+      secondVertex.x + translation[0],
+      secondVertex.y + translation[1],
+    ]);
     expect(graph.tEdges).toBeNull();
     expect(graph.tree).toBeNull();
 
@@ -207,10 +224,11 @@ describe('ElkGraphImporter.updateGraph (ElkGraphImporter.java:227-241)', () => {
     const children = [...root.getChildren()];
     const a = children[0]!;
     const b = children[1]!;
-    // only b is mapped, so only b is placed (setLocation(rect.x, rect.y)), and minX / minY are b's: the translation then puts b at the
-    // padding (SporeCompactionOptions.PADDING default 8) and carries a, which kept its input location (0, 0), by the same offset
-    expect([b.getX(), b.getY()]).toEqual([PADDING, PADDING]);
-    expect([a.getX() - b.getX(), a.getY() - b.getY()]).toEqual([0 - first.rect.x, 0 - first.rect.y]);
+    // both nodes are mapped and placed (setLocation(rect.x, rect.y)): b lies the shift away from a
+    expect([b.getX() - a.getX(), b.getY() - a.getY()]).toEqual([
+      second.rect.x - first.rect.x,
+      second.rect.y - first.rect.y,
+    ]);
   });
 
   it('updateGraph sets originalVertex to the rectangle centre, a new KVector each', () => {
@@ -226,14 +244,14 @@ describe('ElkGraphImporter.updateGraph (ElkGraphImporter.java:227-241)', () => {
 });
 
 describe('ElkGraphImporter.importGraph: option switches', () => {
-  it('an empty graph returns before nodes and root selection (ElkGraphImporter.java:154-157)', () => {
+  it('an empty graph returns before nodes and root selection (ElkGraphImporter.java:165-168)', () => {
     const root = importInput(unit({ id: 'root', layoutOptions: { 'elk.algorithm': COMPACTION_ALGORITHM } }));
     const graph = new ElkGraphImporter().importGraph(root);
     expect(graph.vertices).toEqual([]);
     expect(graph.preferredRoot).toBeNull();
   });
 
-  it('an unknown cost function throws IllegalArgumentException with its text (ElkGraphImporter.java:144-146)', () => {
+  it('an unknown cost function throws IllegalArgumentException with its text (ElkGraphImporter.java:155-157)', () => {
     const root = importInput(unit(TWO_NODES));
     const fake = { toString: () => 'NO_SUCH_COST' } as unknown as SpanningTreeCostFunction;
     root.setProperty(SporeCompactionOptions.PROCESSING_ORDER_SPANNING_TREE_COST_FUNCTION, fake);
@@ -241,7 +259,7 @@ describe('ElkGraphImporter.importGraph: option switches', () => {
     expect(() => new ElkGraphImporter().importGraph(root)).toThrow('No implementation available for NO_SUCH_COST');
   });
 
-  it('an unknown root selection throws IllegalArgumentException with its text (ElkGraphImporter.java:218-220)', () => {
+  it('an unknown root selection throws IllegalArgumentException with its text (ElkGraphImporter.java:224-226)', () => {
     const root = importInput(unit(TWO_NODES));
     const fake = { toString: () => 'NO_SUCH_ROOT' } as unknown as RootSelection;
     root.setProperty(SporeCompactionOptions.PROCESSING_ORDER_ROOT_SELECTION, fake);

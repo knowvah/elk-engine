@@ -73,8 +73,9 @@ export class ModelOrderCycleBreaker implements ILayoutPhase<LayeredPhases, LGrap
     // such that m > m(n) with m(n) being the model order of a normal node n (without constraints).
     // Such that the highest model order has to be used as an offset
     // Both reads unbox an `Integer` property that has no default (`:70-71`). A nested graph laid out with
-    // `INCLUDE_CHILDREN` never gets them (`ElkGraphImporter.java:382-384` sets them on the top-level graph only), so the
-    // Java throws a NullPointerException here; the oracle does on the corpus model `modelOrderCycleBreaking`.
+    // `INCLUDE_CHILDREN` never gets them (`ElkGraphImporter.java:385-387` sets them on the top-level graph only), so the
+    // Java throws a NullPointerException here. Until `e7eaea57` the oracle did on the corpus model
+    // `modelOrderCycleBreaking`; since eclipse-elk/elk#1241 the importer refuses such a nested graph before this runs.
     const offset = Math.max(
       layeredGraph.getLayerlessNodes().length,
       unboxInteger(layeredGraph.getProperty(InternalProperties.MAX_MODEL_ORDER_NODES), LGRAPH_PROPERTY),

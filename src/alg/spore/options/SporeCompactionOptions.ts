@@ -176,6 +176,24 @@ export class SporeCompactionOptions implements ILayoutMetaDataProvider {
   }
 
   /**
+   * Default value for {@link RANDOM_SEED} with algorithm "ELK SPOrE Compaction".
+   */
+  private static readonly RANDOM_SEED_DEFAULT: number = 1;
+
+  static #RANDOM_SEED: IProperty<number> | undefined;
+
+  /**
+   * Seed used for pseudo-random number generators to control the layout algorithm. If the
+   * value is 0, the seed shall be determined pseudo-randomly (e.g. from the system time).
+   */
+  static get RANDOM_SEED(): IProperty<number> {
+    return (SporeCompactionOptions.#RANDOM_SEED ??= Property.withDefault(
+      CoreOptions.RANDOM_SEED,
+      SporeCompactionOptions.RANDOM_SEED_DEFAULT,
+    ));
+  }
+
+  /**
    * Layouter-specific algorithm factory.
    */
   static readonly SporeCompactionFactory: typeof SporeCompactionFactory = SporeCompactionFactory;
@@ -247,6 +265,11 @@ export class SporeCompactionOptions implements ILayoutMetaDataProvider {
       'org.eclipse.elk.sporeCompaction',
       'org.eclipse.elk.debugMode',
       SporeCompactionOptions.DEBUG_MODE_DEFAULT,
+    );
+    registry.addOptionSupport(
+      'org.eclipse.elk.sporeCompaction',
+      'org.eclipse.elk.randomSeed',
+      SporeCompactionOptions.RANDOM_SEED_DEFAULT,
     );
   }
 }

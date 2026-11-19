@@ -86,7 +86,8 @@
 // group sort (PK7): expected = { order: [index...] } | { throws: { class, message } }. input = { positions: [int...] }, the DESIRED_POSITION
 //   of element i (a node with identifier "i" and RectPackingOptions.DESIRED_POSITION set, in an ArrayList). order = the identifiers, as
 //   indices, of the list after Collections.sort(list, comparator) with the comparator copied verbatim from
-//   InteractiveNodeReorderer.java:56-63 (equal positions return -1 in both directions). 640 rows: lengths 1-64 times 10 position shapes
+//   InteractiveNodeReorderer.java:50-71 (eclipse-elk/elk#1237: equal positions compare by model order, the later element first; the
+//   model order map is filled in list order, as the processor fills it). 640 rows: lengths 1-64 times 10 position shapes
 //   (v0 all equal, v1-v2 two and three values, v3 range L/2, v4 range L, v5 ascending with duplicates, v6 descending with duplicates,
 //   v7 sawtooth, v8 four values, v9 zero/one) drawn from seed SEED; 330 rows have length >= 32.
 //
@@ -172,7 +173,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 public class RectPackingVectors {
-    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
+    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
     static final String OUTPUT = "rectpacking.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String IDENTIFIER_SEED_PROPERTY = "org.eclipse.elk.graph.util.identifierSeed";
@@ -1541,8 +1542,9 @@ public class RectPackingVectors {
             g.setProperty(RectPackingOptions.PACKING_COMPACTION_ROW_HEIGHT_REEVALUATION, true);
             g.setProperty(RectPackingOptions.SPACING_NODE_NODE, 5.0);
         });
-        // Compaction.java:322-325: a block that placeBeside moved keeps its old parent row, so a later placeBelow takes the
-        // wasFromNextRow arm while rows.size() <= nextRowIndex
+        // Until e7eaea57 a block that placeBeside moved kept its old parent row (Compaction.java:412), so a later placeBelow took the
+        // wasFromNextRow arm while rows.size() <= nextRowIndex (:322-325). eclipse-elk/elk#1239 sets the parent row (:413): the two
+        // inputs stay, their rows no longer hold a stale parent row (no detachedRows flag), and no row reaches that arm
         arm(l, "staleParentRow", new double[] {10, 10, 10, 20, 10}, new double[] {10, 10, 40, 10, 60}, g -> { });
         arm(l, "staleParentRowNoSpacing", new double[] {20, 20, 10, 10, 10}, new double[] {10, 10, 30, 10, 40},
                 g -> g.setProperty(RectPackingOptions.SPACING_NODE_NODE, 0.0));
@@ -1669,19 +1671,22 @@ public class RectPackingVectors {
 
     static String sortOutcome(int[] pos) {
         List<ElkNode> fixedNodes = new ArrayList<>();
+        // as InteractiveNodeReorderer.java:50-56: the model order of a node is its index among the nodes with a desired position
+        Map<ElkNode, Integer> modelOrder = new HashMap<>();
         for (int i = 0; i < pos.length; i++) {
             ElkNode n = ElkGraphUtil.createNode(null);
             n.setIdentifier(String.valueOf(i));
             n.setProperty(RectPackingOptions.DESIRED_POSITION, pos[i]);
+            modelOrder.put(n, fixedNodes.size());
             fixedNodes.add(n);
         }
         try {
-            // verbatim from InteractiveNodeReorderer.java:56-63
+            // verbatim from InteractiveNodeReorderer.java:63-71
             Collections.sort(fixedNodes, (a, b) -> {
                 int positionA = a.getProperty(RectPackingOptions.DESIRED_POSITION);
                 int positionB = b.getProperty(RectPackingOptions.DESIRED_POSITION);
                 if (positionA == positionB) {
-                    return -1;
+                    return Integer.compare(modelOrder.get(b), modelOrder.get(a));
                 } else {
                     return Integer.compare(positionA, positionB);
                 }

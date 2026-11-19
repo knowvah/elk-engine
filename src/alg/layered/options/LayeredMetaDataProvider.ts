@@ -324,6 +324,7 @@ export class LayeredMetaDataProvider implements ILayoutMetaDataProvider {
   /**
    * Layer identifier that was calculated by ELK Layered for a node.
    * This is only generated if interactiveLayot or generatePositionAndLayerIds is set.
+   * This option is not usable as an input.
    */
   static readonly LAYERING_LAYER_ID: IProperty<number> = new Property<number>(
     'org.eclipse.elk.layered.layering.layerId',
@@ -581,6 +582,7 @@ export class LayeredMetaDataProvider implements ILayoutMetaDataProvider {
   /**
    * Position within a layer that was determined by ELK Layered for a node.
    * This is only generated if interactiveLayot or generatePositionAndLayerIds is set.
+   * This option is not usable as an input.
    */
   static readonly CROSSING_MINIMIZATION_POSITION_ID: IProperty<number> = new Property<number>(
     'org.eclipse.elk.layered.crossingMinimization.positionId',
@@ -2354,14 +2356,14 @@ export class LayeredMetaDataProvider implements ILayoutMetaDataProvider {
         .group('layering')
         .name('Layer ID')
         .description(
-          'Layer identifier that was calculated by ELK Layered for a node. This is only generated if interactiveLayot or generatePositionAndLayerIds is set.',
+          'Layer identifier that was calculated by ELK Layered for a node. This is only generated if interactiveLayot or generatePositionAndLayerIds is set. This option is not usable as an input.',
         )
         .defaultValue(LayeredMetaDataProvider.LAYERING_LAYER_ID_DEFAULT)
         .lowerBound(LayeredMetaDataProvider.LAYERING_LAYER_ID_LOWER_BOUND)
         .type(LayoutOptionData.Type.INT)
         .optionClass(JavaClass.Integer)
         .targets(EnumSet.of(LayoutOptionData.Target.NODES))
-        .visibility(LayoutOptionData.Visibility.HIDDEN)
+        .visibility(LayoutOptionData.Visibility.VISIBLE)
         .create(),
     );
     registry.register(
@@ -2574,14 +2576,14 @@ export class LayeredMetaDataProvider implements ILayoutMetaDataProvider {
         .group('crossingMinimization')
         .name('Position ID')
         .description(
-          'Position within a layer that was determined by ELK Layered for a node. This is only generated if interactiveLayot or generatePositionAndLayerIds is set.',
+          'Position within a layer that was determined by ELK Layered for a node. This is only generated if interactiveLayot or generatePositionAndLayerIds is set. This option is not usable as an input.',
         )
         .defaultValue(LayeredMetaDataProvider.CROSSING_MINIMIZATION_POSITION_ID_DEFAULT)
         .lowerBound(LayeredMetaDataProvider.CROSSING_MINIMIZATION_POSITION_ID_LOWER_BOUND)
         .type(LayoutOptionData.Type.INT)
         .optionClass(JavaClass.Integer)
         .targets(EnumSet.of(LayoutOptionData.Target.NODES))
-        .visibility(LayoutOptionData.Visibility.HIDDEN)
+        .visibility(LayoutOptionData.Visibility.VISIBLE)
         .create(),
     );
     registry.register(

@@ -171,7 +171,7 @@ rows record an exception where no landed recorder did; the shape is
 | ------------------------------------------------------------- | --------------------------- | ---------------------------- |
 | `sites/ElkLayered/childStrategyThrow`                         | `UnsupportedGraphException` | `ElkLayered.java:344`        |
 | `sites/SplineSegment/anchorYWithoutPortCoordinate/{DOWN,UP}`  | `NullPointerException`      | `SplineSegment.java:247`     |
-| `sites/ElkGraphImporter/selfLoopInCompoundNode`               | `NullPointerException`      | `ElkGraphImporter.java:1146` |
+| `sites/ElkGraphImporter/selfLoopInCompoundNode`               | `NullPointerException`      | `ElkGraphImporter.java:1205` |
 | `sites/CompoundGraphPreprocessor/hierarchicalPortFIXED_RATIO` | `NullPointerException`      | `LGraphUtil.java:944`        |
 
 A replay compares class and frame, because the NPE messages are JDK 21 helpful-NPE text. A throw row "corresponds" when the
@@ -213,7 +213,7 @@ laid-out graph (7g's canonical form: raw IEEE hex, NaN canonical, issue #53) or 
 | c    | every `realworld/ptolemy/hierarchical/*.json` (256) with `INCLUDE_CHILDREN` applied at the root × 4 directions                               | 1,024 | 1,024 ok        |
 
 1,169 cases: 1,164 ok, 5 throws, 0 timeouts, 0 refusals (oracle run 8 s). The 5 throws are all
-`tickets/layered/425_selfLoopInCompoundNode.elkt` (`NullPointerException`, `ElkGraphImporter.java:1146`), and the port throws a
+`tickets/layered/425_selfLoopInCompoundNode.elkt` (`NullPointerException`, `ElkGraphImporter.java:1205`), and the port throws a
 `TypeError` at the same import step. The label-sweep count of 50 holds before the stress filter. Part a's 9 swept models
 are a subset of part b's 20, so 45 cases repeat under another id (H5 lists both parts). Part c needed a reading: H5 selects
 ptolemy files that set `hierarchyHandling=INCLUDE_CHILDREN` at the root, and none of the 256 sets it (0 hold the text), so the
@@ -358,7 +358,7 @@ dead are issue #59 (`needs-ruling`): six arms of `NorthToSouthRoutingStrategy`/`
 **Oracle throws the port reproduces (issue #61).** The port throws where the oracle throws, in the same method:
 (U1) `edgeRouting=SPLINES` in direction `DOWN` or `UP` under `INCLUDE_CHILDREN` throws `NullPointerException` at
 `SplineSegment.java:247` (inputs `040`, `160`, `701`; the port: `TypeError` from `SplineSegment.anchorY`, `SplineSegment.ts:294`);
-(U2) `425_selfLoopInCompoundNode.elkt` throws `NullPointerException` at `ElkGraphImporter.java:1146` (`lgraph` is null; the
+(U2) `425_selfLoopInCompoundNode.elkt` throws `NullPointerException` at `ElkGraphImporter.java:1205` (`lgraph` is null; the
 recorder's inline export of the same model completes); (U3) `FIXED_RATIO` with a hierarchical port throws
 `NullPointerException` at `LGraphUtil.java:944` because `CompoundGraphPreprocessor.java:182-185` passes `null` for
 `portNodeSize`. Also drafted: (U4) `LayerSweepCrossingMinimizer.java:193-194` tests the node influence twice (the port,

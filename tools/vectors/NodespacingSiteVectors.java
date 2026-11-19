@@ -158,7 +158,7 @@ import org.eclipse.elk.graph.json.ElkGraphJson;
 import org.eclipse.elk.graph.util.ElkGraphUtil;
 
 public class NodespacingSiteVectors {
-    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
+    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
     static final String OUTPUT = "nodespacing-sites.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final double NODE_WIDTH = 40.0, NODE_HEIGHT = 30.0, PORT_SIZE = 2.0;

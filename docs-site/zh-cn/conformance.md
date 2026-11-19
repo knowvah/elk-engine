@@ -25,7 +25,7 @@ sourceHash: 1c16c2c481111ebe772362128cf8f3e800f6e482a5ba14cadcb0f135f1872461
 
 | 项目                | 位置                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------ |
-| 固定的 ELK 提交     | `tools/oracle/ELK_COMMIT`（当前为 `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`）       |
+| 固定的 ELK 提交     | `tools/oracle/ELK_COMMIT`（当前为 `8bca22f4afa3371562d2f702d59929818f7f7b71`）       |
 | 补丁序列            | `tools/oracle/patches/*.patch`，按字典序以 `git am --3way` 应用                      |
 | 构建                | `tools/oracle/build.sh`（Maven 3.9.x + JDK 21；Tycho 下载 p2 构件）                  |
 | 批量运行器          | `tools/oracle/run.sh <outDir> <input>...` 或 `run.sh --cases <cases.jsonl> <outDir>` |

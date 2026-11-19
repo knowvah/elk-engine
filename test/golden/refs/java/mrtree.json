@@ -1,6 +1,6 @@
 {
   "jdk": "21.0.1",
-  "oracle": "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c",
+  "oracle": "8bca22f4afa3371562d2f702d59929818f7f7b71",
   "seeds": {"shapes": 8101, "random": 8102},
   "rowCounts": {"full": 122, "stops": 54, "throws": 12},
   "rows": [

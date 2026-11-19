@@ -1623,6 +1623,7 @@ export class LayeredOptions implements ILayoutMetaDataProvider {
   /**
    * Layer identifier that was calculated by ELK Layered for a node.
    * This is only generated if interactiveLayot or generatePositionAndLayerIds is set.
+   * This option is not usable as an input.
    */
   static get LAYERING_LAYER_ID(): IProperty<number> {
     return (LayeredOptions.#LAYERING_LAYER_ID ??= LayeredMetaDataProvider.LAYERING_LAYER_ID);
@@ -1633,6 +1634,7 @@ export class LayeredOptions implements ILayoutMetaDataProvider {
   /**
    * Position within a layer that was determined by ELK Layered for a node.
    * This is only generated if interactiveLayot or generatePositionAndLayerIds is set.
+   * This option is not usable as an input.
    */
   static get CROSSING_MINIMIZATION_POSITION_ID(): IProperty<number> {
     return (LayeredOptions.#CROSSING_MINIMIZATION_POSITION_ID ??=

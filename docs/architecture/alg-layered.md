@@ -76,7 +76,7 @@ getGraph/getNestedGraph`, `LGraph.getParentNode`); call sites that Java derefere
   random graphs, 200-node chains and nested SCCs, and under `--jitless` at 10,000 nodes where the reference overflows.
   Its two hash containers (`nodeToSCCID`, the per-SCC `HashSet`) are insertion-ordered `Map`/`Set` (AD-10): a 7b
   replay mismatch traced to either is that mission's stop.
-- **Java `assert` sites** (`LNode.setGraph`, `createExternalPortDummy` ×2, `ElkGraphImporter.java:203, 561-562, 730`)
+- **Java `assert` sites** (`LNode.setGraph`, `createExternalPortDummy` ×2, `ElkGraphImporter.java:205, 620-621, 789`)
   are omitted per the `KVector` precedent (the oracle runs without `-ea`). `NodeFlexibility.isAtLeast` keeps Java's
   missing `return` in the `NODE_SIZE_WHERE_SPACE_PERMITS` arm (it falls through to `isFlexiblePorts`).
 
@@ -87,14 +87,24 @@ getGraph/getNestedGraph`, `LGraph.getParentNode`); call sites that Java derefere
 needs it and a verbatim import would close the ESM cycle `LGraphElement → ElkGraphTransformer → ElkGraphImporter →
 LGraph` with `class LGraph extends LGraphElement` evaluated before `LGraphElement` exists (TDZ).
 
-- **`ElkGraphImporter`** (1,280 Java lines) → facade (`:80-141`) + `EntryPoints`, `Flat`, `Hierarchical`, `ModelOrder`,
-  `Graphs`, `ExternalPorts`, `Nodes`, `Ports`, `Edges`, `Labels`, `Map`, split at the Java section comments (T6).
-  `transformPort` takes a `PortTransformContext` for its last three Java parameters; `transformEdge` an internal
-  record for its shared locals.
+- **`ElkGraphImporter`** (1,341 Java lines at the `8bca22f4` pin) → facade (`:82-143`) + `EntryPoints`, `Flat`,
+  `Hierarchical`, `ModelOrder`, `Graphs`, `ExternalPorts`, `Nodes`, `Ports`, `Edges`, `Labels`, `Map`, split at the Java
+  section comments (T6). `transformPort` takes a `PortTransformContext` for its last three Java parameters;
+  `transformEdge` an internal record for its shared locals.
+- **Nested model order refusal** (since the `8bca22f4` pin, issue #104;
+  [eclipse-elk/elk#1241](https://github.com/eclipse-elk/elk/pull/1241)). `importHierarchicalGraph` calls
+  `ensureNoModelOrderStrategies(lnode, nestedGraph)` right after it attaches a nested graph (`ElkGraphImporter.java:377`,
+  `:511-566`; in the port `ElkGraphImporterModelOrder.ts`, called from `ElkGraphImporterHierarchical.ts`). A nested graph
+  laid out with `INCLUDE_CHILDREN` never gets `MAX_MODEL_ORDER_NODES` and `CB_NUM_MODEL_ORDER_GROUPS`, so the importer
+  throws `UnsupportedConfigurationException` when it sets a `MODEL_ORDER`, `GREEDY_MODEL_ORDER`, `SCC_CONNECTIVITY` or
+  `SCC_NODE_TYPE` cycle breaker, `DFS_NODE_ORDER` or `BFS_NODE_ORDER` with the `ENFORCED` group order strategy, a
+  `considerModelOrder.strategy` other than `NONE`, or `forceNodeModelOrder` with `LAYER_SWEEP`. Before, these failed with
+  a `NullPointerException` inside a phase (issue #84). The Java's `switch` over the cycle breaker is its own helper in the
+  port (complexity limit); `NestedModelOrderConfigurationTest` is ported.
 - **`ElkGraphLayoutTransferrer`** → facade (+ `applyLayoutNonMutating`) + `Apply`, `Utility`, `NonMutating` (the
   debug statics are suffixed `NonMutating`).
-- **Hash sites (AD-10).** `ElkGraphImporter.java:83` `nodeAndPortMap` (EMF identity keys) is an insertion-ordered `Map`
-  written and read by key only; `:237` and `:316` `HashSet<Integer> cbGroupModelOrders` are `Set<number>` whose only
+- **Hash sites (AD-10).** `ElkGraphImporter.java:85` `nodeAndPortMap` (EMF identity keys) is an insertion-ordered `Map`
+  written and read by key only; `:239` and `:318` `HashSet<Integer> cbGroupModelOrders` are `Set<number>` whose only
   read is `size()`. Iteration order is unobservable at all three.
 - **Quirks kept, unreached in 7a:** `transformExternalPort` casts `elkgraph.getParent()` unconditionally (`:801-805`,
   an NPE for a root graph in Java, so external ports are only importable below the root); `:668` discards a
@@ -290,7 +300,7 @@ cascade, `HighDegreeNodeLayeringProcessor.isTreeRoot`/`moveTree` (the brief's `d
   first use; ESM evaluates modules in import order, so three kinds of module-level reads failed in the temporal dead
   zone and are now lazy: the generated option defaults for `CycleBreakingStrategy`/`LayeringStrategy` (melk
   `NON_LEAF_DEFAULT_TYPES`, 7.2), the six strategy comparisons of `ElkGraphImporterModelOrder` (read inside the
-  function, as `ElkGraphImporter.java:484-489` does) and the thirteen phase classes' `*_PROCESSING_CONFIGURATION`
+  function, as `ElkGraphImporter.java:487-492` does) and the thirteen phase classes' `*_PROCESSING_CONFIGURATION`
   (cached static getters). Tests enter the graph through a strategy enum, never through an abstract phase base class.
 - **`Integer` box identity (E2a).** Four sites compare boxed `Integer`s by reference (`NodePromotion.java:541`,
   `CoffmanGrahamLayerer.java:244`, `SCCNodeTypeCycleBreaker.java:80,88`, `Tarjan.java:86`); each operand is a fresh

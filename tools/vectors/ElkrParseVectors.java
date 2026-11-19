@@ -57,7 +57,7 @@ import org.eclipse.xtext.parser.antlr.SyntaxErrorMessageProvider;
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic;
 
 public class ElkrParseVectors {
-    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
+    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
     static final String CONVERSION_CODE = "elkr.vectors.ValueConversion";
     static final String SCENARIO_DIR = "elkr-parse-scenarios", EXTENSION = ".elkr", OUTPUT = "grandom-parse.json";
 

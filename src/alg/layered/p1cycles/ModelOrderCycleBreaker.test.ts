@@ -63,10 +63,12 @@ describe('ModelOrderCycleBreaker configuration', () => {
 
 /**
  * A nested graph under `hierarchyHandling: INCLUDE_CHILDREN` never gets `MAX_MODEL_ORDER_NODES`
- * (`ElkGraphImporter.java:382` sets it on the top-level graph only), so `ModelOrderCycleBreaker.java:70` unboxes null.
- * The expected message is the oracle's, from the sweep row of
+ * (`ElkGraphImporter.java:385` sets it on the top-level graph only), so `ModelOrderCycleBreaker.java:70` unboxes null.
+ * The expected message is the oracle's at `e7eaea57`, from the sweep row of
  * `native/layered/hierarchy-include/examples/user-hints/model-order/modelOrderCycleBreaking` (verdict `throws`,
  * `java.lang.NullPointerException`; mission ts-parity-dashboard, T6). A NullPointerException is a `TypeError` in the port.
+ * Since eclipse-elk/elk#1241 the importer refuses that configuration first (`ensureNoModelOrderStrategies`,
+ * `NestedModelOrderConfigurationTest`); the processor itself is unchanged and still unboxes null when called on such a graph.
  */
 describe('ModelOrderCycleBreaker on a graph without MAX_MODEL_ORDER_NODES', () => {
   const ORACLE_MESSAGE =

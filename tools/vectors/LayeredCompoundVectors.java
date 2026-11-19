@@ -186,7 +186,7 @@
 //   ElkLayered.java:344); sites/SplineSegment/anchorYWithoutPortCoordinate/{DOWN,UP} throws (ticket 040 with direction and SPLINES baked
 //   into every level that has children; NullPointerException, SplineSegment.java:247); sites/ElkGraphImporter/selfLoopInCompoundNode throws
 //   (input = { path, sha256 } of tickets/layered/425_selfLoopInCompoundNode.elkt loaded from the file with its own options;
-//   NullPointerException, ElkGraphImporter.java:1146); sites/CompoundGraphPreprocessor/hierarchicalPortFIXED_RATIO throws and
+//   NullPointerException, ElkGraphImporter.java:1205); sites/CompoundGraphPreprocessor/hierarchicalPortFIXED_RATIO throws and
 //   .../hierarchicalPortFIXED_POS runs (a compound node c, port p without an explicit side at (0, 13), edges a -> p outside and p -> x
 //   inside, direction RIGHT, INCLUDE_CHILDREN; the oracle decides which, see the row). A throw outside a row of kind throws is an oracle
 //   throw (the row is not recorded).
@@ -303,7 +303,7 @@ import org.eclipse.elk.core.util.IElkProgressMonitor;
 import org.eclipse.elk.core.util.LoggedGraph;
 
 public class LayeredCompoundVectors {
-    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
+    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
     static final String OUTPUT = "layered-compound.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed", REPO_PREFIX = "repo:";
     static final String INPUTS = "test/golden/inputs/";

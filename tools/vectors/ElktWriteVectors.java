@@ -79,7 +79,7 @@ import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.resource.SaveOptions;
 
 public class ElktWriteVectors {
-    private static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
+    private static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
     private static final String XTEXT_VERSION = "2.36.0";
     private static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     private static final String SCENARIOS = "elkt-write-scenarios", OUT_NAME = "graph-text-write.json";

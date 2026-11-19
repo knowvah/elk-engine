@@ -19,7 +19,7 @@ Algoritmaların geliş sırası için [yol haritasına](/guide/roadmap) bakın.
 
 ## Java belirtimdir
 
-Sabitlenmiş ELK commit'i `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` üzerindeki Java kaynağı, bağlayıcı
+Sabitlenmiş ELK commit'i `8bca22f4afa3371562d2f702d59929818f7f7b71` üzerindeki Java kaynağı, bağlayıcı
 belirtimdir. Taşıma onu yakından izler:
 
 - Algoritmalar ne optimize edilir ne de basitleştirilir. Java gereksiz görünüyorsa, gereksizlik korunur.
