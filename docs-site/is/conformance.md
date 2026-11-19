@@ -33,7 +33,7 @@ Hvorugt er í þessari hirslu; hvorugt fylgir með.
 
 | Atriði          | Hvar                                                                                  |
 | --------------- | ------------------------------------------------------------------------------------- |
-| Fest ELK-commit | `tools/oracle/ELK_COMMIT` (nú `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)             |
+| Fest ELK-commit | `tools/oracle/ELK_COMMIT` (nú `8bca22f4afa3371562d2f702d59929818f7f7b71`)             |
 | Plástraröð      | `tools/oracle/patches/*.patch`, beitt í stafrófsröð með `git am --3way`               |
 | Smíði           | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho sækir p2-gripi)                  |
 | Runuvinnsla     | `tools/oracle/run.sh <outDir> <input>...` eða `run.sh --cases <cases.jsonl> <outDir>` |

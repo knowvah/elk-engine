@@ -66,11 +66,13 @@ const ORACLE_BUILD_FILE = 'oracle-build.json';
 const MAX_BUFFER = 16 * 1024 * 1024;
 const TIER_SET: ReadonlySet<string> = new Set(TIERS);
 const VERDICT_SET: ReadonlySet<string> = new Set(VERDICTS);
+const SPORE_UNSEEDED_JITTER =
+  'unseeded vertex jitter of coincident centres: the seed option is 0, so the shift draws from `new Random()` ' +
+  '(`ElkGraphImporter.java:133`).';
 const NONDETERMINISM_SOURCES: Readonly<Record<string, string>> = {
-  [`${ELK_ALGORITHM_PREFIX}sporeOverlap`]:
-    '`Math.random()` vertex jitter (`ElkGraphImporter.java:169`), unseedable from outside the algorithm.',
-  [`${ELK_ALGORITHM_PREFIX}sporeCompaction`]:
-    '`Math.random()` vertex jitter (`ElkGraphImporter.java:169`), unseedable from outside the algorithm.',
+  // Seeded since ELK 8bca22f4 (eclipse-elk/elk#1242): the default seed 1 is deterministic, only the seed option 0 is not.
+  [`${ELK_ALGORITHM_PREFIX}sporeOverlap`]: SPORE_UNSEEDED_JITTER,
+  [`${ELK_ALGORITHM_PREFIX}sporeCompaction`]: SPORE_UNSEEDED_JITTER,
   [`${ELK_ALGORITHM_PREFIX}random`]:
     'nested composites keep the default `randomSeed = 0` (unseeded) because retarget (D2) seeds only the root.',
 };

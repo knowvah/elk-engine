@@ -8,7 +8,7 @@ import { runSiteRow } from '../../../../../test/helpers/transform-site-rows.js';
 
 describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   it('flags EXTERNAL_PORTS for child and inside self loop edges and HYPEREDGES for a second one', () => {
-    // oracle: site/transform/externalPorts/free-votes-inside-labels; ElkGraphImporter.java:672-697 (checkExternalPorts)
+    // oracle: site/transform/externalPorts/free-votes-inside-labels; ElkGraphImporter.java:731-756 (checkExternalPorts)
     const run = runSiteRow('site/transform/externalPorts/free-votes-inside-labels');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'graphProperties')).toEqual(['EXTERNAL_PORTS', 'HYPEREDGES']);
@@ -19,7 +19,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('marks the dummy port of a port with an edge to a non-descendant as connected to external nodes', () => {
-    // oracle: site/transform/externalPorts/free-votes-inside-labels; ElkGraphImporter.java:870-888 (isConnectedToExternalNodes)
+    // oracle: site/transform/externalPorts/free-votes-inside-labels; ElkGraphImporter.java:929-947 (isConnectedToExternalNodes)
     const run = runSiteRow('site/transform/externalPorts/free-votes-inside-labels');
     const d = run.dump;
     expect(d.port('g0/n0/p0').connectedToExternalNodes).toBe(false);
@@ -31,7 +31,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('infers the port border offset: zero for a port at the origin, the calculated offset otherwise', () => {
-    // oracle: site/transform/externalPorts/free-votes-inside-labels; ElkGraphImporter.java:733-741 (transformExternalPort)
+    // oracle: site/transform/externalPorts/free-votes-inside-labels; ElkGraphImporter.java:792-800 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/free-votes-inside-labels');
     const d = run.dump;
     expect(prop(d.node('g0/n3'), 'port.borderOffset')).toEqual(0);
@@ -42,7 +42,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('votes the external port side by edge direction, inside self loops reversed', () => {
-    // oracle: site/transform/externalPorts/free-votes-inside-labels; ElkGraphImporter.java:822-866 (calculateNetFlow)
+    // oracle: site/transform/externalPorts/free-votes-inside-labels; ElkGraphImporter.java:881-925 (calculateNetFlow)
     const run = runSiteRow('site/transform/externalPorts/free-votes-inside-labels');
     const d = run.dump;
     expect(prop(d.node('g0/n0'), 'externalPortSide')).toEqual('EAST');
@@ -68,7 +68,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('keeps the labels with text and layout and skips empty and noLayout ones', () => {
-    // oracle: site/transform/externalPorts/free-votes-inside-labels; ElkGraphImporter.java:764-770 (transformExternalPort)
+    // oracle: site/transform/externalPorts/free-votes-inside-labels; ElkGraphImporter.java:823-829 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/free-votes-inside-labels');
     const d = run.dump;
     expect(d.port('g0/n1/p0').labels.length).toBe(1);
@@ -79,7 +79,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('votes a self loop as an outside loop while inside self loops are not activated', () => {
-    // oracle: site/transform/externalPorts/self-loops-not-activated; ElkGraphImporter.java:830-858 (calculateNetFlow)
+    // oracle: site/transform/externalPorts/self-loops-not-activated; ElkGraphImporter.java:889-917 (calculateNetFlow)
     const run = runSiteRow('site/transform/externalPorts/self-loops-not-activated');
     const d = run.dump;
     expect(prop(d.node('g0/n6'), 'externalPortSide')).toEqual('EAST');
@@ -94,7 +94,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('makes a port with an INSIDE label an external port without any edge', () => {
-    // oracle: site/transform/externalPorts/no-edges-inside-labels; ElkGraphImporter.java:690-692 (checkExternalPorts)
+    // oracle: site/transform/externalPorts/no-edges-inside-labels; ElkGraphImporter.java:749-751 (checkExternalPorts)
     const run = runSiteRow('site/transform/externalPorts/no-edges-inside-labels');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'graphProperties')).toEqual(['EXTERNAL_PORTS']);
@@ -106,7 +106,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('does not make a port with only an OUTSIDE label an external port', () => {
-    // oracle: site/transform/externalPorts/no-edges-outside-labels; ElkGraphImporter.java:690 (checkExternalPorts)
+    // oracle: site/transform/externalPorts/no-edges-outside-labels; ElkGraphImporter.java:749 (checkExternalPorts)
     const run = runSiteRow('site/transform/externalPorts/no-edges-outside-labels');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'graphProperties')).toEqual([]);
@@ -115,7 +115,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('does not make ports without edges and with INSIDE placement but no labels external', () => {
-    // oracle: site/transform/externalPorts/no-edges-no-labels; ElkGraphImporter.java:690 (checkExternalPorts)
+    // oracle: site/transform/externalPorts/no-edges-no-labels; ElkGraphImporter.java:749 (checkExternalPorts)
     const run = runSiteRow('site/transform/externalPorts/no-edges-no-labels');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'graphProperties')).toEqual([]);
@@ -124,7 +124,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('reduces the width of an outside label on an east or west port to the inside part', () => {
-    // oracle: site/transform/externalPorts/free-votes-outside-labels; ElkGraphImporter.java:784-787 (transformExternalPort)
+    // oracle: site/transform/externalPorts/free-votes-outside-labels; ElkGraphImporter.java:843-846 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/free-votes-outside-labels');
     const d = run.dump;
     expect(d.port('g0/n0/p0').side).toBe('WEST');
@@ -136,7 +136,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('takes the inside part of an outside label from computeInsidePart when the port labels are fixed', () => {
-    // oracle: site/transform/externalPorts/free-votes-fixed-labels; ElkGraphImporter.java:775-781 (transformExternalPort)
+    // oracle: site/transform/externalPorts/free-votes-fixed-labels; ElkGraphImporter.java:834-840 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/free-votes-fixed-labels');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'portLabels.placement')).toEqual(undefined);
@@ -147,7 +147,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('creates dummy ports without labels when the ports have none', () => {
-    // oracle: site/transform/externalPorts/free-votes-no-labels; ElkGraphImporter.java:764-770 (transformExternalPort)
+    // oracle: site/transform/externalPorts/free-votes-no-labels; ElkGraphImporter.java:823-829 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/free-votes-no-labels');
     const d = run.dump;
     expect(d.port('g0/n0/p0').labels.length).toBe(0);
@@ -157,7 +157,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('reduces the height of an outside label on a north or south port to the inside part', () => {
-    // oracle: site/transform/externalPorts/fixed-side-outside-labels; ElkGraphImporter.java:789-792 (transformExternalPort)
+    // oracle: site/transform/externalPorts/fixed-side-outside-labels; ElkGraphImporter.java:848-851 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/fixed-side-outside-labels');
     const d = run.dump;
     expect(d.port('g0/n3/p0').side).toBe('SOUTH');
@@ -171,7 +171,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('sizes the labels of north, south, east and west ports under FIXED_POS and outside labels', () => {
-    // oracle: site/transform/externalPorts/fixed-pos-labels; ElkGraphImporter.java:775-792 (transformExternalPort)
+    // oracle: site/transform/externalPorts/fixed-pos-labels; ElkGraphImporter.java:834-851 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/fixed-pos-labels');
     const d = run.dump;
     expect(d.port('g0/n3/p0').side).toBe('SOUTH');
@@ -186,7 +186,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('keeps a port border offset that is already set and infers the others', () => {
-    // oracle: site/transform/externalPorts/fixed-side-inside-labels-border-offset; ElkGraphImporter.java:733 (transformExternalPort)
+    // oracle: site/transform/externalPorts/fixed-side-inside-labels-border-offset; ElkGraphImporter.java:792 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/fixed-side-inside-labels-border-offset');
     const d = run.dump;
     expect(prop(d.node('g0/n0'), 'port.borderOffset')).toEqual(-3);
@@ -199,7 +199,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('imports external ports of a graph whose port constraints are UNDEFINED like a FREE graph', () => {
-    // oracle: site/transform/externalPorts/undefined-constraints; ElkGraphImporter.java:720-731 (transformExternalPort)
+    // oracle: site/transform/externalPorts/undefined-constraints; ElkGraphImporter.java:779-790 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/undefined-constraints');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'portConstraints')).toEqual('UNDEFINED');
@@ -211,7 +211,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('places the voted external ports of a DOWN graph on the north and south sides', () => {
-    // oracle: site/transform/externalPorts/free-votes-direction-down; ElkGraphImporter.java:822-866 (calculateNetFlow)
+    // oracle: site/transform/externalPorts/free-votes-direction-down; ElkGraphImporter.java:881-925 (calculateNetFlow)
     const run = runSiteRow('site/transform/externalPorts/free-votes-direction-down');
     const d = run.dump;
     expect(prop(d.node('g0/n0'), 'externalPortSide')).toEqual('SOUTH');
@@ -240,7 +240,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('places the voted external ports of a LEFT graph on the east and west sides', () => {
-    // oracle: site/transform/externalPorts/free-votes-direction-left; ElkGraphImporter.java:822-866 (calculateNetFlow)
+    // oracle: site/transform/externalPorts/free-votes-direction-left; ElkGraphImporter.java:881-925 (calculateNetFlow)
     const run = runSiteRow('site/transform/externalPorts/free-votes-direction-left');
     const d = run.dump;
     expect(prop(d.node('g0/n0'), 'externalPortSide')).toEqual('WEST');
@@ -268,7 +268,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('places the voted external ports of an UP graph on the north and south sides', () => {
-    // oracle: site/transform/externalPorts/free-votes-direction-up; ElkGraphImporter.java:822-866 (calculateNetFlow)
+    // oracle: site/transform/externalPorts/free-votes-direction-up; ElkGraphImporter.java:881-925 (calculateNetFlow)
     const run = runSiteRow('site/transform/externalPorts/free-votes-direction-up');
     const d = run.dump;
     expect(prop(d.node('g0/n0'), 'externalPortSide')).toEqual('NORTH');
@@ -297,7 +297,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('takes the inside part of outside labels from computeInsidePart when the port label placement is empty', () => {
-    // oracle: site/transform/externalPorts/fixed-placement-empty-outside-labels; ElkGraphImporter.java:775-792 (transformExternalPort)
+    // oracle: site/transform/externalPorts/fixed-placement-empty-outside-labels; ElkGraphImporter.java:834-851 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/fixed-placement-empty-outside-labels');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'portLabels.placement')).toEqual([]);
@@ -316,7 +316,7 @@ describe('ElkGraphImporterExternalPorts (oracle site rows)', () => {
   });
 
   it('takes the inside part of outside labels from computeInsidePart when the placement only says NEXT_TO_PORT_IF_POSSIBLE', () => {
-    // oracle: site/transform/externalPorts/fixed-placement-next-to-port-outside-labels; ElkGraphImporter.java:775-792 (transformExternalPort)
+    // oracle: site/transform/externalPorts/fixed-placement-next-to-port-outside-labels; ElkGraphImporter.java:834-851 (transformExternalPort)
     const run = runSiteRow('site/transform/externalPorts/fixed-placement-next-to-port-outside-labels');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'portLabels.placement')).toEqual(['NEXT_TO_PORT_IF_POSSIBLE']);

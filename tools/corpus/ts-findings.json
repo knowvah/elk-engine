@@ -3,35 +3,5 @@
     "caseId": "retarget/radial/default/tests/layered/splines/sloppy_overlaps_2",
     "issue": 68,
     "note": "accepted last-ulp Math.sin divergence (AD-4, #68 B): one option string, childAreaHeight; every coordinate agrees within 1e-13"
-  },
-  {
-    "caseId": "retarget/sporeOverlap/default/realworld/ptolemy/hierarchical/ptolemy_electricpowersystem_GeneratorRegulatorProtectorSimXFMU",
-    "issue": 79,
-    "note": "oracle nondeterminism (Math.random jitter on coincident centres): 24 oracle runs gave 20 throws and 4 distinct layouts; TS flickers alike"
-  },
-  {
-    "caseId": "retarget/sporeOverlap/default/realworld/ptolemy/hierarchical/ptolemy_test_auto32_GeneratorRegulatorProtectorSimXFMU",
-    "issue": 79,
-    "note": "oracle nondeterminism (Math.random jitter on coincident centres): 24 oracle runs gave 16 throws and 8 distinct layouts; TS flickers alike"
-  },
-  {
-    "caseId": "retarget/sporeOverlap/default/realworld/ptolemy/hierarchical/ptolemy_electricpowersystem_GeneratorRegulatorProtectorSimXRhapsodyFMUMetronomy",
-    "issue": 79,
-    "note": "oracle nondeterminism (Math.random jitter on coincident centres); one of the four cases of #79"
-  },
-  {
-    "caseId": "retarget/sporeOverlap/default/tests/layered/edge_label_placement/layerSelection_widest",
-    "issue": 79,
-    "note": "oracle nondeterminism (Math.random jitter on coincident centres); one of the four cases of #79"
-  },
-  {
-    "caseId": "retarget/sporeOverlap/default/tests/layered/node_placement/flexible_ports/graph01",
-    "issue": 79,
-    "note": "oracle nondeterminism (Math.random jitter on coincident centres); one of the four cases of #79"
-  },
-  {
-    "caseId": "retarget/sporeOverlap/default/tickets/layered/401_portConstraintsOfCompoundNodes",
-    "issue": 79,
-    "note": "oracle nondeterminism (Math.random jitter on coincident centres); one of the four cases of #79"
   }
 ]

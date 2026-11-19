@@ -10,7 +10,7 @@ import { lookup, lookupNode, type NodeAndPortMap } from './ElkGraphImporterMap.j
 
 describe('ElkGraphImporterMap (oracle site rows)', () => {
   it('finds no LNode for a node of a child that another algorithm lays out and rejects the edge', () => {
-    // oracle: site/transform/misc/lookup-miss-other-algorithm; ElkGraphImporter.java:1090-1135 (transformEdge, map lookup)
+    // oracle: site/transform/misc/lookup-miss-other-algorithm; ElkGraphImporter.java:1149-1194 (transformEdge, map lookup)
     const run = runSiteRow('site/transform/misc/lookup-miss-other-algorithm');
     expect(run.exception('graph')).toEqual({
       class: 'UnsupportedGraphException',

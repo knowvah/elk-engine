@@ -11,8 +11,10 @@ import type { ElkNode } from '../../graph/ElkNode.js';
 import { ElkGraphUtil } from '../../graph/util/ElkGraphUtil.js';
 import * as Maps from '../../guava/Maps.js';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
+import { PROPERTY_RETURN_VALUE, unboxInteger } from '../../java/lang/Unbox.js';
 import { hashable } from '../../java/util/HashStrategy.js';
 import type { JavaHashMap } from '../../java/util/JavaHashMap.js';
+import { Random } from '../../java/util/Random.js';
 import type { ICostFunction } from '../common/ICostFunction.js';
 import { NodeDimensionCalculation } from '../common/nodespacing/NodeDimensionCalculation.js';
 import { InternalProperties } from '../common/spore/InternalProperties.js';
@@ -29,7 +31,7 @@ import type { TreeConstructionStrategy } from './options/TreeConstructionStrateg
 /** Key protocol of the `KVector`-keyed `nodeMap`: `KVector.hashCode` and `KVector.equals`. */
 const KVECTOR_STRATEGY = hashable<KVector>();
 
-/** The factor of the random shift of identical centres: `(Math.random() - 0.5) * 0.001`. */
+/** The factor of the random shift of identical centres: `(random.nextDouble() - 0.5) * 0.001`. */
 const JITTER_OFFSET = 0.5;
 const JITTER_SCALE = 0.001;
 /** `center.scale(0.5)` of the CENTER_NODE root selection. */
@@ -42,7 +44,9 @@ type NodeMap = JavaHashMap<KVector, Pair<Node, ElkNode>>;
  *
  * `importGraph` and `applyPositions` are split at their statement-group boundaries (the node creation loop, the
  * root selection switch, the cost function switch, the position loop, the edge loop) to stay inside the complexity
- * limits; statement order is unchanged. The `Math.random()` jitter of identical centres is kept verbatim (PK4).
+ * limits; statement order is unchanged. The jitter of identical centres draws from a `Random` seeded by `randomSeed`
+ * (default 1, eclipse-elk/elk#1242; an unseeded `Math.random()` until `e7eaea57`, PK4), in `importGraph` and, since
+ * eclipse-elk/elk#1244, in `updateGraph`.
  *
  * @see org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/ElkGraphImporter.java
  */
@@ -57,6 +61,8 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
   private elkGraph!: ElkNode;
   /** Spacing between nodes. */
   private spacingNodeNode = 0;
+  /** The random number generator. */
+  private random!: Random;
 
   // callback functions ----------------------------------------------------------------------------------------------
   /**
@@ -72,7 +78,7 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
    * between the center point of each element and the center of the root element.
    */
   private readonly minimumRootDistance: ICostFunction = {
-    // `graph.preferredRoot` is null for a missing root (the Java throws a NullPointerException here, ElkGraphImporter.java:69)
+    // `graph.preferredRoot` is null for a missing root (the Java throws a NullPointerException here, ElkGraphImporter.java:72)
     cost: (e) =>
       Math.min(e.u.distance(this.graph.preferredRoot!.vertex), e.v.distance(this.graph.preferredRoot!.vertex)),
   };
@@ -117,7 +123,7 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
     return this.nodeMap.get(v)!.getFirst()!;
   }
 
-  /** @see org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/ElkGraphImporter.java:106 */
+  /** @see org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/ElkGraphImporter.java:109 */
   importGraph(inputGraph: ElkNode): Graph {
     this.elkGraph = inputGraph;
 
@@ -140,6 +146,9 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
     const rootSelection = this.elkGraph.getProperty(SporeCompactionOptions.PROCESSING_ORDER_ROOT_SELECTION);
     this.spacingNodeNode = this.elkGraph.getProperty(SporeCompactionOptions.SPACING_NODE_NODE);
 
+    // set the random number generator based on the random seed option
+    this.random = this.createRandom();
+
     const costFunction = this.costFunctionFor(costFunctionID);
 
     // instantiate Graph
@@ -159,7 +168,20 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
     return this.graph;
   }
 
-  /** The cost function switch of `importGraph` (`ElkGraphImporter.java:128-147`). */
+  /** The random seed block of `importGraph` (`ElkGraphImporter.java:131-136`): seed 0 is the unseeded generator. */
+  private createRandom(): Random {
+    const randomSeed = unboxInteger(
+      this.elkGraph.getProperty(SporeCompactionOptions.RANDOM_SEED),
+      PROPERTY_RETURN_VALUE('ElkNode'),
+    );
+    if (randomSeed === 0) {
+      return new Random();
+    } else {
+      return new Random(randomSeed);
+    }
+  }
+
+  /** The cost function switch of `importGraph` (`ElkGraphImporter.java:139-158`). */
   private costFunctionFor(costFunctionID: SpanningTreeCostFunction): ICostFunction {
     switch (costFunctionID) {
       case SpanningTreeCostFunction.CENTER_DISTANCE:
@@ -177,7 +199,7 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
     }
   }
 
-  /** The graph instantiation of `importGraph` (`ElkGraphImporter.java:149-152`). */
+  /** The graph instantiation of `importGraph` (`ElkGraphImporter.java:160-163`). */
   private instantiateGraph(
     costFunction: ICostFunction,
     treeConstructionStrategy: TreeConstructionStrategy,
@@ -189,7 +211,7 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
     return graph;
   }
 
-  /** The node creation loop of `importGraph` (`ElkGraphImporter.java:159-183`). */
+  /** The node creation loop of `importGraph` (`ElkGraphImporter.java:170-189`). */
   private createNodes(): void {
     for (const elkNode of this.elkGraph.getChildren()) {
       const halfWidth = elkNode.getWidth() / 2;
@@ -197,11 +219,7 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
       const vertex = new KVector(elkNode.getX() + halfWidth, elkNode.getY() + halfHeight);
 
       // randomly shift identical points a tiny bit to make them unique
-      while (this.nodeMap.containsKey(vertex)) {
-        vertex.add((Math.random() - JITTER_OFFSET) * JITTER_SCALE, (Math.random() - JITTER_OFFSET) * JITTER_SCALE);
-        // If two positions were identical, their corresponding edge in the spanning tree would be
-        // of zero length, had no direction, and couldn't be scaled by anything.
-      }
+      this.shiftUntilUnique(vertex, this.nodeMap);
 
       const margin: ElkMargin = elkNode.getProperty(CoreOptions.MARGINS);
 
@@ -220,7 +238,7 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
     }
   }
 
-  /** The root selection switch of `importGraph` (`ElkGraphImporter.java:185-221`). */
+  /** The root selection switch of `importGraph` (`ElkGraphImporter.java:191-227`). */
   private selectRoot(rootSelection: RootSelection, preferredRootID: string | null): void {
     switch (rootSelection) {
       case RootSelection.FIXED:
@@ -247,7 +265,7 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
     }
   }
 
-  /** The CENTER_NODE case of the root selection (`ElkGraphImporter.java:202-217`). */
+  /** The CENTER_NODE case of the root selection (`ElkGraphImporter.java:208-223`). */
   private selectCenterNode(): void {
     // find node that is most central in the drawing
     const center = new KVector(this.elkGraph.getWidth(), this.elkGraph.getHeight());
@@ -263,7 +281,7 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
     }
   }
 
-  /** @see org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/ElkGraphImporter.java:227 */
+  /** @see org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/ElkGraphImporter.java:233 */
   updateGraph(g: Graph): void {
     const updatedNodeMap: NodeMap = Maps.newHashMap<KVector, Pair<Node, ElkNode>>(KVECTOR_STRATEGY);
     // reset graph
@@ -273,13 +291,38 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
     // update nodes
     for (const n of g.vertices) {
       const original = this.nodeMap.get(n.originalVertex)!;
-      n.originalVertex = n.rect.getCenter();
+      const center = n.rect.getCenter();
+      // overlap removal can move a node onto the center of another one, keep the centers unique
+      if (updatedNodeMap.containsKey(center)) {
+        const oldCenter = center.clone();
+        this.shiftUntilUnique(center, updatedNodeMap);
+        n.translate(center.clone().sub(oldCenter));
+      }
+      n.originalVertex = center;
       updatedNodeMap.put(n.originalVertex, original);
     }
     this.nodeMap = updatedNodeMap;
   }
 
-  /** @see org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/ElkGraphImporter.java:243 */
+  /**
+   * Randomly shifts the given point a tiny bit until it is not a key of the given map. The centers of the nodes
+   * must be unique: if two positions were identical, their corresponding edge in the spanning tree would be of
+   * zero length, had no direction, and couldn't be scaled by anything.
+   *
+   * @param vertex the point to shift
+   * @param vertexMap the map whose keys are the points already taken
+   * @see org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/ElkGraphImporter.java:263
+   */
+  private shiftUntilUnique(vertex: KVector, vertexMap: JavaHashMap<KVector, unknown>): void {
+    while (vertexMap.containsKey(vertex)) {
+      // Java evaluates the two arguments left to right: the x draw comes first
+      const dx = (this.random.nextDouble() - JITTER_OFFSET) * JITTER_SCALE;
+      const dy = (this.random.nextDouble() - JITTER_OFFSET) * JITTER_SCALE;
+      vertex.add(dx, dy);
+    }
+  }
+
+  /** @see org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/ElkGraphImporter.java:271 */
   applyPositions(g: Graph): void {
     // set new node positions
     let minX = Number.POSITIVE_INFINITY;
@@ -309,7 +352,7 @@ export class ElkGraphImporter implements IGraphImporter<ElkNode> {
     this.routeEdges();
   }
 
-  /** The edge loop of `applyPositions` (`ElkGraphImporter.java:264-287`): straight lines clipped at the nodes. */
+  /** The edge loop of `applyPositions` (`ElkGraphImporter.java:292-315`): straight lines clipped at the nodes. */
   private routeEdges(): void {
     // update edges and route them as straight lines
     for (const e of this.elkGraph.getContainedEdges()) {

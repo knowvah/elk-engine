@@ -15,7 +15,7 @@ sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
 
 ## Java 即是規格
 
-固定的 ELK 提交 `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` 上的 Java 原始碼是權威規格。本移植嚴格遵循它：
+固定的 ELK 提交 `8bca22f4afa3371562d2f702d59929818f7f7b71` 上的 Java 原始碼是權威規格。本移植嚴格遵循它：
 
 - 演算法不做最佳化或簡化。若 Java 看起來有冗餘，冗餘會被保留。
 - 每個分支都會移植，除非 TypeScript 強制要求變更，否則方法邊界一律保留。

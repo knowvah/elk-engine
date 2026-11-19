@@ -281,7 +281,7 @@ export class HashModel {
 // ------------------------------------------------------------------------------------------------------------
 // stop dumps
 
-/** The number of vertices whose `originalVertex` is not the child's centre: the `Math.random()` loop shifted them. */
+/** The number of vertices whose `originalVertex` is not the child's centre: the `shiftUntilUnique` loop of the import shifted them. */
 export function jitterCount(layout: ElkNode, graph: Graph): number {
   let count = 0;
   const children = [...layout.getChildren()];

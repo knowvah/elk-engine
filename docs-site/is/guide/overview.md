@@ -20,7 +20,7 @@ Sjá [vegvísinn](/guide/roadmap) fyrir þá röð sem algrímin koma í.
 
 ## Java er skilgreiningin
 
-Java-frumkóðinn á fasta ELK-commitinu `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` er
+Java-frumkóðinn á fasta ELK-commitinu `8bca22f4afa3371562d2f702d59929818f7f7b71` er
 bindandi skilgreining. Yfirfærslan fylgir honum náið:
 
 - Algrím eru hvorki fínstillt né einfölduð. Ef Java virðist óþarflega endurtekið er endurtekningin látin standa.

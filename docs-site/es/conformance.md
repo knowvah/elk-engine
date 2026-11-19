@@ -33,7 +33,7 @@ Ambos están fuera de este repositorio; ninguno se incluye en él.
 
 | Elemento                  | Dónde                                                                               |
 | ------------------------- | ----------------------------------------------------------------------------------- |
-| Commit de ELK fijado      | `tools/oracle/ELK_COMMIT` (actualmente `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)  |
+| Commit de ELK fijado      | `tools/oracle/ELK_COMMIT` (actualmente `8bca22f4afa3371562d2f702d59929818f7f7b71`)  |
 | Serie de patches          | `tools/oracle/patches/*.patch`, aplicados en orden léxico con `git am --3way`       |
 | Compilación               | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho descarga artefactos p2)        |
 | Ejecutor por lotes        | `tools/oracle/run.sh <outDir> <input>...` o `run.sh --cases <cases.jsonl> <outDir>` |

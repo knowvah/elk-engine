@@ -8,7 +8,7 @@ import { originalBendpoints, runSiteRow } from '../../../../../test/helpers/tran
 
 describe('ElkGraphImporterEdges (oracle site rows)', () => {
   it('copies the original bend points of an edge section when the crossing minimization is INTERACTIVE', () => {
-    // oracle: site/transform/misc/bend-points-interactive; ElkGraphImporter.java:1224-1237 (transformEdge, original bend points)
+    // oracle: site/transform/misc/bend-points-interactive; ElkGraphImporter.java:1283-1296 (transformEdge, original bend points)
     const run = runSiteRow('site/transform/misc/bend-points-interactive');
     expect(originalBendpoints(run, 'g0/e0')).toEqual([
       [20, 10],
@@ -25,7 +25,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('copies the original bend points of an edge section when the node placement is INTERACTIVE', () => {
-    // oracle: site/transform/misc/bend-points-node-placement-interactive; ElkGraphImporter.java:1224-1237 (transformEdge, original bend points)
+    // oracle: site/transform/misc/bend-points-node-placement-interactive; ElkGraphImporter.java:1283-1296 (transformEdge, original bend points)
     const run = runSiteRow('site/transform/misc/bend-points-node-placement-interactive');
     const d = run.dump;
     expect(originalBendpoints(run, 'g0/e0')).toEqual([
@@ -37,7 +37,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('creates the missing ports of nodes with fixed port sides at the edge section points', () => {
-    // oracle: site/transform/misc/edge-with-section-fixed-side; ElkGraphImporter.java:1154-1188 (transformEdge, port creation from sections)
+    // oracle: site/transform/misc/edge-with-section-fixed-side; ElkGraphImporter.java:1213-1247 (transformEdge, port creation from sections)
     const run = runSiteRow('site/transform/misc/edge-with-section-fixed-side');
     const d = run.dump;
     const elk = run.elk;
@@ -61,7 +61,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('creates the source port of an edge into a descendant as an input port at the section start', () => {
-    // oracle: site/transform/misc/edge-with-section-descendant; ElkGraphImporter.java:1156-1171 (transformEdge, hierarchical source port)
+    // oracle: site/transform/misc/edge-with-section-descendant; ElkGraphImporter.java:1215-1230 (transformEdge, hierarchical source port)
     const run = runSiteRow('site/transform/misc/edge-with-section-descendant');
     const d = run.dump;
     expect(d.node('g0/n0').nested).toBe('g1');
@@ -76,7 +76,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('keeps the labels with text and layout and records center and end labels as graph properties', () => {
-    // oracle: site/transform/misc/edge-labels; ElkGraphImporter.java:1202-1219 (transformEdge, labels)
+    // oracle: site/transform/misc/edge-labels; ElkGraphImporter.java:1261-1278 (transformEdge, labels)
     const run = runSiteRow('site/transform/misc/edge-labels');
     const d = run.dump;
     const elk = run.elk;
@@ -94,7 +94,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('skips a flat edge that is excluded from layout', () => {
-    // oracle: site/transform/misc/no-layout-edges; ElkGraphImporter.java:269-282 (importFlatGraph, noLayout edges)
+    // oracle: site/transform/misc/no-layout-edges; ElkGraphImporter.java:271-284 (importFlatGraph, noLayout edges)
     const run = runSiteRow('site/transform/misc/no-layout-edges');
     const d = run.dump;
     const elk = run.elk;
@@ -106,7 +106,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('skips hierarchical edges that are excluded from layout or end at a node that is', () => {
-    // oracle: site/transform/misc/no-layout-edges-hierarchical; ElkGraphImporter.java:404-410 (importHierarchicalGraph, noLayout edges)
+    // oracle: site/transform/misc/no-layout-edges-hierarchical; ElkGraphImporter.java:407-413 (importHierarchicalGraph, noLayout edges)
     const run = runSiteRow('site/transform/misc/no-layout-edges-hierarchical');
     const d = run.dump;
     const elk = run.elk;
@@ -118,7 +118,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('fails with UnsupportedGraphException for a flat edge to a node excluded from layout', () => {
-    // oracle: site/transform/misc/no-layout-edge-to-skipped-node; ElkGraphImporter.java:1128-1135 (transformEdge)
+    // oracle: site/transform/misc/no-layout-edge-to-skipped-node; ElkGraphImporter.java:1187-1194 (transformEdge)
     const run = runSiteRow('site/transform/misc/no-layout-edge-to-skipped-node');
     expect(run.exception('graph')).toEqual({
       class: 'UnsupportedGraphException',
@@ -128,7 +128,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('rejects a flat edge without source', () => {
-    // oracle: site/transform/misc/invalid-edge-no-source-flat; ElkGraphImporter.java:1248-1256 (checkEdgeValidity)
+    // oracle: site/transform/misc/invalid-edge-no-source-flat; ElkGraphImporter.java:1307-1315 (checkEdgeValidity)
     const run = runSiteRow('site/transform/misc/invalid-edge-no-source-flat');
     expect(run.exception('graph')).toEqual({
       class: 'IllegalArgumentException',
@@ -137,7 +137,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('rejects a flat edge without target', () => {
-    // oracle: site/transform/misc/invalid-edge-no-target-flat; ElkGraphImporter.java:1248-1256 (checkEdgeValidity)
+    // oracle: site/transform/misc/invalid-edge-no-target-flat; ElkGraphImporter.java:1307-1315 (checkEdgeValidity)
     const run = runSiteRow('site/transform/misc/invalid-edge-no-target-flat');
     expect(run.exception('graph')).toEqual({
       class: 'IllegalArgumentException',
@@ -146,7 +146,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('rejects a hierarchical edge without source', () => {
-    // oracle: site/transform/misc/invalid-edge-no-source-hierarchical; ElkGraphImporter.java:1248-1256 (checkEdgeValidity)
+    // oracle: site/transform/misc/invalid-edge-no-source-hierarchical; ElkGraphImporter.java:1307-1315 (checkEdgeValidity)
     const run = runSiteRow('site/transform/misc/invalid-edge-no-source-hierarchical');
     expect(run.exception('graph')).toEqual({
       class: 'UnsupportedGraphException',
@@ -155,7 +155,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('rejects a hierarchical edge without target', () => {
-    // oracle: site/transform/misc/invalid-edge-no-target-hierarchical; ElkGraphImporter.java:1248-1256 (checkEdgeValidity)
+    // oracle: site/transform/misc/invalid-edge-no-target-hierarchical; ElkGraphImporter.java:1307-1315 (checkEdgeValidity)
     const run = runSiteRow('site/transform/misc/invalid-edge-no-target-hierarchical');
     expect(run.exception('graph')).toEqual({
       class: 'UnsupportedGraphException',
@@ -164,7 +164,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('rejects a flat hyperedge', () => {
-    // oracle: site/transform/misc/invalid-hyperedge-flat; ElkGraphImporter.java:1248-1256 (checkEdgeValidity)
+    // oracle: site/transform/misc/invalid-hyperedge-flat; ElkGraphImporter.java:1307-1315 (checkEdgeValidity)
     const run = runSiteRow('site/transform/misc/invalid-hyperedge-flat');
     expect(run.exception('graph')).toEqual({
       class: 'IllegalArgumentException',
@@ -173,7 +173,7 @@ describe('ElkGraphImporterEdges (oracle site rows)', () => {
   });
 
   it('rejects a hierarchical hyperedge', () => {
-    // oracle: site/transform/misc/invalid-hyperedge-hierarchical; ElkGraphImporter.java:1248-1256 (checkEdgeValidity)
+    // oracle: site/transform/misc/invalid-hyperedge-hierarchical; ElkGraphImporter.java:1307-1315 (checkEdgeValidity)
     const run = runSiteRow('site/transform/misc/invalid-hyperedge-hierarchical');
     expect(run.exception('graph')).toEqual({
       class: 'UnsupportedGraphException',

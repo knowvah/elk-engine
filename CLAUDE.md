@@ -6,7 +6,7 @@
 
 A faithful TypeScript port of [Eclipse ELK](https://github.com/eclipse-elk/elk)
 (package `@knowvah/elk-engine`). The Java at `$ELK_SOURCE_DIR` (default
-`../elk`), pinned to commit `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`
+`../elk`), pinned to commit `8bca22f4afa3371562d2f702d59929818f7f7b71`
 (AD-2), is the **canonical specification**. The port is consumed as a library
 and must run in a browser.
 

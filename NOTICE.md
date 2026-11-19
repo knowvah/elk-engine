@@ -9,7 +9,7 @@ Java sources and is made available under the same license.
 ## Upstream sources
 
 - Eclipse ELK: https://github.com/eclipse-elk/elk, ported from commit
-  `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`.
+  `8bca22f4afa3371562d2f702d59929818f7f7b71`.
 - Test models: https://github.com/eclipse-elk/elk-models at commit
   `ac5af2ba511c0037e4f347e8bd91f013950951c7`. The models are referenced by a pinned manifest
   and are not vendored in this repository, except 31 `.elkt` test inputs copied unchanged to

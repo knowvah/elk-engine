@@ -65,7 +65,7 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.util.Strings;
 
 public class ElktLexerVectors {
-    private static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
+    private static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
     private static final String XTEXT_VERSION = "2.36.0";
     private static final String CASES = "elkt-lexer-cases.txt";
     private static final String OUT = "graph-text-lexer.json";

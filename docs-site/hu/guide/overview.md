@@ -19,7 +19,7 @@ Az algoritmusok érkezésének sorrendjét az [ütemterv](/guide/roadmap) tartal
 
 ## A Java a specifikáció
 
-A rögzített ELK-commit, `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` Java forráskódja a mérvadó
+A rögzített ELK-commit, `8bca22f4afa3371562d2f702d59929818f7f7b71` Java forráskódja a mérvadó
 specifikáció. A portolás szorosan követi:
 
 - Az algoritmusokat nem optimalizáljuk és nem egyszerűsítjük. Ha a Java feleslegesnek tűnik, a redundanciát megtartjuk.

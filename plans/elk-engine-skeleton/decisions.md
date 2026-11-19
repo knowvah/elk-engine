@@ -44,6 +44,13 @@ is kept as the original decision; the move followed
 `docs/architecture/elk-upgrade.md` and is journaled in
 `plans/elk-upgrade-runbook/decision-journal.md`.
 
+**Amended 2026-11-18 (maintainer ruling on #104):** the pin moves to upstream
+`master` `8bca22f4afa3371562d2f702d59929818f7f7b71`, which carries five more
+merged upstream PRs of this project (eclipse-elk/elk#1237, #1239, #1241,
+#1242 and #1244) and one third-party change (#1234). The text above is kept;
+the move followed `docs/architecture/elk-upgrade.md` and is journaled in
+`plans/elk-pin-move-8bca22f4/decision-journal.md`.
+
 ## AD-3: Oracle built from source with a patch series
 - `tools/oracle/build.sh` creates a **detached git worktree** of
   `$ELK_SOURCE_DIR` at `$ELK_ORACLE_DIR` (default `../elk-oracle`) at the

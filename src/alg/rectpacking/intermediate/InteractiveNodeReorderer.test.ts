@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: EPL-2.0
-// InteractiveNodeReorderer.java:41-74, on small inputs whose result follows from the Java statements: nodes with a DESIRED_POSITION are
-// removed, sorted by it (equal positions compare -1 both ways, PK7) and re-inserted at min(position, size); then CURRENT_POSITION is
-// the index of every child. The tie order of the real sort is proven by RectPackingVectors.test.ts (PK7 sort rows).
+// InteractiveNodeReorderer.java:41-81, on small inputs whose result follows from the Java statements: nodes with a DESIRED_POSITION are
+// removed, sorted by it (equal positions compare by model order, the later node first: eclipse-elk/elk#1237, PK7) and re-inserted at
+// min(position, size); then CURRENT_POSITION is the index of every child. The tie order of the real sort is proven by
+// RectPackingVectors.test.ts (PK7 sort rows).
 import { describe, expect, it } from 'vitest';
 import { BasicProgressMonitor } from '../../../core/util/BasicProgressMonitor.js';
 import type { ElkNode } from '../../../graph/ElkNode.js';
@@ -53,25 +54,57 @@ describe('InteractiveNodeReorderer', () => {
   });
 });
 
-describe('compareDesiredPositions (InteractiveNodeReorderer.java:56-63)', () => {
+describe('compareDesiredPositions (InteractiveNodeReorderer.java:63-71)', () => {
   const [low, high, alsoLow] = (() => {
     const parent = graphWith('xyz', { x: 1, y: 2, z: 1 });
     return [...parent.getChildren()];
   })() as [ElkNode, ElkNode, ElkNode];
+  /** The model order the processor builds (`:50-56`): the index among the nodes with a desired position. */
+  const modelOrder = new Map<ElkNode, number>([
+    [low, 0],
+    [high, 1],
+    [alsoLow, 2],
+  ]);
 
   it('compares unequal positions as Integer.compare', () => {
-    expect(compareDesiredPositions(low, high)).toBe(-1);
-    expect(compareDesiredPositions(high, low)).toBe(1);
+    expect(compareDesiredPositions(modelOrder)(low, high)).toBe(-1);
+    expect(compareDesiredPositions(modelOrder)(high, low)).toBe(1);
   });
 
-  it('returns -1 for equal positions in both directions (the contract violation)', () => {
-    expect(compareDesiredPositions(low, alsoLow)).toBe(-1);
-    expect(compareDesiredPositions(alsoLow, low)).toBe(-1);
+  // The comparator takes the model order since eclipse-elk/elk#1237 (issue #104, D5.6: the call sites change, the expected
+  // values stay). Until e7eaea57 a tie gave -1 whichever node came first; now it gives -1 when the first argument is the
+  // later node of the model order, so each of the two calls names its model order.
+  it('returns -1 for equal positions when the first node is the later one in model order', () => {
+    const lowIsLater = new Map<ElkNode, number>([
+      [alsoLow, 0],
+      [low, 1],
+    ]);
+    const alsoLowIsLater = new Map<ElkNode, number>([
+      [low, 0],
+      [alsoLow, 1],
+    ]);
+    expect(compareDesiredPositions(lowIsLater)(low, alsoLow)).toBe(-1);
+    expect(compareDesiredPositions(alsoLowIsLater)(alsoLow, low)).toBe(-1);
+  });
+
+  it('is a total order on equal positions: the earlier node compares 1, a node with itself 0', () => {
+    const compare = compareDesiredPositions(modelOrder);
+    expect(compare(alsoLow, low)).toBe(-1);
+    expect(compare(low, alsoLow)).toBe(1);
+    expect(compare(low, low)).toBe(0);
+  });
+
+  it('throws the unboxing NullPointerException for a tie with a node that has no model order', () => {
+    expect(() => compareDesiredPositions(new Map())(low, alsoLow)).toThrow(
+      new TypeError(
+        'Cannot invoke "java.lang.Integer.intValue()" because the return value of "java.util.Map.get(Object)" is null',
+      ),
+    );
   });
 
   it('reads the default -1 of an unset DESIRED_POSITION', () => {
     const bare = graphWith('q', {}).getChildren().get(0);
-    expect(compareDesiredPositions(bare, low)).toBe(-1);
-    expect(compareDesiredPositions(low, bare)).toBe(1);
+    expect(compareDesiredPositions(modelOrder)(bare, low)).toBe(-1);
+    expect(compareDesiredPositions(modelOrder)(low, bare)).toBe(1);
   });
 });

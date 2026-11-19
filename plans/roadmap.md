@@ -1979,3 +1979,80 @@ the two mode changes. CLAUDE.md and the AD rows are untouched.
   normalize it like the sha before calling a file content (runbook section 11).
 - To any mission that adds a recorder, regen or sweep script: name it in the runbook and make it executable, or
   `test/docs/elk-upgrade-runbook.test.ts` fails.
+
+## Revision 2026-11-18 (elk-pin-move-8bca22f4)
+
+Appended; no earlier line is edited. Source: issue #104 (the maintainer's ruling of 2026-11-18) and D1-D9 in
+`plans/elk-pin-move-8bca22f4/decisions.md`; the journal is `plans/elk-pin-move-8bca22f4/decision-journal.md`. Where this
+section conflicts with the text above, this section wins. Task ids are T1-T8; the base is
+`9c420f07cb73bac91ca7584f7faa1e5fbef8d0d2`.
+
+**The pin is `8bca22f4afa3371562d2f702d59929818f7f7b71`** (upstream `master` after eclipse-elk/elk#1244, 16 commits past
+`e7eaea57`). The oracle is built there with patches 0001-0003, every stamped ref is re-recorded, the six-file net Java diff is
+ported with its five JUnit classes, and every sweep and ported suite is rerun. **The mission is halted at the coverage gate on
+one test that needs a ruling (#105); everything else is done and committed, unsquashed.**
+
+**Ported (upstream PR → port).**
+
+| Upstream PR | Change | Port |
+| --- | --- | --- |
+| eclipse-elk/elk#1237 | the desired-position comparator of `InteractiveNodeReorderer` breaks ties by model order | `compareDesiredPositions(modelOrder)`; `InteractiveNodeReordererTest` (3) |
+| eclipse-elk/elk#1239 | `placeBeside` sets the moved block's parent row | one line in `CompactionPlacement.ts`; the new `CompactionTest` case |
+| eclipse-elk/elk#1241 | nested `INCLUDE_CHILDREN` graphs refuse model order strategies | `ensureNoModelOrderStrategies` in `ElkGraphImporterModelOrder.ts`; `NestedModelOrderConfigurationTest` (10) |
+| eclipse-elk/elk#1242 | the spore shift of coincident centres is seeded (`randomSeed`, default 1) | a `Random` field and `shiftUntilUnique` in spore's `ElkGraphImporter.ts`; `RandomSeedTest` (6); regenerated option classes |
+| eclipse-elk/elk#1244 | `updateGraph` keeps node centres unique | the `updateGraph` hunk; the new `ScanlineOverlapRemovalTest` case |
+| eclipse-elk/elk#1234 | `layerId` and `positionId` lose `output` | regenerated `LayeredOptions.ts` and `LayeredMetaDataProvider.ts` (`HIDDEN` → `VISIBLE`, one sentence) |
+
+**Refs.** 54 files under `test/golden/refs/` changed (44 vector refs, 10 golden `_meta.json`), plus `census.json`, the `.melk` manifest and `bundle-deps.json`; 38 vector refs and every `_meta.json` are stamp-only (the six `elkj` refs among them, recorded in 4 h 49 min). Content, each traced to a PR: `metadata.json` and `layered-framework.json` (#1234, #1242);
+`layered-compound.json` (one `frame` line, #1241); `spore-layout.json` (4 `jitter` rows `runsAgree` true, one `frame` line,
+`throws/overlap/scanlineHitboxes` re-planned as a full row with its stops; #1242, #1244); `rectpacking.json` (272 rows: the 213
+`sort` rows of #75, 55 `stops` and 2 `full` rows through the parent row, 2 `frame` lines; #1237, #1239). Two recorders changed
+with the Java: the rectpacking `sort` group copies the comparator and follows #1237, and the spore scenario moved groups. No
+golden output changed.
+
+**The expectations of #104.**
+
+| Expectation | Result |
+| --- | --- |
+| the 213 `sort` rows change, #75's lists become empty | confirmed: exactly those rows changed; 640 of 640 reproduce; the lists are deleted. The old comparator on V8 also reproduces all 640: the rows had recorded the JVM sort |
+| `stops` rows that use `placeBeside` may change (#78), the hang ends (#73) | confirmed: 55 `stops` and 2 `full` rows; #78's recomputed list is empty; #73's input terminates on both sides |
+| `modelOrderCycleBreaking` throws `UnsupportedConfigurationException` on both sides (#84) | confirmed, byte-equal messages; a second case (`modelOrderCrossingMinimization`) changes its exception the same way |
+| the 788 + 807 nondeterministic spore cases become comparable; new TS findings expected | confirmed, and no finding: sporeCompaction 906 ok; sporeOverlap 879 ok, 27 both-throw; two sweeps agree byte for byte |
+| the four #79 cases settle | confirmed: all six annotated cases are `ok` on both sides; annotations removed |
+| the ptolemy scanline throws go (#1244) | **refuted for 27 cases**: they throw through `NaN` rectangles, not coincident centres (#108). The coincident-centre throws are gone (2 corpus cases, the recorded input) |
+
+**Sweeps and suites.** All twelve sweeps reran; the `elkj` sweep (5 h 47 min) is byte-equal to the old oracle's (2,192 results, identical output trees), and every consumer test passes with no mismatch. The corpus sweep differs from the old oracle's only in spore verdicts (1,597) and the
+two layered exceptions above; phase, order, placement, routing, pipeline, labels, loops, json, elkt and label-sizing results are
+byte-equal; `compound` differs in 5 `frame` fields. The 92 layered JUnit classes of the old run are identical (51,267 runs); with
+the 8 classes added since, 100 classes, 51,299 runs, 0 failures. The five new or changed upstream classes pass on the oracle. The
+TS suites over the whole corpus: 28,023 passed.
+
+**Flags for the maintainer.**
+
+- **#105 (`needs-ruling`), the reason for the halt.** `ElkGraphImporter.test.ts` "two nodes ending at identical centres
+  collapse into one nodeMap entry …" asserts the behaviour #1244 removes. It is not in the approved list (D5), so it is left
+  red. The replacement is `plans/elk-pin-move-8bca22f4/needs-ruling-updateGraph-collapse.patch` (applies cleanly; 192 of 192
+  with it). After a yes: apply it, rerun the coverage gate, tag `elk-pin-move-8bca22f4/pre-squash`, squash onto the base.
+- **Assertion changes made under D5**, each journaled with before and after: the #75 lists (D5.2); `CHILDREN_NOT_X_GROUPED_ROWS`
+  four ids → empty (D5.3); the #79 annotations and the spore source text with its two test strings (D5.4); row counts in five
+  test files (D5.5); the comparator's call sites (D5.6); the two PK4 jitter blocks (D5.7). The D5.6 tie test kept its two
+  expected values by giving each call its own model order; that reading is listed in #105 for review.
+- **Follow-ups:** #106 (exact `jitter` rows), #107 (an arm of `Compaction` no row reaches since #1239), #108 (the `NaN`
+  scanline throws, upstream), #109 (the translated `conformance.md` paragraph).
+- The runbook's section 6 lacked the bundle names for `melk:generate`; fixed there.
+- The machine was shared: the 1-minute load passed 80 several times (this mission's corpus sweep and full test runs, and
+  another session). Wall times are upper bounds.
+
+**Hand-offs.**
+
+- To the session that finishes this mission after the ruling: the closing steps are in the "Mission summary" of
+  `plans/elk-pin-move-8bca22f4/README.md`.
+- To the next pin move: plan the assertion sites from the hunks, not from keywords (`.agent-notes/elk-pin-move-8bca22f4.md`);
+  regenerate the "before" list of ported JUnit classes first.
+
+**Close-out, 2026-11-19.** #105 was ruled yes: the `updateGraph` collapse test is replaced by the test of the shift as
+proposed (192 of 192 in its file), and the constant the patch left unused is removed (a CodeQL finding, fixed). Gates 1-7 are
+green: the full suite has 49,476 passed, 93 skipped and 0 failed, coverage 98.92 / 96.99 / 98.84 / 98.92, and the ref diff is
+unchanged. The mission is done: per-task history under the tag `elk-pin-move-8bca22f4/pre-squash`, one squashed commit on
+`9c420f07`. The halt paragraph and the #105 flag above describe the state on 2026-11-18. Open for the maintainer: the review
+of the D5.6 tie test, and #106 to #109.

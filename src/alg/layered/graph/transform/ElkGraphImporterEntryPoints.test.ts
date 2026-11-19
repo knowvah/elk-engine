@@ -8,7 +8,7 @@ import { runSiteRow } from '../../../../../test/helpers/transform-site-rows.js';
 
 describe('ElkGraphImporterEntryPoints (oracle site rows)', () => {
   it('infers the side of an undefined port from its position and falls back to the direction side for a corner port', () => {
-    // oracle: site/transform/misc/undefined-port-side-fixed; ElkGraphImporter.java:146-178 (ensureDefinedPortSide)
+    // oracle: site/transform/misc/undefined-port-side-fixed; ElkGraphImporter.java:148-180 (ensureDefinedPortSide)
     const run = runSiteRow('site/transform/misc/undefined-port-side-fixed');
     const d = run.dump;
     const elk = run.elk;
@@ -25,7 +25,7 @@ describe('ElkGraphImporterEntryPoints (oracle site rows)', () => {
   });
 
   it('defines the side of a root port of a graph without size under FIXED_SIDE and moves it to infinity', () => {
-    // oracle: site/transform/misc/undefined-port-side-zero-size-graph; ElkGraphImporter.java:146-178 (ensureDefinedPortSide)
+    // oracle: site/transform/misc/undefined-port-side-zero-size-graph; ElkGraphImporter.java:148-180 (ensureDefinedPortSide)
     const run = runSiteRow('site/transform/misc/undefined-port-side-zero-size-graph');
     const d = run.dump;
     const elk = run.elk;
@@ -37,7 +37,7 @@ describe('ElkGraphImporterEntryPoints (oracle site rows)', () => {
   });
 
   it('assigns the side of a root port by net flow when the port constraints are free', () => {
-    // oracle: site/transform/misc/undefined-port-side-free; ElkGraphImporter.java:146-178 (ensureDefinedPortSide)
+    // oracle: site/transform/misc/undefined-port-side-free; ElkGraphImporter.java:148-180 (ensureDefinedPortSide)
     const run = runSiteRow('site/transform/misc/undefined-port-side-free');
     const d = run.dump;
     const elk = run.elk;
@@ -50,7 +50,7 @@ describe('ElkGraphImporterEntryPoints (oracle site rows)', () => {
   });
 
   it('keeps the node size of a target with a fixed graph size although a minimum size is configured', () => {
-    // oracle: site/transform/misc/node-size-minimum-fixed-graph-size; ElkGraphImporter.java:180-232 (shouldCalculateMinimumGraphSize, calculateMinimumGraphSize)
+    // oracle: site/transform/misc/node-size-minimum-fixed-graph-size; ElkGraphImporter.java:182-234 (shouldCalculateMinimumGraphSize, calculateMinimumGraphSize)
     const run = runSiteRow('site/transform/misc/node-size-minimum-fixed-graph-size');
     const d = run.dump;
     const elk = run.elk;
@@ -61,7 +61,7 @@ describe('ElkGraphImporterEntryPoints (oracle site rows)', () => {
   });
 
   it('resizes the node of a target to the minimum size and re-places its ports when the graph size is not fixed', () => {
-    // oracle: site/transform/misc/node-size-minimum-free-graph-size; ElkGraphImporter.java:180-232 (shouldCalculateMinimumGraphSize, calculateMinimumGraphSize)
+    // oracle: site/transform/misc/node-size-minimum-free-graph-size; ElkGraphImporter.java:182-234 (shouldCalculateMinimumGraphSize, calculateMinimumGraphSize)
     const run = runSiteRow('site/transform/misc/node-size-minimum-free-graph-size');
     const d = run.dump;
     const elk = run.elk;

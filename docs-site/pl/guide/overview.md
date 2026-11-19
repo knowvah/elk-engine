@@ -20,7 +20,7 @@ Kolejność, w jakiej pojawią się algorytmy, opisuje [plan rozwoju](/guide/roa
 
 ## Java jest specyfikacją
 
-Kod źródłowy Javy z przypiętego commita ELK `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` jest wiążącą specyfikacją.
+Kod źródłowy Javy z przypiętego commita ELK `8bca22f4afa3371562d2f702d59929818f7f7b71` jest wiążącą specyfikacją.
 Portowanie ściśle za nią podąża:
 
 - Algorytmy nie są optymalizowane ani upraszczane. Jeśli Java wygląda na redundantną, redundancja zostaje.

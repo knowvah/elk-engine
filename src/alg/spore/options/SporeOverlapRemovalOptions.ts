@@ -127,6 +127,24 @@ export class SporeOverlapRemovalOptions implements ILayoutMetaDataProvider {
   }
 
   /**
+   * Default value for {@link RANDOM_SEED} with algorithm "ELK SPOrE Overlap Removal".
+   */
+  private static readonly RANDOM_SEED_DEFAULT: number = 1;
+
+  static #RANDOM_SEED: IProperty<number> | undefined;
+
+  /**
+   * Seed used for pseudo-random number generators to control the layout algorithm. If the
+   * value is 0, the seed shall be determined pseudo-randomly (e.g. from the system time).
+   */
+  static get RANDOM_SEED(): IProperty<number> {
+    return (SporeOverlapRemovalOptions.#RANDOM_SEED ??= Property.withDefault(
+      CoreOptions.RANDOM_SEED,
+      SporeOverlapRemovalOptions.RANDOM_SEED_DEFAULT,
+    ));
+  }
+
+  /**
    * Layouter-specific algorithm factory.
    */
   static readonly SporeOverlapFactory: typeof SporeOverlapFactory = SporeOverlapFactory;
@@ -178,6 +196,11 @@ export class SporeOverlapRemovalOptions implements ILayoutMetaDataProvider {
       'org.eclipse.elk.sporeOverlap',
       'org.eclipse.elk.debugMode',
       SporeOverlapRemovalOptions.DEBUG_MODE_DEFAULT,
+    );
+    registry.addOptionSupport(
+      'org.eclipse.elk.sporeOverlap',
+      'org.eclipse.elk.randomSeed',
+      SporeOverlapRemovalOptions.RANDOM_SEED_DEFAULT,
     );
   }
 }

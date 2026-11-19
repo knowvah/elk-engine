@@ -1,5 +1,5 @@
 {
-  "elkCommit": "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c",
+  "elkCommit": "8bca22f4afa3371562d2f702d59929818f7f7b71",
   "providers": {
     "org.eclipse.elk.alg.common.compaction.options.PolyominoOptions": [
       {
@@ -1930,7 +1930,7 @@
             "t": "int",
             "v": -1
           },
-          "description": "Layer identifier that was calculated by ELK Layered for a node. This is only generated if interactiveLayot or generatePositionAndLayerIds is set.",
+          "description": "Layer identifier that was calculated by ELK Layered for a node. This is only generated if interactiveLayot or generatePositionAndLayerIds is set. This option is not usable as an input.",
           "group": "layering",
           "id": "org.eclipse.elk.layered.layering.layerId",
           "legacyIds": null,
@@ -1945,7 +1945,7 @@
           ],
           "type": "INT",
           "upperBound": null,
-          "visibility": "HIDDEN"
+          "visibility": "VISIBLE"
         }
       },
       {
@@ -2280,7 +2280,7 @@
             "t": "int",
             "v": -1
           },
-          "description": "Position within a layer that was determined by ELK Layered for a node. This is only generated if interactiveLayot or generatePositionAndLayerIds is set.",
+          "description": "Position within a layer that was determined by ELK Layered for a node. This is only generated if interactiveLayot or generatePositionAndLayerIds is set. This option is not usable as an input.",
           "group": "crossingMinimization",
           "id": "org.eclipse.elk.layered.crossingMinimization.positionId",
           "legacyIds": null,
@@ -2295,7 +2295,7 @@
           ],
           "type": "INT",
           "upperBound": null,
-          "visibility": "HIDDEN"
+          "visibility": "VISIBLE"
         }
       },
       {
@@ -9674,6 +9674,15 @@
           "v": false
         },
         "option": "org.eclipse.elk.debugMode"
+      },
+      {
+        "algorithm": "org.eclipse.elk.sporeCompaction",
+        "call": "addOptionSupport",
+        "default": {
+          "t": "int",
+          "v": 1
+        },
+        "option": "org.eclipse.elk.randomSeed"
       }
     ],
     "org.eclipse.elk.alg.spore.options.SporeMetaDataProvider": [
@@ -10001,6 +10010,15 @@
         "option": "org.eclipse.elk.debugMode"
       },
       {
+        "algorithm": "org.eclipse.elk.sporeOverlap",
+        "call": "addOptionSupport",
+        "default": {
+          "t": "int",
+          "v": 1
+        },
+        "option": "org.eclipse.elk.randomSeed"
+      },
+      {
         "call": "registerAlgorithm",
         "data": {
           "bundleName": null,
@@ -10130,6 +10148,15 @@
           "v": false
         },
         "option": "org.eclipse.elk.debugMode"
+      },
+      {
+        "algorithm": "org.eclipse.elk.sporeCompaction",
+        "call": "addOptionSupport",
+        "default": {
+          "t": "int",
+          "v": 1
+        },
+        "option": "org.eclipse.elk.randomSeed"
       }
     ],
     "org.eclipse.elk.alg.spore.options.SporeOverlapRemovalOptions": [
@@ -10226,6 +10253,15 @@
           "v": false
         },
         "option": "org.eclipse.elk.debugMode"
+      },
+      {
+        "algorithm": "org.eclipse.elk.sporeOverlap",
+        "call": "addOptionSupport",
+        "default": {
+          "t": "int",
+          "v": 1
+        },
+        "option": "org.eclipse.elk.randomSeed"
       }
     ],
     "org.eclipse.elk.alg.topdownpacking.options.TopdownpackingMetaDataProvider": [

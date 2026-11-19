@@ -9,11 +9,11 @@ identity-hash tokens (`@[0-9a-f]+`) are normalized (D5, D5a), else the verdict i
 The tier columns count cases; the verdict columns count the same cases and sum to them.
 An empty cell names why it is empty: `—` for nothing planned, `n/a` for work that cannot exist yet.
 
-- ELK commit: `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`
+- ELK commit: `8bca22f4afa3371562d2f702d59929818f7f7b71`
 - Models commit: `ac5af2ba511c0037e4f347e8bd91f013950951c7`
 - Oracle seam patches: `0001-graph.json-seedable-JsonExporter-id-collision-random.patch`, `0002-graph-seedable-GraphIdentifierGenerator-random.patch`, `0003-alg.test-pluggable-label-text-measurer.patch`
 - Cases: 18930
-- Sweep wall time: 3 min
+- Sweep wall time: 2 min
 - Parse errors: none
 - TS sweep: v26.3.1, 8 shards, 1 min, timeout 120 s
 
@@ -30,8 +30,8 @@ An empty cell names why it is empty: `—` for nothing planned, `n/a` for work t
 | `radial` | — (no model has it at the root) | 898 | 8 | 541 | 365 | 0 | 0 | 0 | 905 / 906 (99.9%) |
 | `random` | — (no model has it at the root) | 898 | 8 | 534 | 0 | 372 | 0 | 0 | 534 / 534 (100.0%) |
 | `rectpacking` | 24 | 895 | — (no generated inputs) | 830 | 89 | 0 | 0 | 0 | 919 / 919 (100.0%) |
-| `sporeCompaction` | — (no model has it at the root) | 898 | 8 | 99 | 0 | 807 | 0 | 0 | 99 / 99 (100.0%) |
-| `sporeOverlap` | — (no model has it at the root) | 898 | 8 | 96 | 22 | 788 | 0 | 0 | 117 / 118 (99.2%) |
+| `sporeCompaction` | — (no model has it at the root) | 898 | 8 | 906 | 0 | 0 | 0 | 0 | 906 / 906 (100.0%) |
+| `sporeOverlap` | — (no model has it at the root) | 898 | 8 | 879 | 27 | 0 | 0 | 0 | 906 / 906 (100.0%) |
 | `stress` | — (no model has it at the root) | 898 | — (no generated inputs) | 809 | 89 | 0 | 0 | 0 | 898 / 898 (100.0%) |
 | `topdownpacking` | — (no model has it at the root) | 898 | 8 | 906 | 0 | 0 | 0 | 0 | 906 / 906 (100.0%) |
 | `vertiflex` | — (no model has it at the root) | 898 | 8 | 352 | 553 | 0 | 1 | 0 | 905 / 905 (100.0%) |
@@ -58,29 +58,26 @@ An empty cell names why it is empty: `—` for nothing planned, `n/a` for work t
 ## Nondeterminism sources
 
 - `random` (372 cases): nested composites keep the default `randomSeed = 0` (unseeded) because retarget (D2) seeds only the root.
-- `sporeCompaction` (807 cases): `Math.random()` vertex jitter (`ElkGraphImporter.java:169`), unseedable from outside the algorithm.
-- `sporeOverlap` (788 cases): `Math.random()` vertex jitter (`ElkGraphImporter.java:169`), unseedable from outside the algorithm.
 
 ## TS sweep
 
 | algorithm (TS) | planned | ok | mismatch | both-throw | ts-only-throw | oracle-only-throw | ts-aborted | excluded | options-only mismatches | TS ms | oracle ms |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `box` | 898 | 898 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 3690 | 7883 |
-| `disco` | 906 | 819 | 0 | 87 | 0 | 0 | 0 | 0 | 0 | 8407 | 17773 |
-| `fixed` | 898 | 869 | 0 | 29 | 0 | 0 | 0 | 0 | 0 | 3947 | 7400 |
-| `force` | 906 | 817 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 59377 | 38113 |
-| `layered` | 7163 | 7144 | 0 | 19 | 0 | 0 | 0 | 0 | 0 | 174655 | 240171 |
-| `mrtree` | 906 | 817 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 11703 | 17199 |
-| `radial` | 906 | 540 | 1 | 365 | 0 | 0 | 0 | 0 | 1 | 5187 | 7172 |
-| `random` | 906 | 534 | 0 | 0 | 0 | 0 | 0 | 372 | 0 | 2981 | 6960 |
-| `rectpacking` | 919 | 830 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 7407 | 8855 |
-| `sporeCompaction` | 906 | 99 | 0 | 0 | 0 | 0 | 0 | 807 | 0 | 248 | 10891 |
-| `sporeOverlap` | 906 | 95 | 1 | 22 | 0 | 0 | 0 | 788 | 0 | 1231 | 34011 |
-| `stress` | 898 | 809 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 54601 | 27660 |
-| `topdownpacking` | 906 | 906 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 3596 | 6057 |
-| `vertiflex` | 906 | 352 | 0 | 553 | 0 | 0 | 0 | 1 | 0 | 6252 | 41880 |
+| `box` | 898 | 898 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 4508 | 6596 |
+| `disco` | 906 | 819 | 0 | 87 | 0 | 0 | 0 | 0 | 0 | 9625 | 14680 |
+| `fixed` | 898 | 869 | 0 | 29 | 0 | 0 | 0 | 0 | 0 | 4431 | 5095 |
+| `force` | 906 | 817 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 59939 | 26210 |
+| `layered` | 7163 | 7144 | 0 | 19 | 0 | 0 | 0 | 0 | 0 | 178191 | 195089 |
+| `mrtree` | 906 | 817 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 11479 | 10279 |
+| `radial` | 906 | 540 | 1 | 365 | 0 | 0 | 0 | 0 | 1 | 5523 | 4245 |
+| `random` | 906 | 534 | 0 | 0 | 0 | 0 | 0 | 372 | 0 | 3139 | 4556 |
+| `rectpacking` | 919 | 830 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 7971 | 5655 |
+| `sporeCompaction` | 906 | 906 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 9688 | 7785 |
+| `sporeOverlap` | 906 | 879 | 0 | 27 | 0 | 0 | 0 | 0 | 0 | 94178 | 19508 |
+| `stress` | 898 | 809 | 0 | 89 | 0 | 0 | 0 | 0 | 0 | 57002 | 17420 |
+| `topdownpacking` | 906 | 906 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 3637 | 3798 |
+| `vertiflex` | 906 | 352 | 0 | 553 | 0 | 0 | 0 | 1 | 0 | 5822 | 38032 |
 
 ## TS findings
 
 - `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`: mismatch: `value layoutOptions.childAreaHeight: expected "2561.1171089266686", actual "2561.117108926668"`: #68: accepted last-ulp Math.sin divergence (AD-4, #68 B): one option string, childAreaHeight; every coordinate agrees within 1e-13
-- `retarget/sporeOverlap/default/tests/layered/edge_label_placement/layerSelection_center_02`: mismatch: `value children[id=source].x: expected 381.51515151515105, actual 381.515056559788 value children[id=source].y: expected 16, actual 8 value children[id=target].x: expected 381.51515151515105, actual 38`: unannotated

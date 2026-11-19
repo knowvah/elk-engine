@@ -1,5 +1,5 @@
 {
-  "elkCommit": "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c",
+  "elkCommit": "8bca22f4afa3371562d2f702d59929818f7f7b71",
   "files": [
     {
       "name": "Core.melk",
@@ -34,7 +34,7 @@
     {
       "name": "Layered.melk",
       "upstreamPath": "plugins/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/Layered.melk",
-      "blobSha": "b708c49108770138fc89a71e0479b4907df98156"
+      "blobSha": "5fa096e56a51de1f4c30bc0c14c207b394b3128d"
     },
     {
       "name": "Tree.melk",
@@ -54,7 +54,7 @@
     {
       "name": "SPOrE.melk",
       "upstreamPath": "plugins/org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/SPOrE.melk",
-      "blobSha": "234b4c506064054a709f19226ce4c07703bf0a5c"
+      "blobSha": "3a16800c36692f4b5e5ad0d04426adec7b305f23"
     },
     {
       "name": "Topdownpacking.melk",

@@ -8,7 +8,7 @@ import { runSiteRow } from '../../../../../test/helpers/transform-site-rows.js';
 
 describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   it('creates a nested graph per compound node with children and imports each node into the graph of its parent', () => {
-    // oracle: site/transform/hierarchy/three-levels; ElkGraphImporter.java:309-369 (importHierarchicalGraph, nodes)
+    // oracle: site/transform/hierarchy/three-levels; ElkGraphImporter.java:311-371 (importHierarchicalGraph, nodes)
     const run = runSiteRow('site/transform/hierarchy/three-levels');
     const d = run.dump;
     expect(d.node('g0/n0').nested).toBe('g1');
@@ -30,7 +30,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('places each edge in the graph of the end point whose insides it enters and creates its ports on the nested nodes', () => {
-    // oracle: site/transform/hierarchy/three-levels; ElkGraphImporter.java:389-440 (importHierarchicalGraph, edges)
+    // oracle: site/transform/hierarchy/three-levels; ElkGraphImporter.java:392-443 (importHierarchicalGraph, edges)
     const run = runSiteRow('site/transform/hierarchy/three-levels');
     const d = run.dump;
     expect(d.graph('g0').edges.length).toBe(9);
@@ -54,7 +54,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('records the graph an edge crossing the hierarchy has to be exported relative to', () => {
-    // oracle: site/transform/hierarchy/three-levels; ElkGraphImporter.java:535-590 (findCoordinateSystemOrigin)
+    // oracle: site/transform/hierarchy/three-levels; ElkGraphImporter.java:594-649 (findCoordinateSystemOrigin)
     const run = runSiteRow('site/transform/hierarchy/three-levels');
     const d = run.dump;
     expect(prop(d.edge('g0/e0'), 'coordinateOrigin')).toEqual('g1');
@@ -73,7 +73,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('applies the base value of a nested graph and keeps the direction of its parent graph', () => {
-    // oracle: site/transform/hierarchy/three-levels-base-spacing; ElkGraphImporter.java:348-352 (importHierarchicalGraph, spacing)
+    // oracle: site/transform/hierarchy/three-levels-base-spacing; ElkGraphImporter.java:350-354 (importHierarchicalGraph, spacing)
     const run = runSiteRow('site/transform/hierarchy/three-levels-base-spacing');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'spacing.baseValue')).toEqual(undefined);
@@ -90,7 +90,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('extends the size constraints and the minimum size of a nested graph whose node has size constraints', () => {
-    // oracle: site/transform/hierarchy/three-levels-min-size; ElkGraphImporter.java:353-360 (importHierarchicalGraph, minimum graph size)
+    // oracle: site/transform/hierarchy/three-levels-min-size; ElkGraphImporter.java:355-362 (importHierarchicalGraph, minimum graph size)
     const run = runSiteRow('site/transform/hierarchy/three-levels-min-size');
     const d = run.dump;
     const elk = run.elk;
@@ -104,7 +104,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('treats a child that names the layered algorithm as part of the same run', () => {
-    // oracle: site/transform/hierarchy/layered-algorithm-child; ElkGraphImporter.java:339-343, 452-458 (importHierarchicalGraph, uses ELK Layered)
+    // oracle: site/transform/hierarchy/layered-algorithm-child; ElkGraphImporter.java:341-345, 455-461 (importHierarchicalGraph, uses ELK Layered)
     const run = runSiteRow('site/transform/hierarchy/layered-algorithm-child');
     const d = run.dump;
     expect(d.node('g0/n0').nested).toBe('g1');
@@ -120,7 +120,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('imports a child with another algorithm as a leaf without nested graph and skips its edges', () => {
-    // oracle: site/transform/hierarchy/other-algorithm-child; ElkGraphImporter.java:339-343, 452-458 (importHierarchicalGraph, other algorithm)
+    // oracle: site/transform/hierarchy/other-algorithm-child; ElkGraphImporter.java:341-345, 455-461 (importHierarchicalGraph, other algorithm)
     const run = runSiteRow('site/transform/hierarchy/other-algorithm-child');
     const d = run.dump;
     const elk = run.elk;
@@ -135,7 +135,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('imports a child with SEPARATE_CHILDREN as a leaf and leaves its content to its own layout run', () => {
-    // oracle: site/transform/hierarchy/mixed-handling; ElkGraphImporter.java:339-343, 447-458 (importHierarchicalGraph)
+    // oracle: site/transform/hierarchy/mixed-handling; ElkGraphImporter.java:341-345, 450-461 (importHierarchicalGraph)
     const run = runSiteRow('site/transform/hierarchy/mixed-handling');
     const d = run.dump;
     const elk = run.elk;
@@ -150,7 +150,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('fails with UnsupportedGraphException for an edge into a child that another run lays out', () => {
-    // oracle: site/transform/hierarchy/mixed-handling-cross-edges; ElkGraphImporter.java:1128-1135 (transformEdge)
+    // oracle: site/transform/hierarchy/mixed-handling-cross-edges; ElkGraphImporter.java:1187-1194 (transformEdge)
     const run = runSiteRow('site/transform/hierarchy/mixed-handling-cross-edges');
     expect(run.exception('graph')).toEqual({
       class: 'UnsupportedGraphException',
@@ -160,7 +160,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('fails with UnsupportedGraphException for an edge into a child with noLayout', () => {
-    // oracle: site/transform/hierarchy/no-layout-child; ElkGraphImporter.java:1128-1135 (transformEdge)
+    // oracle: site/transform/hierarchy/no-layout-child; ElkGraphImporter.java:1187-1194 (transformEdge)
     const run = runSiteRow('site/transform/hierarchy/no-layout-child');
     expect(run.exception('graph')).toEqual({
       class: 'UnsupportedGraphException',
@@ -170,7 +170,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('imports a nested node as the top level graph with external port dummies and the top level graph as coordinate origin', () => {
-    // oracle: site/transform/hierarchy/nested-target; ElkGraphImporter.java:96-130, 535-590 (importGraph, findCoordinateSystemOrigin)
+    // oracle: site/transform/hierarchy/nested-target; ElkGraphImporter.java:98-132, 594-649 (importGraph, findCoordinateSystemOrigin)
     const run = runSiteRow('site/transform/hierarchy/nested-target');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'origin')).toEqual('elk:A');
@@ -191,7 +191,7 @@ describe('ElkGraphImporterHierarchical (oracle site rows)', () => {
   });
 
   it('imports the first level only when the root does not request INCLUDE_CHILDREN', () => {
-    // oracle: site/transform/hierarchy/flat-root; ElkGraphImporter.java:96-130 (importGraph, flat path)
+    // oracle: site/transform/hierarchy/flat-root; ElkGraphImporter.java:98-132 (importGraph, flat path)
     const run = runSiteRow('site/transform/hierarchy/flat-root');
     const d = run.dump;
     expect(d.graph('g0').layerlessNodes.length).toBe(3);

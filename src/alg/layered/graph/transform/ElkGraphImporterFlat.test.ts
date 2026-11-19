@@ -8,7 +8,7 @@ import { runSiteRow } from '../../../../../test/helpers/transform-site-rows.js';
 
 describe('ElkGraphImporterFlat (oracle site rows)', () => {
   it('imports only the inside self loops of the target node as edges between its external port dummies', () => {
-    // oracle: site/transform/insideSelfLoops/flat-target; ElkGraphImporter.java:284-298 (importFlatGraph, inside self loops)
+    // oracle: site/transform/insideSelfLoops/flat-target; ElkGraphImporter.java:286-300 (importFlatGraph, inside self loops)
     const run = runSiteRow('site/transform/insideSelfLoops/flat-target');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'graphProperties')).toEqual(['EXTERNAL_PORTS']);
@@ -25,7 +25,7 @@ describe('ElkGraphImporterFlat (oracle site rows)', () => {
   });
 
   it('collects no inside self loops for a root graph and imports every sibling edge, node self loops included', () => {
-    // oracle: site/transform/insideSelfLoops/flat-root; ElkGraphImporter.java:284-298 (importFlatGraph, inside self loops)
+    // oracle: site/transform/insideSelfLoops/flat-root; ElkGraphImporter.java:286-300 (importFlatGraph, inside self loops)
     const run = runSiteRow('site/transform/insideSelfLoops/flat-root');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'graphProperties')).toEqual(['HYPEREDGES', 'SELF_LOOPS']);
@@ -45,7 +45,7 @@ describe('ElkGraphImporterFlat (oracle site rows)', () => {
   });
 
   it('fails with UnsupportedGraphException for an inside self loop on the imported node itself, which has no LNode in the graph', () => {
-    // oracle: site/transform/insideSelfLoops/flat-target-node-self-loop; ElkGraphImporter.java:1128-1135 (transformEdge)
+    // oracle: site/transform/insideSelfLoops/flat-target-node-self-loop; ElkGraphImporter.java:1187-1194 (transformEdge)
     const run = runSiteRow('site/transform/insideSelfLoops/flat-target-node-self-loop');
     expect(run.exception('graph')).toEqual({
       class: 'UnsupportedGraphException',
@@ -55,7 +55,7 @@ describe('ElkGraphImporterFlat (oracle site rows)', () => {
   });
 
   it('gives the inside self loop of the target no model order, the contained edges of the target being none', () => {
-    // oracle: site/transform/insideSelfLoops/model-order-flat-target; ElkGraphImporter.java:268-298 (importFlatGraph)
+    // oracle: site/transform/insideSelfLoops/model-order-flat-target; ElkGraphImporter.java:270-300 (importFlatGraph)
     const run = runSiteRow('site/transform/insideSelfLoops/model-order-flat-target');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'graphProperties')).toEqual(['EXTERNAL_PORTS']);

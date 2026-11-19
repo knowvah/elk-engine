@@ -8,7 +8,7 @@ import { runSiteRow } from '../../../../../test/helpers/transform-site-rows.js';
 
 describe('ElkGraphImporterModelOrder (oracle site rows)', () => {
   it('creates a nested graph for a node whose only children are inside self loops', () => {
-    // oracle: site/transform/insideSelfLoops/hierarchical-host-include-children; ElkGraphImporter.java:515-530 (hasInsideSelfLoops)
+    // oracle: site/transform/insideSelfLoops/hierarchical-host-include-children; ElkGraphImporter.java:574-589 (hasInsideSelfLoops)
     const run = runSiteRow('site/transform/insideSelfLoops/hierarchical-host-include-children');
     const d = run.dump;
     expect(d.node('g0/n0').nested).toBe('g1');
@@ -27,13 +27,13 @@ describe('ElkGraphImporterModelOrder (oracle site rows)', () => {
   });
 
   it('cannot import inside self loops of a node whose own hierarchy handling is not INCLUDE_CHILDREN', () => {
-    // oracle: site/transform/insideSelfLoops/hierarchical-host-without-include-children; ElkGraphImporter.java:515-530 (hasInsideSelfLoops)
+    // oracle: site/transform/insideSelfLoops/hierarchical-host-without-include-children; ElkGraphImporter.java:574-589 (hasInsideSelfLoops)
     const run = runSiteRow('site/transform/insideSelfLoops/hierarchical-host-without-include-children');
     expect(run.exception('graph')?.class).toBe('TypeError'); // Java: NullPointerException (D10)
   });
 
   it('numbers nodes, ports and edges for NODES_AND_EDGES model order, inside self loops first', () => {
-    // oracle: site/transform/insideSelfLoops/model-order-nodes-and-edges; ElkGraphImporter.java:472-505 (needsModelOrder, needsModelOrderBasedOnParent)
+    // oracle: site/transform/insideSelfLoops/model-order-nodes-and-edges; ElkGraphImporter.java:475-508 (needsModelOrder, needsModelOrderBasedOnParent)
     const run = runSiteRow('site/transform/insideSelfLoops/model-order-nodes-and-edges');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'modelOrder.maximum')).toEqual(4);
@@ -59,7 +59,7 @@ describe('ElkGraphImporterModelOrder (oracle site rows)', () => {
   });
 
   it('numbers nodes and edges when the cycle breaking strategy needs the model order', () => {
-    // oracle: site/transform/insideSelfLoops/model-order-cycle-breaking; ElkGraphImporter.java:484-505 (needsModelOrderBasedOnParent)
+    // oracle: site/transform/insideSelfLoops/model-order-cycle-breaking; ElkGraphImporter.java:487-508 (needsModelOrderBasedOnParent)
     const run = runSiteRow('site/transform/insideSelfLoops/model-order-cycle-breaking');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'modelOrder.maximum')).toEqual(4);
@@ -77,7 +77,7 @@ describe('ElkGraphImporterModelOrder (oracle site rows)', () => {
   });
 
   it('numbers nodes and edges when the layering strategy is BF_MODEL_ORDER', () => {
-    // oracle: site/transform/insideSelfLoops/model-order-layering; ElkGraphImporter.java:484-505 (needsModelOrderBasedOnParent)
+    // oracle: site/transform/insideSelfLoops/model-order-layering; ElkGraphImporter.java:487-508 (needsModelOrderBasedOnParent)
     const run = runSiteRow('site/transform/insideSelfLoops/model-order-layering');
     const d = run.dump;
     expect(prop(d.graph('g0'), 'modelOrder.maximum')).toEqual(4);

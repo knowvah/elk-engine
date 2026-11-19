@@ -16,7 +16,7 @@ sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
 
 ## Java 即是规范
 
-固定的 ELK 提交 `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c` 处的 Java 源代码是权威规范。移植紧密遵循它：
+固定的 ELK 提交 `8bca22f4afa3371562d2f702d59929818f7f7b71` 处的 Java 源代码是权威规范。移植紧密遵循它：
 
 - 算法不做优化或简化。如果 Java 看起来冗余，这种冗余也予以保留。
 - 每个分支都被移植，方法边界予以保留，除非 TypeScript 迫使其改变。

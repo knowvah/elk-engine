@@ -213,10 +213,12 @@ describe("renderReport", () => {
   it("emits nondeterminism sources only for algorithms that have such cases", () => {
     const md = render();
     expect(md).toContain("## Nondeterminism sources");
+    // the spore jitter is seeded since ELK 8bca22f4 (eclipse-elk/elk#1242; issue #104, D5.4): until e7eaea57 the text was
+    // "`Math.random()` vertex jitter" at ElkGraphImporter.java:169
     expect(md).toContain(
-      "- `sporeOverlap` (2 cases): `Math.random()` vertex jitter",
+      "- `sporeOverlap` (2 cases): unseeded vertex jitter",
     );
-    expect(md).toContain("ElkGraphImporter.java:169");
+    expect(md).toContain("ElkGraphImporter.java:133");
     expect(md).not.toContain("randomSeed");
     const clean = renderReport(
       [rec("native", LAYERED, "ok")],

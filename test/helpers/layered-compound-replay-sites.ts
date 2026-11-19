@@ -60,7 +60,7 @@ export const PORTED_SITES: ReadonlyMap<string, PortedSite> = new Map([
   // SplineSegment.java:247 is anchorY.
   ['sites/SplineSegment/anchorYWithoutPortCoordinate/DOWN', { fn: 'anchorY' }],
   ['sites/SplineSegment/anchorYWithoutPortCoordinate/UP', { fn: 'anchorY' }],
-  // ElkGraphImporter.java:1146 is in transformEdge; the TS splits its tail (the self loop property and the port creation) into completeEdge.
+  // ElkGraphImporter.java:1205 is in transformEdge; the TS splits its tail (the self loop property and the port creation) into completeEdge.
   ['sites/ElkGraphImporter/selfLoopInCompoundNode', { fn: 'completeEdge' }],
   // LGraphUtil.java:944 is in createExternalPortDummy; the TS splits the order information into orderInformation / positionInformation.
   ['sites/CompoundGraphPreprocessor/hierarchicalPortFIXED_RATIO', { fn: 'positionInformation' }],

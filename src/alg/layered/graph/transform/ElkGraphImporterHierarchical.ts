@@ -18,7 +18,12 @@ import {
 } from './ElkGraphImporterEntryPoints.js';
 import { createLGraph } from './ElkGraphImporterGraphs.js';
 import { lookupNode, type NodeAndPortMap } from './ElkGraphImporterMap.js';
-import { hasInsideSelfLoops, needsModelOrder, needsModelOrderBasedOnParent } from './ElkGraphImporterModelOrder.js';
+import {
+  ensureNoModelOrderStrategies,
+  hasInsideSelfLoops,
+  needsModelOrder,
+  needsModelOrderBasedOnParent,
+} from './ElkGraphImporterModelOrder.js';
 import { transformNode } from './ElkGraphImporterNodes.js';
 
 /** The running model order of the node phase of `importHierarchicalGraph` (its `index` and `cbGroupModelOrders`). */
@@ -124,6 +129,7 @@ function importHierarchicalNode(
     if (nestedGraph !== null) {
       lnode.setNestedGraph(nestedGraph);
       nestedGraph.setParentNode(lnode);
+      ensureNoModelOrderStrategies(lnode, nestedGraph);
 
       queue.push(...elknode.getChildren());
     }

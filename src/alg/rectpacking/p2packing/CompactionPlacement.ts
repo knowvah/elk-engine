@@ -173,6 +173,7 @@ function placeNextBeside(
   nextBlock.placeRectsIn(boundingWidth - (block.getX() + block.getWidth()));
   nextBlock.setLocation(stackOf(block).getX() + stackOf(block).getWidth(), row.getY());
   row.addBlock(nextBlock);
+  nextBlock.setParentRow(row);
 
   // Delete empty rows if needed.
   removeFromNextRow(ctx, nextBlock);

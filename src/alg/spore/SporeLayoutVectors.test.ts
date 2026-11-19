@@ -89,9 +89,10 @@ describe('spore providers: full rows through RecursiveGraphLayoutEngine', () => 
   const all = loadSporeRows('full');
   const rows = all.filter((row) => row.id !== CHAIN_ROW);
 
-  it('the ref has 113 full rows, one of them the cubic compaction chain', () => {
-    expect(all).toHaveLength(113);
-    expect(rows).toHaveLength(112);
+  // 113 full, 60 stops and 4 throws rows until e7eaea57: eclipse-elk/elk#1244 turns throws/overlap/scanlineHitboxes into a full row with its stops (#104, D4)
+  it('the ref has 114 full rows, one of them the cubic compaction chain', () => {
+    expect(all).toHaveLength(114);
+    expect(rows).toHaveLength(113);
   });
 
   it.each(rows.map((row) => row.id))('%s: the end dump and tie summary equal the row', TIMEOUT, (id) => {
@@ -116,8 +117,8 @@ describe('spore providers: full rows through RecursiveGraphLayoutEngine', () => 
 describe('spore providers: stops rows, every stop of the recorder observed on the real run', () => {
   const rows = loadSporeRows('stops');
 
-  it('the ref has 60 stops rows', () => {
-    expect(rows).toHaveLength(60);
+  it('the ref has 61 stops rows', () => {
+    expect(rows).toHaveLength(61);
   });
 
   it.each(rows.map((row) => row.id))('%s: every recorded stop equals the observed one', TIMEOUT, (id) => {
@@ -184,8 +185,8 @@ describe('spore providers: throws rows', () => {
     [NPE_CLASS]: TypeError,
   };
 
-  it('the ref has 4 throws rows', () => {
-    expect(rows).toHaveLength(4);
+  it('the ref has 3 throws rows', () => {
+    expect(rows).toHaveLength(3);
   });
 
   it.each(rows.map((row) => row.id))('%s: the same class, and the same message unless it is JVM text', (id) => {
@@ -227,9 +228,10 @@ describe('spore providers: jitter rows (PK4, invariants only)', () => {
       }
       // the bound is computed from the input alone
       expect(displacementBound(importInput(row))).toBe(decodeHex(invariants.maxDisplacementBound));
-      // Math.random() shifts the coincident centres differently in every run
-      expect(invariants.runsAgree).toBe(false);
-      expect(dumps.size).toBe(RUNS);
+      // the coincident centres are shifted by a Random seeded with randomSeed (default 1) since eclipse-elk/elk#1242, so every run
+      // gives the same dump; until e7eaea57 an unseeded Math.random() made runsAgree false and every dump distinct (#104, D5.7)
+      expect(invariants.runsAgree).toBe(true);
+      expect(dumps.size).toBe(1);
     },
   );
 });

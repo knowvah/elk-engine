@@ -90,7 +90,7 @@ import org.eclipse.elk.core.options.Direction;
 import org.eclipse.elk.core.util.NullElkProgressMonitor;
 
 public class MrTreeUnitVectors {
-    static final String ELK_COMMIT = "e7eaea5747f2e5187a7b83cfdc256b501ca00d3c";
+    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
     static final long EDGE_ROUTER_SEED = 8161L;
     static final long ORDER_BALANCE_SEED = 12L;
     static final long AVERAGE_SEED = 8163L;

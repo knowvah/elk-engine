@@ -33,7 +33,7 @@ Oba sú mimo tohto repozitára; ani jeden sa nedodáva spolu s ním.
 
 | Položka             | Kde                                                                                         |
 | ------------------- | ------------------------------------------------------------------------------------------- |
-| Pripnutý commit ELK | `tools/oracle/ELK_COMMIT` (momentálne `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`)           |
+| Pripnutý commit ELK | `tools/oracle/ELK_COMMIT` (momentálne `8bca22f4afa3371562d2f702d59929818f7f7b71`)           |
 | Séria patchov       | `tools/oracle/patches/*.patch`, aplikované v lexikografickom poradí pomocou `git am --3way` |
 | Zostavenie          | `tools/oracle/build.sh` (Maven 3.9.x + JDK 21; Tycho sťahuje artefakty p2)                  |
 | Dávkový spúšťač     | `tools/oracle/run.sh <outDir> <input>...` alebo `run.sh --cases <cases.jsonl> <outDir>`     |

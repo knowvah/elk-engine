@@ -4,7 +4,8 @@
 
 Surveyed: the 13 in-scope bundles (decisions.md "Bundle scope") at ELK
 `8aaa3c145c2a18a38aabbc725aa3791ddc517a76` (677 .java, 5 .xtend, 13 .melk); line references are to that commit. The
-pin moved to `e7eaea57` (#99), whose net Java diff changes 13 files and no rule here. Java semantics come
+pin moved to `e7eaea57` (#99), whose net Java diff changes 13 files and no rule here, and to `8bca22f4` (#104), whose
+net diff changes 6 files and one site listed here (the spore jitter of section 3 is seeded now). Java semantics come
 from the Javadoc/JLS only (AD-9). See also [overview](architecture/overview.md),
 [port map](architecture/port-map.md), [section 2 detail](translation-rules-collections.md).
 
@@ -301,6 +302,8 @@ Inventory, commands, per-site tables and container rows:
   `BasicProgressMonitor.java:541`; a discarded call `alg.layered/src/.../p3order/MedianHeuristic.java:40`;
   jitter when two spore vertices coincide `alg.spore/src/.../ElkGraphImporter.java:169`; JSON id
   generator `graph.json/src/.../JsonExporter.xtend:489`. Goldens must not depend on them. HIGH.
+  Since the `8bca22f4` pin (#104) the spore jitter is no longer one of them: it draws from a `Random` seeded by
+  `randomSeed` (default 1; [eclipse-elk/elk#1242](https://github.com/eclipse-elk/elk/pull/1242)), so 3 sites remain.
 
 ## 4. Guava
 

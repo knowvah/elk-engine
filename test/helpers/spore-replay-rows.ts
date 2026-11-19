@@ -5,7 +5,7 @@
 //   stops   expected = { algorithm, jitterNodes, tieOrder, stops }, the stops of STOP_NAMES in the recorder's order;
 //   throws  expected = { algorithm, jitterNodes, throws: { class, message, frame } };
 //   minst   expected = one NaiveMinST call (edge sequence, weights, tree, reversed tree, order sensitivity, hash classification);
-//   jitter  expected = { algorithm, invariants } (PK4: Math.random() jitter, invariants only);
+//   jitter  expected = { algorithm, invariants } (PK4: the seeded jitter of coincident centres, invariants only);
 //   objects input = { call, objects, args }, expected = { result } (T13b: Objects.equals, KVector/TEdge.equals, TTriangle.contains).
 // Doubles are 16-hex raw bit strings (`Hex`); `decodeHex` / `encodeHex` / `isHex` are those of the vertiflex helper (one codec). A tree
 // is nested `[i, child, child, ...]` in Tree.children order. The file is parsed and validated ONCE per path (`loadSporeRows`).

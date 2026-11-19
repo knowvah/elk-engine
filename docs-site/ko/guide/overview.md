@@ -19,7 +19,7 @@ Kernel](https://www.eclipse.org/elk)(ELK)을 충실하게 포팅한 TypeScript �
 
 ## Java가 곧 명세입니다
 
-고정된 ELK 커밋 `e7eaea5747f2e5187a7b83cfdc256b501ca00d3c`의 Java 소스가 정본 명세입니다. 포팅은 이를 면밀히 따릅니다.
+고정된 ELK 커밋 `8bca22f4afa3371562d2f702d59929818f7f7b71`의 Java 소스가 정본 명세입니다. 포팅은 이를 면밀히 따릅니다.
 
 - 알고리즘을 최적화하거나 단순화하지 않습니다. Java가 중복처럼 보여도 그 중복을 그대로 유지합니다.
 - 모든 분기를 포팅하며, TypeScript 때문에 불가피한 경우가 아니면 메서드 경계를 유지합니다.

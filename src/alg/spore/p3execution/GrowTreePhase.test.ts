@@ -22,8 +22,9 @@ const rows = loadSporeRows('stops').filter((row) => row.expected.algorithm === O
 const withGrow = rows.filter((row) => stopsOf(row, STEP_GROW).length > 0);
 
 describe('GrowTreePhase: grow stops', () => {
-  it('the ref has grow stops in 18 of its 24 overlap stops rows (the other six have no overlap, or no iteration, to grow)', () => {
-    expect(rows).toHaveLength(24);
+  // 24 rows until e7eaea57: stops/overlap/scanlineHitboxes/default is new (eclipse-elk/elk#1244; #104, D4) and has grow stops
+  it('the ref has grow stops in 19 of its 25 overlap stops rows (the other six have no overlap, or no iteration, to grow)', () => {
+    expect(rows).toHaveLength(25);
     expect(rows.filter((row) => !withGrow.includes(row)).map((row) => row.id)).toEqual([
       'stops/overlap/deco10/underlyingForce',
       'stops/overlap/deco10/underlyingLayered',
