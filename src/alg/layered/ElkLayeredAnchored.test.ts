@@ -7,7 +7,6 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { repoRoot } from '../../../test/corpus/corpus.js';
 import { registerLayered } from '../../../test/helpers/layered-framework-replay.js';
-import type { Factories } from '../../../test/helpers/layered-phase-replay-ops.js';
 import { comparePipeline, pipelineDump, runPipelineSteps } from '../../../test/helpers/layered-pipeline-replay-ops.js';
 import {
   isStopRow,
@@ -15,16 +14,10 @@ import {
   registerPipelineEnums,
   type PipelineStopRow,
 } from '../../../test/helpers/layered-pipeline-replay-rows.js';
+import { STRICT_ROUTING_PHASE_FACTORIES } from '../../../test/helpers/layered-replay-factories.js';
 import type { RoutingExpected } from '../../../test/helpers/layered-routing-replay-rows.js';
-import { EdgeRouting } from '../../core/options/EdgeRouting.js';
 import { ElkLayered } from './ElkLayered.js';
 import { ComponentsProcessor } from './components/ComponentsProcessor.js';
-import { IntermediateProcessorStrategy } from './intermediate/IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from './options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from './options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from './options/LayeringStrategy.js';
-import { NodePlacementStrategy } from './options/NodePlacementStrategy.js';
-import { EdgeRouterFactory } from './p5edges/EdgeRouterFactory.js';
 
 const PIPELINE_REF = `${repoRoot()}/test/golden/refs/java/layered-pipeline.json`;
 const AD4_TOLERANCE = 1e-6;
@@ -33,26 +26,6 @@ const AD4_TOLERANCE = 1e-6;
 interface ProcessorNotifier {
   notifyProcessorReady(): void;
 }
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case 'P4_NODE_PLACEMENT':
-        return NodePlacementStrategy.valueOf(strategy).create();
-      case 'P5_EDGE_ROUTING':
-        return EdgeRouterFactory.factoryFor(EdgeRouting.valueOf(strategy)).create();
-      default:
-        throw new Error(`unknown phase ${phase}`);
-    }
-  },
-};
 
 const rowsById = new Map(
   loadPipelineRows(PIPELINE_REF)
@@ -144,7 +117,7 @@ afterEach(() => {
 describe('ElkLayered through the provider on the oracle site rows (F12)', () => {
   it.each(LAYOUTS.map((site) => [site.id, site.java, site] as const))('oracle: %s; %s', (_id, _java, site) => {
     const row = rowOf(site.id);
-    const result = runPipelineSteps(row, factories, new ComponentsProcessor());
+    const result = runPipelineSteps(row, STRICT_ROUTING_PHASE_FACTORIES, new ComponentsProcessor());
     expect(result.terminal).toBe('layout');
     const actual = pipelineDump(result) as RoutingExpected & { readonly layout: ExportedGraph };
     const { layout } = actual;
@@ -164,7 +137,11 @@ describe('ElkLayered through the provider on the oracle site rows (F12)', () => 
     const split = vi.spyOn(ComponentsProcessor.prototype, 'split');
     const combine = vi.spyOn(ComponentsProcessor.prototype, 'combine');
     const ready = vi.spyOn(ElkLayered.prototype as unknown as ProcessorNotifier, 'notifyProcessorReady');
-    runPipelineSteps(rowOf('sites/LayeredLayoutProvider/cancelled'), factories, new ComponentsProcessor());
+    runPipelineSteps(
+      rowOf('sites/LayeredLayoutProvider/cancelled'),
+      STRICT_ROUTING_PHASE_FACTORIES,
+      new ComponentsProcessor(),
+    );
     expect(split.mock.results.map((r) => (r.value as readonly unknown[]).length)).toEqual([2]);
     expect(combine).toHaveBeenCalledTimes(0);
     expect(ready).toHaveBeenCalledTimes(0);
@@ -174,7 +151,11 @@ describe('ElkLayered through the provider on the oracle site rows (F12)', () => 
     const split = vi.spyOn(ComponentsProcessor.prototype, 'split');
     const combine = vi.spyOn(ComponentsProcessor.prototype, 'combine');
     const ready = vi.spyOn(ElkLayered.prototype as unknown as ProcessorNotifier, 'notifyProcessorReady');
-    runPipelineSteps(rowOf('sites/LayeredLayoutProvider/cancelledOneComponent'), factories, new ComponentsProcessor());
+    runPipelineSteps(
+      rowOf('sites/LayeredLayoutProvider/cancelledOneComponent'),
+      STRICT_ROUTING_PHASE_FACTORIES,
+      new ComponentsProcessor(),
+    );
     expect(split.mock.results.map((r) => (r.value as readonly unknown[]).length)).toEqual([1]);
     expect(combine).toHaveBeenCalledTimes(1);
     // the sole component returns at its first check (ElkLayered.java:599) before any processor is announced

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortSide } from '../../../../core/options/PortSide.js';
+import * as Int32 from '../../../../java/lang/Int32.js';
 import type { LNode } from '../../graph/LNode.js';
 import type { LPort } from '../../graph/LPort.js';
 import { CrossMinUtil } from '../../p3order/counting/CrossMinUtil.js';
@@ -194,14 +195,20 @@ export class BetweenLayerEdgeTwoNodeCrossingsCounter {
   private countCrossingsByMergingAdjacencyLists(): void {
     while (!this.upperAdjacencies.isEmpty() && !this.lowerAdjacencies.isEmpty()) {
       if (this.isBelow(this.upperAdjacencies.first(), this.lowerAdjacencies.first())) {
-        this.upperLowerCrossings += this.upperAdjacencies.size();
+        this.upperLowerCrossings = Int32.add(this.upperLowerCrossings, this.upperAdjacencies.size());
         this.lowerAdjacencies.removeFirst();
       } else if (this.isBelow(this.lowerAdjacencies.first(), this.upperAdjacencies.first())) {
-        this.lowerUpperCrossings += this.lowerAdjacencies.size();
+        this.lowerUpperCrossings = Int32.add(this.lowerUpperCrossings, this.lowerAdjacencies.size());
         this.upperAdjacencies.removeFirst();
       } else {
-        this.upperLowerCrossings += this.upperAdjacencies.countAdjacenciesBelowNodeOfFirstPort();
-        this.lowerUpperCrossings += this.lowerAdjacencies.countAdjacenciesBelowNodeOfFirstPort();
+        this.upperLowerCrossings = Int32.add(
+          this.upperLowerCrossings,
+          this.upperAdjacencies.countAdjacenciesBelowNodeOfFirstPort(),
+        );
+        this.lowerUpperCrossings = Int32.add(
+          this.lowerUpperCrossings,
+          this.lowerAdjacencies.countAdjacenciesBelowNodeOfFirstPort(),
+        );
         this.upperAdjacencies.removeFirst();
         this.lowerAdjacencies.removeFirst();
       }

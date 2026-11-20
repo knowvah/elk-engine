@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortSide } from '../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { LNode } from '../../graph/LNode.js';
 import { NodeType } from '../../graph/LNodeNodeType.js';
 import type { LPort } from '../../graph/LPort.js';
@@ -45,13 +46,15 @@ export class SelfLoopHolder {
   /**
    * Creates a new {@link SelfLoopHolder} for the given node and sets its {@link InternalProperties.SELF_LOOP_HOLDER}
    * property accordingly. This method should only be called if {@link needsSelfLoopProcessing} returns `true`. (Java
-   * line 87 `assert needsSelfLoopProcessing(lNode)` is omitted: assertions are off.)
+   * line 87 `assert needsSelfLoopProcessing(lNode)` is a `devAssert`.)
    *
    * @param lNode the node to possibly install a {@link SelfLoopHolder} on.
    * @returns the created {@link SelfLoopHolder}.
    * @see SelfLoopHolder.java:86
    */
   static install(lNode: LNode): SelfLoopHolder {
+    devAssert(() => SelfLoopHolder.needsSelfLoopProcessing(lNode));
+
     const holder = new SelfLoopHolder(lNode);
     lNode.setProperty(InternalProperties.SELF_LOOP_HOLDER, holder);
 

@@ -6,57 +6,25 @@
 // compute the same coordinates.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../../test/corpus/corpus.js';
-import type { Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
 import { compareCall } from '../../../../../test/helpers/layered-routing-replay-compare.js';
-import { runCall, type CallerTable } from '../../../../../test/helpers/layered-routing-replay-ops.js';
+import { runCall } from '../../../../../test/helpers/layered-routing-replay-ops.js';
 import { isCallRow, loadRoutingRows, type CallRow } from '../../../../../test/helpers/layered-routing-replay-rows.js';
+import { RECTANGLE_CALLERS, RECTANGLE_CALL_FACTORIES } from '../../../../../test/helpers/layered-spline-callers.js';
 import { LayoutMetaDataService } from '../../../../core/data/LayoutMetaDataService.js';
 import { KVector } from '../../../../core/math/KVector.js';
-import { PortSide } from '../../../../core/options/PortSide.js';
 import { IllegalArgumentException } from '../../../../java/lang/IllegalArgumentException.js';
 import { LNode } from '../../graph/LNode.js';
-import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
 import { Rectangle } from './Rectangle.js';
 
 const STEPS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing-steps.json`;
 const ROW_PREFIX = 'calls/Rectangle/';
 const NO_ROWS = 0;
 
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    throw new Error(`no calls/Rectangle row runs the phase ${phase}/${strategy}`);
-  },
-};
-
 /** The row order of a `rectangle` argument is (top, right, bottom, left); the constructor takes (left, top, right, bottom). */
 const CONSTRUCTORS = {
   rectangle: (top: number, right: number, bottom: number, left: number): Rectangle =>
     new Rectangle(left, top, right, bottom),
 };
-
-/** A void call returns its receiver (the T3 contract); a static method wins over an instance method of one name. */
-const CALLERS: CallerTable = {
-  'Rectangle.union': (rectangle: Rectangle, other: Rectangle | KVector | LNode): Rectangle => {
-    if (other instanceof Rectangle) {
-      return Rectangle.union(rectangle, other);
-    }
-    if (other instanceof KVector) {
-      rectangle.union(other);
-    } else {
-      rectangle.union(other);
-    }
-    return rectangle;
-  },
-  'Rectangle.getHeight': (rectangle: Rectangle) => rectangle.getHeight(),
-  'Rectangle.getWidth': (rectangle: Rectangle) => rectangle.getWidth(),
-  'Rectangle.enlarge': (rectangle: Rectangle, enlargement: number): Rectangle => {
-    rectangle.enlarge(enlargement);
-    return rectangle;
-  },
-  'Rectangle.getFromPortSide': (rectangle: Rectangle, side: PortSide): number => rectangle.getFromPortSide(side),
-  'Rectangle.toNodeMargins': (rectangle: Rectangle, node: LNode) => rectangle.toNodeMargins(node),
-} as CallerTable;
 
 function callRows(): CallRow[] {
   return loadRoutingRows(STEPS_FILE)
@@ -76,9 +44,12 @@ describe('Rectangle calls rows', () => {
   });
 
   it.each(rows.map((row) => [row.id, row] as const))('%s matches the oracle', (_id, row) => {
-    expect(compareCall(runCall(row, factories, CALLERS, { constructors: CONSTRUCTORS }), row.expected.result)).toEqual(
-      [],
-    );
+    expect(
+      compareCall(
+        runCall(row, RECTANGLE_CALL_FACTORIES, RECTANGLE_CALLERS, { constructors: CONSTRUCTORS }),
+        row.expected.result,
+      ),
+    ).toEqual([]);
   });
 });
 

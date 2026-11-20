@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { LEdge } from '../../graph/LEdge.js';
 import type { LNode } from '../../graph/LNode.js';
 import type { LPort } from '../../graph/LPort.js';
@@ -14,7 +15,9 @@ function isInfinite(v: number): boolean {
 
 /** Java `ThresholdStrategy.THRESHOLD` (`Double.MAX_VALUE`, "TODO make this an option?!"). */
 const THRESHOLD = Number.MAX_VALUE;
-// Java `ThresholdStrategy.EPSILON` (0.0001) is only read by the two `assert` lines of `process`, which are omitted (N5).
+
+// Java `ThresholdStrategy.EPSILON` (`0.0001d`) is only read by the two `assert` lines of `process`, which stay comments
+// (issue #112).
 
 /**
  * - Only calculates threshold for the first and last node of a block.
@@ -209,7 +212,7 @@ export class ThresholdStrategySimpleThresholdStrategy extends ThresholdStrategy 
   }
 
   private process(pp: Postprocessable): boolean {
-    // Java `assert pp.edge != null` (ThresholdStrategy.java:373) is omitted (N5).
+    devAssert(() => pp.edge !== null);
     const edge = pp.edge!;
     let fix: LPort;
     if (edge.getSource()!.getNode() === pp.free) {
@@ -230,16 +233,19 @@ export class ThresholdStrategySimpleThresholdStrategy extends ThresholdStrategy 
     if (delta > 0 && delta < THRESHOLD) {
       // target y larger than source y --> shift upwards?
       const availableSpace = this.bal.checkSpaceAbove(block.getNode()!, delta, this.ni);
-      // Java `assert DoubleMath.fuzzyEquals(availableSpace, 0, EPSILON) || availableSpace >= 0` (ThresholdStrategy.java:395)
-      // is omitted (N5).
+      // Java: `assert DoubleMath.fuzzyEquals(availableSpace, 0, EPSILON) || availableSpace >= 0;`
+      // (ThresholdStrategy.java:395). Not a devAssert yet: `checkSpaceAbove` can return a negative space, and the Java
+      // assert fires on the ptolemy model tdl_activerearsteeringct (hierarchical, LEFT_RIGHT_CONNECTION_LOCKING)
+      // under -ea too (issue #112).
       this.bal.shiftBlock(block.getNode()!, -availableSpace);
       return availableSpace > 0;
     } else if (delta < 0 && -delta < THRESHOLD) {
       // direction is up, we possibly shifted some blocks too far upward
       // for an edge to be straight, so check if we can shift down again
       const availableSpace = this.bal.checkSpaceBelow(block.getNode()!, -delta, this.ni);
-      // Java `assert DoubleMath.fuzzyEquals(availableSpace, 0, EPSILON) || availableSpace >= 0` (ThresholdStrategy.java:403)
-      // is omitted (N5).
+      // Java: `assert DoubleMath.fuzzyEquals(availableSpace, 0, EPSILON) || availableSpace >= 0;`
+      // (ThresholdStrategy.java:403). Not a devAssert yet: the twin of the :395 assert above, on the space below
+      // (issue #112).
       this.bal.shiftBlock(block.getNode()!, availableSpace);
       return availableSpace > 0;
     }

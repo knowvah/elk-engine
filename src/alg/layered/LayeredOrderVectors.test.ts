@@ -12,39 +12,20 @@ import { compareOrder, compareOrderFullDump } from '../../../test/helpers/layere
 import { orderDump } from '../../../test/helpers/layered-order-replay-dump.js';
 import { runOrderPrefix } from '../../../test/helpers/layered-order-replay-ops.js';
 import { loadOrderRows, type OrderRow } from '../../../test/helpers/layered-order-replay-rows.js';
-import { runSteps, type Factories } from '../../../test/helpers/layered-phase-replay-ops.js';
+import { runSteps } from '../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow, ROW_GROUPS } from '../../../test/helpers/layered-phase-replay-rows.js';
-import { IntermediateProcessorStrategy } from './intermediate/IntermediateProcessorStrategy.js';
-import { CycleBreakingStrategy } from './options/CycleBreakingStrategy.js';
-import { CrossingMinimizationStrategy } from './options/CrossingMinimizationStrategy.js';
-import { LayeringStrategy } from './options/LayeringStrategy.js';
+import { STRICT_ORDER_PHASE_FACTORIES } from '../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
-const CYCLE_PHASE = 'P1_CYCLE_BREAKING';
-const LAYERING_PHASE = 'P2_LAYERING';
-const ORDERING_PHASE = 'P3_NODE_ORDERING';
 
 const rows = loadOrderRows(ROWS_FILE);
 const rowCounts = (JSON.parse(readFileSync(ROWS_FILE, 'utf8')) as { rowCounts: Record<string, number> }).rowCounts;
 
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case CYCLE_PHASE:
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case LAYERING_PHASE:
-        return LayeringStrategy.valueOf(strategy).create();
-      case ORDERING_PHASE:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      default:
-        throw new Error(`unknown phase ${phase}`);
-    }
-  },
-};
-
 function replay(row: OrderRow): ReturnType<typeof orderDump> {
-  const graph = row.steps === null ? runOrderPrefix(row, factories) : runSteps(row, factories);
+  const graph =
+    row.steps === null
+      ? runOrderPrefix(row, STRICT_ORDER_PHASE_FACTORIES)
+      : runSteps(row, STRICT_ORDER_PHASE_FACTORIES);
   const actual = orderDump(graph, importRow(row).importDump);
   return row.expected.dump === undefined ? actual : { ...actual, dump: dumpLGraph(graph) };
 }

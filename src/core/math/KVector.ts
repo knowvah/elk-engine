@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
+import { devAssert } from '../../java/lang/DevAssert.js';
 import { add as int32Add } from '../../java/lang/Int32.js';
 import { hashCode as doubleHashCode, parseDouble } from '../../java/lang/JavaDouble.js';
 import { reverse as integerReverse } from '../../java/lang/JavaInteger.js';
@@ -287,7 +288,7 @@ export class KVector implements IDataObject {
    */
   toRadians(): number {
     const length = this.length();
-    // Java: `assert length > 0;` (disabled unless the JVM runs with -ea; docs/translation-rules.md 6.8)
+    devAssert(() => length > 0);
 
     if (this.x >= 0 && this.y >= 0) {
       // 1st quadrant

@@ -2,6 +2,7 @@
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import type { IProperty } from '../../../graph/properties/IProperty.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { add as int32Add, sub as int32Sub } from '../../../java/lang/Int32.js';
 import { Property } from '../../../graph/properties/Property.js';
 import { LGraphUtil } from '../graph/LGraphUtil.js';
@@ -139,12 +140,13 @@ export class LabelDummySwitcher implements ILayoutProcessor<LGraph> {
   }
 
   /**
-   * Fills the layer widths array, indexed by layer ID which was assigned to the layers previously (Java asserts the
-   * array length, line 186; omitted).
+   * Fills the layer widths array, indexed by layer ID which was assigned to the layers previously.
    *
    * @see LabelDummySwitcher.java:185
    */
   private calculateLayerWidths(layeredGraph: LGraph): void {
+    devAssert(() => this.layerWidths.length === layeredGraph.getLayers().length);
+
     for (const layer of layeredGraph.getLayers()) {
       this.layerWidths[layer.id] = LGraphUtil.findMaxNonDummyNodeWidth(layer, false);
     }
@@ -210,11 +212,13 @@ export class LabelDummySwitcher implements ILayoutProcessor<LGraph> {
 
   /**
    * Assigns the given label dummy to the layer with the given index. Updates the layer size if the label enlarges the
-   * layer (Java asserts the target index, line 520; omitted).
+   * layer.
    *
    * @see LabelDummySwitcher.java:518
    */
   private assignLayer(labelDummyInfo: LabelDummySwitcherLabelDummyInfo, targetLayerIndex: number): void {
+    devAssert(() => targetLayerIndex < labelDummyInfo.labelDummy.getGraph()!.getLayers().length);
+
     // If the label dummy is not in the target layer yet, swap it with the long edge dummy that is
     if (targetLayerIndex !== int32Add(labelDummyInfo.leftmostLayerId, labelDummyInfo.leftLongEdgeDummies.length)) {
       swapNodes(

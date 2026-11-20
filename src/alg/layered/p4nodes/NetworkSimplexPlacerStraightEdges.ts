@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { NEdge } from '../../common/networksimplex/NEdge.js';
 import * as DoubleMath from '../../../guava/DoubleMath.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LEdge } from '../graph/LEdge.js';
 import { LNode } from '../graph/LNode.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
@@ -216,8 +217,8 @@ export function improveTwoPath(s: NetworkSimplexPlacerState, path: Path, probe: 
   if (!(centerOrigin instanceof LNode)) {
     return false;
   }
-  // The Java `assert centerOrigin instanceof LNode` (NetworkSimplexPlacer.java:1131) is omitted (N5): the check
-  // above returned for every other origin.
+  // only two paths without flexible nodes are allowed here
+  devAssert(() => centerOrigin instanceof LNode);
   // can be a node or a port
   const centerNode = centerOrigin;
   const nNode = s.nodeReps![centerNode.id]!;

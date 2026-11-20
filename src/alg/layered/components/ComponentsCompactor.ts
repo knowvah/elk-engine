@@ -8,6 +8,7 @@ import { BasicProgressMonitor } from '../../../core/util/BasicProgressMonitor.js
 import { fuzzyEquals } from '../../../guava/DoubleMath.js';
 import { LinkedHashMultimap } from '../../../guava/LinkedHashMultimap.js';
 import type { Multimap } from '../../../guava/Multimap.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { identity } from '../../../java/util/HashStrategy.js';
 import type { IComponent } from '../compaction/components/IComponent.js';
 import type { IConnectedComponents } from '../compaction/components/IConnectedComponents.js';
@@ -357,7 +358,7 @@ export class ComponentsCompactor {
   private createDummyNode(graph: LGraph): LNode {
     // this can only be the case if there's a single external port
     //  to handle it properly, we give it a tiny little dummy rectangle
-    // (Java `assert graph.getLayerlessNodes().size() == 1;` omitted)
+    devAssert(() => graph.getLayerlessNodes().length === 1);
 
     const extPortDummy = graph.getLayerlessNodes()[0];
 

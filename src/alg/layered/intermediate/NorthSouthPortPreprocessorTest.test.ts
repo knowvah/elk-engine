@@ -12,33 +12,15 @@ import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { runOrderPrefix } from '../../../../test/helpers/layered-order-replay-ops.js';
 import { loadOrderRows } from '../../../../test/helpers/layered-order-replay-rows.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import type { LNode } from '../graph/LNode.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
 import type { LGraph } from '../graph/LGraph.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
+import { ORDER_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
 const STOP = 'NORTH_SOUTH_PORT_PREPROCESSOR';
 const ID_PATTERN = /^models\/north_south_ports-[^/]+\/[^/]+\/NORTH_SOUTH_PORT_PREPROCESSOR\/default$/;
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-    }
-  },
-};
 
 const rows = loadOrderRows(ROWS_FILE).filter((row) => ID_PATTERN.test(row.id) && row.prefix?.at(-1) === STOP);
 
@@ -68,6 +50,6 @@ describe('NorthSouthPortPreprocessorTest on the replayed rows', () => {
   });
 
   it.each(rows.map((row) => [row.id, row] as const))('%s: testIsolatedNorthSouthPorts', (_id, row) => {
-    expect(testIsolatedNorthSouthPorts(runOrderPrefix(row, factories))).toBeGreaterThan(0);
+    expect(testIsolatedNorthSouthPorts(runOrderPrefix(row, ORDER_PHASE_FACTORIES))).toBeGreaterThan(0);
   });
 });

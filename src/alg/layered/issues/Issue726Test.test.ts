@@ -8,7 +8,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { checkEdgeRouteIsOrthogonal } from '../../../../test/helpers/edge-route-orthogonal.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { ROUTING_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 import { runRoutingPrefix } from '../../../../test/helpers/layered-routing-replay-ops.js';
 import {
   isGeometryRow,
@@ -17,37 +17,12 @@ import {
 } from '../../../../test/helpers/layered-routing-replay-rows.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import { KVectorChain } from '../../../core/math/KVectorChain.js';
-import { EdgeRouting } from '../../../core/options/EdgeRouting.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
-import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { NodePlacementStrategy } from '../options/NodePlacementStrategy.js';
-import { EdgeRouterFactory } from '../p5edges/EdgeRouterFactory.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing.json`;
 const TICKET_ROW_ID = 'models/ticket-726/root/P5/ORTHOGONAL';
 const ONE_ROW = 1;
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case 'P4_NODE_PLACEMENT':
-        return NodePlacementStrategy.valueOf(strategy).create();
-      default:
-        return EdgeRouterFactory.factoryFor(EdgeRouting.valueOf(strategy)).create();
-    }
-  },
-};
 
 const rows: RoutingRow[] = loadRoutingRows(ROWS_FILE)
   .filter(isGeometryRow)
@@ -85,6 +60,6 @@ describe('Issue726Test on the replayed row', () => {
   });
 
   it.each(rows.map((row) => [row.id, row] as const))('%s: testOrthogonalEdges', (_id, row) => {
-    expect(() => testOrthogonalEdges(runRoutingPrefix(row, factories))).not.toThrow();
+    expect(() => testOrthogonalEdges(runRoutingPrefix(row, ROUTING_PHASE_FACTORIES))).not.toThrow();
   });
 });

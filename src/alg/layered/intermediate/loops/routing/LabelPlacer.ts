@@ -2,6 +2,7 @@
 import type { ILabelManager } from '../../../../../core/labels/ILabelManager.js';
 import { PortSide } from '../../../../../core/options/PortSide.js';
 import type { IElkProgressMonitor } from '../../../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import { LayeredOptions } from '../../../options/LayeredOptions.js';
 import { SelfLoopOrderingStrategy } from '../../../options/SelfLoopOrderingStrategy.js';
 import { LabelManagementProcessor } from '../../LabelManagementProcessor.js';
@@ -27,7 +28,7 @@ type DeferredLoops = { readonly north: SelfHyperLoop[]; readonly south: SelfHype
  * the northern and southern sides, the x coordinate will be computed as well. The same goes for the y coordinate of
  * labels assigned to the eastern and western sides. The other coordinate must be computed by the `SelfLoopRouter`.
  *
- * Deviations: Java `assert` statements are omitted (assertions are off). The Java overload `assignSideAndAlignment(SelfLoopHolder)` keeps its name and the four-argument overload is
+ * Deviations: Java `assert` statements are `devAssert` calls. The Java overload `assignSideAndAlignment(SelfLoopHolder)` keeps its name and the four-argument overload is
  * `assignSideAndAlignmentOfLoop` (no overloading by type). The `switch` over the loop type is split into
  * `assignLoopSideAndAlignment` and `assignOneSidedLoop` (complexity limits), the sort of the sequenced case is `sortByLeftmostPortId`, `northernOneSidedSLLoops`/
  * `southernOneSidedSLLoops` travel as one `DeferredLoops` that is `null` exactly when the ordering strategy is not
@@ -74,6 +75,8 @@ export class LabelPlacer {
         continue;
       }
 
+      devAssert(() => slLoop.getSLLabels()!.getLLabels().length > 0);
+
       this.assignLoopSideAndAlignment(slLoop, deferred);
     }
 
@@ -116,7 +119,7 @@ export class LabelPlacer {
         break;
 
       default:
-        // Java: `assert false` (`:130`), unreachable
+        devAssert(() => false);
         break;
     }
   }
@@ -168,13 +171,14 @@ export class LabelPlacer {
         break;
 
       default:
-        // Java: `assert false` (`:158`), unreachable
+        devAssert(() => false);
         break;
     }
   }
 
   private assignOneSidedSequencedSideAndAlignment(slLoops: SelfHyperLoop[], portSide: PortSide): void {
-    // (Java line 164 `assert !slLoops.isEmpty()` is omitted: assertions are off.)
+    devAssert(() => slLoops.length > 0);
+
     // Ensure sensible port IDs
     let id = 0;
     for (const lPort of slLoops[0]!.getSLHolder().getLNode().getPorts()) {
@@ -248,8 +252,9 @@ export class LabelPlacer {
       this.assignSideAndAlignmentOfLoop(slLoop, PortSide.SOUTH, Alignment.RIGHT, slLoop.getLeftmostPort());
     } else if (rightmostPortSide === PortSide.SOUTH) {
       this.assignSideAndAlignmentOfLoop(slLoop, PortSide.SOUTH, Alignment.LEFT, slLoop.getRightmostPort());
+    } else {
+      devAssert(() => false);
     }
-    // else: Java `assert false` (`:203`), unreachable
   }
 
   private assignTwoSidesOpposingAndThreeSidesSideAndAlignment(slLoop: SelfHyperLoop): void {
@@ -282,8 +287,9 @@ export class LabelPlacer {
       } else {
         this.assignSideAndAlignmentOfLoop(slLoop, PortSide.NORTH, Alignment.RIGHT, slLoop.getRightmostPort());
       }
+    } else {
+      devAssert(() => false);
     }
-    // else: Java `assert false` (`:239`), unreachable
   }
 
   /** Whether any label of the loop has the inline edge label property set (`:210-216`). */
@@ -373,7 +379,7 @@ export class LabelPlacer {
         break;
 
       default:
-        // Java: `assert false` (`:352`), unreachable
+        devAssert(() => false);
         break;
     }
 
@@ -411,7 +417,7 @@ export class LabelPlacer {
         break;
 
       default:
-        // Java: `assert false` (`:402`), unreachable
+        devAssert(() => false);
         break;
     }
   }

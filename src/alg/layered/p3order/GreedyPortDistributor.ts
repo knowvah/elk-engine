@@ -2,6 +2,7 @@
 import { PortSide } from '../../../core/options/PortSide.js';
 import { ReverseList } from '../../../guava/Lists.js';
 import { reverse } from '../../../guava/Lists.js';
+import * as Int32 from '../../../java/lang/Int32.js';
 import type { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
 import type { LPort } from '../graph/LPort.js';
@@ -122,8 +123,14 @@ export class GreedyPortDistributor implements ISweepPortDistributor, IInitializa
       const lowerNode: LNode | null = lowerPort.getProperty(InternalProperties.PORT_DUMMY);
       if (upperNode !== null && lowerNode !== null) {
         this.hierarchicalCrossingsCounter.countBothSideCrossings(upperNode, lowerNode);
-        upperLowerCrossings += this.hierarchicalCrossingsCounter.getUpperLowerCrossings();
-        lowerUpperCrossings += this.hierarchicalCrossingsCounter.getLowerUpperCrossings();
+        upperLowerCrossings = Int32.add(
+          upperLowerCrossings,
+          this.hierarchicalCrossingsCounter.getUpperLowerCrossings(),
+        );
+        lowerUpperCrossings = Int32.add(
+          lowerUpperCrossings,
+          this.hierarchicalCrossingsCounter.getLowerUpperCrossings(),
+        );
       }
     }
     return upperLowerCrossings > lowerUpperCrossings;

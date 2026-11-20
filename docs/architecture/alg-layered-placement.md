@@ -105,8 +105,8 @@ recursive twin in the test file on every row graph and on a 5,000-deep chain und
 - **Numeric casts (N5).** `(int) Math.ceil(…)` and `(int) Math.max(0, …)` through `d2i`; `(int) Math.signum(cmp)` in
   `NeighborComparator` through `d2i(Math.sign(…))` with the stable `Array.prototype.sort`; `Math.round` through the
   JVM shim; `Double.isInfinite` as an explicit ±Infinity test; `Int32.mul` for `THOROUGHNESS * nodes`; the Java
-  `assert` lines (`NetworkSimplexPlacer.java:592,1131`, `ThresholdStrategy.java:373,395,403`) omitted with a comment
-  naming the line. No boxed `==` exists in the 7d Java (C6 audit per task).
+  `assert` lines (`NetworkSimplexPlacer.java:592,1131`, `ThresholdStrategy.java:373,395,403`) are `devAssert` calls
+  (translation rules 6.8), `ThresholdStrategy.EPSILON` with them. No boxed `==` exists in the 7d Java (C6 audit per task).
 - **Hashed containers (N7, AD-10).** `BKCompactor.sinkNodes` (a `HashMap<LNode,…>` iterated at `:341` and `:378`) is an
   insertion-ordered `Map`; the recorder's `-XX:hashCode=2` makes the Java iterate it in insertion order too (up to 10
   entries, 7b). `markedEdges`, `blockFinished`, `portMap`, `flexibleWhereSpacePermitsEdges` are membership-only;

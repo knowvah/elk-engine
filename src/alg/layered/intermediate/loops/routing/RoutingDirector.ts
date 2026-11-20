@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortSide } from '../../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import * as Int32 from '../../../../../java/lang/Int32.js';
 import { NoSuchElementException } from '../../../../../java/util/NoSuchElementException.js';
 import type { LPort } from '../../../graph/LPort.js';
@@ -26,7 +27,7 @@ const CONNECTED_PORT_PENALTY = 3;
  * one. This effectively decides how the loop is routed around the node. How complex this is to determine depends on the
  * self loop types (see the method documentations for how we do so).
  *
- * Deviations: Java `assert` statements are omitted. The `default` branch of the `switch` over the loop type
+ * Deviations: Java `assert` statements are `devAssert` calls. The `default` branch of the `switch` over the loop type
  * and of the missing-side `switch` (Java `assert false`) is unreachable; in the three-sided case it throws. `determineLoopRoutes` was split (`determineLoopRoute`) for the complexity limit.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/loops/routing/RoutingDirector.java
@@ -89,7 +90,7 @@ export class RoutingDirector {
         break;
 
       default:
-        // Java: `assert false` (`:84`), unreachable
+        devAssert(() => false);
         break;
     }
   }
@@ -145,6 +146,7 @@ export class RoutingDirector {
    */
   private determineTwoSideOpposingLoopRoutes(slLoop: SelfHyperLoop): void {
     const sides = PortRestorer.sortedTwoSideLoopPortSides(slLoop);
+    devAssert(() => sides.length === 2);
 
     const slHolder = slLoop.getSLHolder();
 
@@ -198,7 +200,8 @@ export class RoutingDirector {
         break;
 
       default:
-        // Java: `assert false` (`:176`), then `lowestPortOnSide(slLoop, null)` fails; unreachable
+        // Java: then `lowestPortOnSide(slLoop, null)` fails; unreachable
+        devAssert(() => false);
         throw new Error('A three-sided self loop has exactly one of the four sides missing.');
     }
 
@@ -208,13 +211,18 @@ export class RoutingDirector {
   private computeMissingPortSide(slLoop: SelfHyperLoop): PortSide {
     const sides = slLoop.getSLPortsBySide().keySet();
 
+    // SUPPRESS CHECKSTYLE NEXT MagicNumber
+    devAssert(() => sides.length === 3);
+    devAssert(() => !sides.includes(PortSide.UNDEFINED));
+
     for (const side of PortSide.values()) {
       if (side !== PortSide.UNDEFINED && !sides.includes(side)) {
         return side;
       }
     }
 
-    // This cannot happen (Java: `assert false; return null;`)
+    // This cannot happen
+    devAssert(() => false);
     throw new Error('A three-sided self loop has exactly one of the four sides missing.');
   }
 

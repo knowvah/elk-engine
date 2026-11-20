@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
@@ -41,11 +42,11 @@ export class EndLabelPostprocessor implements ILayoutProcessor<LGraph> {
 
   /** @see EndLabelPostprocessor.java:65 */
   private processNode(node: LNode): void {
-    // Java `assert node.hasProperty(END_LABELS)` and `assert !endLabelCells.isEmpty()`: disabled without -ea
-    // (translation rules 6.8; no devAssert helper)
+    devAssert(() => node.hasProperty(InternalProperties.END_LABELS));
 
     // The node should have a non-empty list of label cells, or something went TERRIBLY WRONG!!!
     const endLabelCells = node.getProperty(InternalProperties.END_LABELS);
+    devAssert(() => endLabelCells.size > 0);
 
     const nodePos = node.getPosition();
 

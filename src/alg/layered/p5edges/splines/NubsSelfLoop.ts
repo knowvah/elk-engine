@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { KVector } from '../../../../core/math/KVector.js';
 import { PortSide } from '../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { LPort } from '../../graph/LPort.js';
 import { NubSpline, type ControlPointList } from './NubSpline.js';
 import { SplinesMath } from './SplinesMath.js';
@@ -195,7 +196,7 @@ export class NubsSelfLoop extends NubSpline {
     const sourcePos = source.getPosition().clone().add(source.getAnchor());
     const targetPos = target.getPosition().clone().add(target.getAnchor());
 
-    // Java `assert cornerBendPoints.size() == 2;` (:239) omitted (R6): assertions are not enabled in production.
+    devAssert(() => cornerBendPoints.length === 2);
     const thirdCP = cornerBendPoints[0];
     const fourthCP = cornerBendPoints[1];
 
@@ -235,7 +236,7 @@ export class NubsSelfLoop extends NubSpline {
     const sourcePos = source.getPosition().clone().add(source.getAnchor());
     const targetPos = target.getPosition().clone().add(target.getAnchor());
 
-    // Java `assert cornerBendPoints.size() == 3;` (:273) omitted (R6).
+    devAssert(() => cornerBendPoints.length === 3);
     const thirdCP = cornerBendPoints[0];
     const fourthCP = cornerBendPoints[1];
     const fifthCP = cornerBendPoints[2];
@@ -273,7 +274,7 @@ export class NubsSelfLoop extends NubSpline {
     const sourcePos = source.getPosition().clone().add(source.getAnchor());
     const targetPos = target.getPosition().clone().add(target.getAnchor());
 
-    // Java `assert cornerBendPoints.size() == 4;` (:305) omitted (R6).
+    devAssert(() => cornerBendPoints.length === 4);
     const thirdCP = cornerBendPoints[0];
     const fourthCP = cornerBendPoints[1];
     const fifthCP = cornerBendPoints[2];

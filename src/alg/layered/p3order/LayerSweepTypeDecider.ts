@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortSide } from '../../../core/options/PortSide.js';
 import { any, concat, isEmpty } from '../../../guava/Iterables.js';
+import * as Int32 from '../../../java/lang/Int32.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LNode } from '../graph/LNode.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
@@ -73,9 +74,11 @@ export class LayerSweepTypeDecider implements IInitializable {
       this.processLayer(layer, nsPortDummies, counts);
     }
 
-    const allPaths = counts.pathsToRandom + counts.pathsToHierarchical;
+    const allPaths = Int32.add(counts.pathsToRandom, counts.pathsToHierarchical);
     const normalized =
-      allPaths === 0 ? Number.POSITIVE_INFINITY : (counts.pathsToRandom - counts.pathsToHierarchical) / allPaths;
+      allPaths === 0
+        ? Number.POSITIVE_INFINITY
+        : Int32.sub(counts.pathsToRandom, counts.pathsToHierarchical) / allPaths;
     return normalized >= boundary;
   }
 
@@ -106,12 +109,12 @@ export class LayerSweepTypeDecider implements IInitializable {
     if (this.isExternalPortDummy(node)) {
       currentNode.hierarchicalInfluence = 1;
       if (this.isEasternDummy(node)) {
-        counts.pathsToHierarchical += currentNode.connectedEdges;
+        counts.pathsToHierarchical = Int32.add(counts.pathsToHierarchical, currentNode.connectedEdges);
       }
     } else if (this.hasNoWesternPorts(node)) {
       currentNode.randomInfluence = 1;
     } else if (this.hasNoEasternPorts(node)) {
-      counts.pathsToRandom += currentNode.connectedEdges;
+      counts.pathsToRandom = Int32.add(counts.pathsToRandom, currentNode.connectedEdges);
     }
 
     // Increase counts of paths by the number outgoing edges times the influence
@@ -124,8 +127,8 @@ export class LayerSweepTypeDecider implements IInitializable {
     for (const port of northSouthPorts) {
       const nsDummy: LNode | null = port.getProperty(InternalProperties.PORT_DUMMY);
       if (nsDummy !== null) {
-        counts.pathsToRandom += currentNode.randomInfluence;
-        counts.pathsToHierarchical += currentNode.hierarchicalInfluence;
+        counts.pathsToRandom = Int32.add(counts.pathsToRandom, currentNode.randomInfluence);
+        counts.pathsToHierarchical = Int32.add(counts.pathsToHierarchical, currentNode.hierarchicalInfluence);
         this.transferInfoTo(currentNode, nsDummy);
       }
     }
@@ -134,8 +137,8 @@ export class LayerSweepTypeDecider implements IInitializable {
   /** The `for (LEdge edge : node.getOutgoingEdges())` loop, which occurs twice in `useBottomUp` (`:103`, `:126`). */
   private transferAlongOutgoingEdges(node: LNode, currentNode: NodeInfo, counts: PathCounts): void {
     for (const edge of node.getOutgoingEdges()) {
-      counts.pathsToRandom += currentNode.randomInfluence;
-      counts.pathsToHierarchical += currentNode.hierarchicalInfluence;
+      counts.pathsToRandom = Int32.add(counts.pathsToRandom, currentNode.randomInfluence);
+      counts.pathsToHierarchical = Int32.add(counts.pathsToHierarchical, currentNode.hierarchicalInfluence);
       this.transferInfoToTarget(currentNode, edge);
     }
   }
@@ -155,7 +158,7 @@ export class LayerSweepTypeDecider implements IInitializable {
   private transferInfoTo(currentNode: NodeInfo, target: LNode): void {
     const targetNodeInfo = this.nodeInfoFor(target);
     targetNodeInfo.transfer(currentNode);
-    targetNodeInfo.connectedEdges++;
+    targetNodeInfo.connectedEdges = Int32.add(targetNodeInfo.connectedEdges, 1);
   }
 
   /** @see LayerSweepTypeDecider.java:177 */

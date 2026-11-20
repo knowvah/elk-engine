@@ -2,6 +2,7 @@
 import type { ElkRectangle } from '../../../../../core/math/ElkRectangle.js';
 import { CoreOptions } from '../../../../../core/options/CoreOptions.js';
 import { PortSide } from '../../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import { HorizontalLabelAlignment } from '../../cellsystem/HorizontalLabelAlignment.js';
 import type { LabelCell } from '../../cellsystem/LabelCell.js';
 import { VerticalLabelAlignment } from '../../cellsystem/VerticalLabelAlignment.js';
@@ -234,7 +235,7 @@ export class PortLabelPlacementCalculatorSimpleInside {
         return nodeContext.nodeContainer.getPadding().left + nodeContext.portLabelSpacingHorizontal;
 
       default:
-      // PortLabelPlacementCalculator.java:208 `assert false` stays a comment (NS5).
+        devAssert(() => false);
     }
 
     return 0;

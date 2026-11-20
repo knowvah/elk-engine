@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: EPL-2.0
 import { KVector } from '../../../../../core/math/KVector.js';
 import { KVectorChain } from '../../../../../core/math/KVectorChain.js';
+import { fuzzyEquals } from '../../../../../guava/DoubleMath.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import { NoSuchElementException } from '../../../../../java/util/NoSuchElementException.js';
 import type { SelfLoopEdge } from '../SelfLoopEdge.js';
 import { OrthogonalSelfLoopRouter, type EdgeRoutingDirection } from './OrthogonalSelfLoopRouter.js';
@@ -15,7 +17,7 @@ const TOLERANCE = 0.01;
  * Routes self loops with polylines. This is basically the same routing as computed by the
  * {@link OrthogonalSelfLoopRouter}, but with the corners cut a little.
  *
- * Deviations: the Java `assert` statements (`:64`, `:82`) are omitted, and with them the private `areOrthogonallyRouted` (`:112`) that only they call. `KVectorChain` is a `LinkedList`; the iterator
+ * Deviations: the Java `assert` statements (`:64`, `:82`) are `devAssert` calls, with the private `areOrthogonallyRouted` (`:112`) that only the second one calls. `KVectorChain` is a `LinkedList`; the iterator
  * loop of `cutCorners` reads its elements through `iterator()`, exactly as the Java does.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/loops/routing/PolylineSelfLoopRouter.java
@@ -45,6 +47,9 @@ export class PolylineSelfLoopRouter extends OrthogonalSelfLoopRouter {
    * This method is public for it to be accessible by our unit tests.
    */
   cutCorners(bendPoints: KVectorChain, distance: number): KVectorChain {
+    // The incoming list should consist of more than just the two end points
+    devAssert(() => bendPoints.size() > 2);
+
     const result = new KVectorChain();
 
     // We always look at three bend points at a time, where the one in the middle is the corner we want to cut (this
@@ -59,6 +64,9 @@ export class PolylineSelfLoopRouter extends OrthogonalSelfLoopRouter {
       previous = corner;
       corner = next;
       next = step.value;
+
+      // Orthogonal routing
+      devAssert(() => this.areOrthogonallyRouted(previous, corner, next));
 
       // Compute the new bend points step by step. Start by finding out how much we need to offset the corner to
       // get to the previous and next bend points. Then, limit how far we travel along that vector. Through all of
@@ -83,6 +91,14 @@ export class PolylineSelfLoopRouter extends OrthogonalSelfLoopRouter {
     }
 
     return result;
+  }
+
+  /** Determines whether the three vectors constitute an orthogonal routing, minus double tolerances (`:112`). */
+  private areOrthogonallyRouted(previous: KVector, corner: KVector, next: KVector): boolean {
+    const verticalHorizontal = fuzzyEquals(previous.x, corner.x, TOLERANCE) && fuzzyEquals(corner.y, next.y, TOLERANCE);
+    const horizontalVertical = fuzzyEquals(previous.y, corner.y, TOLERANCE) && fuzzyEquals(corner.x, next.x, TOLERANCE);
+
+    return verticalHorizontal || horizontalVertical;
   }
 
   /** Java `Iterator.next()`: past the end it throws `NoSuchElementException`. */

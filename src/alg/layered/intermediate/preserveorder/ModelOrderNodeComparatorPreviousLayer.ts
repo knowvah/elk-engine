@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { LNode } from '../../graph/LNode.js';
 import type { LPort } from '../../graph/LPort.js';
 import { InternalProperties } from '../../options/InternalProperties.js';
@@ -138,7 +139,7 @@ function compareOnSameSourceNode(
       return 1;
     }
   }
-  // assert (false): the JVM runs without -ea.
+  devAssert(() => false);
   // Cannot happen, since both nodes have a connection to the previous layer.
   // Nevertheless, if it does happen provide well defined behavior and use the model order of the edges.
   const n1EdgeOrder = getModelOrderFromConnectedEdges(s, n1);

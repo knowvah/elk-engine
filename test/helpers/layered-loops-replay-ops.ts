@@ -13,20 +13,14 @@
 //   `factoriesWith(overrides)`     stands a ported class in for an enum arm that still throws at plan build.
 import type { LGraph } from '../../src/alg/layered/graph/LGraph.js';
 import type { LNode } from '../../src/alg/layered/graph/LNode.js';
-import { IntermediateProcessorStrategy } from '../../src/alg/layered/intermediate/IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from '../../src/alg/layered/options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../../src/alg/layered/options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../../src/alg/layered/options/LayeringStrategy.js';
-import { NodePlacementStrategy } from '../../src/alg/layered/options/NodePlacementStrategy.js';
-import { EdgeRouterFactory } from '../../src/alg/layered/p5edges/EdgeRouterFactory.js';
 import type { ILayoutProcessor } from '../../src/core/alg/ILayoutProcessor.js';
-import { EdgeRouting } from '../../src/core/options/EdgeRouting.js';
 import type { IElkProgressMonitor } from '../../src/core/util/IElkProgressMonitor.js';
 import type { IProperty } from '../../src/graph/properties/IProperty.js';
 import { runLabelsRow, type LabelsEnvironment, type LabelsStepsResult } from './layered-labels-replay-ops.js';
 import type { Factories } from './layered-phase-replay-ops.js';
 import type { PhaseStep } from './layered-phase-replay-rows.js';
 import type { PipelineStopRow } from './layered-pipeline-replay-rows.js';
+import { STRICT_ROUTING_PHASE_FACTORIES } from './layered-replay-factories.js';
 import { runRoutingPrefix } from './layered-routing-replay-ops.js';
 
 /** The recorder's step op that runs one processor outside `IntermediateProcessorStrategy`. */
@@ -65,32 +59,8 @@ function stepProcessorFor(name: string): ILayoutProcessor<LGraph> {
 // ------------------------------------------------------------------------------------------------------------
 // factories
 
-const CYCLE_PHASE = 'P1_CYCLE_BREAKING';
-const LAYERING_PHASE = 'P2_LAYERING';
-const ORDERING_PHASE = 'P3_NODE_ORDERING';
-const PLACEMENT_PHASE = 'P4_NODE_PLACEMENT';
-const ROUTING_PHASE = 'P5_EDGE_ROUTING';
-
-/** The real enum-driven factories (as LayeredLabelsVectors.test.ts builds them): a staged arm throws at `create()`. */
-export const strategyFactories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case CYCLE_PHASE:
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case LAYERING_PHASE:
-        return LayeringStrategy.valueOf(strategy).create();
-      case ORDERING_PHASE:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case PLACEMENT_PHASE:
-        return NodePlacementStrategy.valueOf(strategy).create();
-      case ROUTING_PHASE:
-        return EdgeRouterFactory.factoryFor(EdgeRouting.valueOf(strategy)).create();
-      default:
-        throw new Error(`unknown phase ${phase}`);
-    }
-  },
-};
+/** The real enum-driven factories (as LayeredLabelsVectors.test.ts uses them): a staged arm throws at `create()`. */
+export const strategyFactories: Factories = STRICT_ROUTING_PHASE_FACTORIES;
 
 /**
  * `base` with the processors of some `IntermediateProcessorStrategy` names replaced: `overrides` maps a strategy name

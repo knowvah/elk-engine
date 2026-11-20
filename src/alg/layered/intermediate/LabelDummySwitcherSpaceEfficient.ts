@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { compare as doubleCompare } from '../../../java/lang/DoubleCompare.js';
 import { add as int32Add } from '../../../java/lang/Int32.js';
 import type { LabelDummySwitcherLabelDummyInfo } from './LabelDummySwitcherLabelDummyInfo.js';
@@ -93,7 +94,7 @@ function assignToWiderLayer(labelDummyInfo: LabelDummySwitcherLabelDummyInfo, as
 }
 
 /**
- * Returns the index of the layer with the largest potential width (Java asserts the label index, line 485; omitted).
+ * Returns the index of the layer with the largest potential width.
  *
  * @param labelDummyInfos label dummy infos, sorted descendingly by label width.
  * @param labelIndex index of the label dummy info for which we're currently looking for a layer. All labels with
@@ -107,6 +108,8 @@ function findPotentiallyWidestLayer(
   labelIndex: number,
   layerWidths: readonly number[],
 ): number {
+  devAssert(() => labelIndex >= 0 && labelIndex < labelDummyInfos.length);
+
   const labelDummyInfo = labelDummyInfos[labelIndex]!;
   const labelDummyWidth = labelDummyInfo.labelDummy.getSize().x;
 

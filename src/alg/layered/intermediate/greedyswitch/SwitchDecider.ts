@@ -3,6 +3,7 @@ import { PortSide } from '../../../../core/options/PortSide.js';
 import type { Pair } from '../../../../core/util/Pair.js';
 import { isEmpty } from '../../../../guava/Iterables.js';
 import { IndexOutOfBoundsException } from '../../../../java/lang/IndexOutOfBoundsException.js';
+import * as Int32 from '../../../../java/lang/Int32.js';
 import type { LNode } from '../../graph/LNode.js';
 import { NodeType } from '../../graph/LNodeNodeType.js';
 import type { LPort } from '../../graph/LPort.js';
@@ -134,21 +135,25 @@ export class SwitchDecider {
 
     const { leftInlayer, rightInlayer } = this.countInLayerCrossings(upperNode, lowerNode);
     this.northSouthCounter.countCrossings(upperNode, lowerNode);
-    let upperLowerCrossings =
-      this.crossingMatrixFiller.getCrossingMatrixEntry(upperNode, lowerNode) +
-      leftInlayer.getFirst()! +
-      rightInlayer.getFirst()! +
-      this.northSouthCounter.getUpperLowerCrossings();
-    let lowerUpperCrossings =
-      this.crossingMatrixFiller.getCrossingMatrixEntry(lowerNode, upperNode) +
-      leftInlayer.getSecond()! +
-      rightInlayer.getSecond()! +
-      this.northSouthCounter.getLowerUpperCrossings();
+    let upperLowerCrossings = Int32.add(
+      Int32.add(
+        Int32.add(this.crossingMatrixFiller.getCrossingMatrixEntry(upperNode, lowerNode), leftInlayer.getFirst()!),
+        rightInlayer.getFirst()!,
+      ),
+      this.northSouthCounter.getUpperLowerCrossings(),
+    );
+    let lowerUpperCrossings = Int32.add(
+      Int32.add(
+        Int32.add(this.crossingMatrixFiller.getCrossingMatrixEntry(lowerNode, upperNode), leftInlayer.getSecond()!),
+        rightInlayer.getSecond()!,
+      ),
+      this.northSouthCounter.getLowerUpperCrossings(),
+    );
 
     if (this.countCrossingsCausedByPortSwitch) {
       const crossingNumbers = this.countCrossingsBetweenOriginPorts(upperNode, lowerNode);
-      upperLowerCrossings += crossingNumbers.getFirst()!;
-      lowerUpperCrossings += crossingNumbers.getSecond()!;
+      upperLowerCrossings = Int32.add(upperLowerCrossings, crossingNumbers.getFirst()!);
+      lowerUpperCrossings = Int32.add(lowerUpperCrossings, crossingNumbers.getSecond()!);
     }
 
     return upperLowerCrossings > lowerUpperCrossings;

@@ -6,31 +6,24 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../../test/corpus/corpus.js';
 import { decodeHex } from '../../../../../test/helpers/layered-framework-replay.js';
-import type { Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
-import { runCall, type CallerTable } from '../../../../../test/helpers/layered-routing-replay-ops.js';
+import { runCall } from '../../../../../test/helpers/layered-routing-replay-ops.js';
 import {
   isCallRow,
   loadRoutingRows,
   type NubsSummary,
 } from '../../../../../test/helpers/layered-routing-replay-rows.js';
+import {
+  NUBS_SELF_LOOP_CALLERS,
+  NUBS_SELF_LOOP_CALL_FACTORIES,
+} from '../../../../../test/helpers/layered-spline-callers.js';
 import { LayoutMetaDataService } from '../../../../core/data/LayoutMetaDataService.js';
 import { IndexOutOfBoundsException } from '../../../../java/lang/IndexOutOfBoundsException.js';
-import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
 import { NubSpline } from './NubSpline.js';
 import { NubsSelfLoop } from './NubsSelfLoop.js';
 
 const STEPS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing-steps.json`;
 const COORDINATE_DIGITS = 6;
 const SECOND_CP = 2;
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    throw new Error(`no calls/NubsSelfLoop row runs the phase ${phase}/${strategy}`);
-  },
-};
-
-const CALLERS: CallerTable = { 'NubsSelfLoop.createCornerSelfLoop': NubsSelfLoop.createCornerSelfLoop };
 
 beforeAll(() => {
   LayoutMetaDataService.initElkReflect();
@@ -43,7 +36,7 @@ function loopOf(id: string): NubsSummary {
   if (row === undefined) {
     throw new Error(`no row calls/NubsSelfLoop/${id}`);
   }
-  const result = runCall(row, factories, CALLERS);
+  const result = runCall(row, NUBS_SELF_LOOP_CALL_FACTORIES, NUBS_SELF_LOOP_CALLERS);
   if (result.type !== 'nubs' || result.value === null) {
     throw new Error(`${id} did not return a spline`);
   }

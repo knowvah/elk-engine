@@ -268,7 +268,9 @@ export class HorizontalPortPlacementSizeCalculator {
    * @returns minimum width required to satisfy the spacing.
    */
   static minSizeRequiredToRespectSpacing(spacing: number, firstRatio: number, secondRatio: number): number {
-    // HorizontalPortPlacementSizeCalculator.java:212 `assert secondRatio >= firstRatio` stays a comment (NS5).
+    // Java: `assert secondRatio >= firstRatio;` (HorizontalPortPlacementSizeCalculator.java:212). Not a devAssert yet:
+    // the `adapters` sweep rows of layered-framework.json run this before layered sorts the ports, and the Java
+    // assert fires on them under -ea too (issue #113).
 
     // Some failsafing
     if (fuzzyEquals(firstRatio, secondRatio, HorizontalPortPlacementSizeCalculator.EQUALITY_TOLERANCE)) {

@@ -4,7 +4,6 @@
 // (`PolylineEdgeRouter` for POLYLINE, `OrthogonalEdgeRouter` for ORTHOGONAL). Expectations come only from the rows and the Java (L4, AD-13).
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { compareRouting, compareRoutingFullDump } from '../../../../test/helpers/layered-routing-replay-compare.js';
 import { routingDump } from '../../../../test/helpers/layered-routing-replay-dump.js';
@@ -15,48 +14,17 @@ import {
   type RoutingRow,
 } from '../../../../test/helpers/layered-routing-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
-import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import type { LGraph } from '../graph/LGraph.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { NodePlacementStrategy } from '../options/NodePlacementStrategy.js';
-import { OrthogonalEdgeRouter } from '../p5edges/OrthogonalEdgeRouter.js';
-import { PolylineEdgeRouter } from '../p5edges/PolylineEdgeRouter.js';
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
+import { INJECTED_ROUTER_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const MODELS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing.json`;
 const STEPS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing-steps.json`;
-const ROUTING_PHASE = 'P5_EDGE_ROUTING';
 const STOP = 'LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR';
 const SCENARIO_PREFIX = 'scenarios/LayerSizeAndGraphHeightCalculator/';
 
 /** The stop of a `models` row id `models/<model>/<level>/<stop>/<variant>`. */
 const stopOf = (row: RoutingRow): string | undefined => row.id.split('/')[3];
-
-const factories: Factories = {
-  createProcessor(name): ILayoutProcessor<LGraph> {
-    return IntermediateProcessorStrategy.valueOf(name).create();
-  },
-  createPhase(phase, strategy): ILayoutProcessor<LGraph> {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case 'P4_NODE_PLACEMENT':
-        return NodePlacementStrategy.valueOf(strategy).create();
-      default:
-        // P5_EDGE_ROUTING: the EdgeRouterFactory arm is T10's; the routers under test are injected
-        expect(phase).toBe(ROUTING_PHASE);
-        expect(['POLYLINE', 'ORTHOGONAL']).toContain(strategy);
-        return strategy === 'POLYLINE' ? new PolylineEdgeRouter() : new OrthogonalEdgeRouter();
-    }
-  },
-};
 
 beforeAll(() => {
   LayoutMetaDataService.initElkReflect();
@@ -68,7 +36,9 @@ const rows: RoutingRow[] = loadRoutingRows(MODELS_FILE, STEPS_FILE)
   .filter((row) => stopOf(row) === STOP || row.id.startsWith(SCENARIO_PREFIX));
 
 function replay(row: RoutingRow): LGraph {
-  return row.steps === null ? runRoutingPrefix(row, factories) : runRoutingSteps(row, factories);
+  return row.steps === null
+    ? runRoutingPrefix(row, INJECTED_ROUTER_FACTORIES)
+    : runRoutingSteps(row, INJECTED_ROUTER_FACTORIES);
 }
 
 /** The row's steps without the `runProcessor` steps of `name` and without the `dump` (the plan minus the class). */
@@ -107,7 +77,7 @@ describe('LayerSizeAndGraphHeightCalculator (the rows are not vacuous)', () => {
   it('the state before the calculator differs from the recorded state after it', () => {
     const row = rows.find((r) => r.id === 'scenarios/LayerSizeAndGraphHeightCalculator/long-edges')!;
     const without = { ...row, steps: stepsWithout(row, 'LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR') };
-    const before = routingDump(runRoutingSteps(without, factories), importRow(row).importDump);
+    const before = routingDump(runRoutingSteps(without, INJECTED_ROUTER_FACTORIES), importRow(row).importDump);
     expect(compareRouting(before, row.expected).length).toBeGreaterThan(0);
   });
 });

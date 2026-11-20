@@ -4,6 +4,7 @@ import { CoreOptions } from '../../../core/options/CoreOptions.js';
 import { EdgeRouting } from '../../../core/options/EdgeRouting.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import { ClassCastException } from '../../../java/lang/ClassCastException.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
 import type { ComponentGroup } from './ComponentGroup.js';
@@ -29,7 +30,7 @@ export class ComponentGroupModelOrderGraphPlacer extends ComponentGroupGraphPlac
   /** @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/components/ComponentGroupModelOrderGraphPlacer.java:38 */
   override combine(components: LGraph[], target: LGraph): void {
     this.componentGroups.length = 0;
-    // Java line 40 'assert !components.contains(target)' is omitted (dev-only check)
+    devAssert(() => !components.includes(target));
     target.getLayerlessNodes().length = 0;
 
     // Check if there are any components to be placed

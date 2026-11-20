@@ -13,6 +13,8 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
     passWithNoTests: true,
+    // Java `assert` statements are enabled for the suite, as in ELK's Tycho build (dev-assert D4).
+    setupFiles: ['test/setup/dev-assertions.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/**', 'tools/melk/**/*.ts'],

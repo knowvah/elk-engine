@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortSide } from '../../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import type { SelfLoopHolder } from '../SelfLoopHolder.js';
 
 /** The three spacings of `computePositions` (Java has them as separate parameters: six exceed the parameter limit). */
@@ -15,8 +16,8 @@ type SlotSpacings = {
  *
  * This file holds the "Routing Slot Positions" section of `OrthogonalSelfLoopRouter.java` (`:209-308`), moved out of the
  * class for the file size limit: the private methods are module functions with the Java names and bodies (`this` is not
- * used by them). The Java `assert` (`:245`) is omitted and the `default` arm of `computeBaselinePosition` (Java
- * `assert false; return -1`, `:304`) throws.
+ * used by them). The Java `assert` (`:245`) is a `devAssert` and the `default` arm of `computeBaselinePosition` (Java
+ * `assert false; return -1`, `:304`) calls `devAssert(() => false)` and then throws.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/loops/routing/OrthogonalSelfLoopRouter.java
  */
@@ -53,6 +54,8 @@ export function computeRoutingSlotPositions(
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/loops/routing/OrthogonalSelfLoopRouter.java
  */
 function initializeWithMaxLabelHeight(positions: number[][], slHolder: SelfLoopHolder, portSide: PortSide): void {
+  devAssert(() => portSide === PortSide.NORTH || portSide === PortSide.SOUTH);
+
   const sidePositions = positions[portSide.ordinal()]!;
 
   for (const slLoop of slHolder.getSLHyperLoops()) {
@@ -116,6 +119,7 @@ function computeBaselinePosition(slHolder: SelfLoopHolder, portSide: PortSide, n
     case PortSide.WEST:
       return -lMargins.left - nodeSelfLoopDistance;
     default:
+      devAssert(() => false);
       throw new Error(`Unexpected port side ${String(portSide)}`); // Java: assert false; return -1
   }
 }

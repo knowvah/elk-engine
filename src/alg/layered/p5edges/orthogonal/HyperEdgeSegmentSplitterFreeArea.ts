@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 
 /**
  * Represents a free area between two horizontal edge segments, which can be used to route new horizontal segments that
@@ -16,7 +17,7 @@ export class HyperEdgeSegmentSplitterFreeArea {
   readonly size: number;
 
   constructor(startPosition: number, endPosition: number) {
-    // HyperEdgeSegmentSplitter.java:440 `assert endPosition >= startPosition;` is omitted (Java assert, R6)
+    devAssert(() => endPosition >= startPosition);
 
     this.startPosition = startPosition;
     this.endPosition = endPosition;

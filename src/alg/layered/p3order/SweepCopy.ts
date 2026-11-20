@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { PortSide } from '../../../core/options/PortSide.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
@@ -137,8 +138,7 @@ export class SweepCopy {
    * @see SweepCopy.java:148
    */
   private assertCorrectPortSides(dummy: LNode): LNode {
-    // Java `assert dummy.getType() == NodeType.NORTH_SOUTH_PORT` (SweepCopy.java:140): assertions are disabled by
-    // default and omitted (translation-rules 6.8)
+    devAssert(() => dummy.getType() === NodeType.NORTH_SOUTH_PORT);
 
     const origin = dummy.getProperty(InternalProperties.IN_LAYER_LAYOUT_UNIT);
 

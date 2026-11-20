@@ -368,7 +368,7 @@ export class BarycenterHeuristic implements ICrossingMinimizationHeuristic {
       } // else { }
     } else {
       this.stateOf(node).summedWeight += this.portRanks[fixedPort.id]!;
-      this.stateOf(node).degree++;
+      this.stateOf(node).degree = Int32.add(this.stateOf(node).degree, 1);
     }
     return null;
   }

@@ -10,6 +10,7 @@ import type { ElkNode } from '../../../../graph/ElkNode.js';
 import type { ElkPort } from '../../../../graph/ElkPort.js';
 import { ElkGraphUtil } from '../../../../graph/util/ElkGraphUtil.js';
 import * as Strings from '../../../../guava/Strings.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { EnumSet } from '../../../../java/util/EnumSet.js';
 import { GraphProperties } from '../../options/GraphProperties.js';
 import { InternalProperties } from '../../options/InternalProperties.js';
@@ -212,7 +213,7 @@ export function transformExternalPort(map: NodeAndPortMap, elkgraph: ElkNode, lg
 
   // If we don't have a proper port side, calculate one
   const portSide = elkport.getProperty(LayeredOptions.PORT_SIDE);
-  // (Java: assert portSide != PortSide.UNDEFINED; no devAssert helper exists, the JVM runs without -ea)
+  devAssert(() => portSide !== PortSide.UNDEFINED);
 
   ensurePortBorderOffset(elkport, portSide);
 
@@ -230,7 +231,18 @@ export function transformExternalPort(map: NodeAndPortMap, elkgraph: ElkNode, lg
     layeredGraph: lgraph,
   });
   dummy.setProperty(InternalProperties.ORIGIN, elkport);
+  configureExternalPortDummy(elkgraph, elkport, dummy, portSide);
 
+  // Put the external port dummy into our graph and associate it with the original KPort
+  lgraph.getLayerlessNodes().push(dummy);
+  map.set(elkport, dummy);
+}
+
+/**
+ * The statements of `transformExternalPort` between the creation of the dummy and its insertion into the graph, split
+ * out for the complexity limits; the statements are Java's, in Java order.
+ */
+function configureExternalPortDummy(elkgraph: ElkNode, elkport: ElkPort, dummy: LNode, portSide: PortSide): void {
   // The dummy only has one port
   const dummyPort = dummy.getPorts()[0] as LPort;
   dummyPort.setConnectedToExternalNodes(isConnectedToExternalNodes(elkport));
@@ -242,10 +254,6 @@ export function transformExternalPort(map: NodeAndPortMap, elkgraph: ElkNode, lg
   // Remember the relevant spacings that will apply to the labels here. It's not the spacings in the graph, but
   // in the parent
   copyLabelSpacings(elkgraph, dummy);
-
-  // Put the external port dummy into our graph and associate it with the original KPort
-  lgraph.getLayerlessNodes().push(dummy);
-  map.set(elkport, dummy);
 }
 
 /** The edges' vote of one port, split out of `calculateNetFlow` per Java loop. */

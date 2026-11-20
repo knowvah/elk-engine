@@ -3008,10 +3008,32 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
                 kn("d", 20, 30, null), kn("e", 20, 30, null)), join(edl("e0", "a", "b"), edl("e1", "b", "c"), edl("e2", "c", "d"), edl("e3", "d", "e"),
                 labelled("e4", "a", "e", 100), labelled("e5", "a", "d", 80), labelled("e6", "b", "e", 60), labelled("e7", "c", "e", 90))),
                 "LABEL_DUMMY_SWITCHER", null, false);
+        spaceEfficientSites(slim);
         // Sc15: layer splits 2, 3 and 4 in one layer: the minimum is taken
         site("AlternatingLayerUnzipper/mixedSplit", flat(ropts("LAYER_UNZIPPING_STRATEGY", "ALTERNATING", "CONSIDER_MODEL_ORDER_STRATEGY",
                 "NODES_AND_EDGES"), join(nd("s"), nd("x", LAYER_SPLIT, "2"), nd("y", LAYER_SPLIT, "3"), nd("z", LAYER_SPLIT, "4")),
                 eds("s>x", "s>y", "s>z")), ALU, null, false);
+    }
+
+    /**
+     * Siblings of Sc13 (issue #48, plans/label-switcher-mutants/mutants.md): graphs on which a one-edit mutant of the space-efficient
+     * strategy (LabelDummySwitcher.java:407-530) that Sc13 cannot tell from the Java gives another layer. Chains as in Sc13.
+     */
+    static void spaceEfficientSites(String slim) {
+        String stop = "LABEL_DUMMY_SWITCHER", chain = join(edl("e0", "a", "b"), edl("e1", "b", "c"), edl("e2", "c", "d"), edl("e3", "d", "e"));
+        // M6, M7, M8, M14, M17, M26: a 0-wide label (the one trivial "wider layer" fit), a label as wide as its first layer (b), and a
+        // tie between the potential widths of two layers (the leftmost wins)
+        site("LabelDummySwitcher/spaceEfficient-fitsAndTies", flat(slim, join(kn("a", 20, 30, null), kn("b", 50, 30, null), kn("c", 20, 30, null),
+                kn("d", 50, 30, null), kn("e", 20, 30, null)), join(chain, labelled("e4", "a", "d", 0), labelled("e5", "a", "d", 50),
+                labelled("e6", "b", "e", 80))), stop, null, false);
+        // M10, M14, M17, M18: a vertical layout, where every layer width starts at 0 (LGraphUtil.java:316-318) and a label's height is
+        // its extent along the layers; two unassigned labels share layers 1 and 2 and the last, narrowest one counts
+        String down = slim + "," + ropts("DIRECTION", "DOWN");
+        String five = join(kn("a", 20, 30, null), kn("b", 20, 30, null), kn("c", 20, 30, null), kn("d", 20, 30, null), kn("e", 20, 30, null));
+        site("LabelDummySwitcher/spaceEfficient-vertical", flat(down, five, join(chain, edl("e4", "a", "d", lab("le4", 40, 30, null)),
+                edl("e5", "a", "e", lab("le5", 40, 50, null)), edl("e6", "a", "e", lab("le6", 40, 80, null)))), stop, null, false);
+        // M11 (a NaN potential width) has no row: a NaN label-label spacing makes the label dummies of a vertical layout NaN wide
+        // (LabelDummyInserter.java:95,111), and a NaN in a recorded value stops the recording (hex)
     }
 
     static void handOffSites() {

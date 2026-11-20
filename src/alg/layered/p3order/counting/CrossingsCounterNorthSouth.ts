@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortSide } from '../../../../core/options/PortSide.js';
 import { Pair } from '../../../../core/util/Pair.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { LNode } from '../../graph/LNode.js';
 import { NodeType } from '../../graph/LNodeNodeType.js';
 import type { LPort } from '../../graph/LPort.js';
@@ -70,7 +71,7 @@ function collectTargetsAndDegrees(port: LPort, targetsAndDegrees: Pair<LPort, nu
 /** @see CrossingsCounter.java:424 */
 function collectNormal(port: LPort, targetsAndDegrees: Pair<LPort, number>[]): void {
   const dummy = port.getProperty(InternalProperties.PORT_DUMMY);
-  // assert dummy != null: guarded in #initPositionsForNorthSouthCounting(...); the JVM runs without -ea
+  devAssert(() => dummy !== null); // guarded in #initPositionsForNorthSouthCounting(...)
   for (const p of dummy!.getPorts()) {
     targetsAndDegrees.push(Pair.of(p, p.getDegree())); // western and eastern
   }

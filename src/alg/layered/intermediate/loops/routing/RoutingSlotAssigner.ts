@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortSide } from '../../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import * as Int32 from '../../../../../java/lang/Int32.js';
 import type { LPort } from '../../../graph/LPort.js';
 import { InternalProperties } from '../../../options/InternalProperties.js';
@@ -30,7 +31,7 @@ type PortIndexRange = { readonly min: number; readonly max: number };
  * read by `contains` at `:412`) is a `Set`, membership only.
  *
  * Deviations: `shiftTowardsNodeOnSide` is split into helpers (complexity limits), keeping the statement order. Java
- * `assert` (`:101`) is omitted. The `Queue<HyperEdgeSegment>` of `assignRawRoutingSlotsToSegments` is an array with a
+ * `assert` (`:101`) is a `devAssert`. The `Queue<HyperEdgeSegment>` of `assignRawRoutingSlotsToSegments` is an array with a
  * read position (FIFO order unchanged).
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/loops/routing/RoutingSlotAssigner.java
@@ -112,7 +113,8 @@ export class RoutingSlotAssigner {
    * `labelsOverlapInMatrix`.)
    */
   private labelsOverlap(slLoop1: SelfHyperLoop, slLoop2: SelfHyperLoop): boolean {
-    // (Java line 130 `assert slLoop1 != slLoop2` is omitted: assertions are off.)
+    devAssert(() => slLoop1 !== slLoop2);
+
     const slLabels1 = slLoop1.getSLLabels();
     const slLabels2 = slLoop2.getSLLabels();
 

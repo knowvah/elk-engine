@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ILayoutProcessor } from '../../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import { IndexOutOfBoundsException } from '../../../../java/lang/IndexOutOfBoundsException.js';
 import * as Int32 from '../../../../java/lang/Int32.js';
 import { MAX_VALUE, MIN_VALUE } from '../../../../java/lang/JavaInteger.js';
@@ -150,10 +151,12 @@ export class SingleEdgeGraphWrapper implements ILayoutProcessor<LGraph> {
 
   /**
    * Validify the `desiredCuts` s.t. the resulting cuts are all out of `validCuts`. `validCuts` is expected to be a list
-   * that contains -inf as initial element and +inf as last element. (Java asserts at `:177-178` and `:193-194` are
-   * omitted.)
+   * that contains -inf as initial element and +inf as last element.
    */
   private static validifyIndexesLookingBackIn(desiredCuts: readonly number[], validCuts: readonly number[]): number[] {
+    devAssert(() => listGet(validCuts, 0) === MIN_VALUE);
+    devAssert(() => listGet(validCuts, validCuts.length - 1) === MAX_VALUE);
+
     // turn cuts into valid cuts
     const finalCuts: number[] = [];
     let iIdx = 0;
@@ -167,12 +170,12 @@ export class SingleEdgeGraphWrapper implements ILayoutProcessor<LGraph> {
         iIdx++;
       }
 
-      let select = 0;
-      const distLower = Int32.sub(current, listGet(validCuts, iIdx));
-      const distHigher = Int32.sub(listGet(validCuts, iIdx + 1), current);
-      if (distLower > distHigher) {
-        select++;
-      }
+      // Java: `assert validCuts.get(iIdx) <= current;` (SingleEdgeGraphWrapper.java:193). Not a devAssert yet: the
+      // int arithmetic on the -inf sentinel below wraps, and the Java assert fires on the recorded MANUAL / LOOK_BACK
+      // rows under -ea too (issue #112).
+      devAssert(() => current <= listGet(validCuts, iIdx + 1));
+
+      const select = SingleEdgeGraphWrapper.selectHigherCut(validCuts, iIdx, current);
 
       finalCuts.push(listGet(validCuts, iIdx + select));
       offset = Int32.add(offset, Int32.sub(listGet(validCuts, iIdx + select), current));
@@ -187,6 +190,20 @@ export class SingleEdgeGraphWrapper implements ILayoutProcessor<LGraph> {
     }
 
     return finalCuts;
+  }
+
+  /**
+   * The `select` block of `validifyIndexesLookingBackIn` (`:196-200`): 1 when `current` is nearer to the valid cut at
+   * `iIdx + 1` than to the one at `iIdx`, else 0.
+   */
+  private static selectHigherCut(validCuts: readonly number[], iIdx: number, current: number): number {
+    let select = 0;
+    const distLower = Int32.sub(current, listGet(validCuts, iIdx));
+    const distHigher = Int32.sub(listGet(validCuts, iIdx + 1), current);
+    if (distLower > distHigher) {
+      select++;
+    }
+    return select;
   }
 
   /**

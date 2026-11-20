@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortSide } from '../../../../core/options/PortSide.js';
 import { Pair } from '../../../../core/util/Pair.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import { IllegalArgumentException } from '../../../../java/lang/IllegalArgumentException.js';
 import type { LEdge } from '../../graph/LEdge.js';
 import type { LNode } from '../../graph/LNode.js';
@@ -324,6 +325,26 @@ function addHyperEdge(
 }
 
 /**
+ * The `if (sideToProcess == LEFT) ... else if (sideToProcess == RIGHT) ... else assert false` of
+ * `createSplineSegmentsForHyperEdges` (`SplineEdgeRouter.java:575-581`). Java leaves `portsToProcess` null in the
+ * `else` arm, so the loop over it fails with a `NullPointerException`, here the `TypeError` of iterating `null`.
+ */
+function portsOfSide(state: SplineRouterState, sideToProcess: SideToProcess): Set<LPort> {
+  let portsToProcess: Set<LPort> | null = null;
+  if (sideToProcess === SideToProcess.LEFT) {
+    portsToProcess = state.leftPortsLayer;
+  } else if (sideToProcess === SideToProcess.RIGHT) {
+    portsToProcess = state.rightPortsLayer;
+  } else {
+    devAssert(
+      () => false,
+      () => 'sideToProcess must be either LEFT or RIGHT.',
+    );
+  }
+  return portsToProcess!;
+}
+
+/**
  * Creates hyperEdges. The created hyperEdges all have one port on their source side (if reversed is {@code false}) or
  * on their target side (if reversed is {@code true}). Also only hyperEdges starting in one of the leftPorts (if
  * sideToProcess is {@code LEFT}) or one of the right ports (if SideToProcess is {@code RIGHT}) will be created.
@@ -341,9 +362,7 @@ export function createSplineSegmentsForHyperEdges(
   sideToProcess: SideToProcess,
   reversed: boolean,
 ): void {
-  // The Java `else` arm (`assert false : "sideToProcess must be either LEFT or RIGHT."`, `:582`) is omitted: the enum
-  // has the two constants only.
-  const portsToProcess = sideToProcess === SideToProcess.LEFT ? state.leftPortsLayer : state.rightPortsLayer;
+  const portsToProcess = portsOfSide(state, sideToProcess);
 
   // Iterate through all ports on the side to process.
   for (const singlePort of portsToProcess) {

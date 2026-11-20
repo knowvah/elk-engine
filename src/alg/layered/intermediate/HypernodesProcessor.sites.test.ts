@@ -5,10 +5,8 @@
 // Coordinates compare at 1e-6 (AD-4), everything else exactly. HypernodesProcessor.test.ts keeps the injecting cases.
 import { beforeAll, expect, it, describe } from 'vitest';
 // the enum first: tests enter through it, never through the class (E1/F10, module cycle)
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { decodeHex, registerLayered } from '../../../../test/helpers/layered-framework-replay.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import {
   comparePipeline,
   pipelineDump,
@@ -23,13 +21,8 @@ import {
 import type { RoutingExpected } from '../../../../test/helpers/layered-routing-replay-rows.js';
 import { compareRoutingFullDump } from '../../../../test/helpers/layered-routing-replay-compare.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
-import { EdgeRouting } from '../../../core/options/EdgeRouting.js';
 import { ComponentsProcessor } from '../components/ComponentsProcessor.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { NodePlacementStrategy } from '../options/NodePlacementStrategy.js';
-import { EdgeRouterFactory } from '../p5edges/EdgeRouterFactory.js';
+import { CHECKED_ROUTING_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const PIPELINE_REF = `${repoRoot()}/test/golden/refs/java/layered-pipeline.json`;
 const TOLERANCE = 1e-6;
@@ -113,25 +106,6 @@ const SITES: readonly Site[] = [
   },
 ];
 
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase(phase, strategy) {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case 'P4_NODE_PLACEMENT':
-        return NodePlacementStrategy.valueOf(strategy).create();
-      default:
-        expect(phase).toBe('P5_EDGE_ROUTING');
-        return EdgeRouterFactory.factoryFor(EdgeRouting.valueOf(strategy)).create();
-    }
-  },
-};
-
 beforeAll(() => {
   registerLayered();
   registerPipelineEnums();
@@ -154,7 +128,7 @@ function replay(id: string): Replayed {
   if (row === undefined) {
     throw new Error(`row ${id} is not in the ref`);
   }
-  const result = runPipelineSteps(row, factories, new ComponentsProcessor());
+  const result = runPipelineSteps(row, CHECKED_ROUTING_PHASE_FACTORIES, new ComponentsProcessor());
   const actual = pipelineDump(result) as RoutingExpected;
   expect(comparePipeline(actual, row.expected)).toEqual([]);
   const dump = dumpWithPropertyValues(result.graph);

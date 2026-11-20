@@ -3,6 +3,7 @@ import type { ElkEdge } from '../../../../graph/ElkEdge.js';
 import type { ElkNode } from '../../../../graph/ElkNode.js';
 import type { IProperty } from '../../../../graph/properties/IProperty.js';
 import { ElkGraphUtil } from '../../../../graph/util/ElkGraphUtil.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import { d2i } from '../../../../java/lang/JavaMath.js';
 import { shuffle } from '../../../../java/util/Collections.js';
 import { LinkedList } from '../../../../java/util/LinkedList.js';
@@ -413,8 +414,7 @@ export class RandomGraphGenerator {
   };
 
   /**
-   * Returns a random integer number in the given range (including the boundaries). The Java
-   * `assert from <= to` is disabled in the JVM by default and omitted (no dev-assert helper exists).
+   * Returns a random integer number in the given range (including the boundaries). The
    *
    * @param from the minimal number
    * @param to the maximal number
@@ -423,6 +423,7 @@ export class RandomGraphGenerator {
    * @see org.eclipse.elk.core.debug.grandom/src/org/eclipse/elk/core/debug/grandom/generators/RandomGraphGenerator.java
    */
   randomInt(from: number, to: number): number {
+    devAssert(() => from <= to);
     return from + this.random.nextInt(to - from + 1);
   }
 

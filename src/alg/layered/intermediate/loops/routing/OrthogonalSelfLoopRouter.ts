@@ -2,6 +2,7 @@
 import { KVector } from '../../../../../core/math/KVector.js';
 import { KVectorChain } from '../../../../../core/math/KVectorChain.js';
 import { PortSide } from '../../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import { LGraphUtil } from '../../../graph/LGraphUtil.js';
 import { LMargin } from '../../../graph/LMargin.js';
 import type { LNode } from '../../../graph/LNode.js';
@@ -39,9 +40,8 @@ type InlineLabel = { readonly labelSide: PortSide; readonly lSize: KVector };
  * AD-10 (W6): this class has no hashed container of its own; it iterates `SelfHyperLoop.getSLEdges()` (`:69`), the
  * insertion-ordered `Set` that holds the Java `HashSet` (identity-hashed keys).
  *
- * Deviations: Java `assert` statements (`:122`, `:130`, `:180`, `:245`, `:304`, `:367`, `:441`) are omitted, and the
- * `default` arms that only assert (`placeLabels`, `addOuterBendPoint`, `getBaseVector`) throw (the Java `getBaseVector`
- * would return `null` and fail at the caller). The nested enum lives in its own file (`EdgeRoutingDirection`). Split for
+ * Deviations: the `default` arms that only assert (`placeLabels`, `addOuterBendPoint`, `getBaseVector`) call
+ * `devAssert(() => false)` and then throw (the Java `getBaseVector` would return `null` and fail at the caller). The nested enum lives in its own file (`EdgeRoutingDirection`). Split for
  * the complexity and file size limits: the loop body of `routeSelfLoops` is `routeSelfLoop`; the `switch` of
  * `placeLabels` is `offsetLabels`; the corner loop body of `addCornerBendPoints` is `cornerBendPoint`, its inline label
  * locals are `inlineLabelOf` and the `if` chain on them is `reserveInlineLabelSpace`; the "Routing Slot Positions"
@@ -131,12 +131,15 @@ export class OrthogonalSelfLoopRouter extends AbstractSelfLoopRouter {
     } else if (sourcePortSide.left() === targetPortSide) {
       return EdgeRoutingDirection.COUNTER_CLOCKWISE;
     } else {
+      devAssert(() => sourcePortSide.opposed() === targetPortSide);
+
       // What we do here totally depends on the port sides occupied by the self hyper loop. We prefer clockwise
       // routing.
       const slLoop = slEdge.getSLHyperLoop()!;
       if (slLoop.getOccupiedPortSides().contains(sourcePortSide.right())) {
         return EdgeRoutingDirection.CLOCKWISE;
       } else {
+        devAssert(() => slLoop.getOccupiedPortSides().contains(sourcePortSide.left()));
         return EdgeRoutingDirection.COUNTER_CLOCKWISE;
       }
     }
@@ -197,6 +200,7 @@ export class OrthogonalSelfLoopRouter extends AbstractSelfLoopRouter {
         break;
 
       default:
+        devAssert(() => false);
         throw new Error(`Unexpected label side ${String(labelSide)}`); // Java: assert false
     }
   }
@@ -280,6 +284,7 @@ export class OrthogonalSelfLoopRouter extends AbstractSelfLoopRouter {
         break;
 
       default:
+        devAssert(() => false);
         throw new Error(`Unexpected port side ${String(lPort.getSide())}`); // Java: assert false
     }
 
@@ -393,6 +398,7 @@ export class OrthogonalSelfLoopRouter extends AbstractSelfLoopRouter {
         return new KVector(position, 0);
 
       default:
+        devAssert(() => false);
         throw new Error(`Unexpected port side ${String(portSide)}`); // Java: assert false; return null
     }
   }

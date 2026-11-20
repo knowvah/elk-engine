@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ElkNode } from '../../graph/ElkNode.js';
 import { copyGraph } from '../../graph/util/ElkGraphCopy.js';
+import { devAssert } from '../../java/lang/DevAssert.js';
 import { IllegalStateException } from '../../java/lang/IllegalStateException.js';
 import * as Float32 from '../../java/lang/Float32.js';
 import type { IElkProgressMonitor } from './IElkProgressMonitor.js';
@@ -261,6 +262,7 @@ export class BasicProgressMonitor implements IElkProgressMonitor {
 
   /** Returns a snapshot of the direct sub-task monitors (Java: an unmodifiable view). */
   getSubMonitors(): IElkProgressMonitor[] {
+    devAssert(() => this.children !== null);
     return [...this.children];
   }
 

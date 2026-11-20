@@ -19,7 +19,6 @@ import {
   loadLabelsRows,
   rowsByGroup,
 } from '../../../test/helpers/layered-labels-replay-rows.js';
-import type { Factories } from '../../../test/helpers/layered-phase-replay-ops.js';
 import {
   isFullRow,
   isStopRow,
@@ -27,30 +26,19 @@ import {
   type PipelineRow,
   type PipelineStopRow,
 } from '../../../test/helpers/layered-pipeline-replay-rows.js';
+import { STRICT_ROUTING_PHASE_FACTORIES } from '../../../test/helpers/layered-replay-factories.js';
 import { compareRoutingFullDump } from '../../../test/helpers/layered-routing-replay-compare.js';
 import { runRoutingPrefix } from '../../../test/helpers/layered-routing-replay-ops.js';
 import { dumpWithPropertyValues } from '../../../test/helpers/layered-site-replay-dump.js';
-import { EdgeRouting } from '../../core/options/EdgeRouting.js';
 import { ComponentsProcessor } from './components/ComponentsProcessor.js';
 import { EndLabelPostprocessor } from './intermediate/EndLabelPostprocessor.js';
-import { IntermediateProcessorStrategy } from './intermediate/IntermediateProcessorStrategy.js';
 import { InteractiveLayeredGraphVisitor } from './InteractiveLayeredGraphVisitor.js';
 import { InternalProperties } from './options/InternalProperties.js';
-import { CrossingMinimizationStrategy } from './options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from './options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from './options/LayeringStrategy.js';
-import { NodePlacementStrategy } from './options/NodePlacementStrategy.js';
-import { EdgeRouterFactory } from './p5edges/EdgeRouterFactory.js';
 import type { LabelCell } from '../common/nodespacing/cellsystem/LabelCell.js';
 import type { LPort } from './graph/LPort.js';
 import type { IElkProgressMonitor } from '../../core/util/IElkProgressMonitor.js';
 import type { LGraph } from './graph/LGraph.js';
 
-const CYCLE_PHASE = 'P1_CYCLE_BREAKING';
-const LAYERING_PHASE = 'P2_LAYERING';
-const ORDERING_PHASE = 'P3_NODE_ORDERING';
-const PLACEMENT_PHASE = 'P4_NODE_PLACEMENT';
-const ROUTING_PHASE = 'P5_EDGE_ROUTING';
 /** Mission 7g and 7h members: the recorder refused every row whose plan holds one. */
 const LATER_MISSIONS = [
   'SELF_LOOP_PREPROCESSOR',
@@ -69,25 +57,6 @@ const LATER_MISSIONS = [
 const FX2_FULL = /^full\/(issues\/fx2-parallel-end-labels|logged\/inline-fx2)\//;
 const FX2_SCENARIO = 'scenarios/Layout/logging/fx2/LEFT';
 
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case CYCLE_PHASE:
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case LAYERING_PHASE:
-        return LayeringStrategy.valueOf(strategy).create();
-      case ORDERING_PHASE:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case PLACEMENT_PHASE:
-        return NodePlacementStrategy.valueOf(strategy).create();
-      case ROUTING_PHASE:
-        return EdgeRouterFactory.factoryFor(EdgeRouting.valueOf(strategy)).create();
-      default:
-        throw new Error(`unknown phase ${phase}`);
-    }
-  },
-};
 const createInteractiveVisitor = (): InteractiveLayeredGraphVisitor => new InteractiveLayeredGraphVisitor();
 
 const rows = loadLabelsRows();
@@ -96,8 +65,12 @@ const header = JSON.parse(readFileSync(labelsRefPath(), 'utf8')) as { rowCounts:
 /** The result of replaying a `models` (prefix) or `scenarios` (steps) row. */
 function stepsResult(row: PipelineStopRow): LabelsStepsResult {
   return row.steps === null
-    ? { graph: runRoutingPrefix(row, factories), components: null, terminal: null }
-    : runLabelsRow(row, { factories, components: new ComponentsProcessor(), createInteractiveVisitor });
+    ? { graph: runRoutingPrefix(row, STRICT_ROUTING_PHASE_FACTORIES), components: null, terminal: null }
+    : runLabelsRow(row, {
+        factories: STRICT_ROUTING_PHASE_FACTORIES,
+        components: new ComponentsProcessor(),
+        createInteractiveVisitor,
+      });
 }
 
 function stopDiffs(row: PipelineStopRow): ReturnType<typeof compareLabels> {
@@ -147,7 +120,7 @@ describe('layered-labels rows', () => {
   });
 
   it('has the recorded row counts per group', () => {
-    expect(header.rowCounts).toEqual({ full: 399, models: 640, scenarios: 224, sites: 42 });
+    expect(header.rowCounts).toEqual({ full: 399, models: 640, scenarios: 224, sites: 44 });
     for (const group of LABELS_ROW_GROUPS) {
       expect(rowsByGroup(group).length).toBe(header.rowCounts[group]);
     }

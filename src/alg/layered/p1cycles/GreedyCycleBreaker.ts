@@ -2,6 +2,7 @@
 import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
 import { LayoutProcessorConfiguration } from '../../../core/alg/LayoutProcessorConfiguration.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import * as JavaInteger from '../../../java/lang/JavaInteger.js';
 import * as Int32 from '../../../java/lang/Int32.js';
 import { LinkedList } from '../../../java/util/LinkedList.js';
@@ -204,6 +205,7 @@ export class GreedyCycleBreaker implements ILayoutPhase<LayeredPhases, LGraph> {
         }
       }
     }
+    devAssert(() => maxOutflow > JavaInteger.MIN_VALUE);
   }
 
   /** `:195-201`: shift negative ranks to positive; this applies to sinks of the graph. */

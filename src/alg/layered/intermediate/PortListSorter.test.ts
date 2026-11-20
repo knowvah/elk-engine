@@ -11,24 +11,16 @@ import { loadOrderRows, type OrderRow } from '../../../../test/helpers/layered-o
 import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
-import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { HierarchicalPortConstraintProcessor } from './HierarchicalPortConstraintProcessor.js';
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
-import { InvertedPortProcessor } from './InvertedPortProcessor.js';
-import { LongEdgeSplitter } from './LongEdgeSplitter.js';
 import { PortListSorter } from './PortListSorter.js';
-import { PortSideProcessor } from './PortSideProcessor.js';
-import { SemiInteractiveCrossMinProcessor } from './SemiInteractiveCrossMinProcessor.js';
 import { addLayer, addNode, addPort } from '../../../../test/helpers/lgraph-builders.js';
 import { IllegalStateException } from '../../../java/lang/IllegalStateException.js';
 import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { LGraph as Graph } from '../graph/LGraph.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
+import { PORT_PROCESSOR_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
 const PROCESSOR = 'PORT_LIST_SORTER';
@@ -74,31 +66,6 @@ const ROW_NAMES: readonly string[] = [
   'sites/PortListSorter/fixedPosAllSides',
 ];
 
-const factories: Factories = {
-  createProcessor(name): ILayoutProcessor<LGraph> {
-    switch (name) {
-      case 'LONG_EDGE_SPLITTER':
-        return new LongEdgeSplitter();
-      case 'PORT_SIDE_PROCESSOR':
-        return new PortSideProcessor();
-      case 'INVERTED_PORT_PROCESSOR':
-        return new InvertedPortProcessor();
-      case 'PORT_LIST_SORTER':
-        return new PortListSorter();
-      case 'HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR':
-        return new HierarchicalPortConstraintProcessor();
-      case 'SEMI_INTERACTIVE_CROSSMIN_PROCESSOR':
-        return new SemiInteractiveCrossMinProcessor();
-      default:
-        return IntermediateProcessorStrategy.valueOf(name).create();
-    }
-  },
-  createPhase: (phase, strategy) =>
-    phase === 'P1_CYCLE_BREAKING'
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : LayeringStrategy.valueOf(strategy).create(),
-};
-
 /** The entries a row replays, spelled like prefix entries (`NAME` or `PHASE/STRATEGY`). */
 function entriesOf(row: OrderRow): readonly string[] {
   return row.prefix !== null
@@ -109,7 +76,7 @@ function entriesOf(row: OrderRow): readonly string[] {
 const rows = loadOrderRows(ROWS_FILE).filter((row) => entriesOf(row).at(-1) === PROCESSOR);
 
 function replay(row: OrderRow): LGraph {
-  return row.steps === null ? runOrderPrefix(row, factories) : runSteps(row, factories);
+  return row.steps === null ? runOrderPrefix(row, PORT_PROCESSOR_FACTORIES) : runSteps(row, PORT_PROCESSOR_FACTORIES);
 }
 
 describe('PortListSorter (oracle rows)', () => {
@@ -146,11 +113,11 @@ describe('PortListSorter (Java throw site)', () => {
 /** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11), replayed through P3. */
 const SITE_ROWS = loadOrderRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/'));
 const SITE_FACTORIES: Factories = {
-  ...factories,
+  ...PORT_PROCESSOR_FACTORIES,
   createPhase: (phase, strategy) =>
     phase === 'P3_NODE_ORDERING'
       ? CrossingMinimizationStrategy.valueOf(strategy).create()
-      : factories.createPhase(phase, strategy),
+      : PORT_PROCESSOR_FACTORIES.createPhase(phase, strategy),
 };
 
 function siteReplay(id: string): { graph: LGraph; actual: ReturnType<typeof orderDump> } {

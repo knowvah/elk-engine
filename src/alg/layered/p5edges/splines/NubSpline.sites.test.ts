@@ -6,17 +6,16 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../../test/corpus/corpus.js';
 import { decodeHex } from '../../../../../test/helpers/layered-framework-replay.js';
-import type { Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
-import { runCall, type CallerTable } from '../../../../../test/helpers/layered-routing-replay-ops.js';
+import { runCall } from '../../../../../test/helpers/layered-routing-replay-ops.js';
 import {
   isCallRow,
   loadRoutingRows,
   type CallResult,
   type NubsSummary,
 } from '../../../../../test/helpers/layered-routing-replay-rows.js';
+import { NUB_SPLINE_CALLERS, NUB_SPLINE_CALL_FACTORIES } from '../../../../../test/helpers/layered-spline-callers.js';
 import { LayoutMetaDataService } from '../../../../core/data/LayoutMetaDataService.js';
 import { KVector } from '../../../../core/math/KVector.js';
-import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
 import { NubSpline } from './NubSpline.js';
 import { Rectangle } from './Rectangle.js';
 
@@ -24,26 +23,6 @@ const STEPS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing-steps.js
 const COORDINATE_DIGITS = 6;
 const X = 0;
 const Y = 1;
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    throw new Error(`no calls/NubSpline row runs the phase ${phase}/${strategy}`);
-  },
-};
-
-const CALLERS: CallerTable = {
-  'NubSpline.toBezier': (spline: NubSpline) => {
-    spline.toBezier();
-    return spline;
-  },
-  'NubSpline.getPointOnCurve': (spline: NubSpline, t: number, modify?: boolean) => spline.getPointOnCurve(t, modify),
-  'NubSpline.getFirstVerticalPoint': NubSpline.getFirstVerticalPoint,
-  'NubSpline.getLastVerticalPoint': NubSpline.getLastVerticalPoint,
-  'NubSpline.getFirstHorizontalPoint': NubSpline.getFirstHorizontalPoint,
-  'NubSpline.getLastHorizontalPoint': NubSpline.getLastHorizontalPoint,
-  'NubSpline.generateNiceCurve': NubSpline.generateNiceCurve,
-};
 
 const CONSTRUCTORS = {
   // the row order is (top, right, bottom, left); the Java constructor takes (left, top, right, bottom)
@@ -63,7 +42,7 @@ function replayed(id: string): CallResult {
   if (row === undefined) {
     throw new Error(`no row calls/NubSpline/${id}`);
   }
-  return runCall(row, factories, CALLERS, { constructors: CONSTRUCTORS });
+  return runCall(row, NUB_SPLINE_CALL_FACTORIES, NUB_SPLINE_CALLERS, { constructors: CONSTRUCTORS });
 }
 
 function pointOf(id: string): [number, number] {

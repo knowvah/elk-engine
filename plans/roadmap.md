@@ -2056,3 +2056,309 @@ green: the full suite has 49,476 passed, 93 skipped and 0 failed, coverage 98.92
 unchanged. The mission is done: per-task history under the tag `elk-pin-move-8bca22f4/pre-squash`, one squashed commit on
 `9c420f07`. The halt paragraph and the #105 flag above describe the state on 2026-11-18. Open for the maintainer: the review
 of the D5.6 tie test, and #106 to #109.
+
+## Revision 2026-11-19 (dev-assert)
+
+Appended; no earlier line is edited. Source: issue #45 and D1-D8 in `plans/dev-assert/decisions.md`; the journal is
+`plans/dev-assert/decision-journal.md`, the site table `plans/dev-assert/inventory.md`. Where this section conflicts with
+the text above, this section wins. Task ids are T1-T8; the base is `98085a3ba4988c620699ce2fb613567ede41e64c`.
+
+**The `devAssert` helper of translation rules 6.8 exists, and 130 of the 143 Java `assert` statements are restored.**
+This closes the "Any time: devAssert" follow-ups of the revisions of 2026-10-26 (alg-common, alg-common-nodespacing),
+2026-10-30, 2026-11-03 and 2026-11-05 and the later "still unwritten" notes.
+
+**The helper.** `src/java/lang/DevAssert.ts`: `devAssert(check: () => boolean, detail?: () => unknown)`, both arguments
+thunks (JLS 14.10: a disabled `assert` evaluates nothing, the detail only on failure). One module flag, off by default as
+on a JVM without `-ea`, written by `setAssertionsEnabled`; it is the first reviewed entry of the module-globals fitness
+test, and `src/` reads no environment. A failure throws `src/java/lang/AssertionError.ts` (parent JS `Error` = `Throwable`,
+so a ported `catch (Exception e)` does not catch it). The suite runs with assertions on (`test/setup/dev-assertions.ts`,
+vitest `setupFiles`), as ELK's Tycho build runs JUnit; `ELK_DEV_ASSERTIONS=off` runs it with the production default.
+
+**The sites.** 143 statements at `8bca22f4` in six bundles (core 9, core.debug.grandom 2, alg.common 4, alg.layered 126,
+alg.mrtree 1, alg.force 1), all in ported files.
+
+| Outcome | Sites |
+| --- | --- |
+| restored at the Java position | 124 |
+| restored in front of a `throw` the port already had for `assert false; return x;` | 6 |
+| left a comment naming an issue (the Java assert fires under `-ea` on an input the suite replays) | 13 |
+
+Five sites had no TS arm (an `if` chain for a `switch`, a dropped `else`, a private constructor); each got its arm.
+Supporting code the Java has only for an assert came with it (`ThresholdStrategy.EPSILON`,
+`ForsterConstraintResolver.BARYCENTER_EQUALITY_DELTA`, `PolylineSelfLoopRouter.areOrthogonallyRouted`). Four functions
+were split for the complexity limits, Java order kept. `SelfLoopHolderTest.test.ts` imports the shim in place of its
+local `AssertionError` (D6, the one test edit); `testNonSelfLoopGraph` now passes through `install`'s assert, as in Java.
+
+**No port defect surfaced.** The first run with all 143 sites had 234 failures from thirteen sites. Each was shown
+Java-faithful: the oracle or a recorder under `JAVA_TOOL_OPTIONS=-ea` throws the same `AssertionError` at the same line,
+or the Java source decides it for a direct unit-test input.
+
+**Flags for the maintainer.**
+
+- **#112 (`needs-ruling`)**: four Java asserts fire under `-ea` on layouts ELK runs: `BoxLayoutProvider.java:738` and
+  `:754` (a strict `>` against the current size), `EndLabelPreprocessor.java:377` (unsized end labels, 170 replay rows),
+  `SingleEdgeGraphWrapper.java:193` (int overflow on the `Integer.MIN_VALUE` sentinel; the MANUAL / LOOK_BACK rows).
+  Upstream drafts are in the journal (T7, "Upstream drafts"); nothing is filed upstream.
+- **#113 (`needs-ruling`)**: nine asserts that a port-written unit test or a JVM site vector drives on purpose
+  (`InstancePool.java:59`, `NodeContext.java:277`, `HorizontalPortPlacementSizeCalculator.java:212`, `LGraphUtil.java:821`
+  and `:907`, `LNode.java:165`, `HighDegreeNodeLayeringProcessor.java:255`, `EdgeLabelSideSelection.java:58`,
+  `ForsterConstraintResolver.java:239`). The recommended ruling restores them and lets the named tests run that step
+  with assertions off, which is a test edit (AD-13).
+- **Follow-ups:** #114 (the three older `AssertionError` stand-ins), #115 (six arms that throw where the Java returns
+  after `assert false`), #116 (the corpus sweeps with assertions on), #117 (`ForsterConstraintResolver`: the Java
+  unboxing NPE of a null barycenter is not ported).
+- Three recorder runs with `-ea` into `$TMPDIR` (cache off) were added to the brief's plan as evidence; no ref, cache
+  entry or oracle file was written.
+- `SplineEdgeRouter`'s side chain (#141) now leaves the ports null for a value that is neither `LEFT` nor `RIGHT`, as
+  the Java does; the old ternary sent it to the right ports. The enum has two constants, so nothing reachable changes.
+
+**Gates.** Format, typecheck and complexity clean. Full suite, assertions on: 49,492 passed, 93 skipped, 0 failed (the
+base's 49,476 plus 16 tests of the helper); assertions off: the same 49,492, so the sites are inert in production.
+Coverage 98.81 / 96.99 / 98.56 / 98.86 (statements, branches, functions, lines; the function figure is 0.28 below the
+base's because thunks of unreachable arms are never called). Typedoc: 0 errors, 200 warnings (200 at the base). CodeQL:
+every finding accepted, no new entry. `git diff 98085a3b -- test/golden/refs/` is empty.
+
+**Hand-offs.**
+
+- To whoever rules #112 and #113: the thirteen sites are found with `grep -rn "Not a devAssert yet" src`; each comment
+  carries the Java statement and line.
+- To later ports: write `devAssert(() => expr)` at the Java position from the start, and run a step that drives an
+  asserted-away state with assertions off (`.agent-notes/dev-assert.md`).
+
+## Revision 2026-11-19 (test-helper-consolidation)
+
+Appended; no earlier line is edited. Source: issue #46 and D1-D8 in `plans/test-helper-consolidation/decisions.md`; the
+journal is `plans/test-helper-consolidation/decision-journal.md`, the site map
+`plans/test-helper-consolidation/inventory.md`. Where this section conflicts with the text above, this section wins.
+Task ids are T1-T8; the base is `f5c2c889b7620e152f52a76bbfc993e80dae0f25`.
+
+**The duplicated test helpers that the revisions of 2026-10-26 (alg-common), 2026-11-02, 2026-11-03 and 2026-11-05
+(layered-pipeline) left as cleanup are consolidated, with two rows left for the maintainer.** No file under `src/` other
+than `*.test.ts` changed, no ref, vector or recorder changed, and no JVM ran.
+
+**Item 1, the per-file `Factories` objects, `CALLERS` tables and order site-replay blocks.** The tree had 181
+`: Factories` objects (planning counted 176). 109 moved, 72 stay.
+
+| What | Before | Now |
+| --- | --- | --- |
+| `Factories` objects moved to an export | 86, one per file | 20 exports: 17 in `test/helpers/layered-replay-factories.ts`, 3 beside the caller tables |
+| Order site-replay blocks (`SITE_ROWS`, `siteFactories`, `replaySite`) | 23 files, two variants | `replayOrderSite(id)` in `test/helpers/layered-order-site-replay.ts` |
+| `CALLERS` tables | 8 (the routing vectors test and seven spline tests) | four class tables in `test/helpers/layered-spline-callers.ts`; the vectors test spreads them |
+| `Factories` objects kept | 72 | each with its reason in `inventory.md` |
+
+Only identical code moved (D1): a script compared each site with its export by text (whitespace collapsed, file-local
+phase constants replaced by their literals) and by the module and symbol every identifier resolves to. An `expect` or
+`throw` inside a moved object moved with it. The exports are not interchangeable: they differ in which processors are
+injected as classes, which phases they dispatch and what a phase outside that set does. The 72 kept objects occur once
+(58, most of them injecting the class under test inside one test), spread their file's factories (the seven
+`SITE_FACTORIES`, which now spread the imported export), or close over a table or value that differs per file.
+`strategyFactories` of `test/helpers/layered-loops-replay-ops.ts` was a sixth copy of the strict five-phase object and is
+now that export under its old name.
+
+**Item 2, `fromPattern`.** One copy in `test/helpers/polyomino-fixtures.ts`; the two polyomino tests import it.
+
+**Item 3, the JUnit delta assertion.** `AssertionFailure` lives in `test/helpers/junit-delta.ts`, whose
+`assertEqualsWithin` throws it; `edge-route-orthogonal.ts` uses both and re-exports the class.
+`LabelAndNodeSizeProcessorOffsetTest.test.ts` had a third identical copy and imports the shared one under the Java's
+name. `Issue447Test.test.ts` keeps its own: it is built on `expect(…).toBe(true)`, so replacing it removes an assertion
+line (#119).
+
+**Item 4, the older `.elkt` layout harness.** `Issue489Test` and `Issue475Test` run on `defineLayoutTest` and now apply
+the Java's `@DefaultConfiguration`, which the harness never did; both pass, assertions unchanged. `Issue457Test` stays on
+the harness, so the harness and its test stay: with defaults its two label-less nodes get labels `n` and `ni`, and the
+recorded AWT table `layered-label-metrics.json` has neither, so the runner's measurer throws before layout. That needs a
+JVM re-record of a ref, which this mission may not do (#118 has the diagnosis and the three steps left).
+
+**Item 5, `ElkLayered.test.ts`'s 199-row loop.** Removed. `LayeredPipelineVectors.test.ts`'s `full rows` group runs the
+same 199 row ids through the same `compareFullRow(runFullRow(row), row)` assertion under the same registrations; the
+`finds the 199 full rows` pin stays.
+
+**Case counts (vitest JSON reporter, sweep directories off, before the first edit and after the last).**
+
+| | Before | After |
+| --- | --- | --- |
+| Test files | 1,182 | 1,182 |
+| Cases | 49,585 | 49,386 |
+| Passed | 49,492 | 49,293 |
+| Skipped | 93 | 93 |
+| Failed | 0 | 0 |
+
+Per file, three files differ: `ElkLayered.test.ts` 219 → 20 (the 199 proven duplicates), and `Issue489Test.test.ts` and
+`Issue475Test.test.ts` with two cases each retitled to the runner's `name [graphFile(…) configMethod(…)]` form. Every
+other file has the same titles and statuses. D7 also expected −3 for the harness test and +N for the runner test;
+neither happened, because the harness stays.
+
+**Decisions made on the way (journal, T1).**
+
+- Three `.sites` tests wrote `createPhase` as a method where eight others wrote the same body as an arrow property; all
+  eleven share one export. D1 names one semantic merge (`switch` against ternary); this second one is syntax only (no
+  body uses `this`) and is flagged for review.
+- D1's "inject a class directly" is read as a reason to keep once-only objects, not as a bar on identical groups, since
+  the brief's lanes list those groups as expected work.
+- A planning group of five split in two on its `INJECTED` table (three comment tests, two label tests); each table moved
+  with its export.
+
+**Gates.** Format, typecheck and complexity clean. Full suite: 49,293 passed, 93 skipped, 0 failed. Coverage 98.81 /
+96.99 / 98.56 / 98.86 (statements, branches, functions, lines), equal to the base. Typedoc and CodeQL figures are in the
+journal (T8). `git diff f5c2c889 -- test/golden/refs/` is empty.
+
+**Open rows.**
+
+- **#118 (`follow-up`)**: record `n` and `ni` in the label metrics, move `Issue457Test` to the runner, then map the three
+  harness-test cases onto the runner test (two need a ported case) and delete the harness.
+- **#119 (`needs-ruling`)**: whether `Issue447Test.test.ts`'s `expect`-based delta assertion may give way to
+  `junit-delta` (an assertion edit under AD-13, equivalent in outcome).
+
+**Hand-offs.**
+
+- To whoever writes the next anchored layered test: import a `Factories` export from
+  `test/helpers/layered-replay-factories.ts` when one matches exactly; keep a local object when the test injects its own
+  class or needs another fallback (`.agent-notes/test-helper-consolidation.md`).
+- To whoever moves a suite onto `defineLayoutTest` with defaults: check that the graph's node ids are in
+  `layered-label-metrics.json` first.
+
+## Revision 2026-11-19 (linkedlist-int32-cleanup)
+
+Appended; no earlier line is edited. Source: issue #47 and D1-D5 in `plans/linkedlist-int32-cleanup/decisions.md`; the
+journal is `plans/linkedlist-int32-cleanup/decision-journal.md`, the caller audit
+`plans/linkedlist-int32-cleanup/audit.md`, the `int` site table `plans/linkedlist-int32-cleanup/int32-sites.md`. Where
+this section conflicts with the text above, this section wins. Task ids are T1-T3; the base is
+`8af2af35cda0683c8b6beb04195eee13885752f1`.
+
+**Two follow-ups are closed: "`LinkedList.ts`'s header claims identity equality for every ELK element" (§ Revision
+2026-11-05) and "crossing-count sums … use plain `+`" (§ Revision 2026-10-30).** No ref, vector, golden or recorder
+changed, no existing test changed, and no oracle patch was added. Two JVM runs, both read-only: a javac pass over the
+Java sources for the audit and one single-file oracle check for #120.
+
+**Item 1, `LinkedList` equality.** The header of `src/java/util/LinkedList.ts` now states the contract: `remove(e)`,
+`contains` and `indexOf` compare with `===`; that differs from Java's `equals` for `KVector` (so every `KVectorChain`),
+boxed numbers, `Pair`/`Triple`/`Quadruple` and collections; a caller that needs `equals` compares at its call site, as
+`HypernodesProcessor.removeEqual` does. The shim's behaviour is unchanged (D3).
+
+Every caller was audited, type-driven on both sides: on the TS side by renaming the methods and reading `tsc`'s
+errors (14 calls outside tests), on the Java side by a javac Tree API pass over the sixteen in-scope bundles (845
+equality-based calls with receiver type and resolved overload, 178 on a list or collection).
+
+| Verdict (D2) | Rows | What |
+| --- | --- | --- |
+| `same` | 14 | identity element types (`TEdge` of mrtree, `LNode`, `BlockRow`), the index overload `remove(int)` (3), the no-argument `KVectorChain.remove()` (1) |
+| `handled` | 1 | `HypernodesProcessor.java:178`, `KVectorChain.remove(Object)`, through `removeEqual` |
+| `differs`, `unreachable-differs` | 0 | no fix under D3 was needed |
+
+The value-equal lists the shim holds (`KVectorChain`, the `LinkedList<Double>` coordinates of `HyperEdgeSegment`,
+`rowIndices`/`rowHeights` of `BoxLayoutProvider`) have no other equality-based call in the Java. The planning concern
+about `List<Integer>.remove(int)` against `remove(Object)` does not arise: no number list is removed from.
+
+**A defect outside the shim, filed and not fixed (#120).** The javac pass covers every Java list, so the calls on a
+value-equal element type that the port keeps as an array were checked as well (the nine rows of `audit.md` § 4): eight
+are `same` or compare explicitly, one differs. `LayoutMetaDataService.java:494` tests `category.getLayouters().contains(algorithm)`
+with `LayoutAlgorithmData.equals` (ids); `LayoutMetaDataService.ts:139` uses `includes`. Registering a provider twice
+leaves one layouter in the Java category and two in the port's (oracle run in the issue). No in-scope bundle reads
+`getLayouters()`, so no layout changes. The brief scopes arrays out of #47, hence the issue.
+
+**Item 2, `int` sums.** 30 statements in 9 files of `intermediate/greedyswitch/`, `p3order/` and `p3order/counting/`
+now go through `Int32.add`/`Int32.sub`: the four-term sums and `+=` of `SwitchDecider`, the merge-loop sums of
+`BetweenLayerEdgeTwoNodeCrossingsCounter`, `NodeInfo.transfer` and every `pathsTo…` sum of `LayerSweepTypeDecider`
+(including `allPaths` and the difference, which are `int` operations widened afterwards), the hierarchical sums of
+`GreedyPortDistributor`, the group degree of `ForsterConstraintResolver`, three statements of
+`HyperedgeCrossingsCounter`, and four `++` on accumulators that are not counts of one collection
+(`connectedEdges`, `wrongModelOrder` twice, the barycenter `degree`). 9 rows stay bare with their reason: `double`
+accumulators (`LayerSweepCrossingMinimizer.java:416`), counters of one collection, array sizes, index arithmetic.
+
+Two statements of the 2026-10-30 follow-up did not hold when checked: the thoroughness loops of
+`LayerSweepCrossingMinimizer` only compare, so there was nothing to convert, and `GraphInfoHolder.ts` has no `Int32`
+call (its one counter, `nPorts++`, counts ports). One wrap test exists, at the only pure seam
+(`LayerSweepTypeDeciderNodeInfo.transfer`, `2147483647 + 1` reads `-2147483648`, JLS 15.18.2); the other 27 statements
+need more than 2^31 crossings or paths to wrap and rest on the unchanged suite (D5).
+
+**Gates (queue gates 1-7, on the finished code tree).** `format:check`, `typecheck`, `complexity` exit 0 (no
+violation line). Coverage, full suite with the nine sweep directories off: 1,173 files and 49,295 tests passed (the
+base's 49,293 plus the two new ones), 93 skipped, 0 failed; statements 98.81 %, branches 96.99 %, functions 98.56 %,
+lines 98.86 %. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`: every finding accepted, no new
+entry in `tools/codeql/accepted.json`. `git diff --exit-code 8af2af35 -- test/golden/refs/`: empty.
+
+**Open rows.** #120 (`follow-up`): the `LayoutMetaDataService` re-registration defect. #121 (`follow-up`): value
+equality through sets, maps and indirect list calls, which the list audit did not cover. #122 (`follow-up`): Java
+`int` arithmetic outside the three crossing-min directories. No `needs-ruling` issue.
+
+**For later missions.** A type-driven caller list costs one `tsc` run (rename the method, read the errors) and a
+type-driven Java call list one javac Tree API pass (`audit.md` § 5); both are described in
+`.agent-notes/linkedlist-int32-cleanup.md`. A ported `equals` proves nothing about its call sites: check each
+`includes`/`indexOf` on instances of a class whose Java declares `equals`.
+
+## Revision 2026-11-20 (label-switcher-mutants)
+
+Appended; no earlier line is edited. Source: issue #48 and D1-D7 in `plans/label-switcher-mutants/decisions.md`; the
+journal is `plans/label-switcher-mutants/decision-journal.md`, the mutant table with verdicts and proofs
+`plans/label-switcher-mutants/mutants.md`. Where this section conflicts with the text above, this section wins. Task
+ids are T1-T4; the base is `bc7250e5c12e97c6f4c715d3d4d277548533596b`.
+
+**One follow-up is closed, with one mutant left open: "Five mutation survivors in
+`LabelDummySwitcherSpaceEfficient.ts` need a new oracle graph to discriminate" (§ Revision 2026-11-06).** No `src/`
+file changed (D7: no port defect was found), no oracle patch was added, and one ref grew by two rows.
+
+**The mutant set (D1).** 7f2 journaled only the labels A3, A6, A7, A9, A10 and a count; its scratch copy is gone, so
+the five cannot be named. The mission fixed a kept table instead, one edit per decision point of the file: planning's
+M1-M18 and eleven more that T1 added for points the table missed (M19-M29). A set that covers every decision point
+contains whatever 7f2 mutated. Each mutant is applied alone in a scratch copy under `$TMPDIR` and run against the
+switcher cases and the labels replay (D2, D3); no mutation tool was added.
+
+| | killed | survived |
+| --- | --- | --- |
+| Base suite (`bc7250e5`), 29 mutants | 19 | 10 |
+| After the two rows and eight cases | 26 | 3: 2 equivalent with proofs (M1, M5), 1 open (M11, #123) |
+
+Of planning's M1-M18: 15 killed, 2 equivalent, 1 open.
+
+**Rows added.** Two site rows, siblings of Sc13 (`sites/LabelDummySwitcher/spaceEfficient`), recorded by
+`tools/vectors/layered-labels-vectors.sh` at oracle `8bca22f4` with patches 0001-0003:
+
+- `sites/LabelDummySwitcher/spaceEfficient-fitsAndTies` (`RIGHT`; nodes 20/50/20/50/20 wide; labels 0 and 50 wide on
+  layers `[1,2]`, 80 on `[2,3]`): the trivial fit of a 0-wide label, the early return on a label exactly as wide as
+  its leftmost layer, and a tie of potential widths. It kills M6, M8, M14, M17, M26.
+- `sites/LabelDummySwitcher/spaceEfficient-vertical` (`DOWN`; labels of extent 30 on `[1,2]`, 50 and 80 on `[1,3]`):
+  every `layerWidths` entry starts at 0 in a vertical layout (`LGraphUtil.java:316-318`), so the "no positive
+  potential width" arm and the "last unassigned label on a layer" choice are reached. It kills M10, M14, M17, M18.
+
+Each row replays green in `LayeredLabelsVectors.test.ts` and has four anchored cases in
+`LabelDummySwitcherSites.test.ts`, literals copied from the row; the T17a cases are byte-identical.
+
+**The ref change (AD-13, D4).** `test/golden/refs/java/layered-labels.json` is append-only: of the 1,305 base rows 0
+changed (as parsed JSON and as raw line bytes), 0 are missing, the order is kept, and the header differs only in
+`rowCounts.sites`, 42 → 44; 1,307 rows, 14,353,655 bytes (cap 16 MiB). A cold rerun of the recorder on the final
+source is byte-identical to the landed ref. Two literals follow the header's count, both journaled as `ad13`:
+`LayeredLabelsVectors.test.ts:123` (named by D4) and `test/helpers/layered-labels-replay-rows.test.ts:96` (not seen at
+planning; the mission halted on it at gate 4 on 2026-11-19 and resumed on the maintainer's yes, #124).
+
+**The two equivalence proofs.** M1 (the empty-list early return): with no non-trivial label the sort and the loop run
+no statement. M5 (the range end of the trivial fit): every layer's `getSize().x` is 0 when the switcher runs, for
+every input. The field is private, a javac tree pass over the pinned `alg.layered/src` finds 13 accesses, and only
+`LayerSizeAndGraphHeightCalculator.java:60,75` writes `x`, in a slot after the switcher's; an oracle probe prints 0.0
+on every layer of five graphs. So the trivial fit succeeds exactly for a dummy width ≤ 0, at the first layer of the
+range, with either range end.
+
+**Open: M11 (#123, `needs-ruling`).** The initial `widestLayerWidth` of 0 against -1 differs in effect only when the
+leftmost layer's potential width is NaN and a later one is 0. The oracle reaches that (`DOWN`,
+`spacing.labelLabel=NaN`), and the port agrees with it on that graph in a scratch replay, but every recorder refuses a
+NaN in a recorded value, so no row can carry it. The mutant is equivalent on every input without NaN. The ruling asked
+is how to close it: as equivalent on NaN-free inputs, by a NaN-bearing row, or by a direct case from the Java source.
+
+**Gates (queue gates 1-7, on the final tree, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377
+files, 10,720 functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,173 files
+and 49,305 tests passed (the base's 49,295, plus 2 row replays and 8 anchored cases), 93 skipped, 0 failed;
+statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200 typedoc
+warnings, as at the base. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`. Gate 7:
+`git diff --stat bc7250e5 -- test/golden/refs/` lists `layered-labels.json` only, and the append-only proof holds.
+
+**Oracle.** `oracle-build.json` names `8bca22f4…` and patches 0001-0003 at both sessions; no rebuild.
+`git -C ../elk log --oneline 8bca22f4..HEAD` over the layered and core bundles is empty (HEAD is the pin).
+
+**Open rows.** #123 (`needs-ruling`): M11 and the NaN row. #125 (`follow-up`): 7f2's T17b survivors U3/U4
+(`AlternatingLayerUnzipper.ts`) are called equivalent on the same "one row" ground, with no kept mutant table. #124 is
+ruled (yes) and its edit is in this mission.
+
+**For later missions.** Keep the mutant table (site and edit) in the plan directory: a label is not a mutant. "No row
+tells them apart" is a missing row until a proof for every input exists: seven of ten survivors died on two more
+rows. A brief that appends rows to a ref names every literal that pins its counts; grep the counts over `src/` and
+`test/` before recording. A survivor of an initial-value or `>` mutant is checked against NaN before it is called
+equivalent.

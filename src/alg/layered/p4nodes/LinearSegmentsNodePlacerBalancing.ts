@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import * as JavaInteger from '../../../java/lang/JavaInteger.js';
 import { ArrayListIterator } from '../../../java/util/ListIterator.js';
 import type { LEdge } from '../graph/LEdge.js';
@@ -310,7 +311,7 @@ function mergeIfOverlapping(first: RegionNode, second: RegionNode, threshold: nu
   if (node1Extent > node2Extent + threshold) {
     // Merge the first region under the second top level segment
     const weightSum = region1.weight + region2.weight;
-    // Java `assert weightSum > 0` omitted (dev-only assert, LinearSegmentsNodePlacer.java:798)
+    devAssert(() => weightSum > 0);
     region2.deflection = (region2.weight * region2.deflection + region1.weight * region1.deflection) / weightSum;
     region2.weight = weightSum;
     region1.refSegment = region2;

@@ -1,22 +1,8 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { fromPattern } from '../../../../test/helpers/polyomino-fixtures.js';
 import { ProfileFill } from './ProfileFill.js';
 import { Polyomino } from './structures/Polyomino.js';
-
-/** Builds a polyomino from rows of `X` (blocked), `o` (weakly blocked) and `_` (empty). */
-function fromPattern(rows: readonly string[]): Polyomino {
-  const poly = new Polyomino(rows[0]!.length, rows.length);
-  rows.forEach((row, y) => {
-    [...row].forEach((cell, x) => {
-      if (cell === 'X') {
-        poly.setBlocked(x, y);
-      } else if (cell === 'o') {
-        poly.setWeaklyBlocked(x, y);
-      }
-    });
-  });
-  return poly;
-}
 
 /** The pattern of the polyomino, `X` for blocked and `_` for every other cell. */
 function rowsOf(poly: Polyomino): string[] {

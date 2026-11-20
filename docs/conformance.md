@@ -859,8 +859,8 @@ Mission 6a ported `alg.common` except `nodespacing/**` and `NodeMicroLayout` (AC
   NPE; T7). A null quadrant or `xMin` in `RectilinearConvexHull` and a null `lastX` in its event handler:
   `IllegalStateException` or `TypeError` (T8). Each site is unreachable from valid input; only an invalid input or a use after removal reaches it.
 - **`CNode.toString`** without a delegate prints the shim's identity hash, which differs from the JVM's (debug only; T9).
-- **Omitted `assert false` defaults** in `RectangleStripOverlapRemover` (`importRectangle`), kept as commented `default`
-  arms, following the `KVector.ts` precedent; no dev-assert helper exists (T10).
+- **`assert false` defaults** in `RectangleStripOverlapRemover` (`importRectangle`) were commented `default` arms
+  (T10); since issue #45 they are `devAssert` calls (translation rules 6.8).
 - **Prose typos corrected:** none found in this mission.
 
 ### Upstream quirks kept (mission 6a) {#alg-common-quirks}
@@ -946,9 +946,10 @@ test/golden/inputs/` shows only the added `refs/java/node-micro-layout.json`.
   `LabelCell` built from `NodeLabelLocation.UNDEFINED` would NPE in Java's `switch(null)` and leaves the coordinate at 0
   here; unreachable, because `NodeLabelCellCreator.java:80` returns first (T2). Each site is unreachable from
   `NodeMicroLayout`.
-- **Omitted `assert` sites (NS5).** `NodeContext.java:277`, `HorizontalPortPlacementSizeCalculator.java:212` and
-  `PortLabelPlacementCalculator.java:208` are comments naming the line, following the `KVector.ts` precedent; the oracle
-  runs without `-ea`, so they never fire there either. No dev-assert helper exists.
+- **`assert` sites (NS5).** `PortLabelPlacementCalculator.java:208` is a `devAssert` call since issue #45
+  (translation rules 6.8). `NodeContext.java:277` and
+  `HorizontalPortPlacementSizeCalculator.java:212` stay comments naming the line: a unit test and nine `adapters` sweep
+  rows drive them on purpose, and the Java asserts fire there under `-ea` too (issue #113).
 - **Prose typos corrected:** none found in this mission.
 
 **AD-13 re-derivation (mission 6c).** Five 6b unit tests had their hand-derived expectations corrected after a first
@@ -1066,8 +1067,10 @@ was re-recorded once (X4). The port-side view proxy returned `undefined`/`Unsupp
   `insideSelfLoops/hierarchical-host-without-include-children` import throw `TypeError` where Java throws
   `NullPointerException`; the JDK 21 helpful-NPE message is not reproduced. The site replay compares those rows by
   class only and every other exception by class and message.
-- **Omitted `assert` sites:** `LNode.setGraph`, `LGraphUtil.createExternalPortDummy` ×2,
-  `ElkGraphImporter.java:205, 620-621, 789` (the `KVector.ts` precedent; the oracle runs without `-ea`).
+- **`assert` sites:** `ElkGraphImporter.java:205, 620-621, 789` are `devAssert` calls since issue #45
+  (translation rules 6.8). `LNode.setGraph` and `LGraphUtil.createExternalPortDummy` ×2
+  stay comments: a unit test and four site vectors drive them on purpose, and the Java asserts fire there under `-ea`
+  too (issue #113).
 - **TS-only surface:** `isHierarchyAwareLayoutProcessor`'s null/primitive guards (the brand stands in for `instanceof`);
   the `getPortSideView` proxy's membership-by-index trap.
 - **Staged boundary:** `LayeredLayoutProvider.layout` reaches `ElkLayered.doLayout`/`doCompoundLayout`, which throw
@@ -1443,6 +1446,12 @@ G3a, G11a).
   uncovered functions partitioned S 87, J 10, U 42 (7g 3, 7h 7, dead by construction 32), X 5; 42 site rows and 86
   anchored cases (T17a 40, T17b 46) close S and J; mutation checks killed 29 of 37 flips, the survivors being equivalent.
   Whole-suite coverage after batch 8: 99.05 / 97.17 / 99.12 / 99.06 (lines / branches / functions / statements).
+- Issue #48 (2026-11-19, `plans/label-switcher-mutants/`): `layered-labels.json` gained two site rows, append-only
+  (`sites` 44, 1,307 rows, 14,353,655 bytes, oracle `8bca22f4`): `sites/LabelDummySwitcher/spaceEfficient-fitsAndTies`
+  and `…-vertical`, with 8 anchored cases. Over a fixed set of 29 one-edit mutants of
+  `LabelDummySwitcherSpaceEfficient.ts` the switcher cases and the labels replay kill 26; 2 are equivalent with proofs,
+  and 1 is open: it differs from the Java only on a NaN potential width, which a recorder refuses (issue #123). This
+  replaces T17a's "5 survivors equivalent" above.
 - Landed vectors and goldens are unchanged; the refs diff adds `layered-labels.json`, the sweep test, 123 vendored
   inputs under `inputs/labels/` and their manifest rows, and appends keys to `layered-label-metrics.json`.
 

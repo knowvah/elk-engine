@@ -2,6 +2,7 @@
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { LGraphUtil } from '../graph/LGraphUtil.js';
@@ -34,8 +35,7 @@ import { PortType } from '../options/PortType.js';
  *
  * Complexity-limit splits (Java order kept): the Java's two identical `switch` blocks become `edgeConstraintOf`, the
  * two identical constraint-applying blocks become `applyEdgeConstraint`, and the all-ports-reversed test of
- * `handleInnerNodes` becomes `areAllPortsReversed` plus three one-test helpers. Java `assert`s in `canReverse*` are omitted (translation-rules
- * 6.8: no `devAssert` helper, the JVM runs without `-ea`).
+ * `handleInnerNodes` becomes `areAllPortsReversed` plus three one-test helpers. The Java `assert`s in `canReverse*` are `devAssert` calls.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/EdgeAndLayerConstraintEdgeReverser.java
  */
@@ -259,6 +259,13 @@ export class EdgeAndLayerConstraintEdgeReverser implements ILayoutProcessor<LGra
    * @return `true` if it's okay to reverse the edge
    */
   private canReverseOutgoingEdge(sourceNodeLayerConstraint: LayerConstraint, edge: LEdge): boolean {
+    // The layer constraint that gets passed to us
+    devAssert(
+      () =>
+        sourceNodeLayerConstraint ===
+        edge.getSource()!.getNode()!.getProperty(LayeredOptions.LAYERING_LAYER_CONSTRAINT),
+    );
+
     // If the edge is already reversed, we don't want to reverse it again
     if (edge.getProperty(InternalProperties.REVERSED)) {
       return false;
@@ -294,6 +301,13 @@ export class EdgeAndLayerConstraintEdgeReverser implements ILayoutProcessor<LGra
    * @return `true` if it's okay to reverse the edge
    */
   private canReverseIncomingEdge(targetNodeLayerConstraint: LayerConstraint, edge: LEdge): boolean {
+    // The layer constraint that gets passed to us
+    devAssert(
+      () =>
+        targetNodeLayerConstraint ===
+        edge.getTarget()!.getNode()!.getProperty(LayeredOptions.LAYERING_LAYER_CONSTRAINT),
+    );
+
     // If the edge is already reversed, we don't want to reverse it again
     if (edge.getProperty(InternalProperties.REVERSED)) {
       return false;

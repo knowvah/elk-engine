@@ -3,6 +3,7 @@ import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
 import { LayoutProcessorConfiguration } from '../../../core/alg/LayoutProcessorConfiguration.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import * as Iterables from '../../../guava/Iterables.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import * as Int32 from '../../../java/lang/Int32.js';
 import * as JavaInteger from '../../../java/lang/JavaInteger.js';
 import { LinkedList } from '../../../java/util/LinkedList.js';
@@ -138,6 +139,7 @@ export class BFSNodeOrderCycleBreaker implements ILayoutPhase<LayeredPhases, LGr
       for (let i = 0; i < nodes.length; i++) {
         if (!this.visited[i]) {
           const n = nodes[i]!;
+          devAssert(() => n.id === i);
           this.bfsQueue.add(n);
           changed = true;
           break;

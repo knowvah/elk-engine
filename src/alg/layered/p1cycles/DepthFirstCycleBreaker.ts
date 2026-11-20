@@ -3,6 +3,7 @@ import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
 import { LayoutProcessorConfiguration } from '../../../core/alg/LayoutProcessorConfiguration.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import * as Iterables from '../../../guava/Iterables.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { LayeredPhases } from '../LayeredPhases.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
@@ -120,6 +121,7 @@ export class DepthFirstCycleBreaker implements ILayoutPhase<LayeredPhases, LGrap
     for (let i = 0; i < nodeCount; i++) {
       if (!this.visited[i]) {
         const n = nodes[i]!;
+        devAssert(() => n.id === i);
         this.dfs(n);
       }
     }

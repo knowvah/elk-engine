@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { HorizontalLabelAlignment } from '../../common/nodespacing/cellsystem/HorizontalLabelAlignment.js';
 import type { LabelCell } from '../../common/nodespacing/cellsystem/LabelCell.js';
 import { VerticalLabelAlignment } from '../../common/nodespacing/cellsystem/VerticalLabelAlignment.js';
@@ -30,7 +31,8 @@ import { InternalProperties } from '../options/InternalProperties.js';
  * @see EndLabelPreprocessor.java:453
  */
 function getLabelSide(labelCell: LabelCell): LabelSide {
-  // Java `assert labelCell != null` and `assert labelCell.hasLabels()`: disabled without -ea (translation rules 6.8)
+  devAssert(() => labelCell !== null);
+  devAssert(() => labelCell.hasLabels());
   return labelCell.getLabels()[0]!.getProperty(InternalProperties.LABEL_SIDE);
 }
 
@@ -59,7 +61,8 @@ function portSideToOverlapRemovalDirection(portSide: PortSide): OverlapRemovalDi
     case PortSide.WEST:
       return OverlapRemovalDirection.LEFT;
     default:
-      // Shouldn't happen (Java `assert false; return null;`)
+      // Shouldn't happen
+      devAssert(() => false);
       return null as never;
   }
 }
@@ -83,7 +86,8 @@ function calculateOverlapStartCoordinate(node: LNode, portSide: PortSide, edgeLa
     case PortSide.WEST:
       return -nodeMargin.left - edgeLabelSpacing;
     default:
-      // Should never happen (Java `assert false; return 0;`)
+      // Should never happen
+      devAssert(() => false);
       return 0;
   }
 }
@@ -110,7 +114,9 @@ function removeLabelOverlaps(
     const cell = portLabelCells[port.id];
     if (cell !== null && cell !== undefined) {
       const labelCellRect = cell.getCellRectangle();
-      // Java `assert labelCellRect.height > 0 && labelCellRect.width > 0`: disabled without -ea (rules 6.8)
+      // Java: `assert labelCellRect.height > 0 && labelCellRect.width > 0;` (EndLabelPreprocessor.java:377). Not a
+      // devAssert yet: an end label without a size has an empty cell, and the Java assert fires on such models
+      // under -ea too (issue #112).
       overlapRemover.addRectangle(labelCellRect);
     }
   }

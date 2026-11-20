@@ -2,6 +2,7 @@
 import { KVector } from '../../../../../core/math/KVector.js';
 import { KVectorChain } from '../../../../../core/math/KVectorChain.js';
 import type { PortSide } from '../../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import { LGraphUtil } from '../../../graph/LGraphUtil.js';
 import { LayeredOptions } from '../../../options/LayeredOptions.js';
 import { NubSpline } from '../../../p5edges/splines/NubSpline.js';
@@ -18,7 +19,7 @@ const HALF = 0.5;
 /**
  * Routes self loops with splines. It uses `NubSpline` and `SplinesMath`; `NubsSelfLoop` is not called by the Java.
  *
- * Deviations: the Java `assert` (`:70`) is omitted. `new KVector(double angle)` is `KVector.fromAngle`. A null
+ * Deviations: the Java `assert` (`:70`) is a `devAssert`. `new KVector(double angle)` is `KVector.fromAngle`. A null
  * `SPACING_EDGE_LABEL` unboxes to a `TypeError` (Java `NullPointerException`).
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/loops/routing/SplineSelfLoopRouter.java
@@ -63,6 +64,8 @@ export class SplineSelfLoopRouter extends OrthogonalSelfLoopRouter {
     newBendPoints: KVectorChain,
     edgeLabelDistance: number,
   ): void {
+    devAssert(() => orthoBendPoints.size() >= 2);
+
     // We want to insert a new bend point between each pair of consecutive bend points in the old list
     let currPortSide: PortSide = slEdge.getSLSource().getLPort().getSide();
     let firstBP = orthoBendPoints.get(0);

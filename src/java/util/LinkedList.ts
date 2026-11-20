@@ -4,8 +4,16 @@ import { ArrayListIterator, type ListIterator } from './ListIterator.js';
 import { NoSuchElementException } from './NoSuchElementException.js';
 
 /**
- * Array-backed stand-in for `java.util.LinkedList`; only the API is Java's. `remove(e)`,
- * `contains` and `indexOf` compare with `===` (Java `equals` is identity for ELK's elements).
+ * Array-backed stand-in for `java.util.LinkedList`; only the API is Java's.
+ *
+ * `remove(e)`, `contains` and `indexOf` compare with `===`, where Java compares with `equals`. The two agree for
+ * element types that inherit `Object.equals` (identity) and for strings. They do not agree for element types whose
+ * Java `equals` compares values: `KVector` (`KVector.java:116`), and so every `KVectorChain`; boxed numbers
+ * (`Double.equals` has `NaN` equal to itself and `-0.0` unequal to `0.0`, the reverse of `===`); `Pair`, `Triple` and
+ * `Quadruple`; and collections such as `Set`. A caller that needs Java's `equals` on such a list compares explicitly
+ * at its call site, as `removeEqual` in `HypernodesProcessor.ts` does for `KVectorChain.remove(Object)`
+ * (`HypernodesProcessor.java:178`); this class takes no pluggable equality. Every caller of the three methods is
+ * audited in `plans/linkedlist-int32-cleanup/audit.md`.
  *
  * @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/LinkedList.html
  */

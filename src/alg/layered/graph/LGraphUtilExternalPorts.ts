@@ -150,7 +150,8 @@ export function createExternalPortDummy(args: ExternalPortDummyArgs): LNode {
 /** The free-side block of {@link createExternalPortDummy}: the side of a port whose constraints fix no side. */
 function freeExternalPortSide(netFlow: number, layoutDirection: Direction): PortSide {
   // we need some layout direction here, use RIGHT as default in case it is undefined
-  // (Java: `assert layoutDirection != Direction.UNDEFINED`, omitted: no dev-assert helper, JVM without -ea)
+  // Java: `assert layoutDirection != Direction.UNDEFINED;` (LGraphUtil.java:821). Not a devAssert yet: site vectors
+  // drive this with an undefined direction, which the Java assert rejects under -ea too (issue #113).
   if (netFlow >= 0) {
     return PortSide.fromDirection(layoutDirection);
   } else {
@@ -188,7 +189,9 @@ function placeDummy(side: PortSide, placement: DummyPlacement): void {
       placeSouthDummy(placement);
       break;
     default:
-    // Should never happen! (Java: `assert false : finalExternalPortSide`, omitted: JVM without -ea)
+    // Should never happen! Java: `assert false : finalExternalPortSide;` (LGraphUtil.java:907). Not a devAssert yet:
+    // a site vector and a test drive this arm with the side UNDEFINED, where the Java assert fires under -ea too
+    // (issue #113).
   }
 }
 

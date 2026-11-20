@@ -3,6 +3,7 @@ import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { LabelSide } from '../../../core/options/LabelSide.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { LinkedList } from '../../../java/util/LinkedList.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
@@ -34,8 +35,6 @@ interface SmartLayerState {
  * dummy node is annotated with the placement side); label dummy nodes have their ports placed such that they extend
  * above or below their edge, depending on the side of their label. Slots: before phase 4. Same-slot dependencies:
  * `InLayerConstraintProcessor`, `LabelManagementProcessor`, `LabelDummySwitcher`.
- *
- * Java `assert` lines (`:200`, `:249`, `:347`, `:348`, `:436`, `:437`, `:438`) are omitted, as no `assert` helper exists.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/LabelSideSelector.java
  */
@@ -203,6 +202,8 @@ export class LabelSideSelector implements ILayoutProcessor<LGraph> {
     bottomGroup: boolean,
     defaultSide: LabelSide,
   ): void {
+    devAssert(() => !dummyNodes.isEmpty());
+
     // We distinguish a number of special cases whose rules seem rather complicated.
     if (this.isTopLabelRun(dummyNodes, labelDummyCount, topGroup, bottomGroup)) {
       // The current run of dummy nodes is at the top of the layer, has only a single label dummy, and that label
@@ -273,6 +274,8 @@ export class LabelSideSelector implements ILayoutProcessor<LGraph> {
     let prevLongEdgeTarget: LNode | null = null;
 
     for (const currentDummy of dummyNodes) {
+      devAssert(() => currentDummy.getType() === NodeType.LABEL || currentDummy.getType() === NodeType.LONG_EDGE);
+
       // Check if we are continuing a previous run
       const currLongEdgeSource = this.getLongEdgeEndNode(currentDummy, true);
       const currLongEdgeTarget = this.getLongEdgeEndNode(currentDummy, false);
@@ -372,6 +375,9 @@ export class LabelSideSelector implements ILayoutProcessor<LGraph> {
     portSide: PortSide,
     defaultSide: LabelSide,
   ): void {
+    devAssert(() => !endLabelQueue.isEmpty());
+    devAssert(() => portSide !== null);
+
     if (endLabelQueue.size() === 2) {
       // What we're going to do depends on which port side we are traversing...
       if (portSide === PortSide.NORTH || portSide === PortSide.EAST) {
@@ -480,6 +486,10 @@ export class LabelSideSelector implements ILayoutProcessor<LGraph> {
    * @see LabelSideSelector.java:451
    */
   private doesEdgePointRightNode(labelDummy: LNode): boolean {
+    devAssert(() => labelDummy.getType() === NodeType.LABEL);
+    devAssert(() => !labelDummy.getIncomingEdges()[Symbol.iterator]().next().done);
+    devAssert(() => !labelDummy.getOutgoingEdges()[Symbol.iterator]().next().done);
+
     // Find incoming and outgoing edge
     const incoming = labelDummy.getIncomingEdges()[Symbol.iterator]().next().value as LEdge;
     const outgoing = labelDummy.getOutgoingEdges()[Symbol.iterator]().next().value as LEdge;

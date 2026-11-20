@@ -6,30 +6,15 @@
 // @see org.eclipse.elk.alg.layered.test/src/org/eclipse/elk/alg/layered/p5edges/BasicEdgeRouterTest.java:96-148
 import type { KVector } from '../../src/core/math/KVector.js';
 import type { KVectorChain } from '../../src/core/math/KVectorChain.js';
-import { compare } from '../../src/java/lang/DoubleCompare.js';
-import { toString as doubleToString } from '../../src/java/lang/DoubleToString.js';
+import { AssertionFailure, assertEqualsWithin } from './junit-delta.js';
+
+export { AssertionFailure };
 
 /** `BasicEdgeRouterTest.TOLERANCE` (`:96`). */
 export const TOLERANCE = 0.05;
 
 /** The shortest legal route (`route.size() < 2` fails, `:105`). */
 const MIN_ROUTE_POINTS = 2;
-
-/** The failure of a JUnit `fail` or `assertEquals`: the message is what the Java would print. */
-export class AssertionFailure extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'AssertionFailure';
-  }
-}
-
-/** JUnit 4 `Assert.assertEquals(message, expected, actual, delta)`: equal under `Double.compare` or within `delta`. */
-function assertEqualsWithin(message: string, expected: number, actual: number, delta: number): void {
-  if (compare(expected, actual) === 0 || Math.abs(expected - actual) <= delta) {
-    return;
-  }
-  throw new AssertionFailure(`${message} expected:<${doubleToString(expected)}> but was:<${doubleToString(actual)}>`);
-}
 
 /** Whether the line from `p1` to `p2` is horizontal (`BasicEdgeRouterTest.isHorizontal`, `:143-146`). */
 export function isHorizontal(p1: KVector, p2: KVector): boolean {

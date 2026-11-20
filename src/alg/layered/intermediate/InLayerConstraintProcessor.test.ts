@@ -4,7 +4,7 @@
 // the Java (L4).
 import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
-import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { runSteps } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
 import {
@@ -14,18 +14,8 @@ import {
 import { placementDump } from '../../../../test/helpers/layered-placement-replay-dump.js';
 import { runPlacementPrefix } from '../../../../test/helpers/layered-placement-replay-ops.js';
 import { loadPlacementRows, type PlacementRow } from '../../../../test/helpers/layered-placement-replay-rows.js';
-import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { LGraph } from '../graph/LGraph.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { NodePlacementStrategy } from '../options/NodePlacementStrategy.js';
-import { HierarchicalPortDummySizeProcessor } from './HierarchicalPortDummySizeProcessor.js';
-import { InLayerConstraintProcessor } from './InLayerConstraintProcessor.js';
-import { InnermostNodeMarginCalculator } from './InnermostNodeMarginCalculator.js';
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
-import { LabelAndNodeSizeProcessor } from './LabelAndNodeSizeProcessor.js';
-import { NodePlacementRepeater } from './NodePlacementRepeater.js';
+import { PLACEMENT_PROCESSOR_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-placement.json`;
 const PROCESSOR = 'IN_LAYER_CONSTRAINT_PROCESSOR';
@@ -96,38 +86,6 @@ const ROW_NAMES: readonly string[] = [
   'scenarios/in-layer/external-chain',
 ];
 
-/** The 7d processors are injected (T8 wires their enum arms); every other name goes through the real enums. */
-const factories: Factories = {
-  createProcessor(name): ILayoutProcessor<LGraph> {
-    switch (name) {
-      case 'INNERMOST_NODE_MARGIN_CALCULATOR':
-        return new InnermostNodeMarginCalculator();
-      case 'LABEL_AND_NODE_SIZE_PROCESSOR':
-        return new LabelAndNodeSizeProcessor();
-      case 'IN_LAYER_CONSTRAINT_PROCESSOR':
-        return new InLayerConstraintProcessor();
-      case 'HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR':
-        return new HierarchicalPortDummySizeProcessor();
-      case 'NODE_PLACEMENT_REPEATER':
-        return new NodePlacementRepeater();
-      default:
-        return IntermediateProcessorStrategy.valueOf(name).create();
-    }
-  },
-  createPhase(phase, strategy) {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      default:
-        return NodePlacementStrategy.valueOf(strategy).create();
-    }
-  },
-};
-
 /** The entries a row replays, spelled like prefix entries (`NAME` or `PHASE/STRATEGY`). */
 function entriesOf(row: PlacementRow): readonly string[] {
   return row.prefix !== null
@@ -138,7 +96,9 @@ function entriesOf(row: PlacementRow): readonly string[] {
 const rows = loadPlacementRows(ROWS_FILE).filter((row) => entriesOf(row).at(-1) === PROCESSOR);
 
 function replay(row: PlacementRow): LGraph {
-  return row.steps === null ? runPlacementPrefix(row, factories) : runSteps(row, factories);
+  return row.steps === null
+    ? runPlacementPrefix(row, PLACEMENT_PROCESSOR_FACTORIES)
+    : runSteps(row, PLACEMENT_PROCESSOR_FACTORIES);
 }
 
 describe('InLayerConstraintProcessor (oracle rows)', () => {

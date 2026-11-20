@@ -5,58 +5,28 @@
 // arithmetic through the Float32 shim). The oracle port orders are proven by T7's replay of the sweep.
 import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
-import { loadOrderRows, type OrderExpected } from '../../../../test/helpers/layered-order-replay-rows.js';
-import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { loadOrderRows } from '../../../../test/helpers/layered-order-replay-rows.js';
+import { runSteps } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { addLayer, addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { PortSide } from '../../../core/options/PortSide.js';
-import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import * as Float32 from '../../../java/lang/Float32.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
 import type { LPort } from '../graph/LPort.js';
-import { InvertedPortProcessor } from '../intermediate/InvertedPortProcessor.js';
-import { LongEdgeSplitter } from '../intermediate/LongEdgeSplitter.js';
-import { PortListSorter } from '../intermediate/PortListSorter.js';
-import { PortSideProcessor } from '../intermediate/PortSideProcessor.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { PortType } from '../options/PortType.js';
 import type { AbstractBarycenterPortDistributor } from './AbstractBarycenterPortDistributor.js';
 import { init } from './counting/IInitializable.js';
 import { LayerTotalPortDistributor } from './LayerTotalPortDistributor.js';
 import { NodeRelativePortDistributor } from './NodeRelativePortDistributor.js';
-import { orderDump } from '../../../../test/helpers/layered-order-replay-dump.js';
-import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
-import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
+import { SPLITTER_TO_SORTER_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
+import { replayOrderSite } from '../../../../test/helpers/layered-order-site-replay.js';
 
 const rows = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`);
-
-const factories: Factories = {
-  createProcessor(name): ILayoutProcessor<LGraph> {
-    switch (name) {
-      case 'LONG_EDGE_SPLITTER':
-        return new LongEdgeSplitter();
-      case 'PORT_SIDE_PROCESSOR':
-        return new PortSideProcessor();
-      case 'INVERTED_PORT_PROCESSOR':
-        return new InvertedPortProcessor();
-      case 'PORT_LIST_SORTER':
-        return new PortListSorter();
-      default:
-        throw new Error(`processor ${name} is not available to this test`);
-    }
-  },
-  createPhase: (phase, strategy) =>
-    phase === 'P1_CYCLE_BREAKING'
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : LayeringStrategy.valueOf(strategy).create(),
-};
 
 /** The graph of a step row as it enters P3: the row's steps without the P3 phase and the dump. */
 function preP3Order(id: string): LNode[][] {
@@ -64,7 +34,7 @@ function preP3Order(id: string): LNode[][] {
   const steps = row.steps!.filter(
     ([op, phase]) => op !== 'dump' && !(op === 'runPhase' && phase === 'P3_NODE_ORDERING'),
   );
-  return runSteps({ ...row, steps }, factories).toNodeArray();
+  return runSteps({ ...row, steps }, SPLITTER_TO_SORTER_FACTORIES).toNodeArray();
 }
 
 /** Numbers layers like `LayerSweepTypeDecider.initAtLayerLevel` and runs `IInitializable.init` on the distributor. */
@@ -476,38 +446,10 @@ describe('AbstractBarycenterPortDistributor: distributePortsWhileSweeping', () =
   });
 });
 
-/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
-const SITE_ROWS = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`).filter((row) =>
-  row.id.startsWith('sites/'),
-);
-
-const siteFactories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-    }
-  },
-};
-
-/** Replays the site row `id` with the real processors and phases and dumps the result in the recorder's shape. */
-function replaySite(id: string): OrderExpected {
-  const row = SITE_ROWS.find((candidate) => candidate.id === id);
-  if (row === undefined) {
-    throw new Error(`no site row ${id}`);
-  }
-  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
-}
-
 describe('AbstractBarycenterPortDistributor on the site rows', () => {
   it('keeps the dummy ports of a same-side self loop at the neutral sort key', () => {
     // oracle: sites/NorthSouth/selfLoops/sameSide; AbstractBarycenterPortDistributor.java:288-309
-    const result = replaySite('sites/NorthSouth/selfLoops/sameSide');
+    const result = replayOrderSite('sites/NorthSouth/selfLoops/sameSide');
     expect(result.ports['g0/n1']).toEqual(['g0/n1/p1', 'g0/n1/p2', 'g0/n1/p3', 'g0/n1/p0']);
     expect(result.ports['new/n0']).toEqual(['new/p0', 'new/p1']);
     expect(result.edges.find((edge) => edge.path === 'g0/e1')).toEqual({

@@ -5,14 +5,11 @@
 // Model rows replay their recorded `prefix`; step rows interpret their `steps`. Numbers within 1e-6 (AD-4), everything
 // else exactly (the comparators of test/helpers/layered-phase-replay-compare.ts).
 import { describe, expect, it } from 'vitest';
-import { IntermediateProcessorStrategy } from './intermediate/IntermediateProcessorStrategy.js';
-import { CycleBreakingStrategy } from './options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from './options/LayeringStrategy.js';
 import { readFileSync } from 'node:fs';
 import { repoRoot } from '../../../test/corpus/corpus.js';
 import { compareExpected, compareFullDump } from '../../../test/helpers/layered-phase-replay-compare.js';
 import { phaseDump } from '../../../test/helpers/layered-phase-replay-dump.js';
-import { runPrefix, runSteps, type Factories } from '../../../test/helpers/layered-phase-replay-ops.js';
+import { runPrefix, runSteps } from '../../../test/helpers/layered-phase-replay-ops.js';
 import {
   importRow,
   loadRefusalRows,
@@ -21,32 +18,20 @@ import {
   type PhaseRow,
 } from '../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpLGraph } from '../../../test/helpers/layered-framework-replay.js';
+import { STRICT_LAYERING_PHASE_FACTORIES } from '../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-phases.json`;
-const CYCLE_PHASE = 'P1_CYCLE_BREAKING';
-const LAYERING_PHASE = 'P2_LAYERING';
 
 const rows = loadRows(ROWS_FILE);
 const refusalRows = loadRefusalRows(ROWS_FILE);
 const allIds = [...rows, ...refusalRows].map((row) => row.id);
 const rowCounts = (JSON.parse(readFileSync(ROWS_FILE, 'utf8')) as { rowCounts: Record<string, number> }).rowCounts;
 
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case CYCLE_PHASE:
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case LAYERING_PHASE:
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        throw new Error(`unknown phase ${phase}`);
-    }
-  },
-};
-
 function replay(row: PhaseRow): ReturnType<typeof phaseDump> {
-  const graph = row.steps === null ? runPrefix(row, factories) : runSteps(row, factories);
+  const graph =
+    row.steps === null
+      ? runPrefix(row, STRICT_LAYERING_PHASE_FACTORIES)
+      : runSteps(row, STRICT_LAYERING_PHASE_FACTORIES);
   const actual = phaseDump(graph, importRow(row).importDump);
   return row.expected.dump === undefined ? actual : { ...actual, dump: dumpLGraph(graph) };
 }
@@ -69,7 +54,7 @@ describe('layered-phases.json replay', () => {
   it.each(refusalRows.map((row) => [row.id, row] as const))('%s: throws as the oracle does', (_id, row) => {
     const thrown = ((): unknown => {
       try {
-        runSteps(row as unknown as PhaseRow, factories);
+        runSteps(row as unknown as PhaseRow, STRICT_LAYERING_PHASE_FACTORIES);
       } catch (e) {
         return e;
       }

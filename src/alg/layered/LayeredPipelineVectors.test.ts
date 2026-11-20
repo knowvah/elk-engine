@@ -11,7 +11,7 @@ import { formatDiffs } from '../../../test/golden/compare-json.js';
 import { repoRoot } from '../../../test/corpus/corpus.js';
 import { registerLayered } from '../../../test/helpers/layered-framework-replay.js';
 import { PINNED_PIPELINE_ROWS } from '../../../test/helpers/layered-pipeline-pinned-rows.js';
-import type { Factories } from '../../../test/helpers/layered-phase-replay-ops.js';
+import { STRICT_ROUTING_PHASE_FACTORIES } from '../../../test/helpers/layered-replay-factories.js';
 import { compareRouting, compareRoutingFullDump } from '../../../test/helpers/layered-routing-replay-compare.js';
 import { routingDump } from '../../../test/helpers/layered-routing-replay-dump.js';
 import type { RoutingExpected } from '../../../test/helpers/layered-routing-replay-rows.js';
@@ -34,52 +34,23 @@ import {
   type PipelineRow,
   type PipelineRowGroup,
 } from '../../../test/helpers/layered-pipeline-replay-rows.js';
-import { EdgeRouting } from '../../core/options/EdgeRouting.js';
 import { UnsupportedOperationException } from '../../java/lang/UnsupportedOperationException.js';
 import { ComponentsProcessor } from './components/ComponentsProcessor.js';
 import { ElkLayered } from './ElkLayered.js';
-import { IntermediateProcessorStrategy } from './intermediate/IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from './options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from './options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from './options/LayeringStrategy.js';
-import { NodePlacementStrategy } from './options/NodePlacementStrategy.js';
-import { EdgeRouterFactory } from './p5edges/EdgeRouterFactory.js';
 
 const PIPELINE_REF = `${repoRoot()}/test/golden/refs/java/layered-pipeline.json`;
-const CYCLE_PHASE = 'P1_CYCLE_BREAKING';
-const LAYERING_PHASE = 'P2_LAYERING';
-const ORDERING_PHASE = 'P3_NODE_ORDERING';
-const PLACEMENT_PHASE = 'P4_NODE_PLACEMENT';
-const ROUTING_PHASE = 'P5_EDGE_ROUTING';
 
 const rows = loadPipelineRows(PIPELINE_REF);
 const rowCounts = (JSON.parse(readFileSync(PIPELINE_REF, 'utf8')) as { rowCounts: Record<string, number> }).rowCounts;
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case CYCLE_PHASE:
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case LAYERING_PHASE:
-        return LayeringStrategy.valueOf(strategy).create();
-      case ORDERING_PHASE:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case PLACEMENT_PHASE:
-        return NodePlacementStrategy.valueOf(strategy).create();
-      case ROUTING_PHASE:
-        return EdgeRouterFactory.factoryFor(EdgeRouting.valueOf(strategy)).create();
-      default:
-        throw new Error(`unknown phase ${phase}`);
-    }
-  },
-};
 
 /** The row's dump of the target and, when the row recorded one, the dump with every property value. */
 function stopDumps(row: Extract<PipelineRow, { group: 'models' | 'scenarios' | 'sites' }>): void {
   if (isComponentsRow(row)) {
     expect(
-      comparePipeline(pipelineDump(runPipelineSteps(row, factories, new ComponentsProcessor())), row.expected),
+      comparePipeline(
+        pipelineDump(runPipelineSteps(row, STRICT_ROUTING_PHASE_FACTORIES, new ComponentsProcessor())),
+        row.expected,
+      ),
     ).toEqual([]);
     return;
   }
@@ -101,7 +72,7 @@ function stopDumps(row: Extract<PipelineRow, { group: 'models' | 'scenarios' | '
     }
     return;
   }
-  const result = runPipelineSteps(row, factories, new ComponentsProcessor());
+  const result = runPipelineSteps(row, STRICT_ROUTING_PHASE_FACTORIES, new ComponentsProcessor());
   const actual = pipelineDump(result);
   expect(comparePipeline(actual, row.expected)).toEqual([]);
   if (row.expected.dump !== undefined && !('components' in actual)) {

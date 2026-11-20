@@ -10,9 +10,9 @@
  */
 // Entry through the enum, not a processor class (E1).
 import './IntermediateProcessorStrategy.js';
+// JUnit 4 `Assert.assertEquals(message, expected, actual, delta)`, under the Java's name.
+import { assertEqualsWithin as assertEquals } from '../../../../test/helpers/junit-delta.js';
 import { defineLayoutTest } from '../../../../test/helpers/layout-test-runner.js';
-import { compare } from '../../../java/lang/DoubleCompare.js';
-import { toString as doubleToString } from '../../../java/lang/DoubleToString.js';
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import type { ElkNode } from '../../../graph/ElkNode.js';
@@ -26,14 +26,6 @@ const NODE_WIDTH = 100;
 const PORT_MIDDLE = 50;
 const PORT_FAR = 300;
 const DELTA = 0.0;
-
-/** JUnit 4 `Assert.assertEquals(message, expected, actual, delta)`: equal under `Double.compare` or within `delta`. */
-function assertEquals(message: string, expected: number, actual: number, delta: number): void {
-  if (compare(expected, actual) === 0 || Math.abs(expected - actual) <= delta) {
-    return;
-  }
-  throw new Error(`${message} expected:<${doubleToString(expected)}> but was:<${doubleToString(actual)}>`);
-}
 
 /** Generates a node for the given graph with one port on each side and with its port constraints set to the given value. */
 function generateNode(graph: ElkNode, portConstraints: PortConstraints): void {

@@ -4,29 +4,18 @@
 // Java formulas, a verbatim recursive twin of `calculateBarycenter` (C7) and the values the Java defines (L4).
 import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
-import {
-  loadOrderRows,
-  type OrderRow,
-  type OrderExpected,
-} from '../../../../test/helpers/layered-order-replay-rows.js';
-import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { loadOrderRows, type OrderRow } from '../../../../test/helpers/layered-order-replay-rows.js';
+import { runSteps } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { addLayer, addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import * as Float32 from '../../../java/lang/Float32.js';
 import { ClassCastException } from '../../../java/lang/ClassCastException.js';
 import { Random } from '../../../java/util/Random.js';
-import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
-import { InvertedPortProcessor } from '../intermediate/InvertedPortProcessor.js';
-import { LongEdgeSplitter } from '../intermediate/LongEdgeSplitter.js';
-import { PortListSorter } from '../intermediate/PortListSorter.js';
-import { PortSideProcessor } from '../intermediate/PortSideProcessor.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { PortType } from '../options/PortType.js';
 import { BarycenterHeuristic } from './BarycenterHeuristic.js';
 import type { BarycenterHeuristicBarycenterState } from './BarycenterHeuristicBarycenterState.js';
@@ -35,37 +24,14 @@ import { init } from './counting/IInitializable.js';
 import { LayerTotalPortDistributor } from './LayerTotalPortDistributor.js';
 import { NodeRelativePortDistributor } from './NodeRelativePortDistributor.js';
 import type { AbstractBarycenterPortDistributor } from './AbstractBarycenterPortDistributor.js';
-import { orderDump } from '../../../../test/helpers/layered-order-replay-dump.js';
-import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
-import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
+import { SPLITTER_TO_SORTER_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
+import { replayOrderSite } from '../../../../test/helpers/layered-order-site-replay.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
 const SEED = 1;
 const RANDOM_AMOUNT = Float32.fromDouble(0.07);
 /** The processors of the row prefixes that are ported (T4a); rows that run another one are not used here. */
 const AVAILABLE = new Set(['LONG_EDGE_SPLITTER', 'PORT_SIDE_PROCESSOR', 'INVERTED_PORT_PROCESSOR', 'PORT_LIST_SORTER']);
-
-const factories: Factories = {
-  createProcessor(name): ILayoutProcessor<LGraph> {
-    switch (name) {
-      case 'LONG_EDGE_SPLITTER':
-        return new LongEdgeSplitter();
-      case 'PORT_SIDE_PROCESSOR':
-        return new PortSideProcessor();
-      case 'INVERTED_PORT_PROCESSOR':
-        return new InvertedPortProcessor();
-      case 'PORT_LIST_SORTER':
-        return new PortListSorter();
-      default:
-        throw new Error(`processor ${name} is not available to this test`);
-    }
-  },
-  createPhase: (phase, strategy) =>
-    phase === 'P1_CYCLE_BREAKING'
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : LayeringStrategy.valueOf(strategy).create(),
-};
 
 const allRows = loadOrderRows(ROWS_FILE);
 
@@ -86,7 +52,7 @@ const sweepRows: readonly OrderRow[] = allRows.filter(
 function preP3Graph(id: string): LGraph {
   const row = allRows.find((candidate) => candidate.id === id)!;
   const steps = row.steps!.filter(([op, phase]) => op !== 'dump' && !isP3(op, phase));
-  return runSteps({ ...row, steps }, factories);
+  return runSteps({ ...row, steps }, SPLITTER_TO_SORTER_FACTORIES);
 }
 
 interface Setup {
@@ -471,38 +437,10 @@ describe('BarycenterHeuristic: setFirstLayerOrder and minimizeCrossings', () => 
   });
 });
 
-/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
-const SITE_ROWS = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`).filter((row) =>
-  row.id.startsWith('sites/'),
-);
-
-const siteFactories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-    }
-  },
-};
-
-/** Replays the site row `id` with the real processors and phases and dumps the result in the recorder's shape. */
-function replaySite(id: string): OrderExpected {
-  const row = SITE_ROWS.find((candidate) => candidate.id === id);
-  if (row === undefined) {
-    throw new Error(`no site row ${id}`);
-  }
-  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
-}
-
 describe('BarycenterHeuristic on the site rows', () => {
   it('ignores a self loop of a node with inverted ports when it collects the fixed ports', () => {
     // oracle: sites/NorthSouth/selfLoops/inverted; BarycenterHeuristic.java:241
-    const result = replaySite('sites/NorthSouth/selfLoops/inverted');
+    const result = replayOrderSite('sites/NorthSouth/selfLoops/inverted');
     expect(result.layers[1]).toEqual(['new/n0', 'g0/n1', 'new/n1']);
     expect(result.ports['g0/n1']).toEqual(['g0/n1/p0', 'g0/n1/p1']);
     expect(result.edges.find((edge) => edge.path === 'g0/e1')).toEqual({

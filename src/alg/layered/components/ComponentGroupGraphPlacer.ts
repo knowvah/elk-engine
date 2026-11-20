@@ -4,6 +4,7 @@ import { KVector } from '../../../core/math/KVector.js';
 import { EdgeRouting } from '../../../core/options/EdgeRouting.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import type { ValueCollection } from '../../../guava/Multimap.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import * as Float32 from '../../../java/lang/Float32.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
@@ -57,7 +58,7 @@ export class ComponentGroupGraphPlacer extends AbstractGraphPlacer {
   /** @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/components/ComponentGroupGraphPlacer.java:71 */
   combine(components: LGraph[], target: LGraph): void {
     this.componentGroups.length = 0;
-    // Java line 73 'assert !components.contains(target)' is omitted (dev-only check)
+    devAssert(() => !components.includes(target));
     target.getLayerlessNodes().length = 0;
 
     // Check if there are any components to be placed

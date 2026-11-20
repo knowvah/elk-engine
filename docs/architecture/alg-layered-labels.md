@@ -50,9 +50,10 @@ tally is 7b 10, 7c 10, 7d 5, 7e 6, 7f 6, 7f2 12, 7g 9, 7h 1: **49 arms ported, 1
 
 ## 2. Rows and the bar (G2, G3) {#part-g-rows}
 
-One recorder, `tools/vectors/LayeredLabelsVectors.java` (a JDK 21 single-file launcher, 3,653 lines, core copied from
-7f's), writes one ref, `test/golden/refs/java/layered-labels.json` (14,315,720 bytes), with four groups, counts equal
-to the header's `rowCounts` (`{"full": 399, "models": 640, "scenarios": 224, "sites": 42}`):
+One recorder, `tools/vectors/LayeredLabelsVectors.java` (a JDK 21 single-file launcher, 3,711 lines, core copied from
+7f's), writes one ref, `test/golden/refs/java/layered-labels.json` (14,353,655 bytes), with four groups, counts equal
+to the header's `rowCounts` (`{"full": 399, "models": 640, "scenarios": 224, "sites": 44}`; 42 site rows and
+14,315,720 bytes at 7f2, two rows appended by issue #48):
 
 - **`full`** (399): a model is read, options applied and laid out with `RecursiveGraphLayoutEngine`, with the plan of
   every level. Families: `labels` 194, `label-options` 114, `comments` 6, `unzipping` 12, `interactive` 56, `issues` 14,
@@ -60,7 +61,8 @@ to the header's `rowCounts` (`{"full": 399, "models": 640, "scenarios": 224, "si
 - **`models`** (640): stops at each of the 12 arms through `ElkLayered`'s test API.
 - **`scenarios`** (224): step rows on hand-built graphs; step ops `labelManager <kind>`, `interactive` and `logging`
   have TS twins in `test/helpers/layered-labels-replay-ops.ts`.
-- **`sites`** (42): one row per scenario of `plans/layered-labels/unreached.md` (T16).
+- **`sites`** (44): one row per scenario of `plans/layered-labels/unreached.md` (T16), and two siblings of Sc13,
+  `LabelDummySwitcher/spaceEfficient-fitsAndTies` and `…-vertical` (issue #48).
 
 **Whole-plan refusal (G2).** A row whose plan holds a member outside the ported sets is not recorded unless it is in
 the 7g or 7h categories, where it is an accepted refusal; no row needs pinning. The recorded accepted refusal is
@@ -119,6 +121,7 @@ root's `isHierarchical()` (`:70-72`).
 | FX3-style measurement                   | Reversing `END_LABELS` or `EndLabelSorter`'s groups in a scratch copy leaves all 935 sweep hashes unchanged: the sweep does not discriminate these orders; the evidence is T6's reversal twin and T12's FX2 rows                                                                                                                                                                                                                                                                        |
 | Coverage map (T14)                      | Replay-alone over the 15 classes (34 files): 721 branches, 131 untaken; 250 functions, 13 uncovered. Partition of the 144 items: S 87, J 10, U 42 (7g 3, 7h 7, dead by construction 29 branches + 3 private constructors), X 5 (`plans/layered-labels/unreached.md`)                                                                                                                                                                                                                    |
 | Site rows and anchored cases (T16, T17) | 42 site rows reach every arm of the 15 scenarios and 6 hand-off scenarios. T17a: 40 cases, mutation 11 of 16 killed (5 survivors equivalent on the one `SPACE_EFFICIENT_LAYER` row). T17b: 46 cases, mutation 18 of 21 killed (3 equivalent)                                                                                                                                                                                                                                            |
+| Issue #48 (`label-switcher-mutants`)    | Two more site rows, `spaceEfficient-fitsAndTies` and `spaceEfficient-vertical` (`sites` 44, 1,307 rows, append-only), and 8 anchored cases. 29 one-edit mutants of `LabelDummySwitcherSpaceEfficient.ts` (`plans/label-switcher-mutants/mutants.md`): 26 killed, 2 equivalent with proofs, 1 open (it needs a NaN width, which a recorder refuses; issue #123). Replaces T17a's "5 survivors equivalent"                                                                                |
 | Whole suite (batch 8)                   | Coverage 99.05 / 97.17 / 99.12 / 99.06 (lines / branches / functions / statements); `npm test` 63.7 s at load 32.6 against `main` 73.5 s right after (stop 11 clear)                                                                                                                                                                                                                                                                                                                    |
 | Hand-offs (G1)                          | 7b's 45 items: 42 to S sites, 3 U dead; 7b `firstEdge` arms 1 of 3 closed; 7c's 3 sites 2 closed; `HyperedgeDummyMerger` 12 of 13 closed                                                                                                                                                                                                                                                                                                                                                |
 

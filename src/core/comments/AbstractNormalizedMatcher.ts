@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../java/lang/DevAssert.js';
 import { AbstractNormalizedMatcherNormalizationFunction } from './AbstractNormalizedMatcherNormalizationFunction.js';
 import { IMatcher } from './IMatcher.js';
 
@@ -73,7 +74,7 @@ export abstract class AbstractNormalizedMatcher<C, T> extends IMatcher<C, T> {
       case AbstractNormalizedMatcherNormalizationFunction.BINARY:
         return this.normalizeBinary(rawValue);
       default:
-        // Java: assert false; return 0
+        devAssert(() => false);
         return 0;
     }
   }

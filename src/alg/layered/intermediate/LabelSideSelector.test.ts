@@ -14,7 +14,6 @@ import {
   rowsByGroup,
   rowsByLastPrefixEntry,
 } from '../../../../test/helpers/layered-labels-replay-rows.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import {
   isFullRow,
   isStopRow,
@@ -24,59 +23,12 @@ import {
 import { runRoutingPrefix } from '../../../../test/helpers/layered-routing-replay-ops.js';
 import { compareRoutingFullDump } from '../../../../test/helpers/layered-routing-replay-compare.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
-import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
-import { EdgeRouting } from '../../../core/options/EdgeRouting.js';
 import { ComponentsProcessor } from '../components/ComponentsProcessor.js';
-import type { LGraph } from '../graph/LGraph.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { NodePlacementStrategy } from '../options/NodePlacementStrategy.js';
-import { EdgeRouterFactory } from '../p5edges/EdgeRouterFactory.js';
-import { CommentNodeMarginCalculator } from './CommentNodeMarginCalculator.js';
-import { CommentPostprocessor } from './CommentPostprocessor.js';
-import { CommentPreprocessor } from './CommentPreprocessor.js';
-import { EndLabelPostprocessor } from './EndLabelPostprocessor.js';
-import { EndLabelPreprocessor } from './EndLabelPreprocessor.js';
 import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
-import { LabelDummyInserter } from './LabelDummyInserter.js';
-import { LabelDummyRemover } from './LabelDummyRemover.js';
-import { LabelDummySwitcher } from './LabelDummySwitcher.js';
-import { LabelManagementProcessor } from './LabelManagementProcessor.js';
-import { LabelSideSelector } from './LabelSideSelector.js';
-
-const INJECTED: Readonly<Record<string, () => ILayoutProcessor<LGraph>>> = {
-  LABEL_DUMMY_INSERTER: () => new LabelDummyInserter(),
-  LABEL_DUMMY_SWITCHER: () => new LabelDummySwitcher(),
-  LABEL_DUMMY_REMOVER: () => new LabelDummyRemover(),
-  END_LABEL_PREPROCESSOR: () => new EndLabelPreprocessor(),
-  END_LABEL_POSTPROCESSOR: () => new EndLabelPostprocessor(),
-  COMMENT_PREPROCESSOR: () => new CommentPreprocessor(),
-  COMMENT_NODE_MARGIN_CALCULATOR: () => new CommentNodeMarginCalculator(),
-  COMMENT_POSTPROCESSOR: () => new CommentPostprocessor(),
-  LABEL_SIDE_SELECTOR: () => new LabelSideSelector(),
-  CENTER_LABEL_MANAGEMENT_PROCESSOR: () => new LabelManagementProcessor(true),
-  END_NODE_PORT_LABEL_MANAGEMENT_PROCESSOR: () => new LabelManagementProcessor(false),
-};
-
-const factories: Factories = {
-  createProcessor: (name) => INJECTED[name]?.() ?? IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case 'P4_NODE_PLACEMENT':
-        return NodePlacementStrategy.valueOf(strategy).create();
-      default:
-        expect(phase).toBe('P5_EDGE_ROUTING');
-        return EdgeRouterFactory.factoryFor(EdgeRouting.valueOf(strategy)).create();
-    }
-  },
-};
+import {
+  INJECTED_LABEL_PROCESSORS,
+  LABEL_PROCESSOR_FACTORIES,
+} from '../../../../test/helpers/layered-replay-factories.js';
 
 beforeAll(() => {
   registerLayered();
@@ -88,8 +40,8 @@ function replay(row: PipelineStopRow): LabelsStepsResult {
   // a `models` row replays its prefix, a `scenarios` row its steps
   const result: LabelsStepsResult =
     row.steps === null
-      ? { graph: runRoutingPrefix(row, factories), components: null, terminal: null }
-      : runLabelsRow(row, { factories, components: new ComponentsProcessor() });
+      ? { graph: runRoutingPrefix(row, LABEL_PROCESSOR_FACTORIES), components: null, terminal: null }
+      : runLabelsRow(row, { factories: LABEL_PROCESSOR_FACTORIES, components: new ComponentsProcessor() });
   const actual = labelsDump(result, row.expected);
   expect(compareLabels(actual, row.expected)).toEqual([]);
   if (row.expected.dump !== undefined) {
@@ -131,7 +83,7 @@ describe('LabelSideSelector (full rows, one per EdgeLabelSideSelection value)', 
 
   beforeAll(() => {
     IntermediateProcessorStrategy.prototype.create = function (this: IntermediateProcessorStrategy) {
-      return INJECTED[this.name()]?.() ?? originalCreate.call(this);
+      return INJECTED_LABEL_PROCESSORS[this.name()]?.() ?? originalCreate.call(this);
     };
   });
   afterAll(() => {

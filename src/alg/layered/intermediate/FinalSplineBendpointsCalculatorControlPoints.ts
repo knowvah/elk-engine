@@ -2,6 +2,7 @@
 import { ElkMath } from '../../../core/math/ElkMath.js';
 import { ElkRectangle } from '../../../core/math/ElkRectangle.js';
 import { KVector } from '../../../core/math/KVector.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { sub as int32Sub, add as int32Add } from '../../../java/lang/Int32.js';
 import { d2i } from '../../../java/lang/JavaMath.js';
 import type { LEdge } from '../graph/LEdge.js';
@@ -242,7 +243,7 @@ function targetShortCut(context: ShortCutContext): boolean {
  */
 export function calculateControlPointsSloppy(edge: LEdge, containingSegment: SplineSegment): void {
   const ei = containingSegment.edgeInformation.get(edge)!;
-  // The Java `assert ei.normalSourceNode || ei.normalTargetNode` (:336) is omitted: the dispatcher guarantees it.
+  devAssert(() => ei.normalSourceNode || ei.normalTargetNode);
 
   const startXPos = containingSegment.boundingBox.x;
   const endXPos = containingSegment.boundingBox.x + containingSegment.boundingBox.width;
@@ -259,15 +260,9 @@ export function calculateControlPointsSloppy(edge: LEdge, containingSegment: Spl
   const targetVerticalCP = new KVector(centerXPos, yTargetAnchor);
 
   // evaluate if a rather direct curve is possible
-  const centerYPos = computeSloppyCenterY(edge, ySourceAnchor, yTargetAnchor);
-  const v1 = containingSegment.sourcePort!.getAbsoluteAnchor();
-  const v2 = new KVector(centerXPos, centerYPos);
-  const v3 = containingSegment.targetPort!.getAbsoluteAnchor();
-  // approx will be an array holding two values, the zeroth of which represents the
-  // center of the curve
-  const approx = ElkMath.approximateBezierSegment(2, v1, v2, v3);
+  const { v1, v2, v3, center } = sloppyCurve(edge, containingSegment, centerXPos, ySourceAnchor, yTargetAnchor);
 
-  const context: ShortCutContext = { ei, segment: containingSegment, edgePointsDownwards, v1, center: approx[0]!, v3 };
+  const context: ShortCutContext = { ei, segment: containingSegment, edgePointsDownwards, v1, center, v3 };
   const shortCutSource = sourceShortCut(context);
   const shortCutTarget = targetShortCut(context);
 
@@ -281,6 +276,28 @@ export function calculateControlPointsSloppy(edge: LEdge, containingSegment: Spl
   if (!shortCutTarget) {
     edge.getBendPoints().addAll(targetVerticalCP, targetStraightCP);
   }
+}
+
+/**
+ * The curve evaluation of `calculateControlPointsSloppy` (`:353-359`): the segment's two anchors, the candidate center
+ * control point `v2` and the center of the curve approximated through them.
+ */
+function sloppyCurve(
+  edge: LEdge,
+  containingSegment: SplineSegment,
+  centerXPos: number,
+  ySourceAnchor: number,
+  yTargetAnchor: number,
+): { readonly v1: KVector; readonly v2: KVector; readonly v3: KVector; readonly center: KVector } {
+  const centerYPos = computeSloppyCenterY(edge, ySourceAnchor, yTargetAnchor);
+  const v1 = containingSegment.sourcePort!.getAbsoluteAnchor();
+  const v2 = new KVector(centerXPos, centerYPos);
+  const v3 = containingSegment.targetPort!.getAbsoluteAnchor();
+  // approx will be an array holding two values, the zeroth of which represents the
+  // center of the curve
+  const approx = ElkMath.approximateBezierSegment(2, v1, v2, v3);
+
+  return { v1, v2, v3, center: approx[0]! };
 }
 
 /** @see FinalSplineBendpointsCalculator.java:434 */

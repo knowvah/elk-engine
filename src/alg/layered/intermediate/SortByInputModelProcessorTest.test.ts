@@ -25,7 +25,6 @@ import { describe, expect, it } from 'vitest';
 import { runOrderPrefix } from '../../../../test/helpers/layered-order-replay-ops.js';
 import { defineLayoutTest } from '../../../../test/helpers/layout-test-runner.js';
 import type { OrderRow } from '../../../../test/helpers/layered-order-replay-rows.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { LayoutConfigurator } from '../../../core/LayoutConfigurator.js';
 import { ElkUtil } from '../../../core/util/ElkUtil.js';
 import type { ElkNode } from '../../../graph/ElkNode.js';
@@ -33,26 +32,10 @@ import { ElkNodeImpl } from '../../../graph/impl/ElkNodeImpl.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
 import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { LayerSweepCrossingMinimizer } from '../p3order/LayerSweepCrossingMinimizer.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
 import { OrderingStrategy } from '../options/OrderingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-    }
-  },
-};
+import { ORDER_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 /** The pipeline of the Java configuration up to the stop, as the oracle rows with model order spell it. */
 const PREFIX = [
@@ -138,7 +121,7 @@ function preserveNodeAndEdgeOrder(lgraph: LGraph): number {
 
 describe('SortByInputModelProcessorTest on label-free graphs', () => {
   it.each(rows.map((row) => [row.id, row] as const))('%s: preserveNodeAndEdgeOrder', (_id, row) => {
-    const normalNodes = preserveNodeAndEdgeOrder(runOrderPrefix(row, factories));
+    const normalNodes = preserveNodeAndEdgeOrder(runOrderPrefix(row, ORDER_PHASE_FACTORIES));
     expect(normalNodes).toBe((row.input as { elk: { children: unknown[] } }).elk.children.length);
   });
 });

@@ -22,36 +22,18 @@ import { PTOLEMY_GRAPHS } from '../../../../test/helpers/ptolemy-suite-sources.j
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { runOrderPrefix } from '../../../../test/helpers/layered-order-replay-ops.js';
 import { loadOrderRows } from '../../../../test/helpers/layered-order-replay-rows.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import type { ElkNode } from '../../../graph/ElkNode.js';
 import type { LGraph } from '../graph/LGraph.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
 import { LongEdgeJoiner } from './LongEdgeJoiner.js';
 import { PortListSorter } from './PortListSorter.js';
+import { ORDER_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
 const STOP = 'PORT_LIST_SORTER';
 const ID_PATTERN = /^models\/ptolemy-[^/]+\/[^/]+\/PORT_LIST_SORTER\/default$/;
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-    }
-  },
-};
 
 const rows = loadOrderRows(ROWS_FILE).filter((row) => ID_PATTERN.test(row.id) && row.prefix?.at(-1) === STOP);
 
@@ -93,7 +75,7 @@ describe('PortListSorterTest on the replayed rows', () => {
   });
 
   it.each(rows.map((row) => [row.id, row] as const))('%s: testProperPortSideOrder', (_id, row) => {
-    const graph = runOrderPrefix(row, factories);
+    const graph = runOrderPrefix(row, ORDER_PHASE_FACTORIES);
     expect([...graph].length).toBeGreaterThan(0);
     testProperPortSideOrder(graph);
   });

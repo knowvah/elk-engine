@@ -10,15 +10,7 @@ import { NodeType } from '../graph/LNodeNodeType.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
 import { SweepCopy } from './SweepCopy.js';
-import { repoRoot } from '../../../../test/corpus/corpus.js';
-import { orderDump } from '../../../../test/helpers/layered-order-replay-dump.js';
-import { loadOrderRows, type OrderExpected } from '../../../../test/helpers/layered-order-replay-rows.js';
-import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
-import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
-import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
+import { replayOrderSite } from '../../../../test/helpers/layered-order-site-replay.js';
 
 /** Two layers of two nodes, each node with two ports. */
 function twoLayers(): { graph: LGraph; order: LNode[][] } {
@@ -130,38 +122,10 @@ describe('SweepCopy', () => {
   });
 });
 
-/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
-const SITE_ROWS = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`).filter((row) =>
-  row.id.startsWith('sites/'),
-);
-
-const siteFactories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-    }
-  },
-};
-
-/** Replays the site row `id` with the real processors and phases and dumps the result in the recorder's shape. */
-function replaySite(id: string): OrderExpected {
-  const row = SITE_ROWS.find((candidate) => candidate.id === id);
-  if (row === undefined) {
-    throw new Error(`no site row ${id}`);
-  }
-  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
-}
-
 describe('SweepCopy on the site rows', () => {
   it('switches the sides of north-south ports whose dummy order moved, anchors included', () => {
     // oracle: sites/NorthSouth/portOptions/allowNonFlow; SweepCopy.java:161-175
-    const result = replaySite('sites/NorthSouth/portOptions/allowNonFlow');
+    const result = replayOrderSite('sites/NorthSouth/portOptions/allowNonFlow');
     expect(result.layers).toEqual([
       ['g0/n0'],
       ['new/n0', 'new/n1', 'g0/n1', 'new/n2', 'new/n3', 'new/n4'],

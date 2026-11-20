@@ -4,6 +4,7 @@ import type { IElkProgressMonitor } from '../../../../../core/util/IElkProgressM
 import { createArrayTable, type Table } from '../../../../../guava/Table.js';
 import { ArrayListMultimap } from '../../../../../guava/ArrayListMultimap.js';
 import type { ValueList } from '../../../../../guava/Multimap.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import { identity } from '../../../../../java/util/HashStrategy.js';
 import { LayeredOptions } from '../../../options/LayeredOptions.js';
 import { SelfLoopOrderingStrategy } from '../../../options/SelfLoopOrderingStrategy.js';
@@ -162,7 +163,7 @@ export class PortRestorer {
     }
   }
 
-  /** The `switch (ordering)` of the loop body of {@link processOneSideLoops} (Java `default: assert false` omitted). */
+  /** The `switch (ordering)` of the loop body of {@link processOneSideLoops} (Java `default: assert false` is a `devAssert`). */
   private placeOneSidePorts(sortedPorts: SelfLoopPort[], side: PortSide, ordering: SelfLoopOrderingStrategy): void {
     switch (ordering) {
       case SelfLoopOrderingStrategy.SEQUENCED:
@@ -185,7 +186,7 @@ export class PortRestorer {
         break;
       }
       default:
-      // Java: assert false;
+        devAssert(() => false);
     }
   }
 
@@ -256,7 +257,7 @@ export class PortRestorer {
 
   /**
    * Returns the port sides spanned by a two-side self loop in a clockwise order. (Java `keySet().toArray(new PortSide[2])`
-   * then `Arrays.sort`: the key set snapshot is sorted by ordinal; the `assert sides.length == 2` is omitted.)
+   * then `Arrays.sort`: the key set snapshot is sorted by ordinal; the `assert sides.length == 2` is a `devAssert`.)
    *
    * @see PortRestorer.java:220
    */
@@ -264,6 +265,8 @@ export class PortRestorer {
     // Sort the port sides such that they follow a clockwise order
     const sides: PortSide[] = [...slLoop.getSLPortsBySide().keySet()];
     sides.sort((a, b) => a.compareTo(b));
+
+    devAssert(() => sides.length === 2);
 
     // NORTH and WEST are, of course, the exception and need to be switched...
     if (sides[0] === PortSide.NORTH && sides[1] === PortSide.WEST) {
@@ -302,7 +305,7 @@ export class PortRestorer {
     } else if (!portSides.includes(PortSide.WEST)) {
       return PortRestorer.NES;
     } else {
-      // Java: assert false; return null; (a three-sided loop lacks one side, so this arm is unreachable)
+      devAssert(() => false); // a three-sided loop lacks one side, so this arm is unreachable
       return null as never;
     }
   }

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { toString as doubleToString } from '../../../java/lang/DoubleToString.js';
+import * as Int32 from '../../../java/lang/Int32.js';
 import type { LNode } from '../graph/LNode.js';
 import type { ForsterConstraintResolver } from './ForsterConstraintResolver.js';
 
@@ -86,7 +88,7 @@ export class ForsterConstraintResolverConstraintGroup {
     this.mergeOutgoingConstraints(nodeGroup1, nodeGroup2);
 
     this.summedWeight = nodeGroup1.summedWeight + nodeGroup2.summedWeight;
-    this.degree = nodeGroup1.degree + nodeGroup2.degree;
+    this.degree = Int32.add(nodeGroup1.degree, nodeGroup2.degree);
 
     if (this.degree > 0) {
       this.setBarycenter(this.summedWeight / this.degree);
@@ -225,7 +227,7 @@ export class ForsterConstraintResolverConstraintGroup {
    * @see ForsterConstraintResolver.java:562
    */
   getNode(): LNode {
-    // Java `assert nodes.length == 1` (ForsterConstraintResolver.java:563) is omitted (translation-rules 6.8)
+    devAssert(() => this.nodes.length === 1);
     return this.nodes[0]!;
   }
 

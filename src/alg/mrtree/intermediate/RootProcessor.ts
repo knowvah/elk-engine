@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { TNode } from '../graph/TNode.js';
 import type { TGraph } from '../graph/TGraph.js';
 import { InternalProperties } from '../options/InternalProperties.js';
@@ -51,7 +52,7 @@ export class RootProcessor implements ILayoutProcessor<TGraph> {
 
   /** Java `case 0:` of the switch in `process`. */
   private addDummyRoot(tGraph: TGraph): void {
-    // Java: assert tGraph.getNodes().isEmpty(); (assertions are disabled: dev-only, no helper in this port)
+    devAssert(() => tGraph.getNodes().isEmpty());
     const root = new TNode(0, tGraph, 'DUMMY_ROOT');
     root.setProperty(InternalProperties.ROOT, true);
     root.setProperty(InternalProperties.DUMMY, true);

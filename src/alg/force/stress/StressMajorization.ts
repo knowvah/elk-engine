@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import * as DoubleCompare from '../../../java/lang/DoubleCompare.js';
 import * as JavaInteger from '../../../java/lang/JavaInteger.js';
 import { identity } from '../../../java/util/HashStrategy.js';
@@ -221,7 +222,7 @@ export class StressMajorization {
     let yDisp = 0;
 
     // we need at least two nodes here, otherwise we would divide by zero below
-    // assert graph.getNodes().size() > 1; (StressMajorization.java:213)
+    devAssert(() => this.graph.getNodes().length > 1);
 
     for (const v of this.graph.getNodes()) {
       if (u === v) {

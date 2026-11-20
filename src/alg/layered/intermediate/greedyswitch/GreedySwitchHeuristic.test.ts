@@ -10,26 +10,13 @@ import { repoRoot } from '../../../../../test/corpus/corpus.js';
 import { compareOrder, compareOrderFullDump } from '../../../../../test/helpers/layered-order-replay-compare.js';
 import { orderDump } from '../../../../../test/helpers/layered-order-replay-dump.js';
 import { loadOrderRows, type OrderRow } from '../../../../../test/helpers/layered-order-replay-rows.js';
-import { runSteps, type Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
+import { runSteps } from '../../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../../test/helpers/layered-site-replay-dump.js';
-import type { ILayoutProcessor } from '../../../../core/alg/ILayoutProcessor.js';
-import { HierarchicalPortConstraintProcessor } from '../../intermediate/HierarchicalPortConstraintProcessor.js';
-import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
-import { InvertedPortProcessor } from '../../intermediate/InvertedPortProcessor.js';
-import { LongEdgeSplitter } from '../../intermediate/LongEdgeSplitter.js';
-import { NorthSouthPortPreprocessor } from '../../intermediate/NorthSouthPortPreprocessor.js';
-import { PortListSorter } from '../../intermediate/PortListSorter.js';
-import { PortSideProcessor } from '../../intermediate/PortSideProcessor.js';
-import { SemiInteractiveCrossMinProcessor } from '../../intermediate/SemiInteractiveCrossMinProcessor.js';
-import { SortByInputModelProcessor } from '../../intermediate/SortByInputModelProcessor.js';
-import { CrossingMinimizationStrategy } from '../../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../../options/LayeringStrategy.js';
-import { LayerSweepCrossingMinimizer } from '../../p3order/LayerSweepCrossingMinimizer.js';
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from '../../p3order/LayerSweepCrossingMinimizerCrossMinType.js';
 import { GraphInfoHolder } from '../../p3order/GraphInfoHolder.js';
 import { GreedySwitchHeuristic } from './GreedySwitchHeuristic.js';
+import { GREEDY_SWITCH_FACTORIES } from '../../../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
 
@@ -56,48 +43,13 @@ const TWO_SIDED_ROWS: readonly string[] = [
   'sites/GreedySwitch/northSouthLongEdges',
 ];
 
-const factories: Factories = {
-  createProcessor(name): ILayoutProcessor<LGraph> {
-    switch (name) {
-      case 'LONG_EDGE_SPLITTER':
-        return new LongEdgeSplitter();
-      case 'PORT_SIDE_PROCESSOR':
-        return new PortSideProcessor();
-      case 'INVERTED_PORT_PROCESSOR':
-        return new InvertedPortProcessor();
-      case 'PORT_LIST_SORTER':
-        return new PortListSorter();
-      case 'NORTH_SOUTH_PORT_PREPROCESSOR':
-        return new NorthSouthPortPreprocessor();
-      case 'HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR':
-        return new HierarchicalPortConstraintProcessor();
-      case 'SEMI_INTERACTIVE_CROSSMIN_PROCESSOR':
-        return new SemiInteractiveCrossMinProcessor();
-      case 'SORT_BY_INPUT_ORDER_OF_MODEL':
-        return new SortByInputModelProcessor();
-      case 'ONE_SIDED_GREEDY_SWITCH':
-        return new LayerSweepCrossingMinimizer(CrossMinType.ONE_SIDED_GREEDY_SWITCH);
-      case 'TWO_SIDED_GREEDY_SWITCH':
-        return new LayerSweepCrossingMinimizer(CrossMinType.TWO_SIDED_GREEDY_SWITCH);
-      default:
-        return IntermediateProcessorStrategy.valueOf(name).create();
-    }
-  },
-  createPhase: (phase, strategy) =>
-    phase === 'P1_CYCLE_BREAKING'
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : phase === 'P2_LAYERING'
-        ? LayeringStrategy.valueOf(strategy).create()
-        : CrossingMinimizationStrategy.valueOf(strategy).create(),
-};
-
 const allRows = loadOrderRows(ROWS_FILE);
 const rowsEndingIn = (processor: string): OrderRow[] =>
   allRows.filter((row) => row.steps?.filter(([op]) => op === 'runProcessor').at(-1)?.[1] === processor);
 
 function expectReplayed(id: string): void {
   const row = allRows.find((candidate) => candidate.id === id)!;
-  const graph = runSteps(row, factories);
+  const graph = runSteps(row, GREEDY_SWITCH_FACTORIES);
   const actual = orderDump(graph, importRow(row).importDump);
   expect(compareOrder(actual, row.expected)).toEqual([]);
   expect(compareOrderFullDump({ ...actual, dump: dumpWithPropertyValues(graph) }, row.expected)).toEqual([]);
@@ -123,7 +75,7 @@ describe('GreedySwitchHeuristic', () => {
   /** The graph of a row up to, not including, its processor, held by a GraphInfoHolder of the given type. */
   function holderFor(type: CrossMinType): GraphInfoHolder {
     const row = allRows.find((candidate) => candidate.id === 'scenarios/OneSidedGreedySwitch/crossing')!;
-    const graph: LGraph = runSteps({ ...row, steps: row.steps!.slice(0, -2) }, factories);
+    const graph: LGraph = runSteps({ ...row, steps: row.steps!.slice(0, -2) }, GREEDY_SWITCH_FACTORIES);
     return new GraphInfoHolder(graph, type, []);
   }
 

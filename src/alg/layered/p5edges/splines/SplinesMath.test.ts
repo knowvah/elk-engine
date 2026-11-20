@@ -9,6 +9,7 @@ import type { Factories } from '../../../../../test/helpers/layered-phase-replay
 import { compareCall } from '../../../../../test/helpers/layered-routing-replay-compare.js';
 import { runCall, type CallerTable } from '../../../../../test/helpers/layered-routing-replay-ops.js';
 import { isCallRow, loadRoutingRows, type CallRow } from '../../../../../test/helpers/layered-routing-replay-rows.js';
+import { SPLINES_MATH_CALLERS } from '../../../../../test/helpers/layered-spline-callers.js';
 import { LayoutMetaDataService } from '../../../../core/data/LayoutMetaDataService.js';
 import { KVector } from '../../../../core/math/KVector.js';
 import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
@@ -28,15 +29,6 @@ const factories: Factories = {
   },
 };
 
-const CALLERS: CallerTable = {
-  'SplinesMath.intersect': SplinesMath.intersect as CallerTable[string],
-  'SplinesMath.innerAngle': SplinesMath.innerAngle as CallerTable[string],
-  'SplinesMath.lengthToOrthogonal': SplinesMath.lengthToOrthogonal,
-  'SplinesMath.portSideToDirection': SplinesMath.portSideToDirection,
-  'SplinesMath.distPortToNodeEdge': SplinesMath.distPortToNodeEdge,
-  'SplinesMath.getMarginOnPortSide': SplinesMath.getMarginOnPortSide,
-};
-
 const isBetweenCallers = (caller: CallerTable[string]): CallerTable => ({ 'SplinesMath.isBetween': caller });
 
 function callRows(): CallRow[] {
@@ -49,7 +41,7 @@ function callersOf(row: CallRow): CallerTable {
   if (row.id.startsWith(INT_ROW_PREFIX)) {
     return isBetweenCallers(SplinesMath.isBetweenInt);
   }
-  return row.id.startsWith(DOUBLE_ROW_PREFIX) ? isBetweenCallers(SplinesMath.isBetweenDouble) : CALLERS;
+  return row.id.startsWith(DOUBLE_ROW_PREFIX) ? isBetweenCallers(SplinesMath.isBetweenDouble) : SPLINES_MATH_CALLERS;
 }
 
 beforeAll(() => {

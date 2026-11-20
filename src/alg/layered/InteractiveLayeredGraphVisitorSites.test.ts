@@ -12,17 +12,10 @@ import { compareLabels, labelsDump } from '../../../test/helpers/layered-labels-
 import { compareLabelsFullRow, runLabelsFullRow } from '../../../test/helpers/layered-labels-replay-full.js';
 import { runLabelsRow } from '../../../test/helpers/layered-labels-replay-ops.js';
 import { isFullRow, loadLabelsRows } from '../../../test/helpers/layered-labels-replay-rows.js';
-import type { Factories } from '../../../test/helpers/layered-phase-replay-ops.js';
 import { isStopRow, registerPipelineEnums } from '../../../test/helpers/layered-pipeline-replay-rows.js';
-import { EdgeRouting } from '../../core/options/EdgeRouting.js';
+import { CHECKED_ROUTING_PHASE_FACTORIES } from '../../../test/helpers/layered-replay-factories.js';
 import { ComponentsProcessor } from './components/ComponentsProcessor.js';
 import { InteractiveLayeredGraphVisitor } from './InteractiveLayeredGraphVisitor.js';
-import { IntermediateProcessorStrategy } from './intermediate/IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from './options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from './options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from './options/LayeringStrategy.js';
-import { NodePlacementStrategy } from './options/NodePlacementStrategy.js';
-import { EdgeRouterFactory } from './p5edges/EdgeRouterFactory.js';
 
 const SITE_PREFIX = 'sites/InteractiveLayeredGraphVisitor/';
 const AD4_DIGITS = 6;
@@ -253,24 +246,6 @@ const SITE_ROWS: readonly RowCase[] = [
   ],
 ];
 
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case 'P4_NODE_PLACEMENT':
-        return NodePlacementStrategy.valueOf(strategy).create();
-      default:
-        expect(phase).toBe('P5_EDGE_ROUTING');
-        return EdgeRouterFactory.factoryFor(EdgeRouting.valueOf(strategy)).create();
-    }
-  },
-};
 const createInteractiveVisitor = (): InteractiveLayeredGraphVisitor => new InteractiveLayeredGraphVisitor();
 
 beforeAll(() => {
@@ -301,7 +276,11 @@ function replay(id: string): { children: readonly ExportedNode[]; diffs: unknown
   if (!isStopRow(row)) {
     throw new Error(`row ${id} is neither a stop nor a full row`);
   }
-  const result = runLabelsRow(row, { factories, components: new ComponentsProcessor(), createInteractiveVisitor });
+  const result = runLabelsRow(row, {
+    factories: CHECKED_ROUTING_PHASE_FACTORIES,
+    components: new ComponentsProcessor(),
+    createInteractiveVisitor,
+  });
   const diffs = compareLabels(labelsDump(result, row.expected), row.expected);
   return { children: (result.layout as { children: ExportedNode[] }).children, diffs };
 }

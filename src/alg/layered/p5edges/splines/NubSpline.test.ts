@@ -4,11 +4,11 @@
 // two computations of the same spline; no control point is derived by hand.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../../test/corpus/corpus.js';
-import type { Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
 import { compareCall } from '../../../../../test/helpers/layered-routing-replay-compare.js';
-import { runCall, type CallerTable } from '../../../../../test/helpers/layered-routing-replay-ops.js';
+import { runCall } from '../../../../../test/helpers/layered-routing-replay-ops.js';
 import { isCallRow, loadRoutingRows, type CallRow } from '../../../../../test/helpers/layered-routing-replay-rows.js';
 import { decodeHex } from '../../../../../test/helpers/layered-framework-replay.js';
+import { NUB_SPLINE_CALLERS, NUB_SPLINE_CALL_FACTORIES } from '../../../../../test/helpers/layered-spline-callers.js';
 import { LayoutMetaDataService } from '../../../../core/data/LayoutMetaDataService.js';
 import { KVector } from '../../../../core/math/KVector.js';
 import { KVectorChain } from '../../../../core/math/KVectorChain.js';
@@ -16,7 +16,6 @@ import { IllegalArgumentException } from '../../../../java/lang/IllegalArgumentE
 import { IndexOutOfBoundsException } from '../../../../java/lang/IndexOutOfBoundsException.js';
 import { toString as doubleToString } from '../../../../java/lang/DoubleToString.js';
 import { NoSuchElementException } from '../../../../java/util/NoSuchElementException.js';
-import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
 import { NubSpline } from './NubSpline.js';
 import { createUniformKnotVector, getIndexInKnotVector, getMultiplicity, getTFromPolar } from './NubSplineKnots.js';
 import { NubSplinePolarCP } from './NubSplinePolarCP.js';
@@ -36,29 +35,6 @@ const ROW_TALLY: Readonly<Record<string, number>> = {
   getLastVerticalPoint: 4,
   getFirstHorizontalPoint: 3,
   getLastHorizontalPoint: 5,
-};
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    throw new Error(`no calls/NubSpline row runs the phase ${phase}/${strategy}`);
-  },
-};
-
-/** The Java `void toBezier()` returns its receiver (the harness summarises the receiver after the call). */
-const CALLERS: CallerTable = {
-  'NubSpline.generateDerivedNUBS': NubSpline.generateDerivedNUBS,
-  'NubSpline.generateInvertedNUBS': NubSpline.generateInvertedNUBS,
-  'NubSpline.toBezier': (spline: NubSpline) => {
-    spline.toBezier();
-    return spline;
-  },
-  'NubSpline.getPointOnCurve': (spline: NubSpline, t: number, modify?: boolean) => spline.getPointOnCurve(t, modify),
-  'NubSpline.getFirstVerticalPoint': NubSpline.getFirstVerticalPoint,
-  'NubSpline.getLastVerticalPoint': NubSpline.getLastVerticalPoint,
-  'NubSpline.getFirstHorizontalPoint': NubSpline.getFirstHorizontalPoint,
-  'NubSpline.getLastHorizontalPoint': NubSpline.getLastHorizontalPoint,
-  'NubSpline.generateNiceCurve': NubSpline.generateNiceCurve,
 };
 
 const CONSTRUCTORS = {
@@ -89,7 +65,7 @@ describe('NubSpline calls rows', () => {
   });
 
   it.each(rows.map((row) => [row.id, row] as const))('%s matches the oracle', (_id, row) => {
-    const actual = runCall(row, factories, CALLERS, { constructors: CONSTRUCTORS });
+    const actual = runCall(row, NUB_SPLINE_CALL_FACTORIES, NUB_SPLINE_CALLERS, { constructors: CONSTRUCTORS });
     expect(compareCall(actual, row.expected.result)).toEqual([]);
   });
 });

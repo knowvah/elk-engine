@@ -123,12 +123,12 @@ export class HyperedgeCrossingsCounter {
             this.portPos[port.id] = targetCount;
             targetCount++;
           } else {
-            this.portPos[port.id] = targetCount + northInputPorts + otherInputPorts;
+            this.portPos[port.id] = Int32.add(Int32.add(targetCount, northInputPorts), otherInputPorts);
             otherInputPorts++;
           }
         }
       }
-      targetCount += otherInputPorts;
+      targetCount = Int32.add(targetCount, otherInputPorts);
     }
     return targetCount;
   }
@@ -334,7 +334,7 @@ export class HyperedgeCrossingsCounter {
       firstIndex = Int32.mul(firstIndex, 2);
     }
     const treeSize = Int32.sub(Int32.mul(2, firstIndex), 1);
-    firstIndex -= 1;
+    firstIndex = Int32.sub(firstIndex, 1);
     const tree = new Int32Array(treeSize);
 
     // Count the straight-line crossings of the topmost edges

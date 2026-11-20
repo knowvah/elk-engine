@@ -7,12 +7,10 @@
 //
 // @see org.eclipse.elk.alg.layered.test/src/org/eclipse/elk/alg/layered/p1cycles/BasicCycleBreakerTest.java
 import { describe, expect, it } from 'vitest';
-import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
+import { LAYERING_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 import { buildTarjanGraph, chainSpec } from '../../../../test/helpers/tarjan-graphs.js';
-import { runPrefix, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { runPrefix } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { loadRows } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import type { LEdge } from '../graph/LEdge.js';
 import type { LGraph } from '../graph/LGraph.js';
@@ -27,14 +25,6 @@ const SHOULD_NEVER_HAPPEN = 'Should never happen';
 const rows = loadRows(ROWS_FILE).filter(
   (row) => row.group === 'models' && row.prefix !== null && row.prefix.at(-1)!.startsWith(CYCLE_PHASE_PREFIX),
 );
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) =>
-    phase === 'P1_CYCLE_BREAKING'
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : LayeringStrategy.valueOf(strategy).create(),
-};
 
 const DFS_UNVISITED = 0;
 
@@ -144,7 +134,7 @@ describe('BasicCycleBreakerTest.testIsAcyclic on the replayed models rows', () =
   it.each(rows.map((row) => [row.id, row] as const))(
     '%s: acyclic, explicit-stack dfs agrees with the Java twin',
     (_id, row) => {
-      const graph = runPrefix(row, factories);
+      const graph = runPrefix(row, LAYERING_PHASE_FACTORIES);
       const port = visitOrder(graph, false);
       const twin = visitOrder(graph, true);
       expect(port).toEqual(twin);

@@ -2,6 +2,7 @@
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { UnsupportedConfigurationException } from '../../../core/UnsupportedConfigurationException.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { LGraphUtil } from '../graph/LGraphUtil.js';
 import type { LNode } from '../graph/LNode.js';
@@ -21,9 +22,6 @@ import { LayeredOptions } from '../options/LayeredOptions.js';
  * Postcondition: nodes hidden by `LayerConstraintPreprocessor` are restored; nodes with layer constraints are placed
  * in the appropriate layers. Slots: before phase 3. Same-slot dependencies: `HierarchicalPortConstraintProcessor`,
  * `NodePromotion`.
- *
- * Java `assert false` (restoreHiddenNodes, default arm) is omitted: no `devAssert` helper exists (translation-rules
- * 6.8) and the JVM runs without `-ea`.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/LayerConstraintPostprocessor.java
  */
@@ -160,7 +158,8 @@ export class LayerConstraintPostprocessor implements ILayoutProcessor<LGraph> {
           break;
 
         default:
-        // Only *_SEPARATE nodes should be in the list (Java: assert false)
+          // Only *_SEPARATE nodes should be in the list
+          devAssert(() => false);
       }
 
       // Restore the node's edges

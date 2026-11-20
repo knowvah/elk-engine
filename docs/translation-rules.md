@@ -486,10 +486,26 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 
 ### 6.8 `assert`
 
-- 141 `assert` statements (`G '^\s*assert '`); assertions are disabled unless the JVM runs with
-  `-ea` (JLS 14.10). None has a side effect (`G` for `++ -- add( remove( put( set*( next(` inside
-  asserts returns 0). Port to a `devAssert(cond, msg?)` helper compiled out of production; keep the
-  expressions free of effects. CLAUDE.md row confirmed: `ElkSpacings.java:80`. HIGH.
+- Rule: assertions are disabled unless the JVM runs with `-ea`; a disabled `assert` evaluates neither its
+  condition nor its detail expression, and the detail is evaluated only on failure (JLS 14.10). 143 statements at
+  `8bca22f4`: `G '^\s*assert[ (]'` gives 141, and `core.debug.grandom` (not in `SRC`) has 2 more. None has a side
+  effect (`G` for `++ -- add( remove( put( set*( next(` inside asserts returns 0).
+- TS: `devAssert(check: () => boolean, detail?: () => unknown)` in `src/java/lang/DevAssert.ts`. Both arguments are
+  thunks. Disabled (the default, as a JVM without `-ea`), neither is called, so production behaviour is that of the
+  JVM the oracle runs on. Enabled and `check()` false, it throws `AssertionError` (`src/java/lang/AssertionError.ts`,
+  parent JS `Error` = `Throwable`, so a ported `catch (Exception e)` does not catch it) with the message
+  `String(detail())`.
+- Switch: `setAssertionsEnabled(boolean)` writes one module flag, the stand-in for `-ea` and the only reviewed entry
+  of `test/architecture/module-globals.fitness.test.ts`. `src/` reads no environment. The test suite enables it in
+  `test/setup/dev-assertions.ts` (vitest `setupFiles`), as ELK's Tycho build runs JUnit with
+  `<enableAssertions>true` (`build/pom.xml:361`); `ELK_DEV_ASSERTIONS=off` runs the suite with the production default.
+- Site: `assert e;` -> `devAssert(() => e);` and `assert e : m;` -> `devAssert(() => e, () => m);` at the Java
+  statement's position, `e` translated like the code around it. A thunk only reads. After `assert false`, what
+  follows in the Java stays as it is. CLAUDE.md row confirmed: `ElkSpacings.java:80`. HIGH.
+- Outcome (issue #45, `plans/dev-assert/inventory.md`): of the 143 statements, 124 are restored, 6 are
+  restored in front of a `throw` the port already had in place of `assert false; return x;`, and 13 stay comments
+  naming an issue, because the Java assert itself fires under `-ea` on an input the suite replays: 4 on layouts ELK
+  runs (#112), 9 that a unit test or a site vector drives on purpose (#113).
 
 ### 6.9 `Optional`, streams, `Iterable` laziness
 

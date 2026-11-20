@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { PortSide } from '../../../../../core/options/PortSide.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
+import { InternalProperties } from '../../../options/InternalProperties.js';
 import { LayeredOptions } from '../../../options/LayeredOptions.js';
 import { SelfLoopDistributionStrategy } from '../../../options/SelfLoopDistributionStrategy.js';
 import type { SelfHyperLoop } from '../SelfHyperLoop.js';
@@ -17,11 +19,13 @@ import { Target } from './PortSideAssignerTarget.js';
 export class PortSideAssigner {
   /**
    * Assigns port sides to all hidden ports subject to the self loop distribution strategy. (Java's `assert`s at the
-   * start and the end, and the `default: assert false` arm, are omitted: assertions are off.)
+   * start and the end, and the `default: assert false` arm, are `devAssert` calls.)
    *
    * @see PortSideAssigner.java:39
    */
   assignPortSides(slHolder: SelfLoopHolder): void {
+    devAssert(() => !slHolder.getLNode().getProperty(InternalProperties.ORIGINAL_PORT_CONSTRAINTS).isSideFixed());
+
     switch (slHolder.getLNode().getProperty(LayeredOptions.EDGE_ROUTING_SELF_LOOP_DISTRIBUTION)) {
       case SelfLoopDistributionStrategy.NORTH:
         this.assignToNorthSide(slHolder);
@@ -36,8 +40,10 @@ export class PortSideAssigner {
         break;
 
       default:
-      // Java: assert false;
+        devAssert(() => false);
     }
+
+    devAssert(() => [...slHolder.getSLPortMap().keys()].every((lPort) => lPort.getSide() !== PortSide.UNDEFINED));
   }
 
   // North
