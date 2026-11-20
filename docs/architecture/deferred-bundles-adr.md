@@ -69,15 +69,16 @@ this ADR does not propose that.
   uses the bundle (S-4a).
 
 **If the maintainer rules "go" for a bundle instead**, the follow-up is: add its suffix to `IN_SCOPE_SUFFIXES`
-(`tools/bundle-deps.ts:29-46`), regenerate `bundle-deps.json` with `tools/bundle-deps.ts`, add a mapping test like the
+(`tools/bundle-deps.ts:30-47`), regenerate `bundle-deps.json` with `tools/bundle-deps.ts`, add a mapping test like the
 `grammar bundles (conformance-corpus D0)` block, and add a roadmap row. `alg.graphviz.layouter` cannot be adopted without
 `alg.graphviz.dot` (GL-2).
 
 **Enforced now.** "Deferred" already means "cannot be ported by accident" (S-13). In
 `test/architecture/module-boundaries.fitness.test.ts`, `src tree respects bundle boundaries › has no unmapped directories`
-(`:322`) fails on any file under `src/` whose directory `bundle-deps.json` does not map, and its rule is self-checked by
-`flags files in directories that belong to no bundle` (`:306`). `regeneration › regenerated deps equal the committed file`
-(`:342`) ties the table to `IN_SCOPE_SUFFIXES`; it runs only when the ELK checkout is at the pin and is skipped otherwise.
+(`:323`) fails on any file under `src/` whose directory `bundle-deps.json` does not map, and its rule is self-checked by
+`flags files in directories that belong to no bundle` (`:307`). `regeneration › regenerated deps equal the committed file`
+(`:350`) ties the table to `IN_SCOPE_SUFFIXES`; since issue #89 it runs whenever the ELK checkout contains the pin, at any
+`HEAD`, and is skipped only without such a checkout.
 No new test is needed.
 
 **Revisit when** a pin move (roadmap row 13) changes one of the bundles or gives one an in-scope caller or test; a consumer
@@ -103,4 +104,4 @@ One line per evidence row; the detail and the commands are in
 | 10 Rules a "go" meets     | browser-safe `src/`; AD-1 or zero dependencies      | YAGNI only                                             | browser-safe `src/`; zero dependencies and AD-4 if delegated |
 | 11 Effort                 | 2-3 tasks for a client; tens of tasks for libavoid  | 7-10 tasks                                             | 2-3 line by line (unusable); 5-8 delegated, separate package |
 | 12 dot-engine             | no delegate exists                                  | parses and writes DOT, not the ElkGraph mapping        | five engines; ±0.01 / ±0.5 pt bar; y-up output               |
-| 13 Enforcement today      | `module-boundaries.fitness.test.ts:322`             | same                                                   | same                                                         |
+| 13 Enforcement today      | `module-boundaries.fitness.test.ts:323`             | same                                                   | same                                                         |

@@ -197,7 +197,7 @@ Run from the repository root. `$ELK_SOURCE_DIR` and `$ELK_ORACLE_DIR` default to
 
 | Step | Command                                                   | Expected outcome                                                                                                            |
 | ---- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| 1    | `tools/melk/sync-sources.sh --check`                      | exit 0, no output. Exit 1: run `tools/melk/sync-sources.sh` (needs `$ELK_SOURCE_DIR` at the pinned commit)                  |
+| 1    | `tools/melk/sync-sources.sh --check`                      | exit 0, no output. Exit 1: run `tools/melk/sync-sources.sh` (needs the pinned commit in `$ELK_SOURCE_DIR`, at any `HEAD`)   |
 | 2    | `tools/vectors/metadata-vectors.sh test/golden/refs/java` | rewrites `metadata.json`; `git diff --exit-code test/golden/refs/java/metadata.json` is empty                               |
 | 3    | `npm run melk:generate`                                   | prints `wrote src/core/options/CoreOptions.ts` and `wrote src/core/labels/LabelManagementOptions.ts`; `git status` is clean |
 | 4    | `npx vitest run test/melk`                                | all pass                                                                                                                    |

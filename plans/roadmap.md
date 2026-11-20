@@ -2484,3 +2484,86 @@ text of the four paragraphs (D5; the brief counted 21). No `needs-ruling` issue 
 `verify_worktree` (`.agent-notes/oracle-stale-caches.md`); running `build.sh`, with or without `--record-only`,
 rewrites `oracle-build.json` and turns every vector cache cold. Local run output still goes under `sweep/`: a new
 directory at the oracle root makes the next rebuild exit `2`, and the answer is to move it, not to widen the filter.
+
+## Revision 2026-11-20 (bundle-deps-pinned-read)
+
+Appended; no earlier line is edited. Source: issue #89 and D1-D5 in `plans/bundle-deps-pinned-read/decisions.md`; the
+journal is `plans/bundle-deps-pinned-read/decision-journal.md`. Where this section conflicts with the text above, this
+section wins. Task ids are T1-T3; the base is `6a16e697346e49a67c7340ac2b9ea7d34100f4bc`.
+
+**One follow-up is closed: two guards asked for the ELK checkout's `HEAD` to be the pin where the pin only has to be
+present.** `regeneration › regenerated deps equal the committed file` in
+`test/architecture/module-boundaries.fitness.test.ts` is the only check that ties `test/architecture/bundle-deps.json`
+to the manifests and to `IN_SCOPE_SUFFIXES`. It was skipped unless `git rev-parse HEAD` of the ELK checkout was the
+file's `elkCommit`, because `tools/bundle-deps.ts` read the manifests from the working tree. `tools/melk/sync-sources.sh`
+died on the same condition although it reads every blob as `<pin>:<path>`. Both were dead whenever `../elk` sat past
+the pin (observed on 2026-11-13; it is at the pin again since the 2026-11-18 pin move) and with the oracle worktree at
+any time. #89's suggested fix is taken.
+
+**`tools/bundle-deps.ts` (T1).** `readManifests(elkDir, commit)` reads each in-scope manifest with
+`git -C <elkDir> show <commit>:plugins/<bundle>/META-INF/MANIFEST.MF`, never the working tree, and
+`generateBundleDeps(elkDir, commit)` stamps the commit it read, so a stamp can no longer name a commit the content
+did not come from. The CLI reads at `tools/oracle/ELK_COMMIT` (new `readPinnedCommit`), not at `HEAD`:
+`npx tsx tools/bundle-deps.ts --write` now writes the pin's table from any checkout that holds the pin. New
+`elkCommitPresent(elkDir, commit)` is `git cat-file -e <commit>^{commit}`. `readElkCommit` (the `HEAD` reader) is
+removed. `buildBundleDeps`, `serializeBundleDeps`, the parsers and `IN_SCOPE_SUFFIXES` are unchanged.
+
+**Fitness test (T1).** The regeneration case skips only when the ELK directory is missing or does not contain the
+committed `elkCommit` (`ELK checkout <dir> does not contain committed elkCommit <sha>`); its name and both
+expectations are unchanged. One new case always runs: `pinned commit › committed elkCommit equals
+tools/oracle/ELK_COMMIT`; before it, no test tied the table's stamp to the pin. No other case changed.
+
+**`sync-sources.sh` (T2), four lines.** The two `HEAD` checks become `rev-parse --git-dir`
+(`ELK_SOURCE_DIR is not a git checkout: <dir>`, as before) and `cat-file -e "$PINNED^{commit}"`
+(`ELK checkout <dir> does not contain <pin>`). Nothing else in the script changed.
+
+**Tests that run in CI (T1, T2).** `test/architecture/bundle-deps.test.ts` (7 cases) builds a throwaway repository
+with the 16 in-scope manifests, two commits and an uncommitted third edit, and checks that reading at each commit
+gives that commit's stamp and `requires` and never the working tree; it also covers `elkCommitPresent` (present,
+absent commit, not a repository) and `readPinnedCommit`. `test/melk/sync-sources.test.ts` (3 cases) runs the script
+with `--check` on a non-repository and on a repository without the pin, comparing exit status, stdout and stderr
+whole, and runs it live against the configured ELK checkout when that holds the pin. Both were red before the change
+(6 of 7 and 1 of 3 failing).
+
+**Proofs.** `module-boundaries.fitness.test.ts`: 58 passed, none skipped with the default `../elk` (`HEAD` = pin) and
+with `ELK_SOURCE_DIR=../elk-oracle` (`HEAD` `cb2b6d54`, the pin plus three patch commits; 56 passed, 1 skipped
+before); 57 passed, 1 skipped with `/nonexistent` and with a throwaway repository that lacks the pin, each with its
+reason in the test name. Negative proof, on temporary hand edits of `bundle-deps.json` that were reverted and checked
+against the base: with `src/alg/common` deleted from `src/alg/layered` the regeneration case fails with both
+checkouts (with two other cases); with `src/alg/force` added in sorted position to `src/alg/radial` it is the only
+failing case with both checkouts, and with `/nonexistent` nothing fails, so it is still the only check of the table's
+content. The CLI's output equals the committed file byte for byte with both checkouts; the base CLI with
+`../elk-oracle` stamped `cb2b6d54…`. `ELK_SOURCE_DIR=../elk-oracle tools/melk/sync-sources.sh --check` exits 0 with
+no output; the base script died there with `ELK checkout is at cb2b6d54… but ELK_COMMIT pins 8bca22f4…`.
+
+**Unchanged.** `test/architecture/bundle-deps.json`, `tools/melk/sources/`, `test/golden/refs/` and `tools/vectors/`
+are byte-identical to the base. No assertion, vector or golden changed. No oracle build, recorder or sweep ran;
+every git call against an ELK checkout was read-only.
+
+**Docs (T3).** `docs/architecture/elk-upgrade.md`: section 6 (the `sync-sources.sh` comment, the hazard row with
+the new message, the `bundle-deps.ts --write` paragraph), the rehearsal note (the regeneration test is no longer a
+difference between the clone and the original) and the section 11 list of tests that fail between the pin bump and
+the re-record, which gains the two new stamp checks. `docs/architecture/melk-codegen.md`: step 1 of the regeneration
+table. `docs/architecture/deferred-bundles-adr.md`: the "Enforced now" sentence, and its four line citations, which
+T1 moved. No `docs-site/` page describes either guard.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,718
+functions, no violation line; `tools/bundle-deps.ts` checked on its own, 19 functions). Coverage, full suite with the
+nine sweep directories off: 1,176 files and 49,324 tests passed, 93 skipped, 0 failed (2 files and 11 tests more than
+the base); statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200
+typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`.
+Gate 7: `git diff --exit-code 6a16e697 -- test/golden/refs/ tools/vectors/ tools/melk/sources/
+test/architecture/bundle-deps.json` is empty; no recorder or regen script has a changed input.
+
+**Oracle.** Not rebuilt and not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003.
+`git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
+
+**Open rows.** #132 (`follow-up`): the pin file's path and its read-and-trim are written in 13 TypeScript files (two
+tools, eleven tests); this mission added the second tool reader. No `needs-ruling` issue was filed; no stop condition
+was met. #89 stays open until the branch merges.
+
+**For later missions.** No pin-stamped tool needs the ELK checkout at `HEAD` any more: `tools/bundle-deps.ts`,
+`tools/melk/sync-sources.sh` and `tools/oracle/build.sh` all read the pin by object id, so `../elk-oracle` (or any
+clone that has fetched the pin) serves when `../elk` has moved on. During a pin move, bump `tools/oracle/ELK_COMMIT`
+before `tools/bundle-deps.ts --write`: the CLI stamps that file's commit, and the `pinned commit` case fails until
+the table is rewritten.

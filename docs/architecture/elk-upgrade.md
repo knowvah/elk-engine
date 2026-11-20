@@ -211,7 +211,7 @@ option classes under `src/` come from them.
 
 ```sh
 git -C "$ELK_SOURCE_DIR" diff --stat "$OLD" "$NEW" -- '*.melk'
-tools/melk/sync-sources.sh                       # needs $ELK_SOURCE_DIR checked out at $NEW
+tools/melk/sync-sources.sh                       # needs $NEW present in $ELK_SOURCE_DIR, at any HEAD
 git diff --stat tools/melk/sources
 tools/vectors/metadata-vectors.sh "$REFS"
 git diff --stat "$REFS/metadata.json"
@@ -225,12 +225,12 @@ npx vitest run test/melk
 | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | only `manifest.json` (`elkCommit`) and the stamp of `metadata.json` change | no metadata change; `melk:generate` leaves `src/` untouched                                                                                                                                                                                                                                                                                                                              |
 | a `.melk` copy or `metadata.json` rows change                              | an option, default or algorithm changed upstream: the regenerated `src/` files are the port of that change; review them against the Java and journal them (section 11). `npm run melk:generate` without arguments writes only `Core` and `Labels`: name the changed bundles (`npm run melk:generate -- <Bundle>...`, the `.melk` file names), or the freshness tests of `test/melk` fail |
-| `sync-sources.sh` dies with `ELK checkout is at …`                         | `$ELK_SOURCE_DIR` is not checked out at `$NEW`: the script compares `HEAD` with the pin although it reads the blobs by commit id (issue #89). Check the commit out there (maintainer), or point `ELK_SOURCE_DIR` at a checkout whose `HEAD` is `$NEW`                                                                                                                                    |
+| `sync-sources.sh` dies with `ELK checkout … does not contain …`            | `$NEW` is not in `$ELK_SOURCE_DIR`'s object store. The script reads the blobs by commit id, so `HEAD` may be anywhere, but the commit has to be there: fetch it there (maintainer), or point `ELK_SOURCE_DIR` at a checkout that has it                                                                                                                                                  |
 | `test/melk/sources.test.ts` fails on the pinned commit                     | `sync-sources.sh` has not run since the bump                                                                                                                                                                                                                                                                                                                                             |
 
 `test/architecture/bundle-deps.json` stamps the commit as well: `npx tsx tools/bundle-deps.ts --write` rewrites it from
-the `Require-Bundle` headers at `$ELK_SOURCE_DIR`, and a diff beyond `elkCommit` is a changed bundle dependency (issue
-#89 covers the check that is skipped while the checkout is not at the pin).
+the `Require-Bundle` headers it reads at `tools/oracle/ELK_COMMIT` from `$ELK_SOURCE_DIR`'s object store, whatever is
+checked out there, and stamps that commit. A diff beyond `elkCommit` is a changed bundle dependency.
 
 ## 7. JVM vectors {#elk-upgrade-vectors}
 
@@ -519,10 +519,12 @@ Two tool-side cases come with a Java diff and are checked before the re-record i
   of #99, the `scanlineHitboxes` row of #104).
 
 Tests that compare a stamp with `tools/oracle/ELK_COMMIT` fail between the bump and the re-record and pass after it:
-`test/melk/sources.test.ts`, `test/corpus/census.test.ts`, `test/corpus/elkt-sweep.test.ts`,
-`test/corpus/elkj-sweep.test.ts`, `test/golden/oracle-refs.test.ts`, `test/golden/algorithm-refs.test.ts`, the golden
-tests of the layered, tree, force-disco and packing sets, `test/docs/examples.test.ts`, and the parity-report tests. A
-failure of any other kind after the re-record is content.
+`test/melk/sources.test.ts`, `test/melk/sync-sources.test.ts` (its live `--check` case),
+`test/architecture/module-boundaries.fitness.test.ts` (its `pinned commit` case, until `bundle-deps.ts --write`),
+`test/corpus/census.test.ts`, `test/corpus/elkt-sweep.test.ts`, `test/corpus/elkj-sweep.test.ts`,
+`test/golden/oracle-refs.test.ts`, `test/golden/algorithm-refs.test.ts`, the golden tests of the layered, tree,
+force-disco and packing sets, `test/docs/examples.test.ts`, and the parity-report tests. A failure of any other kind
+after the re-record is content.
 
 **Port Java diffs** (a real move only; a rehearsal stops at the list). For each changed `.java` file of an in-scope
 bundle from section 3: read the Java diff, port it into the matching file under `src/` by the rules of CLAUDE.md ("The
@@ -621,9 +623,9 @@ the scratch directory is deleted.
    rm "${TMPDIR%/}/eclipse-elk/elk-models" && rmdir "${TMPDIR%/}/eclipse-elk"
    ```
 
-   Other differences between the clone's suite and the original checkout's are expected: the bundle-deps regeneration
-   test runs in the clone (its pin equals the ELK checkout's `HEAD`) and is skipped in the original (issue #89); a sweep
-   consumer test runs wherever its sweep output exists.
+   Other differences between the clone's suite and the original checkout's are expected: a sweep consumer test runs
+   wherever its sweep output exists. The bundle-deps regeneration test is not one of them: it reads the manifests by
+   commit id, so it runs in the clone and in the original once the ELK checkout each uses holds its pin (issue #89).
 
 6. **Checks after the build.**
 
