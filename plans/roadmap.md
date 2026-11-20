@@ -2285,3 +2285,80 @@ equality through sets, maps and indirect list calls, which the list audit did no
 type-driven Java call list one javac Tree API pass (`audit.md` § 5); both are described in
 `.agent-notes/linkedlist-int32-cleanup.md`. A ported `equals` proves nothing about its call sites: check each
 `includes`/`indexOf` on instances of a class whose Java declares `equals`.
+
+## Revision 2026-11-20 (label-switcher-mutants)
+
+Appended; no earlier line is edited. Source: issue #48 and D1-D7 in `plans/label-switcher-mutants/decisions.md`; the
+journal is `plans/label-switcher-mutants/decision-journal.md`, the mutant table with verdicts and proofs
+`plans/label-switcher-mutants/mutants.md`. Where this section conflicts with the text above, this section wins. Task
+ids are T1-T4; the base is `bc7250e5c12e97c6f4c715d3d4d277548533596b`.
+
+**One follow-up is closed, with one mutant left open: "Five mutation survivors in
+`LabelDummySwitcherSpaceEfficient.ts` need a new oracle graph to discriminate" (§ Revision 2026-11-06).** No `src/`
+file changed (D7: no port defect was found), no oracle patch was added, and one ref grew by two rows.
+
+**The mutant set (D1).** 7f2 journaled only the labels A3, A6, A7, A9, A10 and a count; its scratch copy is gone, so
+the five cannot be named. The mission fixed a kept table instead, one edit per decision point of the file: planning's
+M1-M18 and eleven more that T1 added for points the table missed (M19-M29). A set that covers every decision point
+contains whatever 7f2 mutated. Each mutant is applied alone in a scratch copy under `$TMPDIR` and run against the
+switcher cases and the labels replay (D2, D3); no mutation tool was added.
+
+| | killed | survived |
+| --- | --- | --- |
+| Base suite (`bc7250e5`), 29 mutants | 19 | 10 |
+| After the two rows and eight cases | 26 | 3: 2 equivalent with proofs (M1, M5), 1 open (M11, #123) |
+
+Of planning's M1-M18: 15 killed, 2 equivalent, 1 open.
+
+**Rows added.** Two site rows, siblings of Sc13 (`sites/LabelDummySwitcher/spaceEfficient`), recorded by
+`tools/vectors/layered-labels-vectors.sh` at oracle `8bca22f4` with patches 0001-0003:
+
+- `sites/LabelDummySwitcher/spaceEfficient-fitsAndTies` (`RIGHT`; nodes 20/50/20/50/20 wide; labels 0 and 50 wide on
+  layers `[1,2]`, 80 on `[2,3]`): the trivial fit of a 0-wide label, the early return on a label exactly as wide as
+  its leftmost layer, and a tie of potential widths. It kills M6, M8, M14, M17, M26.
+- `sites/LabelDummySwitcher/spaceEfficient-vertical` (`DOWN`; labels of extent 30 on `[1,2]`, 50 and 80 on `[1,3]`):
+  every `layerWidths` entry starts at 0 in a vertical layout (`LGraphUtil.java:316-318`), so the "no positive
+  potential width" arm and the "last unassigned label on a layer" choice are reached. It kills M10, M14, M17, M18.
+
+Each row replays green in `LayeredLabelsVectors.test.ts` and has four anchored cases in
+`LabelDummySwitcherSites.test.ts`, literals copied from the row; the T17a cases are byte-identical.
+
+**The ref change (AD-13, D4).** `test/golden/refs/java/layered-labels.json` is append-only: of the 1,305 base rows 0
+changed (as parsed JSON and as raw line bytes), 0 are missing, the order is kept, and the header differs only in
+`rowCounts.sites`, 42 → 44; 1,307 rows, 14,353,655 bytes (cap 16 MiB). A cold rerun of the recorder on the final
+source is byte-identical to the landed ref. Two literals follow the header's count, both journaled as `ad13`:
+`LayeredLabelsVectors.test.ts:123` (named by D4) and `test/helpers/layered-labels-replay-rows.test.ts:96` (not seen at
+planning; the mission halted on it at gate 4 on 2026-11-19 and resumed on the maintainer's yes, #124).
+
+**The two equivalence proofs.** M1 (the empty-list early return): with no non-trivial label the sort and the loop run
+no statement. M5 (the range end of the trivial fit): every layer's `getSize().x` is 0 when the switcher runs, for
+every input. The field is private, a javac tree pass over the pinned `alg.layered/src` finds 13 accesses, and only
+`LayerSizeAndGraphHeightCalculator.java:60,75` writes `x`, in a slot after the switcher's; an oracle probe prints 0.0
+on every layer of five graphs. So the trivial fit succeeds exactly for a dummy width ≤ 0, at the first layer of the
+range, with either range end.
+
+**Open: M11 (#123, `needs-ruling`).** The initial `widestLayerWidth` of 0 against -1 differs in effect only when the
+leftmost layer's potential width is NaN and a later one is 0. The oracle reaches that (`DOWN`,
+`spacing.labelLabel=NaN`), and the port agrees with it on that graph in a scratch replay, but every recorder refuses a
+NaN in a recorded value, so no row can carry it. The mutant is equivalent on every input without NaN. The ruling asked
+is how to close it: as equivalent on NaN-free inputs, by a NaN-bearing row, or by a direct case from the Java source.
+
+**Gates (queue gates 1-7, on the final tree, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377
+files, 10,720 functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,173 files
+and 49,305 tests passed (the base's 49,295, plus 2 row replays and 8 anchored cases), 93 skipped, 0 failed;
+statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200 typedoc
+warnings, as at the base. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`. Gate 7:
+`git diff --stat bc7250e5 -- test/golden/refs/` lists `layered-labels.json` only, and the append-only proof holds.
+
+**Oracle.** `oracle-build.json` names `8bca22f4…` and patches 0001-0003 at both sessions; no rebuild.
+`git -C ../elk log --oneline 8bca22f4..HEAD` over the layered and core bundles is empty (HEAD is the pin).
+
+**Open rows.** #123 (`needs-ruling`): M11 and the NaN row. #125 (`follow-up`): 7f2's T17b survivors U3/U4
+(`AlternatingLayerUnzipper.ts`) are called equivalent on the same "one row" ground, with no kept mutant table. #124 is
+ruled (yes) and its edit is in this mission.
+
+**For later missions.** Keep the mutant table (site and edit) in the plan directory: a label is not a mutant. "No row
+tells them apart" is a missing row until a proof for every input exists: seven of ten survivors died on two more
+rows. A brief that appends rows to a ref names every literal that pins its counts; grep the counts over `src/` and
+`test/` before recording. A survivor of an initial-value or `>` mutant is checked against NaN before it is called
+equivalent.

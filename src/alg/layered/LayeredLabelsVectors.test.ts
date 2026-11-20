@@ -120,7 +120,7 @@ describe('layered-labels rows', () => {
   });
 
   it('has the recorded row counts per group', () => {
-    expect(header.rowCounts).toEqual({ full: 399, models: 640, scenarios: 224, sites: 42 });
+    expect(header.rowCounts).toEqual({ full: 399, models: 640, scenarios: 224, sites: 44 });
     for (const group of LABELS_ROW_GROUPS) {
       expect(rowsByGroup(group).length).toBe(header.rowCounts[group]);
     }

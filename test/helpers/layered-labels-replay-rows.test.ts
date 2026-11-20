@@ -93,7 +93,7 @@ describe('rowCounts', () => {
 
 describe('the real ref', () => {
   it('carries the counts of its own rowCounts header', () => {
-    expect(countRows(loadLabelsRows())).toEqual({ full: 399, models: 640, scenarios: 224, sites: 42 });
+    expect(countRows(loadLabelsRows())).toEqual({ full: 399, models: 640, scenarios: 224, sites: 44 });
   });
 
   it('selects real ids by group, class and last prefix entry', () => {

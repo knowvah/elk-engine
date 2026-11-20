@@ -1446,6 +1446,12 @@ G3a, G11a).
   uncovered functions partitioned S 87, J 10, U 42 (7g 3, 7h 7, dead by construction 32), X 5; 42 site rows and 86
   anchored cases (T17a 40, T17b 46) close S and J; mutation checks killed 29 of 37 flips, the survivors being equivalent.
   Whole-suite coverage after batch 8: 99.05 / 97.17 / 99.12 / 99.06 (lines / branches / functions / statements).
+- Issue #48 (2026-11-19, `plans/label-switcher-mutants/`): `layered-labels.json` gained two site rows, append-only
+  (`sites` 44, 1,307 rows, 14,353,655 bytes, oracle `8bca22f4`): `sites/LabelDummySwitcher/spaceEfficient-fitsAndTies`
+  and `…-vertical`, with 8 anchored cases. Over a fixed set of 29 one-edit mutants of
+  `LabelDummySwitcherSpaceEfficient.ts` the switcher cases and the labels replay kill 26; 2 are equivalent with proofs,
+  and 1 is open: it differs from the Java only on a NaN potential width, which a recorder refuses (issue #123). This
+  replaces T17a's "5 survivors equivalent" above.
 - Landed vectors and goldens are unchanged; the refs diff adds `layered-labels.json`, the sweep test, 123 vendored
   inputs under `inputs/labels/` and their manifest rows, and appends keys to `layered-label-metrics.json`.
 
