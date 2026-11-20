@@ -119,7 +119,7 @@ function hostPlain(): { root: LGraph; host: LNode } {
   return { root, host };
 }
 
-describe('the hierarchical sweep (hand-built nested graph; U for the rows until 7h)', () => {
+describe('the hierarchical sweep (hand-built nested graph; the layered-compound.json rows reach it, 7h)', () => {
   it('sweeps into a deterministic child, keeps every node and port, and holds a best copy for both graphs', () => {
     const { root, child, host, hostPorts, childNodes } = nested();
     const phase = new LayerSweepCrossingMinimizer(CrossMinType.MEDIAN);

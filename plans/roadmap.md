@@ -2362,3 +2362,56 @@ tells them apart" is a missing row until a proof for every input exists: seven o
 rows. A brief that appends rows to a ref names every literal that pins its counts; grep the counts over `src/` and
 `test/` before recording. A survivor of an initial-value or `>` mutant is checked against NaN before it is called
 equivalent.
+
+## Revision 2026-11-20 (p3order-test-titles)
+
+Appended; no earlier line is edited. Source: issue #62 and D1-D3 in `plans/p3order-test-titles/decisions.md`; the
+journal is `plans/p3order-test-titles/decision-journal.md`. Where this section conflicts with the text above, this
+section wins. Task ids are T1-T2; the base is `68f37f6e5364ff71ea977d5c528bd5591f163641`.
+
+**One follow-up is closed: the three `describe` titles that mission 7h left** (`plans/layered-compound/decision-journal.md`,
+T8 rows of 2026-11-10: "H7 names header comments only, so the titles stay and go to a `follow-up` issue"). Three
+lines of `src/` changed, each a title; no assertion, `it` title, body or comment changed (D2), no ref changed, no
+oracle run.
+
+| File | Old title | New title |
+| ---- | --------- | --------- |
+| `p3order/LayerSweepCrossingMinimizerSweep.test.ts:122` | `the hierarchical sweep (hand-built nested graph; U for the rows until 7h)` | `the hierarchical sweep (hand-built nested graph; the layered-compound.json rows reach it, 7h)` |
+| `p3order/LayerSweepTypeDecider.test.ts:109` | `LayerSweepTypeDecider on a nested graph (hand-built; U for the rows until 7h)` | `LayerSweepTypeDecider on a nested graph (hand-built; the layered-compound.json rows reach it, the deterministic arm only the ported suites, 7h)` |
+| `p3order/GraphInfoHolder.test.ts:151` | `GraphInfoHolder: a graph nested in a node (hand-built; U until 7h)` | `GraphInfoHolder: a graph nested in a node (hand-built; the layered-compound.json rows reach it, parentGraphData only the ported suites, 7h)` |
+
+**Backing (D1).** Cited: `plans/layered-compound/unreached.md`, § H8 closure row 4.1 (reached:
+`LayerSweepCrossingMinimizerHierarchical.ts` both functions and `LayerSweepTypeDecider.useBottomUp` on
+`full/hierarchy-aware/deep3/sweepiness-0.1`), row 4.1a and the table of § Crossing minimisation (H8 4), which mark
+`GraphInfoHolder.parentGraphData` / `portPositions` and the `crossMinDeterministic()` arm of `useBottomUp` **J**
+(ported suites only). Measured again on the base tree (TypeScript v8 coverage, no JVM): `LayeredCompoundVectors.test.ts`
+alone reaches every function and branch of `LayerSweepCrossingMinimizerSweep.ts` (`sweepInHierarchicalNodes` 10,085
+calls, `sweepInHierarchicalNode` 907) and all 23 functions of `LayerSweepTypeDecider.ts`, and has 0 hits on
+`parentGraphData`, `portPositions` and `LayerSweepTypeDecider.ts:66 if[0]`; the three ported suites
+(`LayerSweepHierarchicalTwoSidedGreedySwitchTest`, `LayerSweepCrossingMinimizerTest`, `SwitchDeciderTest`) reach all
+three. Two of the suites assert one of those items (`GraphInfoHolder.test.ts:167`, `LayerSweepTypeDecider.test.ts:136`),
+so titles 2 and 3 name it instead of D1's shorter proposed words, which would have overclaimed.
+
+**Gates (queue gates 1-7, on the final tree, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377
+files, 10,718 functions, no violation line). The three suites: 3 files and 31 tests passed before and after.
+Coverage, full suite with the nine sweep directories off: 1,173 files and 49,305 tests passed, 93 skipped, 0 failed,
+as at the base; statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200
+typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`.
+Gate 7: `git diff --exit-code 68f37f6e -- test/golden/refs/` is empty.
+
+**Oracle.** Not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003; no rebuild.
+`git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
+
+**Open rows.** #130 (`follow-up`): other staging text that an earlier mission made false, not fixed here (D3). Checked
+and stale: `ElkLayeredTestExecutionState.ts:6` ("staged until 7f"; `ElkLayered.prepareLayoutTest` is ported),
+`OrthogonalRoutingGenerator.ts:255`, `DebugUtil.ts:12-13`, `docs/architecture/alg-layered.md:394-396`,
+`tools/vectors/LayeredOrderVectors.java:26-27` (a recorder source), and the header comments of
+`LayerSweepTypeDecider.test.ts:3-4` and `GraphInfoHolder.test.ts:3-4`, which say the rows prove the two items above.
+Candidates not checked: ten `intermediate/*.test.ts` headers ("staged until T8" / "T11"),
+`test/helpers/layered-pipeline-replay-ops.ts:6-7`, `docs/architecture/alg-layered-placement.md:83-84`. No
+`needs-ruling` issue was filed.
+
+**For later missions.** "The rows reach it" is checked per function before it is written: one vitest run of the
+ref's vector test with `--coverage.include` on the files in question prints the hits of every function in about ten
+seconds (`.agent-notes/p3order-test-titles.md`). A comment that names a mission as the end of a staged state is
+removed by the mission that ends it, titles included: a rule limited to comments leaves the titles behind.

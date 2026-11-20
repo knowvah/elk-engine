@@ -106,7 +106,7 @@ describe('LayerSweepTypeDecider on a root graph', () => {
   });
 });
 
-describe('LayerSweepTypeDecider on a nested graph (hand-built; U for the rows until 7h)', () => {
+describe('LayerSweepTypeDecider on a nested graph (hand-built; the layered-compound.json rows reach it, the deterministic arm only the ported suites, 7h)', () => {
   it('sweeps into a chain of hierarchical paths: -1 is below the default boundary 0.1', () => {
     const host = hostWith(2, 1);
     expect(chain(host).holder(CrossMinType.BARYCENTER, host.rootHolder).dontSweepInto()).toBe(false);

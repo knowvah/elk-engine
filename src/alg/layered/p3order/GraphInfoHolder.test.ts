@@ -148,7 +148,7 @@ describe('GraphInfoHolder: a root graph', () => {
   });
 });
 
-describe('GraphInfoHolder: a graph nested in a node (hand-built; U until 7h)', () => {
+describe('GraphInfoHolder: a graph nested in a node (hand-built; the layered-compound.json rows reach it, parentGraphData only the ported suites, 7h)', () => {
   it('collects the nested graph of a node as a child graph, and the child finds its parent holder', () => {
     const { graph: root } = crossing();
     root.id = 0;
