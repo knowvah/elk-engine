@@ -12,45 +12,7 @@ import { NodeType } from '../../graph/LNodeNodeType.js';
 import type { LPort } from '../../graph/LPort.js';
 import { InternalProperties } from '../../options/InternalProperties.js';
 import { NorthSouthEdgeNeighbouringNodeCrossingsCounter } from './NorthSouthEdgeNeighbouringNodeCrossingsCounter.js';
-import { repoRoot } from '../../../../../test/corpus/corpus.js';
-import { orderDump } from '../../../../../test/helpers/layered-order-replay-dump.js';
-import {
-  loadOrderRows,
-  type OrderExpected,
-  type OrderRow,
-} from '../../../../../test/helpers/layered-order-replay-rows.js';
-import { runSteps, type Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
-import { importRow } from '../../../../../test/helpers/layered-phase-replay-rows.js';
-import { IntermediateProcessorStrategy } from '../IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from '../../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../../options/LayeringStrategy.js';
-
-const SITE_ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
-const SITE_PHASE_CYCLE = 'P1_CYCLE_BREAKING';
-const SITE_PHASE_LAYERING = 'P2_LAYERING';
-
-const siteFactories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) =>
-    phase === SITE_PHASE_CYCLE
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : phase === SITE_PHASE_LAYERING
-        ? LayeringStrategy.valueOf(strategy).create()
-        : CrossingMinimizationStrategy.valueOf(strategy).create(),
-};
-
-let siteRows: OrderRow[] | undefined;
-
-/** Replays a T11 site row through the 7c classes and dumps the layers and ports (the order replay's dump). */
-function replaySite(id: string): OrderExpected {
-  siteRows ??= loadOrderRows(SITE_ROWS_FILE);
-  const row = siteRows.find((candidate) => candidate.id === id);
-  if (row === undefined) {
-    throw new Error(`site row ${id} is not in layered-order.json`);
-  }
-  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
-}
+import { replayOrderSite } from '../../../../../test/helpers/layered-order-site-replay.js';
 
 interface Fixture {
   layer: LNode[];
@@ -209,7 +171,7 @@ describe('NorthSouthEdgeNeighbouringNodeCrossingsCounter', () => {
 describe('NorthSouthEdgeNeighbouringNodeCrossingsCounter on the site rows', () => {
   it('counts no north-south edge for an unconnected SOUTH port beside a long-edge dummy', () => {
     // oracle: sites/GreedySwitch/northSouthLongEdges; NorthSouthEdgeNeighbouringNodeCrossingsCounter.java:136 countCrossings, :149 numberOfNorthSouthEdges
-    const result = replaySite('sites/GreedySwitch/northSouthLongEdges');
+    const result = replayOrderSite('sites/GreedySwitch/northSouthLongEdges');
     expect(result.layers).toEqual([['g0/n0'], ['g0/n1', 'new/n0'], ['g0/n2', 'new/n1'], ['g0/n3']]);
     expect(result.ports['g0/n0']).toEqual(['g0/n0/p0', 'g0/n0/p1']);
     expect(result.ports['g0/n1']).toEqual(['g0/n1/p2', 'g0/n1/p1', 'g0/n1/p0']);

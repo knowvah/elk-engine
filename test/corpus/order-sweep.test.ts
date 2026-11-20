@@ -8,10 +8,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { IntermediateProcessorStrategy } from '../../src/alg/layered/intermediate/IntermediateProcessorStrategy.js';
 import { CrossingMinimizationStrategy } from '../../src/alg/layered/options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../../src/alg/layered/options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../../src/alg/layered/options/LayeringStrategy.js';
 import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
 import { orderDump } from '../helpers/layered-order-replay-dump.js';
 import { runOrderPrefix } from '../helpers/layered-order-replay-ops.js';
@@ -28,7 +25,7 @@ import {
   type SweepThrows,
 } from '../helpers/layered-order-sweep.js';
 import { importDumpOf } from '../helpers/layered-phase-replay-dump.js';
-import type { Factories } from '../helpers/layered-phase-replay-ops.js';
+import { STRICT_ORDER_PHASE_FACTORIES } from '../helpers/layered-replay-factories.js';
 import { repoRoot, resolveModelsDir } from './corpus.js';
 
 const SWEEP_DIR_ENV = 'ORDER_SWEEP_DIR';
@@ -36,9 +33,6 @@ const SWEEP_DIR = process.env[SWEEP_DIR_ENV] ?? path.join(repoRoot(), 'test', 'c
 const RESULTS_FILE = path.join(SWEEP_DIR, 'results.jsonl');
 const SWEEP_SCRIPT = 'tools/oracle/order-sweep.sh';
 const SWEEP_TIMEOUT_MS = 900_000;
-const CYCLE_PHASE = 'P1_CYCLE_BREAKING';
-const LAYERING_PHASE = 'P2_LAYERING';
-const ORDERING_PHASE = 'P3_NODE_ORDERING';
 const ID_SEPARATOR = '/';
 
 const models = resolveModelsDir();
@@ -48,22 +42,6 @@ const skipReason =
     : existsSync(RESULTS_FILE)
       ? undefined
       : `no oracle sweep at ${SWEEP_DIR}; run ${SWEEP_SCRIPT}`;
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case CYCLE_PHASE:
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case LAYERING_PHASE:
-        return LayeringStrategy.valueOf(strategy).create();
-      case ORDERING_PHASE:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      default:
-        throw new Error(`unknown phase ${phase}`);
-    }
-  },
-};
 
 /**
  * The sampling rule that keeps the sweep inside the ~5 minute budget: with stride N, a case runs when
@@ -80,7 +58,7 @@ function strategyIndex(line: SweepLine): number {
 
 /** The hash of the port's canonical dump of an ok case, replaying the prefix and options the oracle ran. */
 function portHash(line: SweepOk, modelsDir: string): string {
-  const graph = runOrderPrefix(orderSweepRow(line, modelsDir), factories);
+  const graph = runOrderPrefix(orderSweepRow(line, modelsDir), STRICT_ORDER_PHASE_FACTORIES);
   return orderHash(orderDump(graph, importDumpOf(graph)));
 }
 
@@ -90,7 +68,7 @@ function throwsVerdict(line: SweepThrows, modelsDir: string): string | undefined
     return undefined;
   }
   try {
-    runOrderPrefix(orderSweepRow({ ...line, prefix: line.prefix }, modelsDir), factories);
+    runOrderPrefix(orderSweepRow({ ...line, prefix: line.prefix }, modelsDir), STRICT_ORDER_PHASE_FACTORIES);
   } catch (error) {
     const name = error instanceof Error ? error.constructor.name : typeof error;
     return name === line.class ? undefined : `${line.id} oracle threw ${line.class}, port threw ${name}`;

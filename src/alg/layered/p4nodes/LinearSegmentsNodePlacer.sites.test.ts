@@ -6,59 +6,22 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { decodeHex } from '../../../../test/helpers/layered-framework-replay.js';
-import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { runSteps } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { placementDump } from '../../../../test/helpers/layered-placement-replay-dump.js';
 import { loadPlacementRows } from '../../../../test/helpers/layered-placement-replay-rows.js';
+import { LINEAR_SEGMENTS_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 import { addLayer, addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';
-import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
 import { NoSuchElementException } from '../../../java/util/NoSuchElementException.js';
 import { LGraph } from '../graph/LGraph.js';
-import { HierarchicalPortDummySizeProcessor } from '../intermediate/HierarchicalPortDummySizeProcessor.js';
-import { InLayerConstraintProcessor } from '../intermediate/InLayerConstraintProcessor.js';
-import { InnermostNodeMarginCalculator } from '../intermediate/InnermostNodeMarginCalculator.js';
-import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
-import { LabelAndNodeSizeProcessor } from '../intermediate/LabelAndNodeSizeProcessor.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { LinearSegmentsNodePlacer } from './LinearSegmentsNodePlacer.js';
 import { INPUT_PRIO, OUTPUT_PRIO } from './LinearSegmentsNodePlacerProperties.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-placement.json`;
 /** Java `Integer.MIN_VALUE`, the priority of a node without edges on that side. */
 const MIN_INT = -2147483648;
-
-const factories: Factories = {
-  createProcessor(name): ILayoutProcessor<LGraph> {
-    switch (name) {
-      case 'INNERMOST_NODE_MARGIN_CALCULATOR':
-        return new InnermostNodeMarginCalculator();
-      case 'LABEL_AND_NODE_SIZE_PROCESSOR':
-        return new LabelAndNodeSizeProcessor();
-      case 'IN_LAYER_CONSTRAINT_PROCESSOR':
-        return new InLayerConstraintProcessor();
-      case 'HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR':
-        return new HierarchicalPortDummySizeProcessor();
-      default:
-        return IntermediateProcessorStrategy.valueOf(name).create();
-    }
-  },
-  createPhase(phase, strategy) {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      default:
-        return new LinearSegmentsNodePlacer();
-    }
-  },
-};
 
 const rows = loadPlacementRows(ROWS_FILE).filter((row) => row.id.startsWith('sites/LinearSegments/'));
 
@@ -69,7 +32,7 @@ beforeAll(() => {
 /** Replays a site row; returns the graph and the node y coordinates by path. */
 function replaySite(id: string): { graph: LGraph; ys: Record<string, number> } {
   const row = rows.find((candidate) => candidate.id === id)!;
-  const graph = runSteps(row, factories);
+  const graph = runSteps(row, LINEAR_SEGMENTS_FACTORIES);
   const { geometry } = placementDump(graph, importRow(row).importDump);
   return {
     graph,

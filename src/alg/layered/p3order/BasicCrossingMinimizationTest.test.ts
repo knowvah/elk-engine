@@ -15,33 +15,15 @@ import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { runOrderPrefix } from '../../../../test/helpers/layered-order-replay-ops.js';
 import { loadOrderRows, type OrderRow } from '../../../../test/helpers/layered-order-replay-rows.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
 import type { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
 import type { Layer } from '../graph/Layer.js';
-import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
+import { ORDER_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
 const STOP = 'P3_NODE_ORDERING/LAYER_SWEEP';
 const CONFIGURATION_SUFFIX = '/P3/LAYER_SWEEP';
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-    }
-  },
-};
 
 const rows = loadOrderRows(ROWS_FILE).filter(
   (row) => row.group === 'models' && row.id.endsWith(CONFIGURATION_SUFFIX) && row.prefix?.at(-1) === STOP,
@@ -88,14 +70,15 @@ class BasicCrossingMinimizationTest {
 
 function check(row: OrderRow): { before: number; after: number } {
   const stopIndex = row.prefix!.length - 1;
-  const graph = runOrderPrefix({ ...row, prefix: row.prefix!.slice(0, stopIndex) }, factories);
+  const graph = runOrderPrefix({ ...row, prefix: row.prefix!.slice(0, stopIndex) }, ORDER_PHASE_FACTORIES);
   const test = new BasicCrossingMinimizationTest();
   test.ensureLayerAssignmentUnchanged(graph);
   const before = [...graph].reduce((sum, layer) => sum + layer.getNodes().length, 0);
   const separator = STOP.indexOf('/');
-  factories
-    .createPhase(STOP.slice(0, separator), STOP.slice(separator + 1))
-    .process(graph, new NullElkProgressMonitor());
+  ORDER_PHASE_FACTORIES.createPhase(STOP.slice(0, separator), STOP.slice(separator + 1)).process(
+    graph,
+    new NullElkProgressMonitor(),
+  );
   test.ensureLayerAssignmentUnchanged(graph);
   const after = [...graph].reduce((sum, layer) => sum + layer.getNodes().length, 0);
   return { before, after };

@@ -2,12 +2,10 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { repoRoot } from '../../../test/corpus/corpus.js';
 import { registerLayered } from '../../../test/helpers/layered-framework-replay.js';
-import { compareFullRow, runFullRow } from '../../../test/helpers/layered-pipeline-replay-ops.js';
 import {
   isFullRow,
   loadPipelineRows,
   registerPipelineEnums,
-  type FullRow,
 } from '../../../test/helpers/layered-pipeline-replay-rows.js';
 import { isCompoundFullRow, loadCompoundRowsIfPresent } from '../../../test/helpers/layered-compound-replay-rows.js';
 import { replayFull } from '../../../test/helpers/layered-compound-replay-stops.js';
@@ -52,13 +50,6 @@ describe('ElkLayered.doLayout on the full rows (F4, oracle)', () => {
   it('finds the 199 full rows', () => {
     expect(fullRows).toHaveLength(199);
   });
-
-  it.each(fullRows.map((row) => [row.id, row] as [string, FullRow]))(
-    '%s: the layout and the plan of every level equal the row',
-    (_id, row) => {
-      expect(compareFullRow(runFullRow(row), row)).toEqual([]);
-    },
-  );
 });
 
 /** A graph with one node, the smallest input `doLayout` accepts without a staged processor. */

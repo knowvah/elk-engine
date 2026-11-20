@@ -7,42 +7,24 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../../test/corpus/corpus.js';
 import { decodeHex } from '../../../../../test/helpers/layered-framework-replay.js';
-import type { Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
-import { runCall, type CallerTable } from '../../../../../test/helpers/layered-routing-replay-ops.js';
+import { runCall } from '../../../../../test/helpers/layered-routing-replay-ops.js';
 import {
   isCallRow,
   loadRoutingRows,
   type CallResult,
 } from '../../../../../test/helpers/layered-routing-replay-rows.js';
+import { RECTANGLE_CALLERS, RECTANGLE_CALL_FACTORIES } from '../../../../../test/helpers/layered-spline-callers.js';
 import { LayoutMetaDataService } from '../../../../core/data/LayoutMetaDataService.js';
-import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
-import type { LNode } from '../../graph/LNode.js';
 import { Rectangle } from './Rectangle.js';
 
 const STEPS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing-steps.json`;
 const COORDINATE_DIGITS = 6;
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    throw new Error(`no calls/Rectangle row runs the phase ${phase}/${strategy}`);
-  },
-};
 
 /** The row order of a `rectangle` argument is (top, right, bottom, left); the constructor takes (left, top, right, bottom). */
 const CONSTRUCTORS = {
   rectangle: (top: number, right: number, bottom: number, left: number): Rectangle =>
     new Rectangle(left, top, right, bottom),
 };
-
-const CALLERS = {
-  'Rectangle.union': (rectangle: Rectangle, node: LNode): Rectangle => {
-    rectangle.union(node);
-    return rectangle;
-  },
-  'Rectangle.getHeight': (rectangle: Rectangle) => rectangle.getHeight(),
-  'Rectangle.getWidth': (rectangle: Rectangle) => rectangle.getWidth(),
-} as CallerTable;
 
 beforeAll(() => {
   LayoutMetaDataService.initElkReflect();
@@ -55,7 +37,7 @@ function replayed(id: string): CallResult {
   if (row === undefined) {
     throw new Error(`no row calls/Rectangle/extents/${id}`);
   }
-  return runCall(row, factories, CALLERS, { constructors: CONSTRUCTORS });
+  return runCall(row, RECTANGLE_CALL_FACTORIES, RECTANGLE_CALLERS, { constructors: CONSTRUCTORS });
 }
 
 /** The (top, right, bottom, left) of a rectangle result. */

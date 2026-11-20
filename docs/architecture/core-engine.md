@@ -281,7 +281,9 @@ Order rule, per slot:
   identity (AD-11). Overloads of `configure` and `getProperties` are told apart by `typeof === 'function'`.
 - The `.elkt` harness (`test/helpers/elkt-layout-harness.ts`, T12) now builds a `LayoutConfigurator`, sets the
   algorithm through `configure(ElkNodeImpl)` and applies it with `ElkUtil.applyVisitors`, as Java's `TestAlgorithm`
-  does. Both golden sets regenerate byte-identical.
+  does. Both golden sets regenerate byte-identical. Since #46 it serves `Issue457Test` only: `Issue489Test` and
+  `Issue475Test` run on `test/helpers/layout-test-runner.ts` with the Java's `@DefaultConfiguration`, and the harness
+  goes when `Issue457Test` follows (#118).
 - `ElkSpacings` (T7) is a facade class with statics and two builder files (M15 naming). `factorMap` is a
   `JavaHashMap` with the `PROPERTY` id strategy (V2). `BASE_SPACING_OPTION` and `DEPENDENT_SPACING_OPTIONS` are
   cached static getters (ESM cycle with `CoreOptions`, M12/M16). The `ELK_OPTION_TARGET_FILTER` quirk is in

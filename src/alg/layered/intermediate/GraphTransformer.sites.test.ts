@@ -6,10 +6,8 @@
 // GraphTransformerLaws.test.ts stay (AD-13). `GraphTransformer.test.ts` keeps the injecting cases.
 import { beforeAll, describe, expect, it } from 'vitest';
 // the enum first: tests enter through it, never through the class (E1/F10, module cycle)
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { decodeHex, registerLayered } from '../../../../test/helpers/layered-framework-replay.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import {
   comparePipeline,
   pipelineDump,
@@ -25,25 +23,20 @@ import type { RoutingExpected } from '../../../../test/helpers/layered-routing-r
 import { compareRoutingFullDump } from '../../../../test/helpers/layered-routing-replay-compare.js';
 import { addNode, addPort } from '../../../../test/helpers/lgraph-builders.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
-import { EdgeRouting } from '../../../core/options/EdgeRouting.js';
 import { Direction } from '../../../core/options/Direction.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
 import { ComponentsProcessor } from '../components/ComponentsProcessor.js';
 import { LGraph } from '../graph/LGraph.js';
 import { NodeType } from '../graph/LNodeNodeType.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { DirectionCongruency } from '../options/DirectionCongruency.js';
 import { InLayerConstraint } from '../options/InLayerConstraint.js';
 import { InternalProperties } from '../options/InternalProperties.js';
 import { LayerConstraint } from '../options/LayerConstraint.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { NodePlacementStrategy } from '../options/NodePlacementStrategy.js';
-import { EdgeRouterFactory } from '../p5edges/EdgeRouterFactory.js';
 import { GraphTransformer } from './GraphTransformer.js';
 import { Mode } from './GraphTransformerMode.js';
+import { CHECKED_ROUTING_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const PIPELINE_REF = `${repoRoot()}/test/golden/refs/java/layered-pipeline.json`;
 const TOLERANCE = 1e-6;
@@ -190,25 +183,6 @@ const NODE_LABEL_PLACEMENT = {
   n1: ['V_TOP', 'INSIDE', 'H_PRIORITY'],
 };
 
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase(phase, strategy) {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case 'P4_NODE_PLACEMENT':
-        return NodePlacementStrategy.valueOf(strategy).create();
-      default:
-        expect(phase).toBe('P5_EDGE_ROUTING');
-        return EdgeRouterFactory.factoryFor(EdgeRouting.valueOf(strategy)).create();
-    }
-  },
-};
-
 beforeAll(() => {
   registerLayered();
   registerPipelineEnums();
@@ -231,7 +205,7 @@ function replay(id: string): Replayed {
   if (row === undefined) {
     throw new Error(`row ${id} is not in the ref`);
   }
-  const result = runPipelineSteps(row, factories, new ComponentsProcessor());
+  const result = runPipelineSteps(row, CHECKED_ROUTING_PHASE_FACTORIES, new ComponentsProcessor());
   const actual = pipelineDump(result) as RoutingExpected;
   expect(comparePipeline(actual, row.expected)).toEqual([]);
   const dump = dumpWithPropertyValues(result.graph);

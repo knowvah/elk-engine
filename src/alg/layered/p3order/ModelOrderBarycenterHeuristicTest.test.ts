@@ -16,33 +16,15 @@ import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { runOrderPrefix } from '../../../../test/helpers/layered-order-replay-ops.js';
 import { loadOrderRows, type OrderRow } from '../../../../test/helpers/layered-order-replay-rows.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import type { LGraph } from '../graph/LGraph.js';
-import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { InternalProperties } from '../options/InternalProperties.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
+import { ORDER_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
 const STOP = 'P3_NODE_ORDERING/LAYER_SWEEP';
 const ID_PATTERN = /^models\/ptolemy-[^/]+\/[^/]+\/P3\/LAYER_SWEEP\/model-order-NODES_AND_EDGES-force-node-order$/;
 const GREEDY_SWITCH_TYPE_ID = 'org.eclipse.elk.layered.crossingMinimization.greedySwitch.type';
 const GREEDY_SWITCH_OFF = { c: 'GreedySwitchType', n: 'OFF', t: 'enum' } as const;
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-    }
-  },
-};
 
 const recorded = loadOrderRows(ROWS_FILE).filter((row) => ID_PATTERN.test(row.id) && row.prefix?.at(-1) === STOP);
 const rows: OrderRow[] = recorded.map((row) => ({
@@ -82,6 +64,6 @@ describe('ModelOrderBarycenterHeuristicTest on the replayed rows', () => {
   });
 
   it.each(rows.map((row) => [row.id, row] as const))('%s: testModelOrderRespected', (_id, row) => {
-    expect(testModelOrderRespected(runOrderPrefix(row, factories))).toBeGreaterThan(0);
+    expect(testModelOrderRespected(runOrderPrefix(row, ORDER_PHASE_FACTORIES))).toBeGreaterThan(0);
   });
 });

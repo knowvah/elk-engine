@@ -18,22 +18,9 @@ import {
   type OrderRow,
   type OrderExpected,
 } from '../../../../test/helpers/layered-order-replay-rows.js';
-import { runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { runSteps } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
-import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
-import { HierarchicalPortConstraintProcessor } from '../intermediate/HierarchicalPortConstraintProcessor.js';
-import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
-import { InvertedPortProcessor } from '../intermediate/InvertedPortProcessor.js';
-import { LongEdgeSplitter } from '../intermediate/LongEdgeSplitter.js';
-import { NorthSouthPortPreprocessor } from '../intermediate/NorthSouthPortPreprocessor.js';
-import { PortListSorter } from '../intermediate/PortListSorter.js';
-import { PortSideProcessor } from '../intermediate/PortSideProcessor.js';
-import { SemiInteractiveCrossMinProcessor } from '../intermediate/SemiInteractiveCrossMinProcessor.js';
-import { SortByInputModelProcessor } from '../intermediate/SortByInputModelProcessor.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { LayerSweepCrossingMinimizer } from './LayerSweepCrossingMinimizer.js';
 import { LayerSweepCrossingMinimizerCrossMinType as CrossMinType } from './LayerSweepCrossingMinimizerCrossMinType.js';
 import { InternalProperties } from '../options/InternalProperties.js';
@@ -47,6 +34,8 @@ import { GraphProperties } from '../options/GraphProperties.js';
 import { LayeredOptions } from '../options/LayeredOptions.js';
 import { OrderingStrategy } from '../options/OrderingStrategy.js';
 import { GraphInfoHolder } from './GraphInfoHolder.js';
+import { GREEDY_SWITCH_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
+import { replayOrderSite } from '../../../../test/helpers/layered-order-site-replay.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
 
@@ -142,46 +131,11 @@ const MEDIAN_ROWS: readonly string[] = [
   'sites/Median/forwardFirst',
 ];
 
-const factories: Factories = {
-  createProcessor(name): ILayoutProcessor<LGraph> {
-    switch (name) {
-      case 'LONG_EDGE_SPLITTER':
-        return new LongEdgeSplitter();
-      case 'PORT_SIDE_PROCESSOR':
-        return new PortSideProcessor();
-      case 'INVERTED_PORT_PROCESSOR':
-        return new InvertedPortProcessor();
-      case 'PORT_LIST_SORTER':
-        return new PortListSorter();
-      case 'NORTH_SOUTH_PORT_PREPROCESSOR':
-        return new NorthSouthPortPreprocessor();
-      case 'HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR':
-        return new HierarchicalPortConstraintProcessor();
-      case 'SEMI_INTERACTIVE_CROSSMIN_PROCESSOR':
-        return new SemiInteractiveCrossMinProcessor();
-      case 'SORT_BY_INPUT_ORDER_OF_MODEL':
-        return new SortByInputModelProcessor();
-      case 'ONE_SIDED_GREEDY_SWITCH':
-        return new LayerSweepCrossingMinimizer(CrossMinType.ONE_SIDED_GREEDY_SWITCH);
-      case 'TWO_SIDED_GREEDY_SWITCH':
-        return new LayerSweepCrossingMinimizer(CrossMinType.TWO_SIDED_GREEDY_SWITCH);
-      default:
-        return IntermediateProcessorStrategy.valueOf(name).create();
-    }
-  },
-  createPhase: (phase, strategy) =>
-    phase === 'P1_CYCLE_BREAKING'
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : phase === 'P2_LAYERING'
-        ? LayeringStrategy.valueOf(strategy).create()
-        : CrossingMinimizationStrategy.valueOf(strategy).create(),
-};
-
 const allRows = loadOrderRows(ROWS_FILE);
 
 function replayRow(id: string): { row: OrderRow; graph: LGraph } {
   const row = allRows.find((candidate) => candidate.id === id)!;
-  return { row, graph: runSteps(row, factories) };
+  return { row, graph: runSteps(row, GREEDY_SWITCH_FACTORIES) };
 }
 
 /** The `P3_NODE_ORDERING` strategy a step row ends with, or `null`. */
@@ -215,7 +169,7 @@ describe('LayerSweepCrossingMinimizer (the rows are not vacuous)', () => {
   it('the state before P3 differs from the recorded state after it for the crossing scenario', () => {
     // oracle: scenarios/LayerSweep/crossing; the P3 phase must move nodes or ports for the replay above to prove it
     const row = allRows.find((candidate) => candidate.id === 'scenarios/LayerSweep/crossing')!;
-    const before = runSteps({ ...row, steps: row.steps!.slice(0, -2) }, factories);
+    const before = runSteps({ ...row, steps: row.steps!.slice(0, -2) }, GREEDY_SWITCH_FACTORIES);
     const actual = orderDump(before, importRow(row).importDump);
     expect(compareOrder(actual, row.expected).length).toBeGreaterThan(0);
   });
@@ -291,7 +245,7 @@ describe('LayerSweepCrossingMinimizer', () => {
   it('exposes the graph holders of the last run: the root graph only, indexed by LGraph.id', () => {
     const phase = new LayerSweepCrossingMinimizer(CrossMinType.BARYCENTER);
     const row = allRows.find((candidate) => candidate.id === 'scenarios/LayerSweep/crossing')!;
-    const graph = runSteps({ ...row, steps: row.steps!.slice(0, -2) }, factories);
+    const graph = runSteps({ ...row, steps: row.steps!.slice(0, -2) }, GREEDY_SWITCH_FACTORIES);
     phase.process(graph, new NullElkProgressMonitor());
     const holders = phase.getGraphData()!;
     expect(holders.length).toBe(1);
@@ -367,34 +321,6 @@ describe('LayerSweepCrossingMinimizer: the thoroughness loops (hand-built two-la
   });
 });
 
-/** The `sites/` rows recorded for the branches the generic replay leaves untaken (T11). */
-const SITE_ROWS = loadOrderRows(`${repoRoot()}/test/golden/refs/java/layered-order.json`).filter((row) =>
-  row.id.startsWith('sites/'),
-);
-
-const siteFactories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-    }
-  },
-};
-
-/** Replays the site row `id` with the real processors and phases and dumps the result in the recorder's shape. */
-function replaySite(id: string): OrderExpected {
-  const row = SITE_ROWS.find((candidate) => candidate.id === id);
-  if (row === undefined) {
-    throw new Error(`no site row ${id}`);
-  }
-  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
-}
-
 /** The changed properties the dump records for the element at `path`. */
 function changedProps(result: OrderExpected, path: string): Record<string, unknown> | undefined {
   return result.changed.find((entry) => entry.path === path)?.props;
@@ -403,7 +329,7 @@ function changedProps(result: OrderExpected, path: string): Record<string, unkno
 describe('LayerSweepCrossingMinimizer on the site rows', () => {
   it('returns at once on a graph of one layer holding one node', () => {
     // oracle: sites/LayerSweep/singleNode; LayerSweepCrossingMinimizer.java:118-125
-    const result = replaySite('sites/LayerSweep/singleNode');
+    const result = replayOrderSite('sites/LayerSweep/singleNode');
     expect(result.layers).toEqual([['g0/n0']]);
     expect(result.ports).toEqual({ 'g0/n0': [] });
     expect(result.changed).toEqual([]);
@@ -411,7 +337,7 @@ describe('LayerSweepCrossingMinimizer on the site rows', () => {
 
   it('returns at once on a graph without layers', () => {
     // oracle: sites/LayerSweep/empty; LayerSweepCrossingMinimizer.java:116-125
-    const result = replaySite('sites/LayerSweep/empty');
+    const result = replayOrderSite('sites/LayerSweep/empty');
     expect(result.layers).toEqual([]);
     expect(result.ports).toEqual({});
     expect(result.changed).toEqual([]);
@@ -419,7 +345,7 @@ describe('LayerSweepCrossingMinimizer on the site rows', () => {
 
   it('keeps a crossing-free initial order and marks the first try with the initial order', () => {
     // oracle: sites/ModelOrder/zeroCrossings/initial; LayerSweepCrossingMinimizer.java:225,287
-    const result = replaySite('sites/ModelOrder/zeroCrossings/initial');
+    const result = replayOrderSite('sites/ModelOrder/zeroCrossings/initial');
     expect(result.layers).toEqual([
       ['g0/n0', 'g0/n1'],
       ['g0/n2', 'g0/n3'],
@@ -429,7 +355,7 @@ describe('LayerSweepCrossingMinimizer on the site rows', () => {
 
   it('stops the port order sweeps once a sweep removed the last crossing', () => {
     // oracle: sites/ModelOrder/zeroCrossings/afterSweep; LayerSweepCrossingMinimizer.java:225,312
-    const result = replaySite('sites/ModelOrder/zeroCrossings/afterSweep');
+    const result = replayOrderSite('sites/ModelOrder/zeroCrossings/afterSweep');
     expect(result.layers).toEqual([['g0/n0'], ['new/n0', 'g0/n1', 'g0/n2', 'new/n1'], ['g0/n3']]);
     expect(changedProps(result, 'g0')).toEqual({
       cyclic: { t: 'bool', v: true },
@@ -439,7 +365,7 @@ describe('LayerSweepCrossingMinimizer on the site rows', () => {
 
   it('keeps the initial order of a graph with feedback dummies when it has no crossings', () => {
     // oracle: sites/ModelOrder/feedback/mixed; LayerSweepCrossingMinimizer.java:225,287
-    const result = replaySite('sites/ModelOrder/feedback/mixed');
+    const result = replayOrderSite('sites/ModelOrder/feedback/mixed');
     expect(result.layers).toEqual([
       ['g0/n3', 'new/n0', 'g0/n4'],
       ['new/n1', 'g0/n0', 'new/n2', 'g0/n1', 'new/n3', 'new/n4'],

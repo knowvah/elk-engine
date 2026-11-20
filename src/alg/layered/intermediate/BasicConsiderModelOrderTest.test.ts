@@ -21,12 +21,8 @@ import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
 import { runOrderPrefix } from '../../../../test/helpers/layered-order-replay-ops.js';
 import { loadOrderRows, type OrderRow } from '../../../../test/helpers/layered-order-replay-rows.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
 import { InternalProperties } from '../options/InternalProperties.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
+import { ORDER_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
 const STOP = 'SORT_BY_INPUT_ORDER_OF_MODEL';
@@ -72,20 +68,6 @@ const CONFIGURATORS: ReadonlyMap<string, Options> = new Map(
   ),
 );
 
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      default:
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-    }
-  },
-};
-
 const all = loadOrderRows(ROWS_FILE);
 const recorded = all.filter((row) => RECORDED_PATTERN.test(row.id) && row.prefix?.at(-1) === STOP);
 const derived: OrderRow[] = all
@@ -109,7 +91,7 @@ describe('BasicConsiderModelOrderTest on the replayed rows', () => {
 
   it.each(rows.map((row) => [row.id, row] as const))('%s: test', (_id, row) => {
     expect(row.prefix!.at(-1)).toBe(STOP);
-    const graph = runOrderPrefix(row, factories);
+    const graph = runOrderPrefix(row, ORDER_PHASE_FACTORIES);
     expect([...graph].length).toBeGreaterThan(0);
     const nodes = [...graph].flatMap((layer) => layer.getNodes());
     expect(nodes.some((node) => node.hasProperty(InternalProperties.MODEL_ORDER))).toBe(true);

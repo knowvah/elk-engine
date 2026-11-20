@@ -4,7 +4,6 @@
 // (`PolylineEdgeRouter` for POLYLINE, `OrthogonalEdgeRouter` for ORTHOGONAL). Expectations come only from the rows and the Java (L4, AD-13).
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
-import type { Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { importRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import { compareRouting, compareRoutingFullDump } from '../../../../test/helpers/layered-routing-replay-compare.js';
 import { routingDump } from '../../../../test/helpers/layered-routing-replay-dump.js';
@@ -15,16 +14,8 @@ import {
   type RoutingRow,
 } from '../../../../test/helpers/layered-routing-replay-rows.js';
 import { dumpWithPropertyValues } from '../../../../test/helpers/layered-site-replay-dump.js';
-import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import { LGraph } from '../graph/LGraph.js';
-import { CrossingMinimizationStrategy } from '../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
-import { NodePlacementStrategy } from '../options/NodePlacementStrategy.js';
-import { OrthogonalEdgeRouter } from '../p5edges/OrthogonalEdgeRouter.js';
-import { PolylineEdgeRouter } from '../p5edges/PolylineEdgeRouter.js';
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
 import { NullElkProgressMonitor } from '../../../core/util/NullElkProgressMonitor.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import { NoSuchElementException } from '../../../java/util/NoSuchElementException.js';
@@ -32,38 +23,15 @@ import { addLayer, addNode, addPort, connect } from '../../../../test/helpers/lg
 import { NodeType } from '../graph/LNodeNodeType.js';
 import type { LPort } from '../graph/LPort.js';
 import { HyperedgeDummyMerger } from './HyperedgeDummyMerger.js';
+import { INJECTED_ROUTER_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const MODELS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing.json`;
 const STEPS_FILE = `${repoRoot()}/test/golden/refs/java/layered-routing-steps.json`;
-const ROUTING_PHASE = 'P5_EDGE_ROUTING';
 const STOP = 'HYPEREDGE_DUMMY_MERGER';
 const SCENARIO_PREFIX = 'scenarios/HyperedgeDummyMerger/';
 
 /** The stop of a `models` row id `models/<model>/<level>/<stop>/<variant>`. */
 const stopOf = (row: RoutingRow): string | undefined => row.id.split('/')[3];
-
-const factories: Factories = {
-  createProcessor(name): ILayoutProcessor<LGraph> {
-    return IntermediateProcessorStrategy.valueOf(name).create();
-  },
-  createPhase(phase, strategy): ILayoutProcessor<LGraph> {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case 'P4_NODE_PLACEMENT':
-        return NodePlacementStrategy.valueOf(strategy).create();
-      default:
-        // P5_EDGE_ROUTING: the EdgeRouterFactory arm is T10's; the routers under test are injected
-        expect(phase).toBe(ROUTING_PHASE);
-        expect(['POLYLINE', 'ORTHOGONAL']).toContain(strategy);
-        return strategy === 'POLYLINE' ? new PolylineEdgeRouter() : new OrthogonalEdgeRouter();
-    }
-  },
-};
 
 beforeAll(() => {
   LayoutMetaDataService.initElkReflect();
@@ -80,7 +48,9 @@ const rows: RoutingRow[] = loadRoutingRows(MODELS_FILE, STEPS_FILE)
   );
 
 function replay(row: RoutingRow): LGraph {
-  return row.steps === null ? runRoutingPrefix(row, factories) : runRoutingSteps(row, factories);
+  return row.steps === null
+    ? runRoutingPrefix(row, INJECTED_ROUTER_FACTORIES)
+    : runRoutingSteps(row, INJECTED_ROUTER_FACTORIES);
 }
 
 /** The rows by group, for the pinned inventory. */
@@ -121,7 +91,7 @@ describe('HyperedgeDummyMerger (the rows are not vacuous)', () => {
   it.each(MERGING_ROWS.map((id) => [id] as const))('the state without the merger differs from the row %s', (id) => {
     const row = rows.find((r) => r.id === id)!;
     const without = { ...row, prefix: row.prefix!.filter((entry) => entry !== STOP) };
-    const before = routingDump(runRoutingPrefix(without, factories), importRow(row).importDump);
+    const before = routingDump(runRoutingPrefix(without, INJECTED_ROUTER_FACTORIES), importRow(row).importDump);
     expect(compareRouting(before, row.expected).length).toBeGreaterThan(0);
   });
 });
@@ -219,10 +189,13 @@ const identifyWithLoop = (graph: LGraph): void =>
 function graphBeforeMerger(row: RoutingRow): LGraph {
   if (row.steps === null) {
     const prefix = row.prefix!.slice(0, row.prefix!.indexOf(MERGER));
-    return runRoutingPrefix({ ...row, prefix }, factories);
+    return runRoutingPrefix({ ...row, prefix }, INJECTED_ROUTER_FACTORIES);
   }
   const end = row.steps.findIndex(([op, arg]) => op === 'runProcessor' && arg === MERGER);
-  return runRoutingSteps({ ...row, steps: row.steps.slice(0, end).filter(([op]) => op !== 'dump') }, factories);
+  return runRoutingSteps(
+    { ...row, steps: row.steps.slice(0, end).filter(([op]) => op !== 'dump') },
+    INJECTED_ROUTER_FACTORIES,
+  );
 }
 
 /** A chain of long edge dummies, one per layer, each with an input and an output port, the outputs wired to the next inputs. */

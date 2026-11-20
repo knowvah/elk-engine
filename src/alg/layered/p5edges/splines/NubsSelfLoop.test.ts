@@ -4,14 +4,16 @@
 // position and the dimension are structural cases checked against twins (the same spline built through `NubSpline`).
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../../test/corpus/corpus.js';
-import type { Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
 import { compareCall } from '../../../../../test/helpers/layered-routing-replay-compare.js';
-import { runCall, type CallerTable } from '../../../../../test/helpers/layered-routing-replay-ops.js';
+import { runCall } from '../../../../../test/helpers/layered-routing-replay-ops.js';
 import { isCallRow, loadRoutingRows, type CallRow } from '../../../../../test/helpers/layered-routing-replay-rows.js';
+import {
+  NUBS_SELF_LOOP_CALLERS,
+  NUBS_SELF_LOOP_CALL_FACTORIES,
+} from '../../../../../test/helpers/layered-spline-callers.js';
 import { LayoutMetaDataService } from '../../../../core/data/LayoutMetaDataService.js';
 import { KVector } from '../../../../core/math/KVector.js';
 import { KVectorChain } from '../../../../core/math/KVectorChain.js';
-import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
 import { NubSpline } from './NubSpline.js';
 import { NubsSelfLoop } from './NubsSelfLoop.js';
 
@@ -27,17 +29,6 @@ const FACTORIES = [
   'createThreeSideSelfLoop',
   'createFourSideSelfLoop',
 ] as const;
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    throw new Error(`no calls/NubsSelfLoop row runs the phase ${phase}/${strategy}`);
-  },
-};
-
-const CALLERS: CallerTable = Object.fromEntries(
-  FACTORIES.map((name) => [`NubsSelfLoop.${name}`, NubsSelfLoop[name] as CallerTable[string]]),
-);
 
 function callRows(): CallRow[] {
   return loadRoutingRows(STEPS_FILE)
@@ -62,7 +53,9 @@ describe('NubsSelfLoop calls rows', () => {
   });
 
   it.each(rows.map((row) => [row.id, row] as const))('%s matches the oracle', (_id, row) => {
-    expect(compareCall(runCall(row, factories, CALLERS), row.expected.result)).toEqual([]);
+    expect(
+      compareCall(runCall(row, NUBS_SELF_LOOP_CALL_FACTORIES, NUBS_SELF_LOOP_CALLERS), row.expected.result),
+    ).toEqual([]);
   });
 });
 

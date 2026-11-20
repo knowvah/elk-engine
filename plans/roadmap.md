@@ -2124,3 +2124,95 @@ every finding accepted, no new entry. `git diff 98085a3b -- test/golden/refs/` i
   carries the Java statement and line.
 - To later ports: write `devAssert(() => expr)` at the Java position from the start, and run a step that drives an
   asserted-away state with assertions off (`.agent-notes/dev-assert.md`).
+
+## Revision 2026-11-19 (test-helper-consolidation)
+
+Appended; no earlier line is edited. Source: issue #46 and D1-D8 in `plans/test-helper-consolidation/decisions.md`; the
+journal is `plans/test-helper-consolidation/decision-journal.md`, the site map
+`plans/test-helper-consolidation/inventory.md`. Where this section conflicts with the text above, this section wins.
+Task ids are T1-T8; the base is `f5c2c889b7620e152f52a76bbfc993e80dae0f25`.
+
+**The duplicated test helpers that the revisions of 2026-10-26 (alg-common), 2026-11-02, 2026-11-03 and 2026-11-05
+(layered-pipeline) left as cleanup are consolidated, with two rows left for the maintainer.** No file under `src/` other
+than `*.test.ts` changed, no ref, vector or recorder changed, and no JVM ran.
+
+**Item 1, the per-file `Factories` objects, `CALLERS` tables and order site-replay blocks.** The tree had 181
+`: Factories` objects (planning counted 176). 109 moved, 72 stay.
+
+| What | Before | Now |
+| --- | --- | --- |
+| `Factories` objects moved to an export | 86, one per file | 20 exports: 17 in `test/helpers/layered-replay-factories.ts`, 3 beside the caller tables |
+| Order site-replay blocks (`SITE_ROWS`, `siteFactories`, `replaySite`) | 23 files, two variants | `replayOrderSite(id)` in `test/helpers/layered-order-site-replay.ts` |
+| `CALLERS` tables | 8 (the routing vectors test and seven spline tests) | four class tables in `test/helpers/layered-spline-callers.ts`; the vectors test spreads them |
+| `Factories` objects kept | 72 | each with its reason in `inventory.md` |
+
+Only identical code moved (D1): a script compared each site with its export by text (whitespace collapsed, file-local
+phase constants replaced by their literals) and by the module and symbol every identifier resolves to. An `expect` or
+`throw` inside a moved object moved with it. The exports are not interchangeable: they differ in which processors are
+injected as classes, which phases they dispatch and what a phase outside that set does. The 72 kept objects occur once
+(58, most of them injecting the class under test inside one test), spread their file's factories (the seven
+`SITE_FACTORIES`, which now spread the imported export), or close over a table or value that differs per file.
+`strategyFactories` of `test/helpers/layered-loops-replay-ops.ts` was a sixth copy of the strict five-phase object and is
+now that export under its old name.
+
+**Item 2, `fromPattern`.** One copy in `test/helpers/polyomino-fixtures.ts`; the two polyomino tests import it.
+
+**Item 3, the JUnit delta assertion.** `AssertionFailure` lives in `test/helpers/junit-delta.ts`, whose
+`assertEqualsWithin` throws it; `edge-route-orthogonal.ts` uses both and re-exports the class.
+`LabelAndNodeSizeProcessorOffsetTest.test.ts` had a third identical copy and imports the shared one under the Java's
+name. `Issue447Test.test.ts` keeps its own: it is built on `expect(…).toBe(true)`, so replacing it removes an assertion
+line (#119).
+
+**Item 4, the older `.elkt` layout harness.** `Issue489Test` and `Issue475Test` run on `defineLayoutTest` and now apply
+the Java's `@DefaultConfiguration`, which the harness never did; both pass, assertions unchanged. `Issue457Test` stays on
+the harness, so the harness and its test stay: with defaults its two label-less nodes get labels `n` and `ni`, and the
+recorded AWT table `layered-label-metrics.json` has neither, so the runner's measurer throws before layout. That needs a
+JVM re-record of a ref, which this mission may not do (#118 has the diagnosis and the three steps left).
+
+**Item 5, `ElkLayered.test.ts`'s 199-row loop.** Removed. `LayeredPipelineVectors.test.ts`'s `full rows` group runs the
+same 199 row ids through the same `compareFullRow(runFullRow(row), row)` assertion under the same registrations; the
+`finds the 199 full rows` pin stays.
+
+**Case counts (vitest JSON reporter, sweep directories off, before the first edit and after the last).**
+
+| | Before | After |
+| --- | --- | --- |
+| Test files | 1,182 | 1,182 |
+| Cases | 49,585 | 49,386 |
+| Passed | 49,492 | 49,293 |
+| Skipped | 93 | 93 |
+| Failed | 0 | 0 |
+
+Per file, three files differ: `ElkLayered.test.ts` 219 → 20 (the 199 proven duplicates), and `Issue489Test.test.ts` and
+`Issue475Test.test.ts` with two cases each retitled to the runner's `name [graphFile(…) configMethod(…)]` form. Every
+other file has the same titles and statuses. D7 also expected −3 for the harness test and +N for the runner test;
+neither happened, because the harness stays.
+
+**Decisions made on the way (journal, T1).**
+
+- Three `.sites` tests wrote `createPhase` as a method where eight others wrote the same body as an arrow property; all
+  eleven share one export. D1 names one semantic merge (`switch` against ternary); this second one is syntax only (no
+  body uses `this`) and is flagged for review.
+- D1's "inject a class directly" is read as a reason to keep once-only objects, not as a bar on identical groups, since
+  the brief's lanes list those groups as expected work.
+- A planning group of five split in two on its `INJECTED` table (three comment tests, two label tests); each table moved
+  with its export.
+
+**Gates.** Format, typecheck and complexity clean. Full suite: 49,293 passed, 93 skipped, 0 failed. Coverage 98.81 /
+96.99 / 98.56 / 98.86 (statements, branches, functions, lines), equal to the base. Typedoc and CodeQL figures are in the
+journal (T8). `git diff f5c2c889 -- test/golden/refs/` is empty.
+
+**Open rows.**
+
+- **#118 (`follow-up`)**: record `n` and `ni` in the label metrics, move `Issue457Test` to the runner, then map the three
+  harness-test cases onto the runner test (two need a ported case) and delete the harness.
+- **#119 (`needs-ruling`)**: whether `Issue447Test.test.ts`'s `expect`-based delta assertion may give way to
+  `junit-delta` (an assertion edit under AD-13, equivalent in outcome).
+
+**Hand-offs.**
+
+- To whoever writes the next anchored layered test: import a `Factories` export from
+  `test/helpers/layered-replay-factories.ts` when one matches exactly; keep a local object when the test injects its own
+  class or needs another fallback (`.agent-notes/test-helper-consolidation.md`).
+- To whoever moves a suite onto `defineLayoutTest` with defaults: check that the graph's node ids are in
+  `layered-label-metrics.json` first.

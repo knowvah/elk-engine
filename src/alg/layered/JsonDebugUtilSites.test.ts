@@ -10,38 +10,12 @@ import { registerLayered } from '../../../test/helpers/layered-framework-replay.
 import { compareLabels, labelsDump } from '../../../test/helpers/layered-labels-replay-dump.js';
 import { runLabelsRow } from '../../../test/helpers/layered-labels-replay-ops.js';
 import { loadLabelsRows } from '../../../test/helpers/layered-labels-replay-rows.js';
-import type { Factories } from '../../../test/helpers/layered-phase-replay-ops.js';
 import { isStopRow, registerPipelineEnums } from '../../../test/helpers/layered-pipeline-replay-rows.js';
-import { EdgeRouting } from '../../core/options/EdgeRouting.js';
+import { CHECKED_ROUTING_PHASE_FACTORIES } from '../../../test/helpers/layered-replay-factories.js';
 import { LinkedList } from '../../java/util/LinkedList.js';
 import { identityHashCode } from '../../java/lang/IdentityHashCode.js';
 import { javaToString } from './JsonDebugUtilJavaString.js';
 import { ComponentsProcessor } from './components/ComponentsProcessor.js';
-import { IntermediateProcessorStrategy } from './intermediate/IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from './options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from './options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from './options/LayeringStrategy.js';
-import { NodePlacementStrategy } from './options/NodePlacementStrategy.js';
-import { EdgeRouterFactory } from './p5edges/EdgeRouterFactory.js';
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) => {
-    switch (phase) {
-      case 'P1_CYCLE_BREAKING':
-        return CycleBreakingStrategy.valueOf(strategy).create();
-      case 'P2_LAYERING':
-        return LayeringStrategy.valueOf(strategy).create();
-      case 'P3_NODE_ORDERING':
-        return CrossingMinimizationStrategy.valueOf(strategy).create();
-      case 'P4_NODE_PLACEMENT':
-        return NodePlacementStrategy.valueOf(strategy).create();
-      default:
-        expect(phase).toBe('P5_EDGE_ROUTING');
-        return EdgeRouterFactory.factoryFor(EdgeRouting.valueOf(strategy)).create();
-    }
-  },
-};
 
 beforeAll(() => {
   registerLayered();
@@ -60,7 +34,10 @@ function replay(id: string): { logged: Logged; diffs: unknown[] } {
   if (row === undefined || !isStopRow(row)) {
     throw new Error(`no stop row ${id}`);
   }
-  const result = runLabelsRow(row, { factories, components: new ComponentsProcessor() });
+  const result = runLabelsRow(row, {
+    factories: CHECKED_ROUTING_PHASE_FACTORIES,
+    components: new ComponentsProcessor(),
+  });
   return { logged: result.logged as Logged, diffs: compareLabels(labelsDump(result, row.expected), row.expected) };
 }
 

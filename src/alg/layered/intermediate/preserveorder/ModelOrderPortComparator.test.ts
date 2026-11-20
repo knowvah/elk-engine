@@ -11,45 +11,7 @@ import { LayeredOptions } from '../../options/LayeredOptions.js';
 import { OrderingStrategy } from '../../options/OrderingStrategy.js';
 import { addLayer, addNode, addPort, connect } from '../../../../../test/helpers/lgraph-builders.js';
 import { ModelOrderPortComparator } from './ModelOrderPortComparator.js';
-import { repoRoot } from '../../../../../test/corpus/corpus.js';
-import { orderDump } from '../../../../../test/helpers/layered-order-replay-dump.js';
-import {
-  loadOrderRows,
-  type OrderExpected,
-  type OrderRow,
-} from '../../../../../test/helpers/layered-order-replay-rows.js';
-import { runSteps, type Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
-import { importRow } from '../../../../../test/helpers/layered-phase-replay-rows.js';
-import { IntermediateProcessorStrategy } from '../IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from '../../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../../options/LayeringStrategy.js';
-
-const SITE_ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
-const SITE_PHASE_CYCLE = 'P1_CYCLE_BREAKING';
-const SITE_PHASE_LAYERING = 'P2_LAYERING';
-
-const siteFactories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) =>
-    phase === SITE_PHASE_CYCLE
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : phase === SITE_PHASE_LAYERING
-        ? LayeringStrategy.valueOf(strategy).create()
-        : CrossingMinimizationStrategy.valueOf(strategy).create(),
-};
-
-let siteRows: OrderRow[] | undefined;
-
-/** Replays a T11 site row through the 7c classes and dumps the layers and ports (the order replay's dump). */
-function replaySite(id: string): OrderExpected {
-  siteRows ??= loadOrderRows(SITE_ROWS_FILE);
-  const row = siteRows.find((candidate) => candidate.id === id);
-  if (row === undefined) {
-    throw new Error(`site row ${id} is not in layered-order.json`);
-  }
-  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
-}
+import { replayOrderSite } from '../../../../../test/helpers/layered-order-site-replay.js';
 
 function graphWithEnforcedOrders(): LGraph {
   const graph = new LGraph();
@@ -237,7 +199,7 @@ describe('ModelOrderPortComparator with edges', () => {
 describe('ModelOrderPortComparator on the site rows', () => {
   it('answers a recorded smaller-than association when the crossing counter compares ports a second time', () => {
     // oracle: sites/ModelOrder/transitive/counting; ModelOrderPortComparator.java:111-130
-    const result = replaySite('sites/ModelOrder/transitive/counting');
+    const result = replayOrderSite('sites/ModelOrder/transitive/counting');
     expect(result.ports['g0/n0']).toEqual(['g0/n0/p1', 'g0/n0/p2', 'g0/n0/p3', 'g0/n0/p4', 'g0/n0/p0']);
     expect(result.ports['g0/n1']).toEqual(['g0/n1/p0', 'g0/n1/p4', 'g0/n1/p1', 'g0/n1/p2', 'g0/n1/p3']);
     expect(result.ports['g0/n3']).toEqual(['g0/n3/p0', 'g0/n3/p1']);
@@ -246,7 +208,7 @@ describe('ModelOrderPortComparator on the site rows', () => {
 
   it('orders unconnected ports by port model order and reverses WEST and SOUTH', () => {
     // oracle: sites/ModelOrder/ports/unconnected; ModelOrderPortComparator.java:322 compareUnconnectedPorts
-    const result = replaySite('sites/ModelOrder/ports/unconnected');
+    const result = replayOrderSite('sites/ModelOrder/ports/unconnected');
     expect(result.ports['g0/n0']).toEqual([
       'g0/n0/p8',
       'g0/n0/p9',
@@ -274,7 +236,7 @@ describe('ModelOrderPortComparator on the site rows', () => {
 
   it('falls through to the outgoing branch when the incoming comparison does not decide', () => {
     // oracle: sites/ModelOrder/ports/notPreviousLayer/noPortModelOrder; ModelOrderPortComparator.java:141-174
-    const result = replaySite('sites/ModelOrder/ports/notPreviousLayer/noPortModelOrder');
+    const result = replayOrderSite('sites/ModelOrder/ports/notPreviousLayer/noPortModelOrder');
     expect(result.ports['g0/n0']).toEqual(['g0/n0/p0', 'g0/n0/p1']);
     expect(result.ports['g0/n1']).toEqual(['g0/n1/p0', 'g0/n1/p1']);
     expect(result.ports['g0/n2']).toEqual(['g0/n2/p2', 'g0/n2/p1', 'g0/n2/p0']);
@@ -283,7 +245,7 @@ describe('ModelOrderPortComparator on the site rows', () => {
 
   it('orders unconnected ports of nodes with source and target feedback dummies', () => {
     // oracle: sites/ModelOrder/feedback/mixed; ModelOrderPortComparator.java:315 compare tail, :322 compareUnconnectedPorts
-    const result = replaySite('sites/ModelOrder/feedback/mixed');
+    const result = replayOrderSite('sites/ModelOrder/feedback/mixed');
     expect(result.ports['g0/n3']).toEqual(['g0/n3/p0', 'g0/n3/p2', 'g0/n3/p3', 'g0/n3/p1']);
     expect(result.ports['g0/n4']).toEqual(['g0/n4/p0', 'g0/n4/p1']);
     expect(result.ports['g0/n0']).toEqual(['g0/n0/p0', 'g0/n0/p1']);

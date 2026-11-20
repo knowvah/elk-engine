@@ -4,14 +4,12 @@
 //
 // @see org.eclipse.elk.alg.layered.test/src/org/eclipse/elk/alg/layered/intermediate/ReversedEdgeRestorerTest.java
 import { describe, expect, it } from 'vitest';
-import { IntermediateProcessorStrategy } from './IntermediateProcessorStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
-import { runPrefix, runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { runPrefix, runSteps } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { loadRows, type PhaseRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
 import type { LGraph } from '../graph/LGraph.js';
 import { InternalProperties } from '../options/InternalProperties.js';
+import { LAYERING_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-phases.json`;
 // `sites/*` rows are branch probes with crafted pre-states (a pre-reversed edge, external port dummies, cleared
@@ -19,16 +17,8 @@ const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-phases.json`;
 // only, so those rows are anchored by their own cases (T12), not run through this test (T11 journal row).
 const allRows = loadRows(ROWS_FILE).filter((row) => row.group !== 'sites');
 
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) =>
-    phase === 'P1_CYCLE_BREAKING'
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : LayeringStrategy.valueOf(strategy).create(),
-};
-
 function replay(row: PhaseRow): LGraph {
-  return row.steps === null ? runPrefix(row, factories) : runSteps(row, factories);
+  return row.steps === null ? runPrefix(row, LAYERING_PHASE_FACTORIES) : runSteps(row, LAYERING_PHASE_FACTORIES);
 }
 
 const PROCESSOR = 'REVERSED_EDGE_RESTORER';

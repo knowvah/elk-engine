@@ -4,24 +4,14 @@
 //
 // @see org.eclipse.elk.alg.layered.test/src/org/eclipse/elk/alg/layered/p2layers/BasicLayerAssignmentTest.java
 import { describe, expect, it } from 'vitest';
-import { IntermediateProcessorStrategy } from '../intermediate/IntermediateProcessorStrategy.js';
-import { CycleBreakingStrategy } from '../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../options/LayeringStrategy.js';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
-import { runPrefix, runSteps, type Factories } from '../../../../test/helpers/layered-phase-replay-ops.js';
+import { runPrefix, runSteps } from '../../../../test/helpers/layered-phase-replay-ops.js';
 import { loadRows, type PhaseRow } from '../../../../test/helpers/layered-phase-replay-rows.js';
+import { LAYERING_PHASE_FACTORIES } from '../../../../test/helpers/layered-replay-factories.js';
 import type { LGraph } from '../graph/LGraph.js';
 
 const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-phases.json`;
 const allRows = loadRows(ROWS_FILE);
-
-const factories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) =>
-    phase === 'P1_CYCLE_BREAKING'
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : LayeringStrategy.valueOf(strategy).create(),
-};
 
 /** A row's last replayed entry, spelled like a prefix entry (`NAME` or `PHASE/STRATEGY`). */
 function lastEntry(row: PhaseRow): string | undefined {
@@ -34,7 +24,7 @@ function lastEntry(row: PhaseRow): string | undefined {
 }
 
 function replay(row: PhaseRow): LGraph {
-  return row.steps === null ? runPrefix(row, factories) : runSteps(row, factories);
+  return row.steps === null ? runPrefix(row, LAYERING_PHASE_FACTORIES) : runSteps(row, LAYERING_PHASE_FACTORIES);
 }
 
 const LAYERING_PREFIX = 'P2_LAYERING/';

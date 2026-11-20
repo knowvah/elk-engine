@@ -12,45 +12,7 @@ import { LongEdgeOrderingStrategy } from '../../options/LongEdgeOrderingStrategy
 import { OrderingStrategy } from '../../options/OrderingStrategy.js';
 import { addLayer, addNode, addPort, connect } from '../../../../../test/helpers/lgraph-builders.js';
 import { ModelOrderNodeComparator } from './ModelOrderNodeComparator.js';
-import { repoRoot } from '../../../../../test/corpus/corpus.js';
-import { orderDump } from '../../../../../test/helpers/layered-order-replay-dump.js';
-import {
-  loadOrderRows,
-  type OrderExpected,
-  type OrderRow,
-} from '../../../../../test/helpers/layered-order-replay-rows.js';
-import { runSteps, type Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
-import { importRow } from '../../../../../test/helpers/layered-phase-replay-rows.js';
-import { IntermediateProcessorStrategy } from '../IntermediateProcessorStrategy.js';
-import { CrossingMinimizationStrategy } from '../../options/CrossingMinimizationStrategy.js';
-import { CycleBreakingStrategy } from '../../options/CycleBreakingStrategy.js';
-import { LayeringStrategy } from '../../options/LayeringStrategy.js';
-
-const SITE_ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
-const SITE_PHASE_CYCLE = 'P1_CYCLE_BREAKING';
-const SITE_PHASE_LAYERING = 'P2_LAYERING';
-
-const siteFactories: Factories = {
-  createProcessor: (name) => IntermediateProcessorStrategy.valueOf(name).create(),
-  createPhase: (phase, strategy) =>
-    phase === SITE_PHASE_CYCLE
-      ? CycleBreakingStrategy.valueOf(strategy).create()
-      : phase === SITE_PHASE_LAYERING
-        ? LayeringStrategy.valueOf(strategy).create()
-        : CrossingMinimizationStrategy.valueOf(strategy).create(),
-};
-
-let siteRows: OrderRow[] | undefined;
-
-/** Replays a T11 site row through the 7c classes and dumps the layers and ports (the order replay's dump). */
-function replaySite(id: string): OrderExpected {
-  siteRows ??= loadOrderRows(SITE_ROWS_FILE);
-  const row = siteRows.find((candidate) => candidate.id === id);
-  if (row === undefined) {
-    throw new Error(`site row ${id} is not in layered-order.json`);
-  }
-  return orderDump(runSteps(row, siteFactories), importRow(row).importDump);
-}
+import { replayOrderSite } from '../../../../../test/helpers/layered-order-site-replay.js';
 
 const OPTIONS = { groupOrderStrategy: GroupOrderStrategy.ONLY_WITHIN_GROUP, beforePorts: false };
 
@@ -190,7 +152,7 @@ describe('ModelOrderNodeComparator by the previous layer', () => {
 describe('ModelOrderNodeComparator on the site rows', () => {
   it('answers a recorded smaller-than association when the crossing counter compares nodes a second time', () => {
     // oracle: sites/ModelOrder/transitive/counting; ModelOrderNodeComparator.java:133-135
-    const result = replaySite('sites/ModelOrder/transitive/counting');
+    const result = replayOrderSite('sites/ModelOrder/transitive/counting');
     expect(result.layers).toEqual([
       ['g0/n0', 'g0/n1'],
       ['g0/n4', 'g0/n6', 'g0/n8', 'g0/n3', 'g0/n2', 'g0/n5', 'g0/n7', 'g0/n9'],
@@ -199,13 +161,13 @@ describe('ModelOrderNodeComparator on the site rows', () => {
 
   it('orders long-edge dummies through the state.compare closure and keeps the swept layers', () => {
     // oracle: sites/ModelOrder/zeroCrossings/afterSweep; ModelOrderNodeComparator.java:117 (the closure of the helper-dummy ordering, ModelOrderNodeComparator.java:330)
-    const result = replaySite('sites/ModelOrder/zeroCrossings/afterSweep');
+    const result = replayOrderSite('sites/ModelOrder/zeroCrossings/afterSweep');
     expect(result.layers).toEqual([['g0/n0'], ['new/n0', 'g0/n1', 'g0/n2', 'new/n1'], ['g0/n3']]);
   });
 
   it('orders the long-edge dummies of one reference node through the state.compare closure', () => {
     // oracle: sites/ModelOrder/feedback/sameNode; ModelOrderNodeComparator.java:117 (the closure of the helper-dummy ordering, ModelOrderNodeComparator.java:330)
-    const result = replaySite('sites/ModelOrder/feedback/sameNode');
+    const result = replayOrderSite('sites/ModelOrder/feedback/sameNode');
     expect(result.layers).toEqual([
       ['new/n0', 'g0/n0'],
       ['g0/n5', 'new/n1', 'new/n2', 'new/n3'],
@@ -219,7 +181,7 @@ describe('ModelOrderNodeComparator on the site rows', () => {
 
   it('records an arbitrary decision for a node without model order', () => {
     // oracle: sites/ModelOrder/externalPorts; ModelOrderNodeComparator.java:278-282
-    const result = replaySite('sites/ModelOrder/externalPorts');
+    const result = replayOrderSite('sites/ModelOrder/externalPorts');
     expect(result.layers).toEqual([
       ['g0/n0', 'g0/n1'],
       ['g0/n4', 'g0/n5'],
