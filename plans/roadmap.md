@@ -2216,3 +2216,72 @@ journal (T8). `git diff f5c2c889 -- test/golden/refs/` is empty.
   class or needs another fallback (`.agent-notes/test-helper-consolidation.md`).
 - To whoever moves a suite onto `defineLayoutTest` with defaults: check that the graph's node ids are in
   `layered-label-metrics.json` first.
+
+## Revision 2026-11-19 (linkedlist-int32-cleanup)
+
+Appended; no earlier line is edited. Source: issue #47 and D1-D5 in `plans/linkedlist-int32-cleanup/decisions.md`; the
+journal is `plans/linkedlist-int32-cleanup/decision-journal.md`, the caller audit
+`plans/linkedlist-int32-cleanup/audit.md`, the `int` site table `plans/linkedlist-int32-cleanup/int32-sites.md`. Where
+this section conflicts with the text above, this section wins. Task ids are T1-T3; the base is
+`8af2af35cda0683c8b6beb04195eee13885752f1`.
+
+**Two follow-ups are closed: "`LinkedList.ts`'s header claims identity equality for every ELK element" (§ Revision
+2026-11-05) and "crossing-count sums … use plain `+`" (§ Revision 2026-10-30).** No ref, vector, golden or recorder
+changed, no existing test changed, and no oracle patch was added. Two JVM runs, both read-only: a javac pass over the
+Java sources for the audit and one single-file oracle check for #120.
+
+**Item 1, `LinkedList` equality.** The header of `src/java/util/LinkedList.ts` now states the contract: `remove(e)`,
+`contains` and `indexOf` compare with `===`; that differs from Java's `equals` for `KVector` (so every `KVectorChain`),
+boxed numbers, `Pair`/`Triple`/`Quadruple` and collections; a caller that needs `equals` compares at its call site, as
+`HypernodesProcessor.removeEqual` does. The shim's behaviour is unchanged (D3).
+
+Every caller was audited, type-driven on both sides: on the TS side by renaming the methods and reading `tsc`'s
+errors (14 calls outside tests), on the Java side by a javac Tree API pass over the sixteen in-scope bundles (845
+equality-based calls with receiver type and resolved overload, 178 on a list or collection).
+
+| Verdict (D2) | Rows | What |
+| --- | --- | --- |
+| `same` | 14 | identity element types (`TEdge` of mrtree, `LNode`, `BlockRow`), the index overload `remove(int)` (3), the no-argument `KVectorChain.remove()` (1) |
+| `handled` | 1 | `HypernodesProcessor.java:178`, `KVectorChain.remove(Object)`, through `removeEqual` |
+| `differs`, `unreachable-differs` | 0 | no fix under D3 was needed |
+
+The value-equal lists the shim holds (`KVectorChain`, the `LinkedList<Double>` coordinates of `HyperEdgeSegment`,
+`rowIndices`/`rowHeights` of `BoxLayoutProvider`) have no other equality-based call in the Java. The planning concern
+about `List<Integer>.remove(int)` against `remove(Object)` does not arise: no number list is removed from.
+
+**A defect outside the shim, filed and not fixed (#120).** The javac pass covers every Java list, so the calls on a
+value-equal element type that the port keeps as an array were checked as well (the nine rows of `audit.md` § 4): eight
+are `same` or compare explicitly, one differs. `LayoutMetaDataService.java:494` tests `category.getLayouters().contains(algorithm)`
+with `LayoutAlgorithmData.equals` (ids); `LayoutMetaDataService.ts:139` uses `includes`. Registering a provider twice
+leaves one layouter in the Java category and two in the port's (oracle run in the issue). No in-scope bundle reads
+`getLayouters()`, so no layout changes. The brief scopes arrays out of #47, hence the issue.
+
+**Item 2, `int` sums.** 30 statements in 9 files of `intermediate/greedyswitch/`, `p3order/` and `p3order/counting/`
+now go through `Int32.add`/`Int32.sub`: the four-term sums and `+=` of `SwitchDecider`, the merge-loop sums of
+`BetweenLayerEdgeTwoNodeCrossingsCounter`, `NodeInfo.transfer` and every `pathsTo…` sum of `LayerSweepTypeDecider`
+(including `allPaths` and the difference, which are `int` operations widened afterwards), the hierarchical sums of
+`GreedyPortDistributor`, the group degree of `ForsterConstraintResolver`, three statements of
+`HyperedgeCrossingsCounter`, and four `++` on accumulators that are not counts of one collection
+(`connectedEdges`, `wrongModelOrder` twice, the barycenter `degree`). 9 rows stay bare with their reason: `double`
+accumulators (`LayerSweepCrossingMinimizer.java:416`), counters of one collection, array sizes, index arithmetic.
+
+Two statements of the 2026-10-30 follow-up did not hold when checked: the thoroughness loops of
+`LayerSweepCrossingMinimizer` only compare, so there was nothing to convert, and `GraphInfoHolder.ts` has no `Int32`
+call (its one counter, `nPorts++`, counts ports). One wrap test exists, at the only pure seam
+(`LayerSweepTypeDeciderNodeInfo.transfer`, `2147483647 + 1` reads `-2147483648`, JLS 15.18.2); the other 27 statements
+need more than 2^31 crossings or paths to wrap and rest on the unchanged suite (D5).
+
+**Gates (queue gates 1-7, on the finished code tree).** `format:check`, `typecheck`, `complexity` exit 0 (no
+violation line). Coverage, full suite with the nine sweep directories off: 1,173 files and 49,295 tests passed (the
+base's 49,293 plus the two new ones), 93 skipped, 0 failed; statements 98.81 %, branches 96.99 %, functions 98.56 %,
+lines 98.86 %. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`: every finding accepted, no new
+entry in `tools/codeql/accepted.json`. `git diff --exit-code 8af2af35 -- test/golden/refs/`: empty.
+
+**Open rows.** #120 (`follow-up`): the `LayoutMetaDataService` re-registration defect. #121 (`follow-up`): value
+equality through sets, maps and indirect list calls, which the list audit did not cover. #122 (`follow-up`): Java
+`int` arithmetic outside the three crossing-min directories. No `needs-ruling` issue.
+
+**For later missions.** A type-driven caller list costs one `tsc` run (rename the method, read the errors) and a
+type-driven Java call list one javac Tree API pass (`audit.md` § 5); both are described in
+`.agent-notes/linkedlist-int32-cleanup.md`. A ported `equals` proves nothing about its call sites: check each
+`includes`/`indexOf` on instances of a class whose Java declares `equals`.

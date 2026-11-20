@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 
+import * as Int32 from '../../../java/lang/Int32.js';
+
 /**
  * For a single node, collects number of paths to nodes with random or hierarchical nodes. Java's package-private
  * nested `LayerSweepTypeDecider.NodeInfo` (M15 file naming); its fields are package-private there and read by the
@@ -14,9 +16,9 @@ export class LayerSweepTypeDeciderNodeInfo {
 
   /** @see LayerSweepTypeDecider.java:164 */
   transfer(nodeInfo: LayerSweepTypeDeciderNodeInfo): void {
-    this.hierarchicalInfluence += nodeInfo.hierarchicalInfluence;
-    this.randomInfluence += nodeInfo.randomInfluence;
-    this.connectedEdges += nodeInfo.connectedEdges;
+    this.hierarchicalInfluence = Int32.add(this.hierarchicalInfluence, nodeInfo.hierarchicalInfluence);
+    this.randomInfluence = Int32.add(this.randomInfluence, nodeInfo.randomInfluence);
+    this.connectedEdges = Int32.add(this.connectedEdges, nodeInfo.connectedEdges);
   }
 
   /** @see LayerSweepTypeDecider.java:171 */

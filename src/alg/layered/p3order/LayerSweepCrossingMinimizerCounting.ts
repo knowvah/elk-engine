@@ -50,7 +50,7 @@ export function countModelOrderNodeChanges(
       LongEdgeOrderingStrategy.EQUAL,
       { groupOrderStrategy: cmGroupOrderStrategy, beforePorts: false },
     );
-    wrongModelOrder += countWrongModelOrderOfNodes(layer, comp);
+    wrongModelOrder = Int32.add(wrongModelOrder, countWrongModelOrderOfNodes(layer, comp));
     previousLayer++;
   }
   return wrongModelOrder;
@@ -66,7 +66,7 @@ function countWrongModelOrderOfNodes(layer: LNode[], comp: ModelOrderNodeCompara
         layer[j]!.hasProperty(InternalProperties.MODEL_ORDER) &&
         comp.compare(layer[i]!, layer[j]!) > 0
       ) {
-        wrongModelOrder++;
+        wrongModelOrder = Int32.add(wrongModelOrder, 1);
       }
     }
   }
@@ -102,7 +102,7 @@ export function countModelOrderPortChanges(
       for (let i = 0; i < lNode.getPorts().length; i++) {
         for (let j = i + 1; j < lNode.getPorts().length; j++) {
           if (comp.compare(lNode.getPorts()[i]!, lNode.getPorts()[j]!) > 0) {
-            wrongModelOrder++;
+            wrongModelOrder = Int32.add(wrongModelOrder, 1);
           }
         }
       }

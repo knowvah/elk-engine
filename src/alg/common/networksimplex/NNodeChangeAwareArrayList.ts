@@ -3,8 +3,9 @@ import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOpe
 
 /**
  * Java's private nested class `NNode.ChangeAwareArrayList`, split into its own file (M15): a list that counts its
- * structural modifications. `remove`, `contains`, `indexOf` and `lastIndexOf` compare with `===` (Java `equals`
- * is identity for ELK's elements). Java's overloads by parameter type are renamed: `addAt`, `addAllAt`, `removeAt`.
+ * structural modifications. `remove`, `contains`, `indexOf` and `lastIndexOf` compare with `===`: the Java
+ * instantiates the list only for `NEdge` (`NNode.java:51,53`), which inherits `Object.equals` (identity). Java's
+ * overloads by parameter type are renamed: `addAt`, `addAllAt`, `removeAt`.
  * `subList` returns a copy, not a view; its only Java caller set is empty.
  *
  * @see org.eclipse.elk.alg.common/src/org/eclipse/elk/alg/common/networksimplex/NNode.java
