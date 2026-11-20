@@ -189,9 +189,9 @@ Hazards:
   `~/.m2/repository` are then the new commit's. Anything else that resolves them (an ELK fix worktree's test run) sees
   the new jars. A rehearsal redirects the repository (section 14).
 - **Stale worktree (issue #85).** `build.sh` exits `2` on an existing worktree that holds an untracked directory other
-  than build output, `census/` and `sweep/`; `vector-cache/` is such a directory. Rebuilding in place needs the
-  environment-scoped excludes file described in `.agent-notes/text-sizing-seam.md`; a move removes the worktree first
-  (step 4), so it does not meet this.
+  than build output and the cache roots `census/`, `sweep/` and `vector-cache/`. A rebuild in place keeps those three
+  (the vector cache still runs cold after it, see the last hazard below); run output in any other directory at the
+  worktree root has to move under `sweep/` first. A move removes the worktree first (step 4), so it does not meet this.
 - **Maven series.** When the net diff bumps Tycho, the build is the test of whether `MAVEN_SERIES` still fits. A failure
   to start is diagnosed from `.oracle-build.log` (conformance.md § 5, first row); `build.sh` is never edited to force a
   build without a stated mechanism. Tycho 4.0.13 starts and builds on Maven 3.9.11.

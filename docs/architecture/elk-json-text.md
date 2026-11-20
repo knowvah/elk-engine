@@ -319,7 +319,8 @@ pinned ELK commit and the Xtext version.
    48 of the 898 `.elkt` models carry duplicate identifiers, which the unseeded generator would rename
    differently on each run.
 5. **Rebuilding the oracle after a new patch**: `git am` the patch into the existing worktree `../elk-oracle`
-   (it holds `sweep/` and `census/` outputs, so it is not removed), using the identity `build.sh` uses, then
+   (it holds the `sweep/`, `census/` and `vector-cache/` outputs, so it is not removed), using the identity
+   `build.sh` uses, then
    `ELK_MVN=<maven 3.9>/bin/mvn tools/oracle/build.sh`. `verify_worktree` matches the patch subjects. Adding a
    patch changes only the `patches` array of the existing `_meta.json` files; regenerate those by script and
    journal the patch id.

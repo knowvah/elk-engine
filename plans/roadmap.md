@@ -2415,3 +2415,72 @@ Candidates not checked: ten `intermediate/*.test.ts` headers ("staged until T8" 
 ref's vector test with `--coverage.include` on the files in question prints the hits of every function in about ten
 seconds (`.agent-notes/p3order-test-titles.md`). A comment that names a mission as the end of a staged state is
 removed by the mission that ends it, titles included: a rule limited to comments leaves the titles behind.
+
+## Revision 2026-11-20 (oracle-stale-caches)
+
+Appended; no earlier line is edited. Source: issue #85 and D1-D5 in `plans/oracle-stale-caches/decisions.md`; the
+journal is `plans/oracle-stale-caches/decision-journal.md`. Where this section conflicts with the text above, this
+section wins. Task ids are T1-T3; the base is `b6b946015df56a9130f2016c67f01afe242b5b07`.
+
+**One follow-up is closed: `tools/oracle/build.sh` called the oracle worktree stale over the vector cache.**
+`verify_worktree` counts every `git status --porcelain` line outside `OUTPUT_FILTER` as dirt, and the filter did not
+know the `vector-cache/` root that `tools/vectors/vector-cache.sh` writes. An in-place rebuild therefore exited `2`,
+and the only documented answer removed the worktree with every cache under it. #85's option 1 is taken (D1); option 2
+(one cache root, which would change `tools/vectors/` and turn every cache cold) and option 3 (document the
+environment-scoped excludes file) are rejected.
+
+**`build.sh` (T1), 4 lines added and 3 removed.** The filter's last alternative is now
+`^\?\? (census|sweep|vector-cache)/$`, with a comment that names the script-written caches. The last line is
+`if [ "${BASH_SOURCE[0]}" = "$0" ]; then main "$@"; fi`, so a test can source the file; executing it is unchanged
+(`build.sh --bogus` still exits 1 with the usage error). Nothing else joins the filter: the three ad hoc directories
+that #85 names (`t4/`, `rerecord/`, `final-gate/`) were already gone from the live worktree (D4).
+
+**Test (T1).** `test/architecture/oracle-build.test.ts`, 8 cases, drives the real `verify_worktree` on a throwaway
+git repository and one detached worktree per case, with the maintainer's git configuration shut out, and compares
+exit status, stdout and stderr whole.
+
+| Worktree holds | Result |
+| -------------- | ------ |
+| nothing untracked | verified (0) |
+| `vector-cache/` only | verified (0) |
+| `census/`, `sweep/`, `vector-cache/`, `oracle-build.json` | verified (0) |
+| those four and `t4/` | stale (2) |
+| `vector-cache-old/` | stale (2) |
+| `sub/vector-cache/`, `sub/` untracked | stale (2) |
+| `plugins/vector-cache/`, `plugins/` tracked | stale (2) |
+| those four and a modified tracked file | stale (2) |
+
+Red first: against the unguarded script all 8 failed (sourcing ran `main`, which stopped at the usage check); with
+the guard alone exactly rows 2 and 3 failed with exit 2; with the filter all pass. `shellcheck` and `bash -n` clean.
+
+**Live proof (T2), read-only.** With the base filter the live porcelain leaves exactly `?? vector-cache/`. With the
+new script, sourced and called with `GIT_OPTIONAL_LOCKS=0`, `verify_worktree` prints
+`existing oracle worktree verified` and exits 0. `oracle-build.json` has sha256 `87705f69…9911` before and after, and
+the worktree's index file kept its mtime, size and hash. `build.sh` was never run on the live oracle, so there was no
+rebuild and the 192 MB vector cache is still warm.
+
+**Docs (T2).** `docs/conformance.md` § 1, § 4 step 1 and § 5 rows 1-2, `docs/architecture/elk-upgrade.md` (the
+"Stale worktree (issue #85)" hazard, without the pointer to the excludes workaround) and
+`docs/architecture/elk-json-text.md` step 5 name the three exempt roots, say that any other untracked root directory
+still gives exit `2` and that run output belongs under `sweep/`, and warn that removing the worktree deletes the
+caches. They also say what the exemption does not do: a rebuild rewrites `oracle-build.json`, which is part of every
+vector-cache salt, so each cached recorder still runs cold once after it. `tools/oracle/README.md` needed no change.
+
+**Gates (queue gates 1-7, on the final tree, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377
+files, 10,718 functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,174 files
+and 49,313 tests passed, 93 skipped, 0 failed (one file and 8 tests more than the base); statements 98.81 %, branches
+96.99 %, functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`:
+every finding accepted, no new entry in `tools/codeql/accepted.json`. Gate 7:
+`git diff --exit-code b6b94601 -- test/golden/refs/ tools/vectors/` is empty; no recorder or regen script has a
+changed input.
+
+**Oracle.** Not rebuilt and not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003.
+`git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
+
+**Open rows.** #131 (`follow-up`): the 23 translated `docs-site/<locale>/conformance.md` pages still carry the old
+text of the four paragraphs (D5; the brief counted 21). No `needs-ruling` issue was filed; no stop condition was met.
+
+**For later missions.** To learn whether the live oracle worktree is stale, source `build.sh` and call
+`verify_worktree` (`.agent-notes/oracle-stale-caches.md`); running `build.sh`, with or without `--record-only`,
+rewrites `oracle-build.json` and turns every vector cache cold. Local run output still goes under `sweep/`: a new
+directory at the oracle root makes the next rebuild exit `2`, and the answer is to move it, not to widen the filter.
