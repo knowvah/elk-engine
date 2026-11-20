@@ -2567,3 +2567,77 @@ was met. #89 stays open until the branch merges.
 clone that has fetched the pin) serves when `../elk` has moved on. During a pin move, bump `tools/oracle/ELK_COMMIT`
 before `tools/bundle-deps.ts --write`: the CLI stamps that file's commit, and the `pinned commit` case fails until
 the table is rewritten.
+
+## Revision 2026-11-20 (overview-status)
+
+Appended; no earlier line is edited. Source: issue #93 and D1-D6 in `plans/overview-status/decisions.md`; the journal
+is `plans/overview-status/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+Task ids are T1-T3; the base is `9c31c988647273d0aba2bf41a9612ef3d171de97`.
+
+**One follow-up of docs-publish-prep is done: the site and the README no longer say that no layout algorithm is
+ported.** `docs-site/guide/overview.md`, the home page `docs-site/index.md` and `README.md` carried the pre-alpha
+notice ("No layout algorithm is ported yet… `src/index.ts` exports nothing public yet") and the sentence "The first
+npm publish freezes this surface". The first has been false since rows 7a-8c landed; the second since ruling 8 on #90
+as amended on #91 (0.x may change, 1.0 freezes the surface). The docs-publish-prep mission (#43) found the text and
+could not change it (DP6); #93 became ready with the #90 ruling.
+
+**English text (T1).** Four blocks on the two site pages and two in the README, nothing else: the overview's warning
+and § Public contract; the home page's fourth feature tile and its warning; the README's § Status and § Public
+contract. Each now says, with a journaled source per claim: all in-scope ELK layout algorithms are ported and checked
+against ELK built from source, with a link to the parity report (rows 7a-8c above, `docs/parity-report.md`); the
+public export surface is accepted but not yet in `src/index.ts` (#90, `src/index.ts` is `export {}`); versions stay
+0.x until 1.0 and 1.0 freezes the surface (ruling 8 as amended). § Public contract names the accepted surface by kind
+(the ElkGraph model and `ElkGraphUtil`, the layout engine, each algorithm's metadata provider and options with their
+value types, ELK JSON and the textual graph formats) and links the getting-started page; it does not name the
+registration helper or the error classes, which #90 leaves to the implementation. The container and tile title
+`Pre-alpha` is `Pre-1.0`. The phrases "No layout algorithm", "Pre-alpha" and "first npm publish" are gone from the
+three files.
+
+**One sentence per page depends on the #90 implementation.** It is the same in all three English files: "The public
+export surface is accepted but not yet in `src/index.ts`, so the package entry exports nothing public yet." Its
+counterparts sit in the warning of each of the 46 locale pages. #90 has a comment listing all 49 files, the
+getting-started notice ("has not accepted yet", false since 2026-11-14, #90 step 5) and the header of
+`docs/architecture/public-api.md` ("Status: Proposed", "The first npm publish freezes this surface"), which the
+README now links and this mission did not edit.
+
+**Scope line (D2): the navigation is left to the #90 implementation.** No change to `navFor`/`sidebarFor`,
+`test/docs/locale-complete.test.ts`, `src/index.ts`, the `i18nRouting` setting or any `.vitepress/` file. The
+getting-started page and `/reference/` stay out of the navigation; the overview's § Public contract links the
+getting-started page in the body, unprefixed in every locale because the page is English-only.
+
+**Translations (T2).** The 23 locale copies of `guide/overview.md` and `index.md` (46 pages) take the counterparts of
+the four site blocks and the new `sourceHash`. Per page the difference from the base is three hunks (the hash line and
+two blocks) and nothing outside them, checked by the orchestrator with a line diff per file, not taken from the
+translators' reports. Six `general-purpose` subagents on `sonnet` with Edit, never Write, each with its own locale
+directories, made the edits from one shared brief; the orchestrator then corrected six wordings (a singular "textual
+graph format" in de and sv, a dropped "in-scope" in the fi and et tiles, the ko and ru container titles). Container
+titles: `Pre-1.0`, except `Pré-1.0` (fr, pt-br), `1.0 以前` (ja), `1.0 이전` (ko), `До 1.0` (ru). `/parity`,
+`/guide/getting-started` and `/guide/roadmap` stay unprefixed in every locale; the brief's "`/guide/roadmap` takes
+`/<p>/`" was wrong (the roadmap page is English-only) and was not followed.
+
+**Translation status.** Before: three stale pages in each of the 23 locales (`conformance.md`,
+`guide/architecture.md`, `guide/overview.md`). After: two (`conformance.md`, `guide/architecture.md`); `index.md` is
+stale nowhere. The overview copies had been stale through the hash alone since the pin moves `3da09a9c` and
+`a23e0219` edited their sha line; that is cleared.
+
+**Finding: the other two stale pages are not stale through the hash alone.** The brief took `conformance.md` and
+`guide/architecture.md` to be in the overview's state. They are not: all 23 copies of each record the hash of the
+English sources at `0932a534` (2026-10-11), and since then `docs/conformance.md` gained 2,189 lines over 44 commits
+and the two architecture sources 71 lines over 26 commits. #109 and #131 ask for single paragraphs of the conformance
+copies. #133 (`follow-up`) records the measurement and asks for a translation pass or a ruling that the conformance
+page becomes English-only, and for step 13.2 of `docs/architecture/elk-upgrade.md` to refresh `sourceHash` when a pin
+move edits the sha line of a copy whose only drift is that line (every overview copy, from now on).
+
+**Unchanged.** No file under `src/`, `test/`, `tools/` or `docs/`. No assertion, vector or golden changed (D6: no
+test pins this prose). No oracle build, recorder, sweep or JVM ran.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,718
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,176 files and 49,324 tests
+passed, 93 skipped, 0 failed, as at the base; statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %.
+`docs:build` exit 0 with 200 typedoc warnings, as at the base; `docs:linkcheck` scanned 555 links with none broken;
+`npx vitest run test/docs` 9 files and 897 tests passed, the translation lint over the 23 registered locales among
+them. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`. Gate 7:
+`git diff --exit-code 9c31c988 -- test/golden/refs/` is empty; no recorder or regen script has a changed input.
+
+**Oracle.** Not rebuilt and not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003.
+`git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.

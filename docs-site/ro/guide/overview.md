@@ -1,6 +1,6 @@
 ---
 title: Prezentare generală
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -11,10 +11,11 @@ sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
 Kernel](https://www.eclipse.org/elk) (ELK), biblioteca Java pentru layout de grafuri. Nu există Java și nu există
 WASM: algoritmii de layout sunt reimplementați în TypeScript simplu și verificați față de implementarea Java.
 
-::: warning Pre-alfa
-Încă nu a fost portat niciun algoritm de layout. Depozitul conține lanțul de unelte, documentele de arhitectură,
-infrastructura de verificare și shim-urile runtime-ului Java. `src/index.ts` nu exportă încă nimic public.
-Consultați [foaia de parcurs](/guide/roadmap) pentru ordinea în care sosesc algoritmii.
+::: warning Pre-1.0
+Toți algoritmii de layout ELK prevăzuți sunt portați și verificați față de ELK compilat din surse; [raportul de
+paritate](/parity) conține rezultatele. Suprafața de export publică este acceptată, dar nu se află încă în
+`src/index.ts`, astfel că punctul de intrare al pachetului nu exportă încă nimic public. Până la 1.0, API-ul se mai
+poate schimba. Consultați [foaia de parcurs](/guide/roadmap) pentru ce urmează.
 :::
 
 ## Java este specificația
@@ -47,8 +48,12 @@ Procedura completă se găsește pe pagina [Conformitate](/ro/conformance).
 
 ## Contract public
 
-API-ul public va fi modelul de obiecte ElkGraph plus fabricile `ElkGraphUtil`. ELK JSON este un adaptor de I/O, nu
-modelul de bază. Prima publicare pe npm îngheață această suprafață.
+API-ul public este suprafața de export acceptată în
+[#90](https://github.com/knowvah/elk-engine/issues/90): modelul de obiecte ElkGraph și fabricile `ElkGraphUtil`,
+motorul de layout, furnizorul de metadate și opțiunile fiecărui algoritm împreună cu tipurile valorilor lor, precum și
+formatele ELK JSON și de graf textual. ELK JSON este un adaptor de I/O, nu modelul de bază.
+[Primii pași](/guide/getting-started) arată suprafața în uz. Versiunile rămân 0.x până la 1.0; 1.0 îngheață
+suprafața.
 
 ## Restricții de runtime
 

@@ -1,6 +1,6 @@
 ---
 title: Vue d’ensemble
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), la bibliothèque Java de layout de g
 WASM : les algorithmes de layout sont réimplémentés en TypeScript simple et vérifiés par rapport à
 l’implémentation Java.
 
-::: warning Pré-alpha
-Aucun algorithme de layout n’est encore porté. Le dépôt contient la chaîne d’outils, les documents d’architecture,
-l’échafaudage de vérification et les shims du runtime Java. `src/index.ts` n’exporte encore rien de public.
-Consultez la [feuille de route](/guide/roadmap) (en anglais) pour l’ordre d’arrivée des algorithmes.
+::: warning Pré-1.0
+Tous les algorithmes de layout d’ELK prévus sont portés et vérifiés par rapport à l’ELK compilé depuis les sources ;
+le [rapport de parité](/parity) (en anglais) donne les résultats. La surface d’export publique est acceptée, mais ne
+figure pas encore dans `src/index.ts` : le point d’entrée du paquet n’exporte donc encore rien de public. Jusqu’à la
+1.0, l’API peut encore changer. Consultez la [feuille de route](/guide/roadmap) (en anglais) pour connaître la suite.
 :::
 
 ## Le Java est la spécification
@@ -45,8 +46,12 @@ nécessite pas de JVM. La procédure complète se trouve sur la page [Conformit�
 
 ## Contrat public
 
-L’API publique sera le modèle d’objets ElkGraph plus les fabriques `ElkGraphUtil`. ELK JSON est un adaptateur
-d’E/S, pas le modèle central. La première publication npm fige cette surface.
+L’API publique est la surface d’export acceptée dans
+[#90](https://github.com/knowvah/elk-engine/issues/90) : le modèle d’objets ElkGraph et les fabriques
+`ElkGraphUtil`, le moteur de layout, le fournisseur de métadonnées et les options de chaque algorithme avec leurs
+types de valeurs, ainsi que les formats ELK JSON et de graphe textuel. ELK JSON est un adaptateur d’E/S, pas le
+modèle central. [Prise en main](/guide/getting-started) (en anglais) montre la surface en usage. Les versions restent
+en 0.x jusqu’à la 1.0 ; la 1.0 fige la surface.
 
 ## Contraintes d’exécution
 

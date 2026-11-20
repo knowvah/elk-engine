@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, saf TypeScript ile
@@ -25,16 +25,18 @@ features:
       eşleşir.
   - title: Tarayıcıya özgü, sıfır çalışma zamanı bağımlılığı
     details: Kütüphane kodunda Java yok, WASM yok, Node yerleşikleri yok. Paketleyin ve yayımlayın.
-  - title: Pre-alpha
-    details: Araç zinciri, mimari, Java çalışma zamanı shim'leri ve doğrulama altyapısı mevcut. Henüz hiçbir yerleşim
-      algoritması taşınmadı.
+  - title: Pre-1.0
+    details: Kapsamdaki tüm ELK yerleşim algoritmaları taşındı ve kaynaktan derlenmiş ELK'ya karşı denetlendi. 1.0'a
+      kadar API değişebilir.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alpha
-Henüz hiçbir yerleşim algoritması taşınmadı ve `src/index.ts` herkese açık hiçbir şey dışa aktarmıyor. İlk npm
-yayımı herkese açık API'yi sabitleyecek. Sıradakiler için [yol haritasına](/guide/roadmap) bakın.
+::: warning Pre-1.0
+Kapsamdaki tüm ELK yerleşim algoritmaları taşındı ve kaynaktan derlenmiş ELK'ya karşı denetlendi; sonuçlar
+[eşdeğerlik raporunda](/parity) yer alır. Herkese açık dışa aktarım yüzeyi kabul edildi ancak henüz
+`src/index.ts` içinde değil; bu yüzden paket girişi henüz herkese açık hiçbir şey dışa aktarmıyor. Sürümler 1.0'a
+kadar 0.x kalır ve o zamana kadar API değişebilir. Sıradakiler için [yol haritasına](/guide/roadmap) bakın.
 :::
 
 ## Yolunuzu seçin

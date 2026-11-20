@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK puhtas TypeScriptis
@@ -26,16 +26,18 @@ features:
       1e-6 piires.
   - title: Brauseri-natiivne, ilma käitusaja sõltuvusteta
     details: Teegi koodis pole Javat, WASM-i ega Node'i sisseehitatud mooduleid. Komplekteerige ja avaldage.
-  - title: Pre-alpha
-    details: Tööriistaahel, arhitektuur, Java käitusaja shimid ja kontrolli tugikonstruktsioon on olemas. Ühtegi
-      paigutusalgoritmi pole veel portitud.
+  - title: Pre-1.0
+    details: Kõik projekti ulatusse kuuluvad ELK-i paigutusalgoritmid on portitud ja lähtekoodist ehitatud ELK-iga
+      kontrollitud. Kuni 1.0-ni võib API veel muutuda.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alpha
-Ühtegi paigutusalgoritmi pole veel portitud ja `src/index.ts` ei ekspordi midagi avalikku. Esimene npm-i avaldamine
-külmutab avaliku API. Mis tuleb järgmisena, selle leiate [teekaardilt](/guide/roadmap).
+::: warning Pre-1.0
+Kõik ELK-i paigutusalgoritmid, mis projekti ulatusse kuuluvad, on portitud ja lähtekoodist ehitatud ELK-iga
+kontrollitud; tulemused leiate [pariteediaruandest](/parity). Avalik ekspordipind on heaks kiidetud, kuid veel mitte
+failis `src/index.ts`, nii et paketi sisendmoodul ei ekspordi veel midagi avalikku. Versioonid jäävad 0.x-iks kuni
+1.0-ni ja selleni võib API veel muutuda. Mis tuleb järgmisena, selle leiate [teekaardilt](/guide/roadmap).
 :::
 
 ## Valige oma tee

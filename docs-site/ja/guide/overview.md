@@ -1,6 +1,6 @@
 ---
 title: 概要
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -10,8 +10,8 @@ sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
 `@knowvah/elk-engine` は、Java 製のグラフレイアウトライブラリである [Eclipse Layout
 Kernel](https://www.eclipse.org/elk)（ELK）の忠実な TypeScript 移植です。Java も WASM も使いません。レイアウトアルゴリズムはプレーンな TypeScript で再実装され、Java 実装に対して検証されています。
 
-::: warning プレアルファ
-レイアウトアルゴリズムはまだ移植されていません。リポジトリにあるのは、ツールチェーン、アーキテクチャ文書、検証用の足場、Java ランタイムのシムです。`src/index.ts` は公開されるものをまだ何もエクスポートしていません。アルゴリズムが追加される順序は[ロードマップ](/guide/roadmap)（英語）を参照してください。
+::: warning 1.0 以前
+対象範囲の ELK レイアウトアルゴリズムはすべて移植済みで、ソースからビルドした ELK に対して検証されています。結果は[パリティレポート](/parity)（英語）にあります。公開するエクスポートの範囲は承認済みですが、まだ `src/index.ts` には入っていないため、パッケージのエントリーは公開されるものをまだ何もエクスポートしていません。1.0 までは API が変わる可能性があります。今後の予定は[ロードマップ](/guide/roadmap)（英語）を参照してください。
 :::
 
 ## Java が仕様である
@@ -36,7 +36,7 @@ Kernel](https://www.eclipse.org/elk)（ELK）の忠実な TypeScript 移植で�
 
 ## 公開コントラクト
 
-公開 API は、ElkGraph オブジェクトモデルと `ElkGraphUtil` ファクトリになります。ELK JSON は I/O アダプターであり、コアモデルではありません。最初の npm 公開でこのインターフェースが固定されます。
+公開 API は、[#90](https://github.com/knowvah/elk-engine/issues/90) で承認されたエクスポートの範囲です。ElkGraph オブジェクトモデルと `ElkGraphUtil` ファクトリ、レイアウトエンジン、各アルゴリズムのメタデータプロバイダーとオプション（その値の型を含む）、ELK JSON とテキスト形式のグラフフォーマットが含まれます。ELK JSON は I/O アダプターであり、コアモデルではありません。実際の使い方は[はじめに](/guide/getting-started)（英語）にあります。バージョンは 1.0 まで 0.x のままで、1.0 でこのインターフェースが固定されます。
 
 ## ランタイムの制約
 

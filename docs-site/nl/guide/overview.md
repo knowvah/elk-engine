@@ -1,6 +1,6 @@
 ---
 title: Overzicht
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), de Java-bibliotheek voor graaflayout
 geen WASM: de layoutalgoritmen zijn opnieuw geïmplementeerd in gewoon TypeScript en geverifieerd
 tegen de Java-implementatie.
 
-::: warning Pre-alpha
-Er is nog geen layoutalgoritme geporteerd. De repository bevat de toolchain, de architectuurdocumenten,
-de verificatie-infrastructuur en de Java-runtime-shims. `src/index.ts` exporteert nog niets publieks.
-In de [routekaart](/guide/roadmap) staat in welke volgorde de algoritmen volgen.
+::: warning Pre-1.0
+Alle beoogde ELK-layoutalgoritmen zijn geporteerd en gecontroleerd tegen ELK gebouwd vanuit de broncode; de
+[pariteitsrapportage](/parity) bevat de resultaten. Het publieke exportoppervlak is goedgekeurd maar staat nog
+niet in `src/index.ts`, dus de pakketingang exporteert nog niets publieks. Tot 1.0 kan de API nog wijzigen.
+In de [routekaart](/guide/roadmap) staat wat er daarna komt.
 :::
 
 ## De Java is de specificatie
@@ -45,8 +46,12 @@ De volledige procedure staat op de pagina [conformiteit](/nl/conformance).
 
 ## Publiek contract
 
-De publieke API wordt het ElkGraph-objectmodel plus de `ElkGraphUtil`-factories. ELK JSON is een
-I/O-adapter, niet het kernmodel. De eerste npm-publicatie bevriest dit oppervlak.
+De publieke API is het exportoppervlak dat is goedgekeurd in
+[#90](https://github.com/knowvah/elk-engine/issues/90): het ElkGraph-objectmodel en de
+`ElkGraphUtil`-factories, de layout-engine, de metadataprovider en opties van elk algoritme met
+hun waardetypen, en de ELK JSON- en tekstuele graafformaten. ELK JSON is een I/O-adapter, niet het
+kernmodel. [Aan de slag](/guide/getting-started) laat het oppervlak in gebruik zien. De versies blijven 0.x
+tot 1.0; 1.0 bevriest het oppervlak.
 
 ## Runtimebeperkingen
 

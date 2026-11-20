@@ -1,6 +1,6 @@
 ---
 title: Überblick
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), der Java-Bibliothek für Graphlayout
 kein WASM: Die Layoutalgorithmen sind in schlichtem TypeScript neu implementiert und gegen die
 Java-Implementierung verifiziert.
 
-::: warning Pre-Alpha
-Noch kein Layoutalgorithmus ist portiert. Das Repository enthält die Toolchain, die Architekturdokumente,
-das Verifikationsgerüst und die Java-Laufzeit-Shims. `src/index.ts` exportiert noch nichts Öffentliches.
-Die Reihenfolge, in der Algorithmen hinzukommen, steht in der [Roadmap](/guide/roadmap).
+::: warning Pre-1.0
+Alle vorgesehenen ELK-Layoutalgorithmen sind portiert und gegen aus den Quellen gebautes ELK geprüft; die
+Ergebnisse stehen im [Paritätsbericht](/parity). Die öffentliche Export-Oberfläche ist abgenommen, aber noch
+nicht in `src/index.ts`, daher exportiert der Paketeinstieg noch nichts Öffentliches. Bis 1.0 kann sich die API
+noch ändern. Was als Nächstes kommt, steht in der [Roadmap](/guide/roadmap).
 :::
 
 ## Das Java ist die Spezifikation
@@ -45,8 +46,11 @@ Das vollständige Verfahren steht auf der Seite [Konformität](/de/conformance).
 
 ## Öffentlicher Vertrag
 
-Die öffentliche API wird das ElkGraph-Objektmodell plus die `ElkGraphUtil`-Factories sein. ELK JSON ist ein
-E/A-Adapter, nicht das Kernmodell. Das erste npm-Publish friert diese Oberfläche ein.
+Die öffentliche API ist die in [#90](https://github.com/knowvah/elk-engine/issues/90) abgenommene
+Export-Oberfläche: das ElkGraph-Objektmodell und die `ElkGraphUtil`-Factories, die Layout-Engine, der
+Metadaten-Provider und die Optionen jedes Algorithmus samt ihren Werttypen sowie ELK JSON und die
+textuellen Graphformate. ELK JSON ist ein E/A-Adapter, nicht das Kernmodell. [Erste Schritte](/guide/getting-started)
+zeigt die Oberfläche im Einsatz. Die Versionen bleiben bis 1.0 bei 0.x; 1.0 friert die Oberfläche ein.
 
 ## Laufzeit-Einschränkungen
 

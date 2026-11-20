@@ -1,6 +1,6 @@
 ---
 title: 개요
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -11,10 +11,11 @@ sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
 Kernel](https://www.eclipse.org/elk)(ELK)을 충실하게 포팅한 TypeScript 구현입니다. Java도 WASM도 없습니다. 레이아웃
 알고리즘을 일반 TypeScript로 다시 구현했으며 Java 구현과 대조하여 검증했습니다.
 
-::: warning 프리알파
-아직 포팅된 레이아웃 알고리즘이 없습니다. 저장소에는 툴체인, 아키텍처 문서, 검증 기반 구조, Java 런타임 심이 있습니다.
-`src/index.ts`는 아직 공개 항목을 내보내지 않습니다. 알고리즘이 추가되는 순서는 [로드맵](/guide/roadmap)(영어)을
-참고하십시오.
+::: warning 1.0 이전
+범위에 포함된 모든 ELK 레이아웃 알고리즘을 포팅했으며, 소스에서 빌드한 ELK와 대조하여 검증했습니다. 결과는
+[패리티 보고서](/parity)(영어)에 있습니다. 공개 내보내기 표면은 승인되었지만 아직 `src/index.ts`에 반영되지 않았으므로,
+패키지 진입점은 아직 공개 항목을 내보내지 않습니다. 1.0 이전에는 API가 바뀔 수 있습니다. 다음 계획은
+[로드맵](/guide/roadmap)(영어)을 참고하십시오.
 :::
 
 ## Java가 곧 명세입니다
@@ -42,8 +43,10 @@ Kernel](https://www.eclipse.org/elk)(ELK)을 충실하게 포팅한 TypeScript �
 
 ## 공개 계약
 
-공개 API는 ElkGraph 객체 모델과 `ElkGraphUtil` 팩토리가 됩니다. ELK JSON은 핵심 모델이 아니라 I/O 어댑터입니다. 첫 npm
-게시와 함께 이 표면이 고정됩니다.
+공개 API는 [#90](https://github.com/knowvah/elk-engine/issues/90)에서 승인된 내보내기 표면입니다. ElkGraph 객체 모델과
+`ElkGraphUtil` 팩토리, 레이아웃 엔진, 각 알고리즘의 메타데이터 제공자와 옵션 및 그 값 타입, 그리고 ELK JSON과 텍스트
+그래프 형식이 여기에 포함됩니다. ELK JSON은 핵심 모델이 아니라 I/O 어댑터입니다. [시작하기](/guide/getting-started)(영어)는
+이 표면을 실제로 사용하는 모습을 보여 줍니다. 버전은 1.0까지 0.x를 유지하며, 1.0에서 이 표면이 고정됩니다.
 
 ## 런타임 제약
 

@@ -1,6 +1,6 @@
 ---
 title: Visão geral
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), a biblioteca Java de layout de grafo
 WASM: os algoritmos de layout são reimplementados em TypeScript simples e verificados contra a
 implementação em Java.
 
-::: warning Pré-alfa
-Nenhum algoritmo de layout foi portado ainda. O repositório contém a toolchain, os documentos de arquitetura,
-a estrutura de verificação e os shims do runtime Java. `src/index.ts` ainda não exporta nada público.
-Veja o [roteiro](/guide/roadmap) para a ordem em que os algoritmos chegam.
+::: warning Pré-1.0
+Todos os algoritmos de layout do ELK previstos foram portados e verificados contra o ELK compilado a partir do
+código-fonte; o [relatório de paridade](/parity) traz os resultados. A superfície de exportação pública foi aceita,
+mas ainda não está em `src/index.ts`, então a entrada do pacote ainda não exporta nada público. Até a 1.0, a API
+ainda pode mudar. Veja o [roteiro](/guide/roadmap) para saber o que vem a seguir.
 :::
 
 ## O Java é a especificação
@@ -45,8 +46,11 @@ procedimento completo está na página de [conformidade](/pt-br/conformance).
 
 ## Contrato público
 
-A API pública será o modelo de objetos ElkGraph mais as fábricas `ElkGraphUtil`. ELK JSON é um adaptador de
-E/S, não o modelo central. A primeira publicação no npm congela essa superfície.
+A API pública é a superfície de exportação aceita em
+[#90](https://github.com/knowvah/elk-engine/issues/90): o modelo de objetos ElkGraph e as fábricas `ElkGraphUtil`, o
+motor de layout, o provedor de metadados e as opções de cada algoritmo com seus tipos de valor, e os formatos ELK JSON
+e de grafo textual. ELK JSON é um adaptador de E/S, não o modelo central. [Primeiros passos](/guide/getting-started)
+mostra a superfície em uso. As versões permanecem 0.x até a 1.0; a 1.0 congela a superfície.
 
 ## Restrições de runtime
 

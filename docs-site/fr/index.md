@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, en TypeScript pur
@@ -26,16 +26,19 @@ features:
       coordonnées correspondent à 1e-6 près.
   - title: Natif pour le navigateur, sans dépendance d’exécution
     details: Ni Java, ni WASM, ni module intégré de Node dans le code de la bibliothèque. Empaquetez et livrez.
-  - title: Pré-alpha
-    details: La chaîne d’outils, l’architecture, les shims du runtime Java et l’échafaudage de vérification existent.
-      Aucun algorithme de layout n’est encore porté.
+  - title: Pré-1.0
+    details: Tous les algorithmes de layout d’ELK prévus sont portés et vérifiés par rapport à ELK compilé depuis les
+      sources. Jusqu’à la 1.0, l’API peut encore changer.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pré-alpha
-Aucun algorithme de layout n’est encore porté, et `src/index.ts` n’exporte rien de public. La première publication npm
-figera l’API publique. Consultez la [feuille de route](/guide/roadmap) (en anglais) pour connaître la suite.
+::: warning Pré-1.0
+Tous les algorithmes de layout d’ELK prévus sont portés et vérifiés par rapport à l’ELK compilé depuis les sources ;
+le [rapport de parité](/parity) (en anglais) donne les résultats. La surface d’export publique est acceptée, mais ne
+figure pas encore dans `src/index.ts` : le point d’entrée du paquet n’exporte donc encore rien de public. Les versions
+restent en 0.x jusqu’à la 1.0, et d’ici là l’API peut encore changer. Consultez la [feuille de route](/guide/roadmap)
+(en anglais) pour connaître la suite.
 :::
 
 ## Choisissez votre parcours

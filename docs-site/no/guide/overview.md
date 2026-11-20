@@ -1,6 +1,6 @@
 ---
 title: Oversikt
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,12 @@ Kernel](https://www.eclipse.org/elk) (ELK), Java-biblioteket for grafolayout. De
 ingen WASM: layoutalgoritmene er implementert på nytt i vanlig TypeScript og verifisert mot
 Java-implementeringen.
 
-::: warning Pre-alpha
-Ingen layoutalgoritme er portert ennå. Repoet inneholder verktøykjeden, arkitekturdokumentene,
-verifiseringsoppsettet og Java-runtime-shimene. `src/index.ts` eksporterer ingenting offentlig ennå.
-Se [veikartet](/guide/roadmap) for rekkefølgen algoritmene kommer i.
+::: warning Pre-1.0
+Alle ELK-layoutalgoritmer innenfor prosjektets omfang er portert og sjekket mot ELK bygd fra kildekode;
+[paritetsrapporten](/parity) har resultatene. Den offentlige eksportflaten er godkjent, men ligger ennå ikke
+i `src/index.ts`, så pakkens inngang eksporterer ingenting offentlig ennå. Fram til 1.0 kan API-et fortsatt
+endre seg.
+Se [veikartet](/guide/roadmap) for hva som kommer videre.
 :::
 
 ## Java-koden er spesifikasjonen
@@ -45,8 +47,12 @@ fremgangsmåten står på siden [Samsvar](/no/conformance).
 
 ## Offentlig kontrakt
 
-Det offentlige API-et blir ElkGraph-objektmodellen pluss `ElkGraphUtil`-fabrikkene. ELK JSON er en
-I/O-adapter, ikke kjernemodellen. Den første npm-publiseringen fryser denne flaten.
+Det offentlige API-et er eksportflaten som ble godkjent i
+[#90](https://github.com/knowvah/elk-engine/issues/90): ElkGraph-objektmodellen og
+`ElkGraphUtil`-fabrikkene, layoutmotoren, hver algoritmes metadataleverandør og alternativer med
+verditypene deres, samt ELK JSON og de tekstbaserte grafformatene. ELK JSON er en I/O-adapter, ikke
+kjernemodellen. [Kom i gang](/guide/getting-started) viser flaten i bruk. Versjonene forblir 0.x
+fram til 1.0; 1.0 fryser flaten.
 
 ## Begrensninger i kjøretiden
 

@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, in puur TypeScript
@@ -25,16 +25,18 @@ features:
       coördinaten komen overeen binnen 1e-6.
   - title: Browser-native, zonder runtime-afhankelijkheden
     details: Geen Java, geen WASM, geen Node-built-ins in de bibliotheekcode. Bundelen en uitleveren.
-  - title: Pre-alpha
-    details: De toolchain, de architectuur, de Java-runtime-shims en de verificatie-infrastructuur bestaan. Er is nog
-      geen layoutalgoritme geporteerd.
+  - title: Pre-1.0
+    details: Alle beoogde ELK-layoutalgoritmen zijn geporteerd en gecontroleerd tegen ELK gebouwd vanuit de broncode.
+      Tot 1.0 kan de API nog wijzigen.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alpha
-Er is nog geen layoutalgoritme geporteerd, en `src/index.ts` exporteert niets publieks. De eerste npm-publicatie
-bevriest de publieke API. Wat er daarna komt, staat in de [routekaart](/guide/roadmap).
+::: warning Pre-1.0
+Alle beoogde ELK-layoutalgoritmen zijn geporteerd en gecontroleerd tegen ELK gebouwd vanuit de broncode; de
+[pariteitsrapportage](/parity) bevat de resultaten. Het publieke exportoppervlak is goedgekeurd maar staat nog
+niet in `src/index.ts`, dus de pakketingang exporteert nog niets publieks. De versies blijven 0.x tot 1.0, en tot
+die tijd kan de API nog wijzigen. Wat er daarna komt, staat in de [routekaart](/guide/roadmap).
 :::
 
 ## Kies uw route

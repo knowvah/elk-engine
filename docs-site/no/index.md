@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, i ren TypeScript
@@ -25,16 +25,18 @@ features:
       innenfor 1e-6.
   - title: Nettleser-nativ, ingen kjøretidsavhengigheter
     details: Ingen Java, ingen WASM, ingen Node-innebygde moduler i bibliotekskoden. Bundle og send.
-  - title: Pre-alpha
-    details: Verktøykjeden, arkitekturen, Java-runtime-shimene og verifiseringsoppsettet finnes. Ingen
-      layoutalgoritme er portert ennå.
+  - title: Pre-1.0
+    details: Alle ELK-layoutalgoritmer innenfor prosjektets omfang er portert og sjekket mot ELK bygd fra kildekode.
+      Fram til 1.0 kan API-et fortsatt endre seg.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alpha
-Ingen layoutalgoritme er portert ennå, og `src/index.ts` eksporterer ingenting offentlig. Den første npm-publiseringen
-fryser det offentlige API-et. Se [veikartet](/guide/roadmap) for hva som kommer videre.
+::: warning Pre-1.0
+Alle ELK-layoutalgoritmer innenfor prosjektets omfang er portert og sjekket mot ELK bygd fra kildekode;
+[paritetsrapporten](/parity) har resultatene. Den offentlige eksportflaten er godkjent, men ligger ennå ikke i
+`src/index.ts`, så pakkens inngang eksporterer ingenting offentlig ennå. Versjonene forblir 0.x fram til 1.0, og
+fram til da kan API-et fortsatt endre seg. Se [veikartet](/guide/roadmap) for hva som kommer videre.
 :::
 
 ## Velg din vei

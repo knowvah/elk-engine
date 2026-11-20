@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK v čistom TypeScripte
@@ -26,16 +26,18 @@ features:
       v rámci 1e-6.
   - title: Natívne pre prehliadač, bez runtime závislostí
     details: Bez Javy, bez WASM, bez vstavaných modulov Node v kóde knižnice. Zbaľte a nasaďte.
-  - title: Pre-alfa
-    details: Toolchain, architektúra, shimy behového prostredia Javy a overovacia kostra existujú. Zatiaľ nie je
-      portovaný žiadny algoritmus rozloženia.
+  - title: Pre-1.0
+    details: Všetky algoritmy rozloženia ELK v rozsahu projektu sú portované a overené voči ELK zostavenému zo zdrojov.
+      Do verzie 1.0 sa API ešte môže zmeniť.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alfa
-Zatiaľ nie je portovaný žiadny algoritmus rozloženia a `src/index.ts` neexportuje nič verejné. Prvé publikovanie
-na npm zmrazí verejné API. Čo príde ďalej, nájdete v [pláne vývoja](/guide/roadmap).
+::: warning Pre-1.0
+Všetky algoritmy rozloženia ELK v rozsahu projektu sú portované a overené voči ELK zostavenému zo zdrojov;
+výsledky nájdete v [správe o zhode](/parity). Verejný exportný povrch je schválený, no zatiaľ nie je v `src/index.ts`,
+takže vstupný bod balíka zatiaľ neexportuje nič verejné. Verzie zostávajú 0.x do verzie 1.0 a dovtedy sa API ešte
+môže zmeniť. Čo príde ďalej, nájdete v [pláne vývoja](/guide/roadmap).
 :::
 
 ## Vyberte si svoju cestu

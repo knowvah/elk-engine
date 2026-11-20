@@ -1,6 +1,6 @@
 ---
 title: Prehľad
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), javovej knižnice na rozloženie gra
 ani WASM: algoritmy rozloženia sú znovu implementované v obyčajnom TypeScripte a overené voči implementácii
 v Jave.
 
-::: warning Pre-alfa
-Zatiaľ nie je portovaný žiadny algoritmus rozloženia. Repozitár obsahuje toolchain, architektonické dokumenty,
-overovaciu kostru a shimy behového prostredia Javy. `src/index.ts` zatiaľ neexportuje nič verejné.
-Poradie, v akom algoritmy pribúdajú, nájdete v [pláne vývoja](/guide/roadmap).
+::: warning Pre-1.0
+Všetky algoritmy rozloženia ELK v rozsahu projektu sú portované a overené voči ELK zostavenému zo zdrojov;
+výsledky nájdete v [správe o zhode](/parity). Verejný exportný povrch je schválený, no zatiaľ nie je v `src/index.ts`,
+takže vstupný bod balíka zatiaľ neexportuje nič verejné. Do verzie 1.0 sa API ešte môže zmeniť.
+Čo príde ďalej, nájdete v [pláne vývoja](/guide/roadmap).
 :::
 
 ## Java je špecifikácia
@@ -45,8 +46,11 @@ postup je na stránke [Zhoda](/sk/conformance).
 
 ## Verejný kontrakt
 
-Verejné API bude objektový model ElkGraph plus továrne `ElkGraphUtil`. ELK JSON je I/O adaptér, nie jadro
-modelu. Prvé publikovanie na npm tento povrch zmrazí.
+Verejné API je exportný povrch schválený v
+[#90](https://github.com/knowvah/elk-engine/issues/90): objektový model ElkGraph a továrne `ElkGraphUtil`, engine
+rozloženia, poskytovateľ metadát každého algoritmu a jeho voľby s typmi hodnôt a tiež formáty ELK JSON a textové
+formáty grafov. ELK JSON je I/O adaptér, nie jadro modelu. [Začíname](/guide/getting-started) ukazuje povrch
+v praxi. Verzie zostávajú 0.x do verzie 1.0; verzia 1.0 povrch zmrazí.
 
 ## Obmedzenia behového prostredia
 

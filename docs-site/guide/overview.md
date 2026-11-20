@@ -11,10 +11,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), the Java graph-layout library. There
 WASM: the layout algorithms are re-implemented in plain TypeScript and verified against the Java
 implementation.
 
-::: warning Pre-alpha
-No layout algorithm is ported yet. The repository holds the toolchain, the architecture documents,
-the verification scaffolding, and the Java runtime shims. `src/index.ts` exports nothing public yet.
-See the [roadmap](/guide/roadmap) for the order in which algorithms arrive.
+::: warning Pre-1.0
+All in-scope ELK layout algorithms are ported and checked against ELK built from source; the
+[parity report](/parity) has the results. The public export surface is accepted but not yet in
+`src/index.ts`, so the package entry exports nothing public yet. Until 1.0 the API may still change.
+See the [roadmap](/guide/roadmap) for what comes next.
 :::
 
 ## The Java is the specification
@@ -44,8 +45,12 @@ full procedure is on the [conformance](/conformance) page.
 
 ## Public contract
 
-The public API will be the ElkGraph object model plus the `ElkGraphUtil` factories. ELK JSON is an
-I/O adapter, not the core model. The first npm publish freezes this surface.
+The public API is the export surface accepted in
+[#90](https://github.com/knowvah/elk-engine/issues/90): the ElkGraph object model and the
+`ElkGraphUtil` factories, the layout engine, each algorithm's metadata provider and options with
+their value types, and the ELK JSON and textual graph formats. ELK JSON is an I/O adapter, not the
+core model. [Getting started](/guide/getting-started) shows the surface in use. Versions stay 0.x
+until 1.0; 1.0 freezes the surface.
 
 ## Runtime constraints
 

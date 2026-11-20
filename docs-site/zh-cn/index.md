@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: 纯 TypeScript 实现的 Eclipse ELK
@@ -24,14 +24,14 @@ features:
     details: 输出与从源码构建的 ELK 进行比较。结构完全一致；坐标在 1e-6 的容差内一致。
   - title: 原生支持浏览器，零运行时依赖
     details: 库代码中没有 Java，没有 WASM，也没有 Node 内置模块。打包即可发布。
-  - title: Pre-alpha
-    details: 工具链、架构、Java 运行时 shim 和验证脚手架均已就绪。尚未移植任何布局算法。
+  - title: Pre-1.0
+    details: 范围内的所有 ELK 布局算法均已移植，并已对照从源码构建的 ELK 进行验证。在 1.0 之前，API 仍可能变化。
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alpha
-尚未移植任何布局算法，`src/index.ts` 也没有导出任何公共内容。首次 npm 发布将冻结公共 API。后续计划请参阅[路线图](/guide/roadmap)。
+::: warning Pre-1.0
+范围内的所有 ELK 布局算法均已移植，并已对照从源码构建的 ELK 进行验证；结果见[一致性报告](/parity)。公共导出接口面已获批准，但尚未写入 `src/index.ts`，因此包入口目前没有导出任何公共内容。在 1.0 之前版本号保持 0.x，API 仍可能变化。后续计划请参阅[路线图](/guide/roadmap)。
 :::
 
 ## 选择您的路径
