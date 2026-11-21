@@ -139,6 +139,8 @@ four groups; the counts equal the header's `rowCounts`, 540 rows in all:
 No refusal category remains: every plan member of every level is in the allowed set, and a member outside it exits the
 recorder naming the row. A model whose hierarchy names an algorithm the recorder classpath does not register (`elk.stress`,
 H13, issue #58) is out of scope: counted on stderr (20 `INCLUDE_CHILDREN` inputs vendored, 3 out of scope), never recorded.
+Two of those three are vendored under `compound/` since issue #58's ruling, for the runner suites only (§ 7): the recorder's
+`MODEL_TABLE` does not list them and it walks no vendored directory, so they stay out of scope here.
 Rows where the oracle throws inside ELK are not recorded in `full`, `models` or `scenarios` (8 at T1, the candidates for
 `sites`).
 
@@ -308,14 +310,23 @@ runs in the file); their "Deferred" header lines are "Ported" lines. All 97 `alg
 (96 `<Name>.test.ts`, and `intermediate/loops/SelfLoopTestGraphCreator.java`, which has no `@Test`, as
 `test/helpers/SelfLoopTestGraphCreator.ts`).
 
-**H13, three cases wait (issue #58).** `tickets/layered/665_includeChildrenDoesntStop.elkt:21` and
-`examples/hierarchy/hierarchicalLayoutMixing.elkt:49` lay out a child with `elk.stress`, which is roadmap row 8b and
-unported, and the recorders register no stress provider. That affects `Issue665Test` (its 1 case) and `Issue700Test` (2 of
-4). The suites are ported whole; one named filter, `STRESS_PENDING` in `test/helpers/stress-pending.ts` (citing issue #58),
-holds exactly these two inputs (three cases: 665's 1 and 700's 2) and a test asserts it. `Issue665Test` has 0 cases left and emits one `it.skip` with the reason,
-so the file reports 1 skipped and does not fail; `Issue700Test` keeps 2 of 4. The oracle counts are unchanged. A third
-`elk.stress` input, `tickets/layered/588_hierarchicalLayoutNPE.elkt`, is read by no 7h suite and is never vendored or
-recorded. When `elk.stress` lands (8b), deleting `stress-pending.ts` and its uses restores the 1 + 2 cases.
+**H13, resolved (issue #58).** `tickets/layered/665_includeChildrenDoesntStop.elkt:21` and
+`examples/hierarchy/hierarchicalLayoutMixing.elkt:49` lay out a child with `elk.stress`. That affects `Issue665Test` (its 1
+case) and `Issue700Test` (2 of 4). 7h ported both suites whole and held these three cases back behind one named filter,
+`STRESS_PENDING`, because stress was roadmap row 8b and unported. Stress is ported now, and mission layered-stress-cases
+carried out the maintainer's ruling on issue #58:
+
+- `test/helpers/stress-pending.ts` and its pin test are deleted; both suites list their sources inline.
+- The layout-test runner registers `elk.force` and `elk.stress` next to layered (`registerTestAlgorithms` in
+  `test/helpers/layout-test-runner.ts`), as `PlainJavaInitialization` does for every runner suite. Each provider is
+  registered once, guarded by a probe (issue #120).
+- The two models are vendored under `test/golden/inputs/compound/` with manifest rows, and `layered-label-metrics.json`
+  holds the four label texts they need.
+
+Both suites run every case with the Java's assertions, 1 and 4, as the oracle does (`runs=1 failures=0`, `runs=4
+failures=0`), and the port's layout of each model is byte-equal to the oracle's JSON export. The recorders still register no
+stress provider, so the two models are suite inputs only. A third `elk.stress` input,
+`tickets/layered/588_hierarchicalLayoutNPE.elkt`, is read by no suite and is never vendored or recorded.
 
 The Java statements that assign never-read locals stay as bare calls (`Issue701Test`: the lookups throw on a missing node or
 port). 16 unknown label texts were appended to `tools/vectors/layered-label-metrics-texts.txt` and `layered-label-metrics.json`
@@ -398,13 +409,13 @@ carries `org.eclipse.elk.graph.json.test` (issue #97). Check `uptime` before a J
 | A hash-order difference on a new row             | a mismatch the flagged oracle does not reproduce, or a container above 10 entries           | never silent: add a reversal twin, measure, take a decision (stop 17); the sites are in § 5                                                         |
 | A logged row prints `LinkedHashMultimap@…`       | a `crossHierarchyMap` line with an object hash                                              | the multimap `toString` of `src/guava/Multimap.ts` (T14 `fix`) is missing                                                                           |
 | A refusal                                        | the recorder or the sweep exits 1 naming the row                                            | a later mission's processor reached the plan; it belongs to that mission                                                                            |
-| An `elk.stress` input appears                    | a recorder audit line `out of scope (algorithm)`, or a suite model outside `STRESS_PENDING` | out of scope until 8b (issue #58): never vendor it, never a row                                                                                     |
+| An `elk.stress` input appears                    | a recorder audit line `out of scope (algorithm)`, or a runner suite that reads such a model | recorders: never a row. A runner suite: vendor it under `compound/` with a manifest row and its label texts in the metrics table (issue #58)        |
 | A site row passes but a mutation survives        | `unreached.md`, issue #60                                                                   | the row reaches the arm without observing it; a discriminating oracle graph is needed                                                               |
 | A cap exceeded                                   | the recorder's size or line check                                                           | 16 MiB per ref, 5,000 lines per launcher: a decision                                                                                                |
 
 ## What still throws
 
 Nothing in the layered hierarchy modes: every arm is ported (59 ported, 0 pending), `test/architecture/staged-classes.json` is
-`[]`, and no `// @staged` marker remains. The three `elk.stress` cases of issue #58 wait for 8b, and the layouts that need
-another algorithm bundle (mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex) still fail to resolve
-it.
+`[]`, and no `// @staged` marker remains. The three `elk.stress` cases of issue #58 run since its ruling was carried out
+(mission layered-stress-cases), and the layouts that need another algorithm bundle (mrtree, radial, force, disco,
+rectpacking, spore, topdownpacking, vertiflex) still fail to resolve it.

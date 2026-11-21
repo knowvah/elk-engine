@@ -28,12 +28,17 @@
 // uses them).
 // `ensureSensibleLabelSize` is `layout-test-labels.ts` (FX8).
 import path from 'node:path';
+import { ForceMetaDataProvider } from '../../src/alg/force/options/ForceMetaDataProvider.js';
+import { ForceOptions } from '../../src/alg/force/options/ForceOptions.js';
+import { StressMetaDataProvider } from '../../src/alg/force/options/StressMetaDataProvider.js';
+import { StressOptions } from '../../src/alg/force/options/StressOptions.js';
 import { LayeredLayoutProvider } from '../../src/alg/layered/LayeredLayoutProvider.js';
 import type { LGraph } from '../../src/alg/layered/graph/LGraph.js';
 import type { ILayoutProcessor } from '../../src/core/alg/ILayoutProcessor.js';
 // CoreOptions first: it and TopdownSizeApproximator import each other, and CoreOptions must be the entry module.
 import { CoreOptions } from '../../src/core/options/CoreOptions.js';
 import { LayoutConfigurator } from '../../src/core/LayoutConfigurator.js';
+import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
 import { RecursiveGraphLayoutEngine } from '../../src/core/RecursiveGraphLayoutEngine.js';
 import { TestController, type ILayoutExecutionListener } from '../../src/core/testing/TestController.js';
 import { BasicProgressMonitor } from '../../src/core/util/BasicProgressMonitor.js';
@@ -260,9 +265,30 @@ interface Experiment {
 
 type Outcome = { readonly graph: ElkNode } | { readonly error: unknown };
 
+/**
+ * The part of `PlainJavaInitialization.initializePlainJavaLayout` beyond layered that a ported suite's models need:
+ * the Java registers every provider of its list for every runner suite, and two models of `Issue665Test` and
+ * `Issue700Test` lay a child out with `elk.stress` (issue #58). Force goes with stress as in the Java list (stress's
+ * algorithm is in the category `org.eclipse.elk.force`); the other six providers have no ported suite that names them.
+ * Each is registered once per module registry: a second registration would list its algorithm twice in the category
+ * (issue #120), so each is guarded by a probe of its algorithm id, which `registerForce` of the force replay also sets.
+ *
+ * @see org.eclipse.elk.alg.test/src/org/eclipse/elk/alg/test/PlainJavaInitialization.java
+ */
+export function registerTestAlgorithms(): void {
+  const service = LayoutMetaDataService.getInstance();
+  if (service.getAlgorithmData(ForceOptions.ALGORITHM_ID) === null) {
+    service.registerLayoutMetaDataProviders(new ForceMetaDataProvider());
+  }
+  if (service.getAlgorithmData(StressOptions.ALGORITHM_ID) === null) {
+    service.registerLayoutMetaDataProviders(new StressMetaDataProvider());
+  }
+}
+
 /** `ExperimentalObject.realize`: the graph, the algorithm, the configurator, then the default configuration. */
 function realize(spec: LayoutTestSpec, experiment: Experiment, measurer?: TextMeasurer): ElkNode {
   registerLayered();
+  registerTestAlgorithms();
   const graph = experiment.graph.provide();
   if (spec.algorithm !== undefined) {
     applyAlgorithm(graph, spec.algorithm);

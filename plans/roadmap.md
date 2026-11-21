@@ -3214,3 +3214,66 @@ result above (#149). `docs:build` exit 0 with 200 typedoc warnings, as at the ba
 recorder code (`Integer.parseInt` on a table entry) was fixed at its origin; every finding accepted, no new entry.
 Gate 7: the loops recorder rerun cold reproduces the committed ref byte for byte, and
 `git diff --stat 4c380f26 -- test/golden/refs/` shows `layered-loops.json` only.
+
+## Revision 2026-11-21 (layered-stress-cases)
+
+Queue mission for issue #58, on `chore/issue-queue` (plan and journal in `plans/layered-stress-cases/`). It carries out
+the maintainer's ruling of 2026-11-13 (option 1): the three runner cases 7h held back because their models lay a child
+out with `elk.stress` (H13) now run. No file under `src/` other than the two suite files changed, no oracle patch or pin
+changed, and no ref changed apart from four keys appended to one table. Oracle: `8bca22f4` + patches 0001-0004 (built
+2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over alg.layered, alg.force, alg.test and
+alg.layered.test is empty.
+
+**1. The hold-back is gone (ruling item 1).** `STRESS_PENDING`, `test/helpers/stress-pending.ts` and its pin test are
+deleted. `Issue665Test.test.ts` and `Issue700Test.test.ts` list their sources inline, each Java source after its
+`compound/` twin, with the Java's assertions byte-identical. Ruling-authorised test changes, not an AD-13 loosening:
+`Issue665Test` loses its `it.skip` and gains a count test of 1; `Issue700Test`'s count goes from 2 ("the oracle runs
+minus the H13 cases") to 4 (the oracle's runs).
+
+**2. The runner registers force and stress (D1).** `registerTestAlgorithms()` in `test/helpers/layout-test-runner.ts`
+registers `ForceMetaDataProvider` and `StressMetaDataProvider` next to layered, once each behind a probe of the
+algorithm id (#120), before an experiment's graph is provided: a model resolves its algorithm and option suffixes while
+it is parsed. That is the seat `PlainJavaInitialization` has in the Java (alg.test registers every provider; the suite
+bundle does not require alg.force). The other six providers of that list are not registered: no ported suite names
+them. The ten option ids force and stress add share no dot-suffix with a core or layered id, and the 52 test files that
+import the runner give the same test titles and statuses before and after, in default mode, under
+`PIPELINE_SUITES_FULL=1` and with the fixed measurer.
+
+**3. Label metrics, appended (ruling item 2).** `tools/vectors/layered-label-metrics-texts.txt` gained
+`insideOtherLayout`, `child1`, `child2`, `insideOtherDirection`; the unmodified recorder on the reference platform (macOS
+arm64, JDK 21.0.1) wrote `[89.0, 11.77734375]`, `[29.0, 11.77734375]`, `[29.0, 11.77734375]`, `[101.0, 11.77734375]`,
+the ruling's values. **Ref change:** `test/golden/refs/java/layered-label-metrics.json`, +5/−1 lines; the earlier
+entries are byte-identical. Count correction: 2,317 earlier entries, not the ruling's 2,258 (7g and 7h appended after
+that count was taken). The oracle's own measurer (`label-sizing-vectors.sh --remeasure-awt`) reproduces the new table
+byte for byte on all 2,321 texts.
+
+**4. Two models vendored (ruling item 3).** Byte copies from elk-models `ac5af2ba`, with manifest rows:
+`test/golden/inputs/compound/tickets/layered/665_includeChildrenDoesntStop.elkt` (sha256 `bbba2eae…a2e0a`) and
+`test/golden/inputs/compound/examples/hierarchy/hierarchicalLayoutMixing.elkt` (sha256 `c082c39d…683b4`). The
+inventory test of `test/golden/algorithm-refs.test.ts` gained a two-entry list (`STRESS_SUITE_INPUTS`); the compound
+recorder's 31 inputs are unchanged, and no recorder walks `compound/`, so no recorder input changed.
+`tickets/layered/588_hierarchicalLayoutNPE.elkt` stays out (no suite reads it).
+
+**Evidence.** Both suites pass with 1 and 4 layout cases in default mode (vendored), under `PIPELINE_SUITES_FULL=1`
+and with `ELK_TEST_TEXT_MEASURER=fixed`. The oracle gives `Issue665Test runs=1 failures=0` and `Issue700Test runs=4
+failures=0`, in default mode and with the fixed measurer. Beyond the brief, because the two suites assert little: the
+port's layout of each of the two models is byte-equal to the oracle's JSON export (`tools/oracle/run.sh`; 3,685 and
+10,645 bytes).
+
+**Docs.** `docs/conformance.md` (the 7h table, the H13 bullet, the 8b bullet, two sentences after dated
+text-sizing-seam evidence), `docs/architecture/{alg-layered-compound,alg-force-disco,text-sizing-seam,alg-packing,
+overview}.md`, and one new H13 row in `plans/layered-compound/decision-journal.md`. Notes:
+`.agent-notes/layered-stress-cases.md`.
+
+**Issues filed.** #150 (`follow-up`): a stale 7h sentence about unported bundles, the absent golden for the two
+mixed-algorithm models, `registerForce` applying each options class twice, and `loadGraphFile` registering layered
+only. No `needs-ruling` question arose and no stop condition fired. One tool slip is journaled: the brief's
+`java-tests.sh` line lacked `MODELS_REPO`, which makes JUnit report each runner class as `runs=1 failures=1`; the rerun
+with it set is the result above.
+
+**Gates (queue gates 1-7, 2026-11-21).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,729
+functions, no violation line). Coverage, full suite, one run: 1,193 files, 49,557 tests passed (+5 over the base's
+49,552), 83 skipped (−1), 0 failed; statements 98.81 %, branches 97.01 %, functions 98.56 %, lines 98.86 %, as at the
+base. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry.
+Gate 7: the metrics recorder rerun reproduces the committed ref byte for byte, and
+`git diff --stat 32ca890e -- test/golden/refs/` shows `layered-label-metrics.json` only.

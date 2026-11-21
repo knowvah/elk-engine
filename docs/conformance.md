@@ -1690,8 +1690,8 @@ a dated note; this section states the state after 7h: the enum tally is **59 por
   | `issues.Issue552Test`                                    |                   1 |                0 |        1 | 1 / 0 |
   | `issues.Issue596Test`                                    |                   1 |                0 |        1 | 1 / 0 |
   | `issues.Issue628Test`                                    |                   4 |                0 |        4 | 4 / 0 |
-  | `issues.Issue665Test`                                    |                   1 |                0 |        0 | 1 / 0 |
-  | `issues.Issue700Test`                                    |                   4 |                0 |        2 | 4 / 0 |
+  | `issues.Issue665Test`                                    |                   1 |                0 |        1 | 1 / 0 |
+  | `issues.Issue700Test`                                    |                   4 |                0 |        4 | 4 / 0 |
   | `issues.Issue701Test`                                    |                   6 |                0 |        6 | 6 / 0 |
   | `issues.Issue734Test`                                    |                   3 |                0 |        3 | 3 / 0 |
   | `org.eclipse.elk.graph.json.test.EdgeCoordsTest`         |                   1 |                0 |        1 | 1 / 0 |
@@ -1702,13 +1702,21 @@ a dated note; this section states the state after 7h: the enum tally is **59 por
   kept). The graph.json suites run through a scratch copy of `tools/oracle/java-tests.sh` with
   `org.eclipse.elk.graph.json.test` added (the landed script is not edited); the three methods deferred to 7h are ported
   into the existing files and their "Deferred" header lines are "Ported" lines. All 97 `alg.layered.test` Java files now
-  have a port. The TS case counts of `Issue665Test` and `Issue700Test` are below the oracle's by the three H13 cases.
+  have a port. The TS case counts of `Issue665Test` and `Issue700Test` equal the oracle's since the ruling on issue #58 was
+  carried out (mission layered-stress-cases); at the end of 7h they were 0 and 2, below the oracle's by the three H13 cases.
 
-- The three H13 pending cases, issue #58 (`needs-ruling`): `Issue665Test` (1 case, `tickets/layered/665_includeChildrenDoesntStop.elkt`)
-  and `Issue700Test` (2 of 4 cases, the same file and `examples/hierarchy/hierarchicalLayoutMixing.elkt`) lay a child out
-  with `elk.stress` (roadmap 8b, unported). The suites are ported whole; `STRESS_PENDING` (`test/helpers/stress-pending.ts`)
-  drops exactly those two inputs and a test pins it; `Issue665Test` reports one skipped test. A third `elk.stress` input,
-  `tickets/layered/588_hierarchicalLayoutNPE.elkt`, is read by no 7h suite and is never vendored.
+- The three H13 cases, issue #58, resolved (ruling of 2026-11-13, mission layered-stress-cases): `Issue665Test` (1 case,
+  `tickets/layered/665_includeChildrenDoesntStop.elkt`) and `Issue700Test` (2 of 4 cases, the same file and
+  `examples/hierarchy/hierarchicalLayoutMixing.elkt`) lay a child out with `elk.stress`. 7h ported the suites whole and held
+  these cases back behind a filter, `STRESS_PENDING`, until stress was ported (8b). The filter, its helper and its pin test
+  are deleted. The layout-test runner registers `elk.force` and `elk.stress` next to layered, as `PlainJavaInitialization`
+  does for every runner suite; the two models are vendored under `test/golden/inputs/compound/`; and
+  `layered-label-metrics.json` gained the four label texts they need (`insideOtherLayout`, `child1`, `child2`,
+  `insideOtherDirection`), appended by script with the 2,317 earlier entries byte-identical. Both suites run every case with
+  the Java's assertions, 1 and 4, in default mode, under `PIPELINE_SUITES_FULL=1` and with the fixed measurer; the oracle
+  gives `runs=1 failures=0` and `runs=4 failures=0`. The port's layout of each of the two models is byte-equal to the
+  oracle's JSON export. A third `elk.stress` input, `tickets/layered/588_hierarchicalLayoutNPE.elkt`, is read by no suite
+  and is never vendored.
 - Breadth sweep (H5, gitignored `test/corpus/.compound-sweep/`): part a 45 cases swept (50 candidates before the stress
   filter), part b 100 (115 candidates), part c 1,024 (256 ptolemy hierarchical files with `INCLUDE_CHILDREN` applied at the
   root × 4 directions; no file sets it itself): 1,169 oracle cases, 1,164 ok, 5 throws (part b: all
@@ -1759,7 +1767,8 @@ is overwritten for every nested graph) are oddities the port keeps. Nothing is f
 **Upstream typos (CLAUDE.md carve-out).** None: the journal records no prose typo in the 7h sources.
 
 **What still throws.** Nothing in the layered algorithm. The enum tally is 59 ported, 0 pending; the staged list is empty.
-Three cases wait for `elk.stress` (row 8b, issue #58).
+The three cases that waited for `elk.stress` (row 8b) run since the ruling on issue #58 was carried out (mission
+layered-stress-cases).
 
 ## Tree algorithms: mrtree, radial, vertiflex (mission 8a) {#alg-trees}
 
@@ -2041,9 +2050,11 @@ interactive-constraints/interactiveRectpacking_{hierarchy,oneBigNode}` (`layoutO
 - Stack depth: TS overflows on a path of 16,000 nodes (4,000 under `--jitless`) where the oracle completes (issue #70,
   `follow-up`).
 - `Math.log` is bit-exact on the oracle's arm64 JVM 21.0.1 and unverified on x86_64 (FD3).
-- The held-back stress cases (issue #58, `needs-ruling`): `STRESS_PENDING` is untouched; the three cases pass from temporary
-  copies with `elk.force` and `elk.stress` registered; two further blockers are `layered-label-metrics.json` (four label texts
-  missing) and the two models that are not vendored.
+- The held-back stress cases (issue #58), resolved after this mission. 8b left `STRESS_PENDING` untouched and showed that
+  the three cases pass from temporary copies with `elk.force` and `elk.stress` registered, and it named two further blockers:
+  `layered-label-metrics.json` (four label texts missing) and the two models that were not vendored. Mission
+  layered-stress-cases carried out the ruling of 2026-11-13: the filter is deleted, the runner registers both providers, the
+  four texts are appended and the two models are vendored (see the 7h section).
 
 **Upstream typos (CLAUDE.md carve-out).** None: the journal records no prose typo in the `alg.force` and `alg.disco` sources.
 
@@ -2438,7 +2449,9 @@ special. This is not a font model.
   classes. The other two, `Issue665Test` (JUnit 1, TS 0) and `Issue700Test` (JUnit 4, TS 2), are the three stress-dependent
   cases of issue #58 and differ identically in default mode, so the measurer is not the cause. These runs used a scratch copy
   of `tools/oracle/java-tests.sh` with `org.eclipse.elk.alg.common.test` added to its test bundles, because three suites live
-  there; the committed script covers the `alg.layered.test` and `alg.test` bundles only.
+  there; the committed script covers the `alg.layered.test` and `alg.test` bundles only. Later (mission layered-stress-cases,
+  issue #58's ruling) those two classes agree too: `Issue665Test` 1 and `Issue700Test` 4 on both sides, in default mode
+  and in fixed mode.
 - Regenerated refs (TX8), by script only: the `patches` array of the nine `_meta.json` files gained
   `0003-alg.test-pluggable-label-text-measurer.patch`, and nothing else moved (`regen-generated.sh` left no diff). The parity
   report changed in its patch line only. A fresh oracle sweep also moves six `sporeOverlap` verdicts (unseeded jitter, issue
@@ -2450,7 +2463,8 @@ the maintainer ruled the reference platform for JVM measurements.
 
 **Left out.** A font model (not wanted: the fixed measure approximates nothing); the four label texts that
 `layered-label-metrics.json` lacks (issue #58, unchanged, and the runner still throws naming a missing text); the snapshot
-itself, which this mission does not re-record, extend or edit.
+itself, which this mission does not re-record, extend or edit. Mission layered-stress-cases appended those four texts later
+(issue #58's ruling); the runner still throws on any other text the snapshot lacks.
 
 ## Temporary gaps
 
