@@ -3135,3 +3135,82 @@ functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200 typedoc warnings,
 finding accepted, no new entry; the Java suite scanned the ten helper files and reports 0 findings. Gate 7: every
 recorder whose inputs changed was rerun (all 26 cached scripts and the loops sweep), and
 `git diff --exit-code test/golden/refs/` against the base is empty.
+
+## Revision 2026-11-21 (layered-loops-evidence)
+
+Queue mission for issue #55, on `chore/issue-queue` (plan and journal in `plans/layered-loops-evidence/`). It closes the
+arms of the self-loop, wrapping and compaction port that mission 7g left unobserved (revision 2026-11-10 above; 7g's
+journal, T21 rows). Every new expected value comes from the oracle (`8bca22f4` + patches 0001-0004, no patch change); no
+`src/` file changed, and every new row replays at the AD-4 bar.
+
+**1. The ten mutation survivors (M1-M10): all killed by new oracle rows.** 15 `sites` rows are appended to
+`layered-loops.json` (1,627 → 1,642 rows, `sites` 64 → 79; 16,399,101 → 16,511,138 bytes, 112,037 of the mission's
+250,000-byte budget, 266,078 bytes left under the 16 MiB cap). The id-keyed diff shows every earlier row byte-equal and
+in its order. Rerunning the ten mutants against the kill suite (12 files, 2,619 tests) kills each one, and only through
+the replay of a new row:
+
+| Mutant | Site (Java) | Killing row (`sites/…`) |
+| ------ | ----------- | ----------------------- |
+| M1 | `PortSideAssigner.java:189` (`size / 2`) | `PortSideAssigner/oddCornerSplit/EQUALLY` |
+| M2 | `BreakingPointInserter.java:283` (`lDist < rDist`) | `BreakingPointInserter/improveCutsTie` |
+| M3 | `NetworkSimplexCompaction.java:130` (`Math.max(0, delta)`) | `NetworkSimplexCompaction/negativeSeparationDelta` |
+| M4, M5 | `NetworkSimplexCompaction.java:254`, `:264` (inverted-port edge) | `NetworkSimplexCompaction/westInvertedPortEdge` |
+| M6 | `LGraphToCGraphTransformer.java:654` (`margin.bottom`) | `LGraphToCGraphTransformer/southExternalPortMargin/{INSIDE,OUTSIDE}` |
+| M7, M8 | `ComponentsCompactor.java:173`, `:174` | `ComponentsCompactor/externalEdgeOffset/{west,northFlush,northAbove}` |
+| M9 | `ComponentsCompactor.java:164-166` (the y arm) | `ComponentsCompactor/externalEdgeOffset/{northFlush,northAbove}` |
+| M10 | `ComponentsToCGraphTransformer.java:271` (placeholder bottom) | `ComponentsToCGraphTransformer/southPlaceholderExtent/{south,southWest}` |
+
+No mutant is equivalent or open. Three of #55's recipes could not work as written (M2: no index beats the manual cuts;
+M6: the dummy has no margin without `PORT_LABELS` in the size constraints; M10: a WEST or EAST placeholder never leaves
+its hull's y-range), and planning's "no negative `delta`" (M3) was wrong. The graphs and the mechanisms are in
+`plans/layered-loops-evidence/unreached.md` ("Mutant findings") and `mutants.md`.
+
+**2. `SplineEdgeRouterSegments.ts:137 if[1]`: reached, class X.** `layerUnzipping.strategy=ALTERNATING` with
+`edgeRouting=SPLINES` on an inverted port inside a cycle (W.p0 → T, W → X, X → T) reaches the router with two edges
+between non-adjacent layers, one per Java site (`SplineEdgeRouter.java:398-402`, `:445-449`). The oracle then throws a
+`NullPointerException` at `SplineEdgeRouter.getSplinePath` (`:956`), so there is no row (D5). Two single-file oracle
+probes give the layers before the router, the two edges and the throw site; `SplineEdgeRouter.sites.test.ts` asserts all
+three in the port (a `TypeError` out of `getSplinePath`) and the sizes of two control layouts. Planning's graph (W.p0 → T
+alone) does not reach the arm.
+
+**3. Sc28, the four rectilinear-hull arms: no row, reclassified.** `RectilinearConvexHull.ts:17` (equal arm) and
+`:223 if[1]` are U by proof for every hull `of` builds; `RectilinearConvexHullRectangleEventHandler.ts:71 if[1]` is U
+for finite coordinates (a hand-built list with a non-finite y reaches it; no row of the ref hands `of` such a point);
+`PointQuadrant.ts:63 binary-expr[1]` was already covered by a structural case and is U on V8 through the hull
+(`Array.prototype.sort` passed the later element first in every one of 1.5 million measured calls). 7g's "hulls of 32+
+points" described the JDK's sort.
+
+**4. Node-level `selfLoopDistribution` × `selfLoopOrdering` (D7).** Four rows
+`sites/PortRestorer/freeDistribution/{NORTH-REVERSE_STACKED, NORTH_SOUTH-REVERSE_STACKED, EQUALLY-SEQUENCED,
+EQUALLY-REVERSE_STACKED}`: the options on a FREE node whose ports are all hidden, with two one-sided loops on the north
+side. The 27 root-level rows are untouched.
+
+**Corrections to `plans/layered-loops-wrapping-compaction/unreached.md`** (that file is not edited, D10; the new
+classes are in `plans/layered-loops-evidence/unreached.md`): `SplineEdgeRouterSegments.ts:137 if[1]` S → X;
+`PointQuadrant.ts:63 binary-expr[1]` S → J, and U on V8 through the hull; `RectilinearConvexHull.ts:17` equal arm and
+`:223 if[1]` S → U; `RectilinearConvexHullRectangleEventHandler.ts:71 if[1]` S → U for finite coordinates. #55's line
+numbers `ComponentsCompactor.ts:95,96,169` are `:96`, `:97`, `:170-173` at the base.
+
+**Ref regenerated by script.** `test/golden/refs/java/layered-loops.json`, by `tools/vectors/layered-loops-vectors.sh`
+(cold, `nice -n 10`) on the oracle named above; the recorder gained `evidenceSites()` and three small builders in
+`LayeredLoopsVectorsSites.java` (465 lines) and a header paragraph. No other ref changed, and no existing assertion
+changed (AD-13).
+
+**Docs.** `docs/architecture/alg-layered-loops.md` (counts, § 8), `docs/architecture/overview.md` (the 7g sentence),
+`docs/conformance.md` (part h evidence). Notes: `.agent-notes/layered-loops-evidence.md`.
+
+**Issues filed.** #148 (`needs-ruling`): two ELK behaviours met on the way, drafted for upstream in
+`plans/layered-loops-evidence/upstream-drafts.md` and not filed there: the spline `NullPointerException` under layer
+unzipping (item 2), and NaN positions from components compaction for a bottom padding of 4e-5 with a component spacing
+of 0 (the port agrees with the oracle on both). #149 (`follow-up`): a JVM vector for the non-finite hull case, NaN in
+`layout` step rows of the replay, the superseded 7g entries, and a test that times out under load. Stop 4 did not fire.
+
+**Gates (queue gates 1-7, 2026-11-21).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,729
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,194 files (10 skipped),
+49,542 tests passed (+33 over the base's 49,509), 93 skipped, 0 failed; statements 98.81 %, branches 97.00 %,
+functions 98.56 %, lines 98.86 %. A first coverage run was red on one timeout (5,240 ms against vitest's default
+5,000 ms) in an untouched disco test while the machine's load average was about 41; the rerun at a lower load is the
+result above (#149). `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`: one finding in the new
+recorder code (`Integer.parseInt` on a table entry) was fixed at its origin; every finding accepted, no new entry.
+Gate 7: the loops recorder rerun cold reproduces the committed ref byte for byte, and
+`git diff --stat 4c380f26 -- test/golden/refs/` shows `layered-loops.json` only.

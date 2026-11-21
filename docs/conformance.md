@@ -1574,13 +1574,25 @@ section states the state after 7g.
 
 **Evidence.**
 
-- `test/golden/refs/java/layered-loops.json` (16,358,809 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+- `test/golden/refs/java/layered-loops.json` (16,511,138 bytes; JDK 21.0.1; oracle `8bca22f4`; recorder
   `tools/vectors/layered-loops-vectors.sh`, `-XX:hashCode=2`): byte-stable; `rowCounts` `full` 731 (self-loops 227,
   wrapping 156, compaction 184, compaction-splines 80, components-compaction 79, converted 1, issues 4), `models` 307,
-  `scenarios` 525, `sites` 64. `LayeredLoopsVectors.test.ts` replays every row of the four groups through
-  the real provider and enum at the AD-4 bar with 0 mismatches and no row skipped or pinned (1,637 tests, about 8 s
-  alone); `LayeredLoopsSites.test.ts` replays the 64 `sites` rows again under their scenario titles (65 tests). Accepted 7h refusals in
+  `scenarios` 525, `sites` 79 (1,642 rows). `LayeredLoopsVectors.test.ts` replays every row of the four groups through
+  the real provider and enum at the AD-4 bar with 0 mismatches and no row skipped or pinned (1,652 tests, about 8 s
+  alone); `LayeredLoopsSites.test.ts` replays the 79 `sites` rows again under their scenario titles (80 tests). Accepted 7h refusals in
   the ref: 0. The 51 rows where the oracle throws inside ELK are not recorded.
+- Evidence rows of mission layered-loops-evidence (issue #55), 15 `sites` rows appended to the 64 of 7g (112,037 bytes,
+  every earlier row byte-equal): `PortSideAssigner/oddCornerSplit/EQUALLY`, `PortRestorer/freeDistribution/*` (4),
+  `BreakingPointInserter/improveCutsTie`, `NetworkSimplexCompaction/{negativeSeparationDelta,westInvertedPortEdge}`,
+  `LGraphToCGraphTransformer/southExternalPortMargin/{INSIDE,OUTSIDE}`,
+  `ComponentsCompactor/externalEdgeOffset/{west,northFlush,northAbove}` and
+  `ComponentsToCGraphTransformer/southPlaceholderExtent/{south,southWest}`. Each of the ten mutation survivors that 7g
+  named in #55 is killed by one of them (`plans/layered-loops-evidence/mutants.md`).
+- An oracle throw the port reproduces, without a row (the loops recorder drops a row whose oracle run throws):
+  `edgeRouting=SPLINES` with `layerUnzipping.strategy=ALTERNATING` on an inverted port inside a cycle throws
+  `NullPointerException` at `SplineEdgeRouter.java:956` (`getSplinePath`); the port throws a `TypeError` in
+  `SplineEdgeRouter.getSplinePath`, pinned by `SplineEdgeRouter.sites.test.ts` against two oracle probes (issue #148,
+  `needs-ruling`; `plans/layered-loops-evidence/unreached.md`).
 - The row pinned by 7f, `models/ptolemy-sinewaveoptimization/N1/DIRECTION_PREPROCESSOR/DOWN`, is unpinned: the fresh row
   equals the landed `layered-pipeline.json` row and replays with `PINNED_PIPELINE_ROWS` empty (W4).
   `full/labels/ticket-213_componentsCompaction`, refused by `layered-labels.json`, is the row

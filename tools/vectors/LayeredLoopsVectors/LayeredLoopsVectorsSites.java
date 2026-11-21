@@ -97,6 +97,7 @@ abstract class LayeredLoopsVectorsSites extends LayeredLoopsVectorsScenarios {
         dummySites();
         componentSites();
         compactorSites();
+        evidenceSites();
     }
 
     static List<Object> cuts(int... c) {
@@ -341,5 +342,124 @@ abstract class LayeredLoopsVectorsSites extends LayeredLoopsVectorsScenarios {
         // an edge from a north port to an east input port: its vertical segment of the north port is in the group of the node itself
         stopSite("HorizontalGraphCompactor/invertedPorts/northToEast", flat(eo, join(pnode("a", FS, null, NORTH), pnode("b", FS, null, EAST), plain("c")),
                 eds("a.p0>b.p0", "b>c")), ho, false);
+    }
+
+    // Evidence rows of plans/layered-loops-evidence (issue #55): the ten mutation survivors M1-M10 of mission 7g (mutants.md there) and the
+    // node-level self loop distribution x ordering combinations (D7). Appended after the 64 rows above, so no earlier row changes.
+
+    /** stopSite on the level of the target node: the ports of that node are the external ports of the imported graph. */
+    static void levelStopSite(String id, String elk, String target, String stop) {
+        List<Object> st = chainOf(elk, target, stop, false);
+        st.add(dump());
+        siteRow(id, elk, st);
+    }
+
+    /** A FREE node a (80 x 80, the options) with n loops over two side-less ports each (a.p2k > a.p2k+1, ids e0..) and no neighbour. */
+    static String freeLoops(String ro, int n, String... nodeOpts) {
+        List<String> loops = new ArrayList<>();
+        for (int k = 0; k < n; k++) {
+            loops.add(le(k, "a.p" + (2 * k), "a.p" + (2 * k + 1)));
+        }
+        return flat(ro, loopNode(ropts(nodeOpts), new String[2 * n]), String.join(",", loops));
+    }
+
+    /** Port index of node c on the side with one label (20 x 15), at the given y relative to the port when labelY is not null. */
+    static String labelledPort(int index, String side, Integer labelY) {
+        String label = lab("L", 20, 15, null);
+        if (labelY != null) {
+            label = label.replace("}", ",\"x\":0,\"y\":" + labelY + "}");
+        }
+        return pj("c", index, side, null).replace("\"height\":4", "\"height\":4," + labels(label));
+    }
+
+    /** gComp with the ports of c as ready JSON objects. */
+    static String gCompPorts(String innerOpts, String ports, String kids, String... edges) {
+        return "{\"id\":\"root\",\"layoutOptions\":{" + lo("DIRECTION", RT) + "},\"children\":[{\"id\":\"c\",\"width\":200,\"height\":200,\"layoutOptions\":{"
+                + innerOpts + "},\"ports\":[" + ports + "],\"children\":[" + kids + "],\"edges\":[" + eds(edges) + "]}]}";
+    }
+
+    static void evidenceSites() {
+        loopEvidenceSites();
+        compactionEvidenceSites();
+        componentEvidenceSites();
+    }
+
+    static void loopEvidenceSites() {
+        String ro = lo("DIRECTION", RT), stop = "SELF_LOOP_PORT_RESTORER";
+        // M1 (PortSideAssigner.java:189, secondHalfStartIndex = size / 2): five hyper loops of three hidden ports each on a FREE node; the
+        // fifth loop goes to the north west corner target and its odd port count splits 1 (WEST) + 2 (NORTH)
+        List<String> hyper = new ArrayList<>();
+        for (int k = 0; k < 5; k++) {
+            hyper.add(le(2 * k, "a.p" + (3 * k), "a.p" + (3 * k + 1)));
+            hyper.add(le(2 * k + 1, "a.p" + (3 * k + 1), "a.p" + (3 * k + 2)));
+        }
+        stopSite("PortSideAssigner/oddCornerSplit/EQUALLY", flat(ro, loopNode(ropts(PORT_CONS, "FREE", SELF_DIST, "EQUALLY"), new String[15]),
+                String.join(",", hyper)), stop, false);
+        // D7: selfLoopDistribution x selfLoopOrdering set on a FREE node (readers PortSideAssigner.java:42, PortRestorer.java:70), the four
+        // combinations no earlier row holds; two one-sided loops share the north side in each (EQUALLY: the first and the ninth loop)
+        String[][] combos = {{"NORTH", "REVERSE_STACKED"}, {"NORTH_SOUTH", "REVERSE_STACKED"}, {"EQUALLY", "SEQUENCED"}, {"EQUALLY", "REVERSE_STACKED"}};
+        int[] loops = {2, 3, 9, 9};
+        for (int i = 0; i < combos.length; i++) {
+            String[] c = combos[i];
+            stopSite("PortRestorer/freeDistribution/" + c[0] + "-" + c[1], freeLoops(ro, loops[i], PORT_CONS, "FREE", SELF_DIST, c[0], SELF_ORDER, c[1]),
+                    stop, false);
+        }
+        // M2 (BreakingPointInserter.java:283, lDist < rDist in improveCuts): five edges n0>n3 and four n4>n7 make the indices 1, 4 and 7
+        // cheaper than the manual cuts 2 and 6, and index 4 is as far from the cut 2 as from the cut 6: the tie goes to the right cut
+        stopSite("BreakingPointInserter/improveCutsTie", gChain(lo("DIRECTION", RT, WRAP, "MULTI_EDGE", CUTTING, "MANUAL"), 8, "n0>n3", "n0>n3",
+                "n0>n3", "n0>n3", "n0>n3", "n4>n7", "n4>n7", "n4>n7", "n4>n7"), "BREAKING_POINT_INSERTER", false, cuts(2, 6));
+    }
+
+    static void compactionEvidenceSites() {
+        String ho = "HORIZONTAL_COMPACTOR", eo = lo("DIRECTION", RT, ROUTING, "ORTHOGONAL", POST, "EDGE_LENGTH");
+        // M3 (NetworkSimplexCompaction.java:130, Math.max(0, delta)): the vertical segment of the north port N.p0 is in the group of N at offset
+        // 180, the node c above N constrains only that segment, and m pulls N to the left: the separation delta is negative
+        String n = kn("N", 200, 40, "\"ports\":[" + join(pj("N", 0, N_, new double[] {180, -4}), pj("N", 1, W_, new double[] {-4, 18})) + "]",
+                PORT_CONS, FP);
+        stopSite("NetworkSimplexCompaction/negativeSeparationDelta", flat(eo + "," + lo("CONSIDER_MODEL_ORDER_STRATEGY", "NODES_AND_EDGES",
+                "CROSSING_MINIMIZATION_FORCE_NODE_MODEL_ORDER", "true"), join(kn("w", 150, 40, null), kn("c", 20, 20, null), plain("m"), n),
+                eds("w>N.p0", "w>c", "m>N.p1")), ho, false);
+        // M4, M5 (NetworkSimplexCompaction.java:254, :264): a west output port whose edge stays forward (a.p1>x>b closes a cycle); without
+        // spacing between edges and nodes the separation of the vertical segment and a is 0, so the inverted port edge (delta 1) decides,
+        // and the wide W centres a in its layer, which puts the segment left of a before compaction
+        stopSite("NetworkSimplexCompaction/westInvertedPortEdge", flat(eo + "," + lo("SPACING_EDGE_NODE_BETWEEN_LAYERS", "0"),
+                join(pnode("a", FS, null, WEST, EAST), plain("b"), plain("x"), kn("W", 100, 30, null)), eds("a.p0>b", "a.p1>x", "x>b", "W>x")), ho, false);
+        // M6 (LGraphToCGraphTransformer.java:654, margin.bottom of a south external port dummy): with PORT_LABELS in the size constraints
+        // HierarchicalPortOrthogonalEdgeRouter.restoreDummy gives the dummy a margin; INSIDE stacks the label below the port, OUTSIDE keeps
+        // the imported label y (30). The stop is on the level of c: the layout transfer overwrites the dummy's y afterwards
+        for (String placement : List.of("INSIDE", "OUTSIDE")) {
+            String inner = lo(PORT_CONS, FS, ROUTING, "ORTHOGONAL", POST, "EDGE_LENGTH", "PORT_LABELS_PLACEMENT", placement, "NODE_SIZE_CONSTRAINTS",
+                    "PORT_LABELS");
+            levelStopSite("LGraphToCGraphTransformer/southExternalPortMargin/" + placement, gCompPorts(inner,
+                    labelledPort(0, SOUTH, placement.equals("OUTSIDE") ? 30 : null), plain("k"), "c.p0>k"), "c", ho);
+        }
+    }
+
+    static void componentEvidenceSites() {
+        String tight = "SPACING_COMPONENT_COMPONENT";
+        // M7, M8 (ComponentsCompactor.java:173, :174): a left padding of 4e-5 puts the west external port 4e-5 left of the anchor of y, inside
+        // the EPSILON (1e-4) of the x test, so the segment counts as vertical at x = -4e-5 and the offset is not zero
+        layoutSite("ComponentsCompactor/externalEdgeOffset/west", gCompPorts(compactionInner("PADDING", "[top=12,left=0.00004,bottom=12,right=12]",
+                tight, "0"), join(pj("c", 0, WEST, null), pj("c", 1, WEST, null)), join(pnode("x", FS, null, WEST), kn("y", 20, 60, null)),
+                "c.p0>x.p0", "c.p1>y"), "c");
+        // M9 (ComponentsCompactor.java:164-166, the y arm; also M7, M8): direction DOWN makes the north external port a first layer dummy,
+        // SIMPLE placement centres the layers, so the port of k at x 15.0005 leaves the edge 5e-4 off straight: no bend point (the orthogonal
+        // router's tolerance is 1e-3), not vertical for the x test, and with a top padding of 4e-5 horizontal for the y test at y < 0.
+        // flush: a port of size 0 on the border of k; above: a 4 x 4 port above k, the anchor 4 above the node
+        String down = compactionInner("DIRECTION", "DOWN", "NODE_PLACEMENT_STRATEGY", "SIMPLE", "PADDING", "[top=0.00004,left=12,bottom=12,right=12]",
+                tight, "0");
+        String flush = pj("k", 0, NORTH, new double[] {15.0005, 0}).replace("\"width\":4,\"height\":4", "\"width\":0,\"height\":0");
+        String above = pj("k", 0, NORTH, new double[] {13.0005, -4});
+        for (String[] v : new String[][] {{"northFlush", flush}, {"northAbove", above}}) {
+            layoutSite("ComponentsCompactor/externalEdgeOffset/" + v[0], gCompPorts(down, pj("c", 0, NORTH, null),
+                    nodeJson("k", null, ropts(PORT_CONS, FP), "\"ports\":[" + v[1] + "]"), "c.p0>k.p0"), "c");
+        }
+        // M10 (ComponentsToCGraphTransformer.java:271, the bottom of a placeholder): an OUTSIDE label imported 30 above its south port gives
+        // the restored dummy a top margin, which is the extent (height) of the south placeholder; alone, and next to a west component
+        String labels = compactionInner("PORT_LABELS_PLACEMENT", "OUTSIDE", "NODE_SIZE_CONSTRAINTS", "PORT_LABELS");
+        layoutSite("ComponentsToCGraphTransformer/southPlaceholderExtent/south", gCompPorts(labels, labelledPort(0, SOUTH, -30), plain("k0"),
+                "c.p0>k0"), "c");
+        layoutSite("ComponentsToCGraphTransformer/southPlaceholderExtent/southWest", gCompPorts(labels, join(labelledPort(0, SOUTH, -30),
+                pj("c", 1, WEST, null)), join(plain("k0"), plain("k1")), "c.p0>k0", "c.p1>k1"), "c");
     }
 }

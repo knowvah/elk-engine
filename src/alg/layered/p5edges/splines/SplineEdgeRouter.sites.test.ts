@@ -6,7 +6,7 @@
 // replay compare the whole dump. The J cases build their state by hand from the Java text.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../../test/corpus/corpus.js';
-import { decodeHex } from '../../../../../test/helpers/layered-framework-replay.js';
+import { decodeHex, registerLayered } from '../../../../../test/helpers/layered-framework-replay.js';
 import { importRow } from '../../../../../test/helpers/layered-phase-replay-rows.js';
 import { type Factories } from '../../../../../test/helpers/layered-phase-replay-ops.js';
 import { routingDump } from '../../../../../test/helpers/layered-routing-replay-dump.js';
@@ -15,12 +15,18 @@ import { isGeometryRow, loadRoutingRows } from '../../../../../test/helpers/laye
 import type { ILayoutProcessor } from '../../../../core/alg/ILayoutProcessor.js';
 import { LayoutMetaDataService } from '../../../../core/data/LayoutMetaDataService.js';
 import { PortSide } from '../../../../core/options/PortSide.js';
+import { RecursiveGraphLayoutEngine } from '../../../../core/RecursiveGraphLayoutEngine.js';
+import { BasicProgressMonitor } from '../../../../core/util/BasicProgressMonitor.js';
+import type { ElkNode } from '../../../../graph/ElkNode.js';
+import { ElkGraphJson } from '../../../../graph/json/ElkGraphJson.js';
 import { IllegalArgumentException } from '../../../../java/lang/IllegalArgumentException.js';
+import { ElkLayered } from '../../ElkLayered.js';
 import { LEdge } from '../../graph/LEdge.js';
 import { LGraph } from '../../graph/LGraph.js';
 import { LNode } from '../../graph/LNode.js';
 import { LPort } from '../../graph/LPort.js';
 import { Layer } from '../../graph/Layer.js';
+import { ElkGraphTransformer } from '../../graph/transform/ElkGraphTransformer.js';
 import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
 import { CrossingMinimizationStrategy } from '../../options/CrossingMinimizationStrategy.js';
 import { CycleBreakingStrategy } from '../../options/CycleBreakingStrategy.js';
@@ -280,5 +286,123 @@ describe('SplineEdgeRouter segment creation on hand-built states (T14b, J)', () 
     state.edgesRemainingLayer.push(edge);
     state.leftPortsLayer.add(eastPort);
     expect(() => createSplineSegments(state)).toThrow('Target port must be in one of the port sets.');
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// X: the unhandled situation on a real plan (layered-loops-evidence, issue #55, D5): the Java throws, so no row records it
+
+const SPLINES = 'SPLINES';
+const ALTERNATING = 'ALTERNATING';
+
+/**
+ * W (FIXED_SIDE) has a WEST output port, and W > X > T closes a cycle that keeps its edge W.p0 > T forward. The inverted
+ * port's edge runs through long edge dummies, and `layerUnzipping.strategy=ALTERNATING` (`AlternatingLayerUnzipper`)
+ * moves them into different sub-layers, so P5 meets edges that do not join adjacent layers.
+ */
+function unzippedInvertedPort(edgeRouting: string, unzipping: string): ElkNode {
+  registerLayered();
+  const node = (id: string): object => ({ id, width: 30, height: 30 });
+  const port = { id: 'W.p0', width: 4, height: 4, layoutOptions: { 'port.side': 'WEST', 'port.index': '0' } };
+  return ElkGraphJson.forGraph(
+    JSON.stringify({
+      id: 'root',
+      layoutOptions: { 'elk.direction': 'RIGHT', edgeRouting, 'layerUnzipping.strategy': unzipping },
+      children: [
+        { ...node('W'), ports: [port], layoutOptions: { portConstraints: 'FIXED_SIDE' } },
+        node('X'),
+        node('T'),
+      ],
+      edges: [
+        { id: 'e0', sources: ['W.p0'], targets: ['T'] },
+        { id: 'e1', sources: ['W'], targets: ['X'] },
+        { id: 'e2', sources: ['X'], targets: ['T'] },
+      ],
+    }),
+  ).toElk();
+}
+
+/** The non-self-loop edges leaving the ports of the given side of a layer (the edges `clearThenFillMappings` adds). */
+function outgoingOn(layer: Layer | null, side: PortSide): LEdge[] {
+  const nodes = layer === null ? [] : layer.getNodes();
+  return nodes
+    .flatMap((node) => [...node.getPorts(side)])
+    .flatMap((sourcePort) => [...sourcePort.getOutgoingEdges()])
+    .filter((edge) => !edge.isSelfLoop());
+}
+
+const indexOfLayer = (layer: Layer): number => layer.getGraph().getLayers().indexOf(layer);
+const describeEdge = (edge: LEdge): string => {
+  const [source, target] = [edge.getSource()!.getNode()!, edge.getTarget()!.getNode()!];
+  return `${source.toString()} -> ${target.toString()} in layer ${String(indexOfLayer(target.getLayer()!))}`;
+};
+
+/** Runs `clearThenFillMappings` on a pair and names the candidate edges it added and removed again. */
+function droppedBy(left: Layer | null, right: Layer | null): string[] {
+  const state = createSplineRouterState();
+  clearThenFillMappings(state, left, right);
+  return [...outgoingOn(left, PortSide.EAST), ...outgoingOn(right, PortSide.WEST)]
+    .filter((edge) => !state.edgesRemainingLayer.includes(edge))
+    .map(describeEdge);
+}
+
+describe('SplineEdgeRouter on an inverted port whose dummies the layer unzipper splits (layered-loops-evidence, X)', () => {
+  // oracle (probes, not rows: the loops recorder drops a row whose oracle run throws; decision-journal.md of
+  // plans/layered-loops-evidence, T4 and T7 evidence rows of 2026-11-21): the graph before SplineEdgeRouter has the five
+  // layers below; two edges have a target in neither layer of their pair (SplineEdgeRouter.java:445-449, the west ports of
+  // the right layer, and :398-402, the east ports of the left layer); the layout then throws
+  // java.lang.NullPointerException at SplineEdgeRouter.getSplinePath(SplineEdgeRouter.java:956).
+  it('takes the unhandled arm once per site: the edge is added and removed again, so it gets no segment', () => {
+    const layered = new ElkLayered();
+    const state = layered.prepareLayoutTest(
+      new ElkGraphTransformer().importGraph(unzippedInvertedPort(SPLINES, ALTERNATING)),
+    );
+    layered.runLayoutTestUntil(SplineEdgeRouter, false, state);
+    expect(state.getGraphs()).toHaveLength(1);
+    const layers = state.getGraphs()![0]!.getLayers();
+    expect(layers.map((layer) => layer.getNodes().map((node) => node.toString()))).toEqual([
+      ['n_root.W', 'n(long_edge)_1'],
+      ['n(long_edge)_0', 'n(long_edge)_1', 'n(long_edge)_2'],
+      ['n_root.X', 'n(long_edge)_1'],
+      ['n(long_edge)_0', 'n(long_edge)_1'],
+      ['n_root.T'],
+    ]);
+    // the pairs SplineEdgeRouter.process visits (:217-299): (null, first), every adjacent pair, (last, null)
+    const pairs: [Layer | null, Layer | null][] = [null, ...layers].map((left, index) => [left, layers[index] ?? null]);
+    expect(pairs.map(([left, right]) => droppedBy(left, right))).toEqual([
+      ['n_root.W -> n(long_edge)_1 in layer 1'],
+      [],
+      ['n(long_edge)_1 -> n(long_edge)_1 in layer 0'],
+      [],
+      [],
+      [],
+    ]);
+  });
+
+  it('throws where the Java throws: a TypeError out of getSplinePath for the Java NullPointerException', () => {
+    let thrown: unknown = null;
+    try {
+      new RecursiveGraphLayoutEngine().layout(unzippedInvertedPort(SPLINES, ALTERNATING), new BasicProgressMonitor());
+    } catch (error) {
+      thrown = error;
+    }
+    expect(thrown).toBeInstanceOf(TypeError);
+    const frames = (thrown as TypeError).stack!.split('\n').filter((line) => line.trimStart().startsWith('at '));
+    expect(frames[0]).toContain('getSplinePath');
+    expect(frames.some((line) => line.includes('SplineEdgeRouter.process'))).toBe(true);
+  });
+
+  it('lays the same graph out without the unzipper and with orthogonal routing', () => {
+    // oracle (the same probe): root 168.0 x 66.5 with layerUnzipping.strategy=NONE, 208.0 x 75.0 with edgeRouting=ORTHOGONAL
+    const sizeOf = (root: ElkNode): number[] => {
+      new RecursiveGraphLayoutEngine().layout(root, new BasicProgressMonitor());
+      return [root.getWidth(), root.getHeight()];
+    };
+    const [none, orthogonal] = [
+      sizeOf(unzippedInvertedPort(SPLINES, 'NONE')),
+      sizeOf(unzippedInvertedPort('ORTHOGONAL', ALTERNATING)),
+    ];
+    [168.0, 66.5].forEach((value, index) => expect(none[index]).toBeCloseTo(value, COORDINATE_DIGITS));
+    [208.0, 75.0].forEach((value, index) => expect(orthogonal[index]).toBeCloseTo(value, COORDINATE_DIGITS));
   });
 });

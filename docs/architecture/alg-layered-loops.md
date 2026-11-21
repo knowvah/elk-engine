@@ -159,14 +159,15 @@ One recorder, `tools/vectors/LayeredLoopsVectors.java` (a JDK 21 single-file lau
 5,000; since issue #50 a multi-file program, the entry file plus ten helper sources in
 `tools/vectors/LayeredLoopsVectors/`, built by `tools/vectors/java-program.sh`; core copied from 7f2's, origin cited in
 its header), writes one ref, `test/golden/refs/java/layered-loops.json`
-(16,358,809 bytes at T20, limit 16,777,216), with four groups; the counts equal the header's `rowCounts`:
+(16,358,809 bytes at T20, 16,511,138 with the evidence rows of issue #55, limit 16,777,216), with four groups; the
+counts equal the header's `rowCounts`:
 
 | Group       | Rows | What                                                                                                                                                                                                                |
 | ----------- | ---: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `full`      |  731 | whole layouts through `RecursiveGraphLayoutEngine`, with the plan of every level: self-loops 227, wrapping 156, compaction 184, compaction-splines 80, components-compaction 79, converted 1, issues 4              |
 | `models`    |  307 | stops at the nine arms (and the pinned row's model at every plan member) through `ElkLayered`'s test API                                                                                                            |
 | `scenarios` |  525 | step rows on hand-built graphs; the new step op `processor <SimpleClassName>` runs `DummySelfLoopProcessor` outside the enum                                                                                        |
-| `sites`     |   64 | one row per scenario of `plans/layered-loops-wrapping-compaction/unreached.md` that an oracle graph reaches (31 of the 34 scenarios, T20); appended after the scenarios, so no earlier row changed (stop 3 checked) |
+| `sites`     |   79 | 64 rows from T20, one per scenario of `plans/layered-loops-wrapping-compaction/unreached.md` which an oracle graph reaches (31 of 34), and 15 evidence rows of issue #55 (§ 8); appended, so no earlier row changed |
 
 **Refusal (W3).** Decided on the whole plan of every level: only 7h's categories (`INCLUDE_CHILDREN`,
 `HIERARCHICAL_NODE_RESIZER`) are accepted, and no row of this ref needs one (accepted refusals: 0). `full/converted/labels/ticket-213_componentsCompaction`
@@ -193,7 +194,7 @@ and `EDGE_LENGTH`-class strategies, `POLYLINE` compaction only with `EDGE_LENGTH
 | `test/helpers/layered-loops-replay-manager.ts`   | the label-manager twin named after the loops recorder                                                                                                                                                                                                                        |
 | `test/helpers/layered-loops-sweep.ts`            | sweep canonical form and `loopsHash` (NaN-canonical)                                                                                                                                                                                                                         |
 | `src/alg/layered/LayeredLoopsVectors.test.ts`    | every row through the real provider and enum, no injection (T16)                                                                                                                                                                                                             |
-| `src/alg/layered/LayeredLoopsSites.test.ts`      | the 64 `sites` rows (T20)                                                                                                                                                                                                                                                    |
+| `src/alg/layered/LayeredLoopsSites.test.ts`      | the 79 `sites` rows (T20, issue #55)                                                                                                                                                                                                                                         |
 | `src/alg/layered/LayeredLoopsTwins.test.ts`      | the W6 reversal twins and the W7 R9 check (T16)                                                                                                                                                                                                                              |
 | `test/corpus/loops-sweep.test.ts`                | the breadth sweep at stride 1 (T19)                                                                                                                                                                                                                                          |
 | anchored tests (T21)                             | `intermediate/loops/{LoopsAnchored,ordering/OrderingAnchored,routing/RoutingAnchored}`, `intermediate/wrapping/WrappingAnchored`, `intermediate/compaction/CompactionAnchored`, `components/ComponentsCompactorAnchored`, `compaction/CompactionAnchored` (each `*.test.ts`) |
@@ -260,7 +261,7 @@ and the `NodeMarginCalculatorTest` header.
 
 | Layer                        | What                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rows (T1, T16, T20)          | `layered-loops.json`: `full` 731, `models` 307, `scenarios` 525, `sites` 64; `LayeredLoopsVectors.test.ts` (1,637 tests, about 8 s alone) replays every row of the four groups at 1e-6 with 0 mismatches and no row skipped or pinned; `LayeredLoopsSites.test.ts` (65 tests) replays the 64 `sites` rows again under their scenario titles                                                                                               |
+| Rows (T1, T16, T20)          | `layered-loops.json`: `full` 731, `models` 307, `scenarios` 525, `sites` 79; `LayeredLoopsVectors.test.ts` (1,652 tests, about 8 s alone) replays every row of the four groups at 1e-6 with 0 mismatches and no row skipped or pinned; `LayeredLoopsSites.test.ts` (80 tests) replays the 79 `sites` rows again under their scenario titles                                                                                               |
 | Breadth sweep (T19)          | Part a 600 cases, part b 105, part c 2,368: 3,073 oracle cases (2,997 ok, 76 throws, 0 refusals, 0 timeouts, 44 s). TS at stride 1: 3,073 checked, 2,997 hash-equal, 0 mismatches, 76 throws on both sides, 99 s. Dropped as out of scope: 6,646 part a and 935 part b cases with no 7g arm in the plan, 50 part b cases refused by `INCLUDE_CHILDREN` (7h), 15 that throw `UnsupportedConfigurationException` before a plan holds an arm |
 | Twins (T7, T12, T13, T16)    | § 5; R9 holds for the router, one site (`collectVerticalSegmentsSplines`) matches only in insertion order                                                                                                                                                                                                                                                                                                                                 |
 | Coverage map (T18, T20)      | Replay-alone over the 7g classes (89 files, 67 with items): 1,433 branches, 284 untaken; 707 functions, 88 uncovered; 372 items partitioned S 97, J 43, U 211, X 21 (`plans/layered-loops-wrapping-compaction/unreached.md`)                                                                                                                                                                                                              |
@@ -283,6 +284,10 @@ the orthogonal router's self loop arm by `…/EAST-EAST/RIGHT/end`, and the far 
 reached. The `NorthToSouth`/`SouthToNorth` routing strategy arms run only from the hierarchical port router; mission 7h's rows do not
 reach `:38 if[0]`, `:58 if[1]` and `:78 if[0]` either, and they are open in issue #59.
 `NubsSelfLoop` has no caller in ELK: U.
+Mission layered-loops-evidence (issue #55) reclassified `Sc28` and `SplineEdgeRouterSegments.ts:137 if[1]`: the hull arms
+are unreachable for the hulls `RectilinearConvexHull.of` builds (proofs and a measured comparator call order; one of them
+only for finite coordinates), and the spline arm is reached by a graph on which the Java throws (X), pinned in
+`SplineEdgeRouter.sites.test.ts`; see `plans/layered-loops-evidence/unreached.md`.
 
 **Unobserved.** A site row can reach an arm without observing it: the `invertedPorts/*` rows reach `NetworkSimplexCompaction`'s
 inverted-port arms without discriminating them. Survivors of the mutation checks, each needing a new oracle graph, are
@@ -290,6 +295,11 @@ named in follow-up issue #55 (`PortSideAssigner.ts:141`, the `BreakingPointInser
 `Math.max(0, delta)` and the inverted-port mutants, the `LGraphToCGraphTransformer` south external-port margin,
 `ComponentsCompactor.ts:95,96,169`, `ComponentsToCGraphTransformer.ts:263`, `SplineEdgeRouterSegments.ts:137 if[1]`, `Sc28`, and
 the root-level `distribution`/`ordering` options of 27 `full/self-loops` rows, which the loop nodes do not read).
+Mission layered-loops-evidence closed them with 15 `sites` rows: each of the ten mutants is killed by a new row
+(`sites/PortSideAssigner/oddCornerSplit/*`, `sites/BreakingPointInserter/improveCutsTie`, `sites/NetworkSimplexCompaction/*`,
+`sites/LGraphToCGraphTransformer/southExternalPortMargin/*`, `sites/ComponentsCompactor/externalEdgeOffset/*`,
+`sites/ComponentsToCGraphTransformer/southPlaceholderExtent/*`; verdicts in `plans/layered-loops-evidence/mutants.md`), and
+`sites/PortRestorer/freeDistribution/*` records the four distribution and ordering combinations on a FREE node that no row held.
 
 **Copied ELK oddities (issue #56, journal T22 `upstream`).** The port copied each verbatim. Items 1 to 4 were fixed
 upstream ([#1223](https://github.com/eclipse-elk/elk/pull/1223), [#1225](https://github.com/eclipse-elk/elk/pull/1225),

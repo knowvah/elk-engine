@@ -177,6 +177,12 @@
 //   and the terminal layout of the imported graph (nested level c: the import target). Rows are appended after the scenarios, so no earlier
 //   row changes. Sc22 (the DummySelfLoopProcessor plan under POLYLINE and SPLINES) is recorded here too: sites/DummySelfLoopProcessor/...
 //   Scenarios no graph reaches are not recorded (Sc25, Sc28, Sc34; arms of Sc12, Sc22, Sc26): the verdicts are in the T20 journal entry.
+//   Evidence rows (issue #55, plans/layered-loops-evidence), appended after the 64 rows of T20 by evidenceSites(): one graph per mutation
+//   survivor of 7g that no row observed (mutants.md there, M1-M10: PortSideAssigner/oddCornerSplit, BreakingPointInserter/improveCutsTie,
+//   NetworkSimplexCompaction/*, LGraphToCGraphTransformer/southExternalPortMargin/*, ComponentsCompactor/externalEdgeOffset/*,
+//   ComponentsToCGraphTransformer/southPlaceholderExtent/*) and PortRestorer/freeDistribution/<distribution>-<ordering>, the
+//   selfLoopDistribution x selfLoopOrdering combinations set on a FREE node. The southExternalPortMargin rows are step rows whose import
+//   target is the nested level c (the stop HORIZONTAL_COMPACTOR on that level).
 //
 // Identity hashes: the script runs the JVM with -XX:+UnlockExperimentalVMOptions -XX:hashCode=2 so identity-hashed collections iterate in
 //   insertion order (AD-10; up to 10 entries, then HashMap treeifies); main fails without it. The seed properties are those of
