@@ -217,7 +217,16 @@ import org.eclipse.elk.graph.properties.IProperty;
 import org.eclipse.elk.graph.util.ElkGraphUtil;
 
 public class MrTreeVectors {
-    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     static final String OUTPUT = "mrtree.json", EXTRA_OUTPUT = "mrtree-extra.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String CORPUS_INPUT = "test/corpus/generated/mrtree-tree-small.json";
@@ -1661,7 +1670,7 @@ d002e5a2eac3086de326c108f6582caa66356ffcc2e707ad7faf59778d92df49  repo:test/corp
         }
         StringBuilder fileText = new StringBuilder("{\n  \"jdk\": ");
         str(fileText, System.getProperty("java.version"));
-        fileText.append(",\n  \"oracle\": \"").append(ELK_COMMIT).append("\",\n  \"seeds\": {\"shapes\": ").append(shapeSeed)
+        fileText.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"seeds\": {\"shapes\": ").append(shapeSeed)
                 .append(", \"random\": ").append(randomSeed).append("},\n  \"rowCounts\": {");
         int k = 0;
         for (Map.Entry<String, Integer> e : counts.entrySet()) {
@@ -1683,6 +1692,7 @@ d002e5a2eac3086de326c108f6582caa66356ffcc2e707ad7faf59778d92df49  repo:test/corp
     }
 
     public static void main(String[] args) throws Exception {
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         if (args.length != 2) {
             throw new IllegalArgumentException("usage: MrTreeVectors.java <outDir> <tools/vectors dir>");
         }

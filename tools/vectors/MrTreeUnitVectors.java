@@ -90,7 +90,16 @@ import org.eclipse.elk.core.options.Direction;
 import org.eclipse.elk.core.util.NullElkProgressMonitor;
 
 public class MrTreeUnitVectors {
-    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     static final long EDGE_ROUTER_SEED = 8161L;
     static final long ORDER_BALANCE_SEED = 12L;
     static final long AVERAGE_SEED = 8163L;
@@ -704,6 +713,7 @@ public class MrTreeUnitVectors {
     }
 
     public static void main(String[] args) throws Exception {
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         Path out = Path.of(args[0]);
         List<JsonObject> rows = new ArrayList<>();
         Map<String, Integer> counts = new LinkedHashMap<>();
@@ -735,7 +745,7 @@ public class MrTreeUnitVectors {
             }
         }
         StringBuilder text = new StringBuilder("{\n  \"jdk\": \"").append(System.getProperty("java.version")).append("\",\n");
-        text.append("  \"oracle\": \"").append(ELK_COMMIT).append("\",\n");
+        text.append("  \"oracle\": \"").append(elkCommit()).append("\",\n");
         text.append("  \"seeds\": {\"edgeRouter\": ").append(EDGE_ROUTER_SEED).append(", \"orderBalance\": ").append(ORDER_BALANCE_SEED)
                 .append(", \"average\": ").append(AVERAGE_SEED).append("},\n  \"rowCounts\": {");
         int k = 0;

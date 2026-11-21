@@ -65,7 +65,16 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.util.Strings;
 
 public class ElktLexerVectors {
-    private static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    private static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     private static final String XTEXT_VERSION = "2.36.0";
     private static final String CASES = "elkt-lexer-cases.txt";
     private static final String OUT = "graph-text-lexer.json";
@@ -73,6 +82,7 @@ public class ElktLexerVectors {
     private static final String CLASS = "class", TEXT = "text";
 
     public static void main(String[] args) throws IOException {
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         LayoutMetaDataService.getInstance(new ClassLoader(null) { });
         Injector injector = new ElkGraphStandaloneSetup().createInjectorAndDoEMFRegistration();
         Converters converters = new Converters(injector);
@@ -83,7 +93,7 @@ public class ElktLexerVectors {
             }
         }
         StringBuilder out = new StringBuilder("{\n");
-        out.append("  \"elkCommit\": \"").append(ELK_COMMIT).append("\",\n");
+        out.append("  \"elkCommit\": \"").append(elkCommit()).append("\",\n");
         out.append("  \"xtextVersion\": \"").append(XTEXT_VERSION).append("\",\n  \"registry\": \"core\",\n");
         rows(out, "tokens", tokens, true);
         rows(out, "converters", conv, false);

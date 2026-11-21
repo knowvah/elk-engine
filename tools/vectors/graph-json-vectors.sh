@@ -4,6 +4,7 @@
 # GraphJsonVectors.java against every jar of the source-built oracle (AD-3, incl. patch
 # 0001's export seed seam) plus Gson 2.11.0 and the other third-party bundles from the p2
 # cache. Inputs: tools/vectors/graph-json-scenarios/. Writes <outDir>/graph-json.json.
+# Passes the pinned commit (tools/oracle/ELK_COMMIT) to the recorder as -Delk.commit: the ref's elkCommit stamp.
 # Usage: graph-json-vectors.sh <outDir>
 # Honours ELK_ORACLE_DIR (default <repo>/../elk-oracle) and P2_BUNDLES.
 set -euo pipefail
@@ -66,7 +67,7 @@ main() {
   [ "$pinned" = "$built" ] || die "oracle built from $built, pinned commit is $pinned"
   gson="$(basename "$(dirname "$(newest_jar "$GSON_BUNDLE")")")"
   [ "$gson" = "$GSON_VERSION" ] || die "gson $gson in the p2 cache, expected $GSON_VERSION"
-  java -cp "$(build_classpath)" "$VECTORS_DIR/GraphJsonVectors.java" "$1" \
+  java -Delk.commit="$pinned" -cp "$(build_classpath)" "$VECTORS_DIR/GraphJsonVectors.java" "$1" \
     "$VECTORS_DIR/graph-json-scenarios" "$GSON_VERSION"
 }
 

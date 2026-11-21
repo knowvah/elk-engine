@@ -173,7 +173,16 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 public class LayeredPipelineVectors {
-    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     static final String OUTPUT = "layered-pipeline.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed", REPO_PREFIX = "repo:";
     static final String PTOLEMY = "test/golden/inputs/realworld/ptolemy/", LAYERED_TESTS = "test/golden/inputs/tests/layered/";
@@ -2997,7 +3006,7 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
     static String fileText(Map<String, Integer> counts, List<Row> rows) {
         StringBuilder out = new StringBuilder("{\n  \"jdk\": ");
         str(out, System.getProperty("java.version"));
-        out.append(",\n  \"oracle\": \"").append(ELK_COMMIT).append("\",\n  \"rowCounts\": {");
+        out.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"rowCounts\": {");
         int k = 0;
         for (Map.Entry<String, Integer> e : counts.entrySet()) {
             out.append(k++ == 0 ? "" : ", ").append('"').append(e.getKey()).append("\": ").append(e.getValue());
@@ -3659,6 +3668,7 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
             planDump(args);
             return;
         }
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         setup(args[1]);
         String file;
         try {

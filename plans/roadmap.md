@@ -2641,3 +2641,86 @@ them. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.j
 
 **Oracle.** Not rebuilt and not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003.
 `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
+
+## Revision 2026-11-20 (recorder-pin-source)
+
+Appended; no earlier line is edited. Source: issue #96 and D1-D6 in `plans/recorder-pin-source/decisions.md`; the
+journal is `plans/recorder-pin-source/decision-journal.md`. Where this section conflicts with the text above, this
+section wins. Task ids are T0-T4; the base is `f69bbe41328863e14ea646533e11c604949d5715`.
+
+**One follow-up is closed: under `tools/` the pinned ELK commit is written once.** Row 7 of the upgrade-runbook
+revision ("the pinned sha is repeated in 41 recorder constants; two recorders have no script") is done. Before, each
+of 41 `tools/vectors/*Vectors.java` held `ELK_COMMIT = "<sha>"`, and that constant, not the oracle, was the
+`elkCommit` / `oracle` stamp of its vector ref; a pin move had to `sed` all of them, and a forgotten `sed` re-recorded
+refs with the old stamp. Now the pin is in `tools/oracle/ELK_COMMIT` (AD-2) and in the generated `.melk` stamp
+`tools/melk/sources/manifest.json`, and nowhere else under `tools/`.
+
+**The scripts pass the pin; the recorders read it (T1, D1, D2).** `tools/vectors/vector-cache.sh` has a new
+`vc_elk_commit` and passes `-Delk.commit=<pin>` on its three `java` lines (cache off, whole program, per row), which
+covers the 26 scripts that call `vc_run`; `graph-vectors.sh`, `graph-json-vectors.sh`, `metadata-vectors.sh` and
+`transfer-vectors.sh` pass `-Delk.commit="$pinned"` on their own line. Every one of these scripts already refused to
+run unless `oracle-build.json` named the pin. The cache salt formula is unchanged: `oracle-build.json` is in it, and
+it names the same commit. In each of the 41 recorders the constant became a lazy accessor of the same visibility,
+`elkCommit()`, which throws `system property elk.commit is <value>, not a 40-digit sha; run this recorder through its
+tools/vectors/*-vectors.sh script` unless the property is 40 lowercase hex digits. It is lazy because eight recorders
+also run in `--sweep` / `--dump` mode from `tools/oracle/*-sweep.sh`, which stamp nothing and pass nothing; no sweep
+script changed. 38 recorders call it once more at the start of their vector path, so a recorder started by hand
+refuses before it records a row (the other three stamp before their first row). Nothing else in a recorder changed.
+
+**Fitness test (T1, D4).** New `test/architecture/elk-pin.fitness.test.ts`, written first and seen red on the base (41
+offenders for each of the first two rules): the pin occurs in no file under `tools/` but the two named above; no
+`tools/vectors/*.java` holds a quoted 40-hex literal (a copy at an older pin); every `java` line of
+`vector-cache.sh` (exactly three) passes `-Delk.commit=`; exactly 41 recorders call `elkCommit()`, and each is named
+by a `*-vectors.sh` that calls `vc_run` or passes the property on every `java` line it has. The program-name rule it
+shares with `test/docs/elk-upgrade-runbook.test.ts` moved, unchanged, to `test/helpers/recorder-scripts.ts`.
+
+**Two new scripts (T2, D3).** `tools/vectors/core-jdk-vectors.sh <outDir>` (JDK major 21, then the command of the
+program's header) and `tools/vectors/guava-vectors.sh <outDir>` (oracle built from the pin; `com.google.guava`
+`Bundle-Version` `33.3.0.jre` and `com.google.guava.failureaccess` `1.0.2` from the p2 cache, each checked). Neither
+adds a JVM flag, and `CoreJdkVectors.java` and `GuavaVectors.java` are unedited: both scripts' output into a fresh
+directory is `cmp`-identical to the six committed refs. Their stale `Run:` header lines are #134.
+
+**Runbook (T2).** `docs/architecture/elk-upgrade.md` § 5 step 3 keeps its number and now says there is nothing to
+edit, with one check (`git grep -c "$OLD" -- tools` prints only the `.melk` stamp); § 7.3 names the two scripts in
+place of the hand-built command lines. `docs/architecture/core-engine.md` § 7.6 runs `core-jdk-vectors.sh`. From the
+next pin move on, the bump is the pin file alone.
+
+**Cold proof (T3, D5): no ref changed.** Every script whose program, own text or `vector-cache.sh` changed ran cold
+into `test/golden/refs/java`: the 29 short scripts in 6 min 17 s of recorder time (31 programs `cache: … recorded`,
+the four direct scripts uncached, no `hit`), and `elkj-vectors.sh` in 4 h 03 min (four programs `recorded`, `ElkjRoundTripVectors rows 0/281` in
+3 h 22 min, `ElkjWriteVectors rows 0/126`). After each script,
+and at the end, `git diff --exit-code f69bbe41 -- test/golden/refs/` was empty with no untracked file. The planner's
+risk did not occur: 13 of these scripts do not pin `-XX:hashCode=2`, and their 24 refs are byte-identical although
+each program's source changed (`.agent-notes/recorder-pin-source.md`). The eight sweeps whose program changed
+(`compound`, `labels`, `loops`, `order`, `phase`, `pipeline`, `placement`, `routing`) were fresh at the base, reran
+without `--force` after T1 (12 min 48 s) and wrote `results.jsonl` files `cmp`-identical to the before-side (67,111
+lines in all); their eight consumer tests pass on the real sweep dirs. Negative path: `MetaDataVectors.java` without
+the property exits 1 with the message above and writes no file; with 40 `a`s as the property its output differs from
+the ref in the `elkCommit` line only. All 41 recorders, started without the property, exit 1 with that message
+before writing a file.
+
+**Not done, on purpose.** #50 (multi-file `javac` build and two other recorder debts) stays separate (D6): bundled, a
+ref change could not have been attributed. The four scripts whose programs stamp nothing (`java-vectors.sh`,
+`gson-vectors.sh`, `label-sizing-vectors.sh`, `layered-label-metrics-vectors.sh`) are untouched and were not rerun.
+The translated `docs-site/` pages are untouched.
+
+**Issues filed.** #134 (`follow-up`): the `Run:` lines of the two unedited recorders and one sentence of
+`docs/translation-rules.md` still give the bare `java` command. #135 (`follow-up`): `AlgCommonVectors.java` does not
+compile under `-XX:hashCode=2` (javac's inference of one `List.of(Map.entry(…))` changes when every identity hash is
+equal; the base source fails the same way), which matters only if that script is ever pinned. No `needs-ruling`
+issue: no stop condition fired.
+
+**Unchanged.** No file under `src/`. No assertion of an existing test, no vector and no golden changed (AD-13). The
+oracle was not rebuilt and no patch changed.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,718
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,177 files and 49,333 tests
+passed, 93 skipped, 0 failed (the base's 1,176 and 49,324 plus the new fitness test's file and 9 tests); statements
+98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %, as at the base. `docs:build` exit 0 with 200 typedoc
+warnings, as at the base. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`. Gate 7:
+every recorder and sweep whose input changed was rerun (above) and `git diff --exit-code f69bbe41 --
+test/golden/refs/` is empty.
+
+**Oracle.** Not rebuilt. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
+2026-11-18T15:18:16Z, sha256 `87705f69…`). `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
+`$ELK_MODELS_DIR` is at `ac5af2ba…`, the commit of `test/corpus/manifest.json`.

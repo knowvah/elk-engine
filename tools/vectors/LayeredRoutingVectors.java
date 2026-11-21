@@ -156,7 +156,16 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 public class LayeredRoutingVectors {
-    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     static final String OUTPUT_MODELS = "layered-routing.json", OUTPUT_STEPS = "layered-routing-steps.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed", REPO_PREFIX = "repo:";
     static final String PTOLEMY = "test/golden/inputs/realworld/ptolemy/", LAYERED_TESTS = "test/golden/inputs/tests/layered/";
@@ -2828,7 +2837,7 @@ b6ced8d3f6be2d7f744b6d3496d6c76167ba6ba91b2d7ab9992e5bbc160db031  repo:test/gold
     static String fileText(Map<String, Integer> counts, List<Row> rows) {
         StringBuilder out = new StringBuilder("{\n  \"jdk\": ");
         str(out, System.getProperty("java.version"));
-        out.append(",\n  \"oracle\": \"").append(ELK_COMMIT).append("\",\n  \"rowCounts\": {");
+        out.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"rowCounts\": {");
         int k = 0;
         for (Map.Entry<String, Integer> e : counts.entrySet()) {
             out.append(k++ == 0 ? "" : ", ").append('"').append(e.getKey()).append("\": ").append(e.getValue());
@@ -2991,6 +3000,7 @@ b6ced8d3f6be2d7f744b6d3496d6c76167ba6ba91b2d7ab9992e5bbc160db031  repo:test/gold
     }
 
     public static void main(String[] args) throws Exception {
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         // ELK keeps LNodes in HashSets/HashMaps: LNode has no hashCode, so the iteration order follows the identity
         // hash and changes from run to run. AD-10 ports such collections in insertion order, so the oracle runs with
         // a constant identity hash (-XX:hashCode=2, set by the script): every key lands in one bucket and iterates in

@@ -19,6 +19,9 @@
 # ELK_VECTORS_CACHE=off reads and writes no cache and passes no <cacheDir>.
 # stderr, one line per program: "cache: <Program> hit" | "cache: <Program> recorded" |
 #   "cache: <Program> rows <hit>/<recorded>" (the recorder's "cached"/"done" lines) | "cache: off".
+# Every run passes the pinned ELK commit to the recorder as -Delk.commit, read from $ROOT/tools/oracle/ELK_COMMIT
+# (issue #96): the recorders stamp their vector file with it and hold no copy. It is not part of the salt: the caller
+# has checked that oracle-build.json, which is, names the same commit.
 # Expects from the caller: ROOT, ELK_ORACLE_DIR, VECTORS_DIR and die(). Callers run vc_run as `vc_run ... || rc=$?`,
 # where errexit does not apply, so every step below that can fail returns its status explicitly.
 
@@ -86,6 +89,10 @@ vc_salt() { # vc_salt <callingScript> <classpath> <program>
   vc_digest "f:$3" "f:$1" "f:$VC_SELF" "f:$ELK_ORACLE_DIR/oracle-build.json" "s:$2" "s:$VC_JAVA_VERSION"
 }
 
+vc_elk_commit() { # the pinned ELK commit (AD-2), the recorders' -Delk.commit
+  tr -d '[:space:]' <"$ROOT/tools/oracle/ELK_COMMIT"
+}
+
 vc_is_row_program() { # vc_is_row_program <Program>
   case " $VC_ROW_PROGRAMS " in *" $1 "*) return 0 ;; *) return 1 ;; esac
 }
@@ -95,7 +102,7 @@ vc_run() { # vc_run <callingScript> <classpath> <program> <outDir>; runs (or reu
   name="$(basename "$program" .java)"
   if ! vc_enabled; then
     echo "cache: off" >&2
-    java -cp "$cp" "$program" "$out" "$VECTORS_DIR"
+    java -Delk.commit="$(vc_elk_commit)" -cp "$cp" "$program" "$out" "$VECTORS_DIR"
     return
   fi
   salt="$(vc_salt "$script" "$cp" "$program")"
@@ -118,7 +125,7 @@ vc_run_whole() { # vc_run_whole <classpath> <program> <outDir> <Program> <entryD
   rm -rf "$entry" && mkdir -p "$(dirname "$entry")" || return
   stage="$(mktemp -d "$(dirname "$entry")/.stage.XXXXXX")" || return
   rc=0
-  java -cp "$cp" "$program" "$stage" "$VECTORS_DIR" || rc=$?
+  java -Delk.commit="$(vc_elk_commit)" -cp "$cp" "$program" "$stage" "$VECTORS_DIR" || rc=$?
   if [ "$rc" -ne 0 ]; then
     rm -rf "$stage"
     return "$rc"
@@ -136,7 +143,10 @@ vc_run_rows() { # vc_run_rows <classpath> <program> <outDir> <Program> <rowsDir>
   log="$(mktemp "${TMPDIR:-/tmp}/vector-cache.XXXXXX")" || return
   rc=0
   # The recorder's stderr stays live (tee) and is kept for the hit/recorded counts; its stdout passes through on fd 3.
-  { java -cp "$cp" "$program" "$out" "$VECTORS_DIR" "$rows" 2>&1 >&3 3>&- | tee "$log" >&2; } 3>&1 || rc=$?
+  {
+    java -Delk.commit="$(vc_elk_commit)" -cp "$cp" "$program" "$out" "$VECTORS_DIR" "$rows" 2>&1 >&3 3>&- |
+      tee "$log" >&2
+  } 3>&1 || rc=$?
   hit="$(grep -c '^cached ' "$log" || true)"
   recorded="$(grep -c '^done ' "$log" || true)"
   rm -f "$log"

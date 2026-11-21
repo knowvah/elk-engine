@@ -67,7 +67,16 @@ import org.eclipse.elk.graph.ElkNode;
 import org.eclipse.elk.graph.json.ElkGraphJson;
 
 public class CommentVectors {
-    private static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    private static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     private static final String SCENARIO_DIR = "comment-scenarios";
     private static final String CONFIG_SUFFIX = ".config.json";
     private static final String GRAPH_SUFFIX = ".json";
@@ -92,7 +101,7 @@ public class CommentVectors {
         StringBuilder out = new StringBuilder("{\n");
         out.append("  \"jdk\": ");
         string(out, System.getProperty("java.version"));
-        out.append(",\n  \"oracle\": \"").append(ELK_COMMIT).append("\",\n  \"scenarios\": [\n");
+        out.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"scenarios\": [\n");
         for (int i = 0; i < names.size(); i++) {
             out.append("    ").append(scenarioRow(scenarios, names.get(i)));
             out.append(i + 1 < names.size() ? ",\n" : "\n");

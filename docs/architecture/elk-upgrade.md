@@ -154,15 +154,19 @@ Dropping, rebasing or renumbering a patch is the maintainer's decision (AD-3). J
    printf '%s\n' "$NEW" >tools/oracle/ELK_COMMIT
    ```
 
-3. **The recorder constants.** Every recorder that stamps its ref holds the sha as `ELK_COMMIT = "…"`; the stamp in a
-   vector ref comes from this constant, not from the oracle. Change all of them in one step and check that none is left:
+3. **The recorders: nothing to edit.** A recorder that stamps its ref holds no copy of the sha. Its script reads
+   `tools/oracle/ELK_COMMIT`, checks that the oracle was built from it, and passes it to the recorder as the system
+   property `elk.commit`; the stamp in a vector ref is that property (issue #96). A recorder started without it refuses
+   before it records a row. `test/architecture/elk-pin.fitness.test.ts` fails when the pin, or any quoted sha, is
+   written into a recorder again. Check that the old pin is left nowhere under `tools/` but the `.melk` stamp, which
+   section 6 rewrites:
 
    ```sh
-   git grep -l "$OLD" -- tools/vectors | xargs sed -i '' "s/$OLD/$NEW/"
-   git grep -c "$OLD" -- tools/vectors
+   git grep -c "$OLD" -- tools
    ```
 
-   The second command prints nothing. The edit changes each recorder's source, which is part of its cache salt.
+   It prints `tools/melk/sources/manifest.json:1` only. No recorder source changes with the pin, so the step leaves the
+   vector cache alone; the build of step 5 is what turns it cold (last hazard below).
 
 4. **Remove the old oracle worktree** (a real move only; a rehearsal builds a second one, section 14). The vector cache,
    the sweep outputs and the census cache under it go with it:
@@ -324,24 +328,21 @@ to show that (`git diff --exit-code "$REFS/layered-label-metrics.json"`).
 These depend on the JDK, or on a third-party bundle whose version ELK's target platform chooses. Rerun them on a pin
 move to show the refs do not change; a diff means the JDK or the bundle version moved, not ELK.
 
-| Command                                                                    | Refs written under `test/golden/refs/java/`                                                                     | Depends on                    |
-| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `tools/vectors/java-vectors.sh "$REFS"`                                    | `random.json`, `lang.json`, `numeric.json`, `hash.json`, `text.json`, `random-setseed.json`, `collections.json` | JDK 21                        |
-| `java tools/vectors/CoreJdkVectors.java "$REFS"`                           | `awt.json`, `regex.json`, `character.json`, `regex-boundary.json`, `stream-sum.json`                            | JDK 21 (no script)            |
-| `java -cp "$GUAVA:$FAILUREACCESS" tools/vectors/GuavaVectors.java "$REFS"` | `guava.json`                                                                                                    | Guava 33.3.0-jre (no script)  |
-| `tools/vectors/gson-vectors.sh "$REFS"`                                    | `gson.json`                                                                                                     | Gson 2.11.0 from the p2 cache |
-| `tools/vectors/layered-label-metrics-vectors.sh "$REFS"`                   | `layered-label-metrics.json`                                                                                    | JDK 21 AWT, macOS arm64       |
+| Command                                                  | Refs written under `test/golden/refs/java/`                                                                     | Depends on                         |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `tools/vectors/java-vectors.sh "$REFS"`                  | `random.json`, `lang.json`, `numeric.json`, `hash.json`, `text.json`, `random-setseed.json`, `collections.json` | JDK 21                             |
+| `tools/vectors/core-jdk-vectors.sh "$REFS"`              | `awt.json`, `regex.json`, `character.json`, `regex-boundary.json`, `stream-sum.json`                            | JDK 21                             |
+| `tools/vectors/guava-vectors.sh "$REFS"`                 | `guava.json`                                                                                                    | Guava 33.3.0-jre from the p2 cache |
+| `tools/vectors/gson-vectors.sh "$REFS"`                  | `gson.json`                                                                                                     | Gson 2.11.0 from the p2 cache      |
+| `tools/vectors/layered-label-metrics-vectors.sh "$REFS"` | `layered-label-metrics.json`                                                                                    | JDK 21 AWT, macOS arm64            |
 
-`GuavaVectors.java` takes the two Guava jars of the p2 cache:
-
-```sh
-P2="${P2_BUNDLES:-$HOME/.m2/repository/p2/osgi/bundle}"
-GUAVA="$(ls "$P2"/com.google.guava/*/com.google.guava-*.jar | grep -v sources | sort -V | tail -n1)"
-FAILUREACCESS="$(ls "$P2"/com.google.guava.failureaccess/*/*.jar | grep -v sources | sort -V | tail -n1)"
-```
-
-The recorder's header names the Guava version it was written against; when the p2 cache holds another one after the
-build, the target platform moved it, and the shims under `src/guava/` are re-proved against the new version.
+`tools/vectors/core-jdk-vectors.sh` and `tools/vectors/guava-vectors.sh` run the commands the headers of
+`CoreJdkVectors.java` and `GuavaVectors.java` name, with no extra JVM flag (the refs were recorded that way; neither
+program stamps a commit). The Guava script finds the `com.google.guava` and `com.google.guava.failureaccess` jars in
+the p2 cache and refuses unless their `Bundle-Version` is `33.3.0.jre` and `1.0.2`, the versions the ref was recorded
+with; the recorder's header names the same Guava version. When the p2 cache holds another one after the build, the
+target platform moved it: the script's two version constants follow, and the shims under `src/guava/` are re-proved
+against the new version.
 
 ## 8. Goldens and other oracle-recorded files {#elk-upgrade-goldens}
 

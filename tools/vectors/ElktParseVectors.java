@@ -90,7 +90,16 @@ import org.eclipse.xtext.parser.antlr.SyntaxErrorMessageProvider;
 import org.eclipse.xtext.resource.XtextSyntaxDiagnostic;
 
 public class ElktParseVectors {
-    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String CONVERSION_CODE = "elkt.vectors.ValueConversion";
     static final String SCENARIO_DIR = "elkt-parse-scenarios", EXTENSION = ".elkt", OUTPUT = "graph-text-parse.json";
@@ -100,6 +109,7 @@ public class ElktParseVectors {
     static final String SOURCES = "sources", TARGETS = "targets", ID = "id";
 
     public static void main(String[] args) throws IOException {
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         LayoutMetaDataService.getInstance(new ClassLoader(null) { });
         System.setProperty(SEED_PROPERTY, "1");
         Injector injector = new Setup().createInjectorAndDoEMFRegistration();
@@ -123,7 +133,7 @@ public class ElktParseVectors {
 
     static void write(Path out, List<Map<String, Object>> cases) throws IOException {
         StringBuilder sb = new StringBuilder("{\n");
-        sb.append("  \"elkCommit\": \"").append(ELK_COMMIT).append("\",\n");
+        sb.append("  \"elkCommit\": \"").append(elkCommit()).append("\",\n");
         sb.append("  \"xtextVersion\": \"").append(xtextVersion()).append("\",\n");
         sb.append("  \"registry\": \"core\",\n  \"cases\": [\n");
         for (int i = 0; i < cases.size(); i++) {

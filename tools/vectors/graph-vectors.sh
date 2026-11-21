@@ -3,6 +3,7 @@
 # Records the ElkGraph model's JVM behaviour (AD-13) by running GraphVectors.java
 # against the source-built oracle's org.eclipse.elk.graph jar (AD-3) plus EMF and
 # Guava from the p2 cache. Writes <outDir>/graph.json.
+# Passes the pinned commit (tools/oracle/ELK_COMMIT) to the recorder as -Delk.commit: the ref's elkCommit stamp.
 # Usage: graph-vectors.sh <outDir>
 # Honours ELK_ORACLE_DIR (default <repo>/../elk-oracle) and P2_BUNDLES.
 set -euo pipefail
@@ -60,7 +61,7 @@ main() {
   pinned="$(tr -d '[:space:]' <"$ROOT/tools/oracle/ELK_COMMIT")"
   built="$(oracle_field commit)"
   [ "$pinned" = "$built" ] || die "oracle built from $built, pinned commit is $pinned"
-  java -cp "$(build_classpath)" "$VECTORS_DIR/GraphVectors.java" "$1" "$VECTORS_DIR/graph-scenarios.txt"
+  java -Delk.commit="$pinned" -cp "$(build_classpath)" "$VECTORS_DIR/GraphVectors.java" "$1" "$VECTORS_DIR/graph-scenarios.txt"
 }
 
 main "$@"

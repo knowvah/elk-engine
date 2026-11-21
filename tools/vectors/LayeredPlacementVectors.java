@@ -164,7 +164,16 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 
 public class LayeredPlacementVectors {
-    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     static final String OUTPUT = "layered-placement.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String REPO_PREFIX = "repo:";
@@ -2910,7 +2919,7 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
         NOT_IN_PLAN.forEach((k, n) -> System.err.println("stop not in the algorithm (skipped) " + n + " rows: " + k));
         StringBuilder out = new StringBuilder("{\n  \"jdk\": ");
         str(out, System.getProperty("java.version"));
-        out.append(",\n  \"oracle\": \"").append(ELK_COMMIT).append("\",\n  \"rowCounts\": {");
+        out.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"rowCounts\": {");
         int k = 0;
         for (Map.Entry<String, Integer> e : counts.entrySet()) {
             out.append(k++ == 0 ? "" : ", ").append('"').append(e.getKey()).append("\": ").append(e.getValue());
@@ -2975,6 +2984,7 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
             }
             return;
         }
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         REPO = Path.of(args[1]).toAbsolutePath().normalize().getParent().getParent();
         discoverProperties();
         String text;
