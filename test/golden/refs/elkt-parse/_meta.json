@@ -3,7 +3,8 @@
   "patches": [
     "0001-graph.json-seedable-JsonExporter-id-collision-random.patch",
     "0002-graph-seedable-GraphIdentifierGenerator-random.patch",
-    "0003-alg.test-pluggable-label-text-measurer.patch"
+    "0003-alg.test-pluggable-label-text-measurer.patch",
+    "0004-Report-all-overlaps-of-a-node-inserted-into-the-over.patch"
   ],
   "modelsCommit": "ac5af2ba511c0037e4f347e8bd91f013950951c7",
   "registry": "core",

@@ -120,7 +120,9 @@ stops at the first patch that fails and leaves the new worktree in place).
 
 - **Applies cleanly**: nothing to do.
 - **Merged upstream** (the patch's change is in `$OLD..$NEW`): the patch is dropped. `git am --3way` reports it as
-  already applied or as an empty patch.
+  already applied or as an empty patch. This is how a carried upstream patch
+  ([conformance.md](../conformance.md#carried-upstream-patches)) ends: the port already follows the patched Java, so
+  dropping it changes no ref beyond the `patches` arrays.
 - **Conflicts**: the patch is rebased in the oracle worktree and re-exported with `git format-patch`
   ([`tools/oracle/README.md`](../../tools/oracle/README.md) "Add a seam patch").
 

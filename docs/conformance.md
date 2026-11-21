@@ -71,20 +71,62 @@ options omitted. A failing input prints `ERROR <input>: <message>`; the
 JVM exits `1` if any input failed. Input basenames must be unique within one
 run, since the output name is the basename.
 
-**Patch series semantics.** The series holds three patches:
+**Patch series semantics.** The series holds four patches:
 
-| Patch                                                                                                          | Effect                                                                                                                                                                                                                                                                                                                                                                                               | Paired TS seam                                                                                                                                                                                                                                              |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b)                                        | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1`                                                                                                                                                                  | Optional `random` parameter of the `JsonExporter` constructor (J4, [elk-json.md](architecture/elk-json.md#exporter-random)); tests pass `new Random(1)` (the TS `Random` shim reproduces the stream: seed 1 gives 548985, 764588)                           |
-| `0002-graph-seedable-GraphIdentifierGenerator-random.patch` (added with the `.elkj` harness modes, `9ec3d1d5`) | `GraphIdentifierGenerator` resolves id collisions with an unseeded `Random`; the patch seeds it from the system property `org.eclipse.elk.graph.util.identifierSeed` (unset = ELK behavior). Only the harness convert mode sets it                                                                                                                                                                   | None: the TS port parses the converted files and needs no paired seam (D12, stated in the patch message)                                                                                                                                                    |
-| `0003-alg.test-pluggable-label-text-measurer.patch` (row 10, TX1, TX2)                                         | In the test bundle `org.eclipse.elk.alg.test` only, `TestConfiguration.computeLabelSize` takes a label's size from `TextMeasurer.fromSystemProperty()`. The property `org.eclipse.elk.alg.test.textMeasurer` selects the measurer: unset or `awt` keeps the AWT font metrics (the default, unchanged), `fixed` gives `[length × 6, 12]`, any other value throws `IllegalArgumentException` naming it | `test/helpers/layout-test-text-measurer.ts` (`TextMeasurer`, `AWT_SNAPSHOT_TEXT_MEASURER`, `FIXED_ADVANCE_TEXT_MEASURER`, `textMeasurerFrom`); env `ELK_TEST_TEXT_MEASURER` with the same values and the same throw ([text-sizing-seam](#text-sizing-seam)) |
+| Patch                                                                                                          | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Paired TS seam                                                                                                                                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b)                                        | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1`                                                                                                                                                                                                                                                                                                                         | Optional `random` parameter of the `JsonExporter` constructor (J4, [elk-json.md](architecture/elk-json.md#exporter-random)); tests pass `new Random(1)` (the TS `Random` shim reproduces the stream: seed 1 gives 548985, 764588)                           |
+| `0002-graph-seedable-GraphIdentifierGenerator-random.patch` (added with the `.elkj` harness modes, `9ec3d1d5`) | `GraphIdentifierGenerator` resolves id collisions with an unseeded `Random`; the patch seeds it from the system property `org.eclipse.elk.graph.util.identifierSeed` (unset = ELK behavior). Only the harness convert mode sets it                                                                                                                                                                                                                                                                                                                          | None: the TS port parses the converted files and needs no paired seam (D12, stated in the patch message)                                                                                                                                                    |
+| `0003-alg.test-pluggable-label-text-measurer.patch` (row 10, TX1, TX2)                                         | In the test bundle `org.eclipse.elk.alg.test` only, `TestConfiguration.computeLabelSize` takes a label's size from `TextMeasurer.fromSystemProperty()`. The property `org.eclipse.elk.alg.test.textMeasurer` selects the measurer: unset or `awt` keeps the AWT font metrics (the default, unchanged), `fixed` gives `[length × 6, 12]`, any other value throws `IllegalArgumentException` naming it                                                                                                                                                        | `test/helpers/layout-test-text-measurer.ts` (`TextMeasurer`, `AWT_SNAPSHOT_TEXT_MEASURER`, `FIXED_ADVANCE_TEXT_MEASURER`, `textMeasurerFrom`); env `ELK_TEST_TEXT_MEASURER` with the same values and the same throw ([text-sizing-seam](#text-sizing-seam)) |
+| `0004-Report-all-overlaps-of-a-node-inserted-into-the-over.patch` (issue #111)                                 | In `org.eclipse.elk.alg.common`, `ScanlineOverlapCheck`'s handler `insert` no longer ends its walk over the scanline at the first node that does not overlap the inserted node once an overlap was found. It ends at the first node whose left side is at or right of the inserted node's right side (`DoubleMath.fuzzyCompare(…, InternalProperties.FUZZINESS) >= 0`), so the scanline reports every overlapping pair. Only `sporeOverlap` (`OverlapRemovalLayoutProvider`) runs that check. The patch also adds two tests to `ScanlineOverlapRemovalTest` | None: a carried upstream fix (eclipse-elk/elk#1247), not a seam. It is ported at its site, `src/alg/common/spore/ScanlineOverlapCheckHandler.ts` ([carried upstream patches](#carried-upstream-patches))                                                    |
 
-Patches exist only to add narrowly scoped seams that make JVM and JS behavior comparable;
-each is paired with a TS-side seam (section 4). Patch `0002` is the one exception: it needs no TS seam, as its row says.
+Patches are of two kinds. A **seam patch** (`0001`-`0003`) adds a narrowly scoped seam that makes JVM and JS behavior
+comparable; each is paired with a TS-side seam (section 4). Patch `0002` is the one exception: it needs no TS seam, as its row
+says. A **carried upstream patch** (`0004`) is a fix filed upstream as a pull request that the pin does not hold yet; it changes
+what ELK computes, and the port follows the patched Java ([carried upstream patches](#carried-upstream-patches)).
 
 **Why not elkjs?** elkjs is ELK compiled by GWT. It cannot carry our patch
 series, and GWT emulation of the JRE differs from the JVM we are porting from.
 It is not consulted as an oracle.
+
+### Carried upstream patches {#carried-upstream-patches}
+
+A fix that is filed upstream and not merged yet is carried as an oracle patch, as if it were merged (maintainer ruling of
+2026-11-13, issue #111). The patch is the pull request's head commit, exported with `git format-patch` (never written by
+hand), and the port follows the patched Java at its site, with a comment naming the pull request and the patch. Tests the
+pull request adds are ported like any other JUnit test. A carried patch is dropped in the mission that moves the pin past
+the pull request's merge ([elk-upgrade.md](architecture/elk-upgrade.md#elk-upgrade-patches)). If the pull request's head
+moves or it is closed without a merge, the patch is neither refreshed nor dropped without a ruling.
+
+| Patch  | Upstream                                                                                                                                                                                  | Head commit                                                             | What changes                                                                                                                                                                                                                                                                                                | Port site                                                                                                                                                         |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0004` | [eclipse-elk/elk#1247](https://github.com/eclipse-elk/elk/pull/1247), fixes [eclipse-elk/elk#1246](https://github.com/eclipse-elk/elk/issues/1246) (fork: knowvah/elk#19, knowvah/elk#26) | `1bf1da95561140eb78d70d5dd747dd46803ead2a`, parent `8bca22f4` (the pin) | `ScanlineOverlapCheck.java` (+5 −6): the walk in `OverlapsScanlineHandler.insert` ends at the first node that starts at or right of the inserted node's right side, where it used to end at the first node without an overlap after one with an overlap. `ScanlineOverlapRemovalTest.java` (+62): two tests | `ScanlineOverlapCheckHandler.insert` (`src/alg/common/spore/ScanlineOverlapCheckHandler.ts`); the two tests in `src/alg/spore/ScanlineOverlapRemovalTest.test.ts` |
+
+**Refs that moved with `0004`** (regenerated by script on the patched oracle, 2026-11-20; every other ref is byte-identical):
+
+- `test/golden/refs/java/alg-common.json`: 3 of the 8 `scanline` rows of the `spore` group gain handler calls, the old
+  sequence staying a subsequence of the new one: `scanline-random-n16` 14 → 17, `scanline-random-n24` 40 → 51,
+  `scanline-dense-n30` 84 → 166.
+- `test/golden/refs/java/spore-layout.json`: 23 of 340 rows, all `sporeOverlap`: 14 `stops` rows (twelve of `deco10`,
+  `grid4/default`, `scanlineHitboxes/default`) and 9 `minst` rows (`gridO3`, `gridO4`, `gridO5`, `polyO6`, `polyO8`,
+  `randO12`, `deco10`, `plain14`, `randO20`). In the `stops` rows only `scanline`, `triangulation` and `tree` stops differ
+  (more scanline pairs, and the candidate edges, hash classification and weights that follow); every `grow`, `update` and
+  `end` stop is equal, so these rows end at the same positions. No `full`, `throws`, `jitter` or `objects` row and no
+  `sporeCompaction` row changed.
+- `test/golden/refs/elk-packing/sporeOverlap--overlapRemoval.maxIterations-1.json`: two node positions and one edge
+  section. The other six `sporeOverlap--*.json` goldens are unchanged.
+- The `patches` array of the ten `_meta.json` files under `test/golden/refs/` gains the patch's file name.
+
+**Corpus sweep with `0004`** (`tools/oracle/sweep.sh --filter /sporeOverlap/ --out <scratch>`, 906 cases, 2026-11-20):
+880 `ok` and 26 `throws` on the oracle; the port agrees on all 906 (880 `ok`, 26 `both-throw`, no mismatch). Against the
+sweep before the patch, 609 of the 879 cases that lay out both times have a different output, and one case no longer
+throws: `retarget/sporeOverlap/default/realworld/ptolemy/hierarchical/pn_brockackerman_BrockAckerman`. Its root holds two
+compound nodes with `NaN` rectangles (the #108 cases). The scanline's `TreeSet` orders nodes by left side, then centre x,
+then centre y (`ScanlineOverlapCheck.java:131-141`); the two share the left side and, from the second iteration, a `NaN`
+centre y, so only the centre x can tell them apart. Before the patch both were 509.73 wide after their own layouts, the
+centres tied, and the second insertion threw "Invalid hitboxes for scanline overlap calculation."; with the patch their
+own layouts find more overlaps and end 643.34 and 442.99 wide, so the centres differ. The other 26 throws are unchanged. `docs/parity-report.md` and the full sweep cache it was generated from predate the
+patch: their `sporeOverlap` rows (879 `ok`, 27 `throws`) describe the unpatched oracle until the next full sweep.
 
 ## 1a. Conformance unit
 
@@ -348,7 +390,9 @@ test yet; it arrives with the first ported algorithm.
 
 ## 4. Seam patches
 
-Seam patches change the oracle; they are rare and always paired with a TS seam.
+Seam patches change the oracle; they are rare and always paired with a TS seam. A carried upstream patch
+([section 1](#carried-upstream-patches)) is installed by the same steps; in place of step 3 the patched Java is ported at
+its site, and its tests with it.
 
 1. Edit and commit in the oracle worktree (`$ELK_ORACLE_DIR`), or author the patch in a scratch
    clone at `ELK_COMMIT`. To add a finished patch to the existing worktree in place (keeps the
@@ -2078,7 +2122,8 @@ spore:
   `full/overlap/scanlineHitboxes/default` with its stops. The throw is still reachable through `NaN` rectangles, which the
   scanline `TreeSet` compares as equal (`:131-141`, `Double.compare`): 27 corpus cases, all hierarchical ptolemy models under
   sporeOverlap, where a compound node without a size gets `NaN` port positions from `ElkUtil.resizeNode` (`ElkUtil.java:266-267`)
-  and so a `NaN` margin. Both sides throw the same exception (upstream behaviour, kept).
+  and so a `NaN` margin. Both sides throw the same exception (upstream behaviour, kept). With oracle patch `0004` it is 26
+  cases ([carried upstream patches](#carried-upstream-patches)).
 - `ElkUtil.debugFolderPath('spore')` is `null` in the port and the Java concatenates the string `"null..."`; the five sites write
   `String(...)` (`DelaunayTriangulationPhase.java:46`, `MinSTPhase.java:62`, `MaxSTPhase.java:48`, `GrowTreePhase.java:52`,
   `ShrinkTreeCompactionPhase.java:46`); nothing is written to disk. `DEBUG_SVG` is a programmatic option and is kept.
@@ -2120,6 +2165,8 @@ topdownpacking:
   or `throws` by chance and flickered in the TS comparison. With the seeded shift every spore case has one verdict on the oracle:
   sporeCompaction 906 `ok`; sporeOverlap 879 `ok` and 27 `throws` (the `NaN` scanline cases above). The port agrees on all 1,812:
   906 `ok`, and 879 `ok` with 27 `both-throw`. The six `#79` annotations of `tools/corpus/ts-findings.json` are removed.
+  With oracle patch `0004` sporeOverlap is 880 `ok` and 26 `throws`, and the port agrees on all 906
+  ([carried upstream patches](#carried-upstream-patches)).
 - **Jitter rows (PK4).** The 4 `jitter` rows (corpus inputs x2, `dup5` x2) record invariants only: node count, no remaining
   overlap and an input-derived displacement bound; the TS test checks the same over three runs. Since the `8bca22f4` pin
   `runsAgree` is recorded `true` and the three runs give one dump. Exact values for the seeded shift come from the rows
