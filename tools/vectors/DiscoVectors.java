@@ -188,7 +188,16 @@ import org.eclipse.elk.graph.text.ElkGraphStandaloneSetup;
 import org.eclipse.elk.graph.util.ElkGraphUtil;
 
 public class DiscoVectors {
-    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     static final String OUTPUT = "disco.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String IDENTIFIER_SEED_PROPERTY = "org.eclipse.elk.graph.util.identifierSeed";
@@ -237,6 +246,7 @@ public class DiscoVectors {
     static String CURRENT_ROW = "";
 
     public static void main(String[] args) throws Exception {
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         REPO = Path.of(args[1]).toAbsolutePath().normalize().getParent().getParent();
         setup();
         Path out = Path.of(args[0]);
@@ -256,7 +266,7 @@ public class DiscoVectors {
         }
         StringBuilder sb = new StringBuilder("{\n  \"jdk\": ");
         str(sb, System.getProperty("java.version"));
-        sb.append(",\n  \"oracle\": \"").append(ELK_COMMIT).append("\",\n  \"seed\": ").append(SEED);
+        sb.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"seed\": ").append(SEED);
         sb.append(",\n  \"rowCounts\": {");
         int k = 0;
         for (Map.Entry<String, Integer> e : counts.entrySet()) {

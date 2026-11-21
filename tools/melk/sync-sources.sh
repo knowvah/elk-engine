@@ -40,10 +40,10 @@ case "${1:-}" in
 esac
 
 PINNED="$(tr -d '[:space:]' <"$ROOT/tools/oracle/ELK_COMMIT")"
-ACTUAL="$(git -C "$ELK_SOURCE_DIR" rev-parse HEAD 2>/dev/null)" ||
+git -C "$ELK_SOURCE_DIR" rev-parse --git-dir >/dev/null 2>&1 ||
   die "ELK_SOURCE_DIR is not a git checkout: $ELK_SOURCE_DIR"
-[ "$ACTUAL" = "$PINNED" ] ||
-  die "ELK checkout is at $ACTUAL but ELK_COMMIT pins $PINNED"
+git -C "$ELK_SOURCE_DIR" cat-file -e "$PINNED^{commit}" 2>/dev/null ||
+  die "ELK checkout $ELK_SOURCE_DIR does not contain $PINNED"
 
 # Build the expected tree (files + manifest) in a temp dir, then compare or install.
 STAGE="$(mktemp -d)"

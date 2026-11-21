@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: 純 TypeScript 的 Eclipse ELK
@@ -24,14 +24,14 @@ features:
     details: 輸出會與從原始碼建置的 ELK 進行比較。結構完全一致；座標在 1e-6 的容差內一致。
   - title: 原生支援瀏覽器，零執行階段相依
     details: 程式庫程式碼中沒有 Java、沒有 WASM、沒有 Node 內建模組。打包後即可發布。
-  - title: Pre-alpha
-    details: 工具鏈、架構、Java 執行階段 shim 與驗證骨架均已就緒。尚未移植任何版面配置演算法。
+  - title: Pre-1.0
+    details: 範圍內的所有 ELK 版面配置演算法均已移植，並已對照從原始碼建置的 ELK 進行驗證。在 1.0 之前，API 仍可能變動。
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alpha
-尚未移植任何版面配置演算法，且 `src/index.ts` 沒有匯出任何公開內容。首次發布 npm 套件時將凍結公開 API。後續計畫請見[路線圖](/guide/roadmap)。
+::: warning Pre-1.0
+範圍內的所有 ELK 版面配置演算法均已移植，並已對照從原始碼建置的 ELK 進行驗證；結果請見[一致性報告](/parity)（英文）。公開匯出介面已獲核准，但尚未寫入 `src/index.ts`，因此套件進入點目前沒有匯出任何公開內容。在 1.0 之前版本號維持 0.x，API 仍可能變動。後續計畫請見[路線圖](/guide/roadmap)（英文）。
 :::
 
 ## 選擇您的路徑

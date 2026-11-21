@@ -173,7 +173,16 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 public class LayeredPipelineVectors {
-    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     static final String OUTPUT = "layered-pipeline.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed", REPO_PREFIX = "repo:";
     static final String PTOLEMY = "test/golden/inputs/realworld/ptolemy/", LAYERED_TESTS = "test/golden/inputs/tests/layered/";
@@ -2752,6 +2761,73 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
             scComp(o.toLowerCase().replace('_', '-') + "/west-east", fam, gCompsExt(ropts("PORT_CONSTRAINTS", FS, "CONSIDER_MODEL_ORDER_COMPONENTS", o), false), "T");
             scComp(o.toLowerCase().replace('_', '-') + "/all-sides", fam, gCompsExt(ropts("PORT_CONSTRAINTS", FS, "CONSIDER_MODEL_ORDER_COMPONENTS", o), true), "T");
         }
+        portScenarios();
+    }
+
+    /**
+     * a, b > m > c, d. m is 100 x 80 with no size constraints (its size stays), FIXED_SIDE, the options mo and the ports "W W E E N N S S"
+     * (ids m.p0..; "N:5" = a port with port.borderOffset 5), so LabelAndNodeSizeProcessor places every port (NodeDimensionCalculation,
+     * PortPlacementCalculator). Layered never calls NodeMicroLayout.
+     */
+    static String gAlign(String mo, String ports, String edges) {
+        return gAlign(mo, ports, edges, 100, 80);
+    }
+
+    static String gAlign(String mo, String ports, String edges, int w, int h) {
+        List<String> ps = new ArrayList<>();
+        String[] spec = ports.split(" ");
+        for (int i = 0; i < spec.length; i++) {
+            String[] sp = spec[i].split(":");
+            String side = switch (sp[0]) { case "W" -> W_; case "E" -> E_; case "N" -> N_; default -> S_; };
+            ps.add(pjo("m", i, side, sp.length > 1 ? Math.toIntExact(parseLongArg("port border offset", sp[1])) : 0));
+        }
+        String m = sz(nodeJson("m", null, ropts("PORT_CONSTRAINTS", FS) + (mo.isEmpty() ? "" : "," + mo), "\"ports\":[" + String.join(",", ps) + "]"), w, h);
+        return flat("", join(plain("a"), plain("b"), m, plain("c"), plain("d")), eds(edges.split(" ")));
+    }
+
+    /** Two rows per graph: <name>/ports stops at LABEL_AND_NODE_SIZE_PROCESSOR (the geometry then holds every port position), <name>/end runs the whole plan. */
+    static void ports(String cls, String name, String elk) {
+        sc(cls, name + "/ports", cls, elk, null, "LABEL_AND_NODE_SIZE_PROCESSOR");
+        sc(cls, name + "/end", cls, elk, null, null);
+    }
+
+    /**
+     * layered-evidence-gaps T4 (#49): org.eclipse.elk.portAlignment.* and port.borderOffset through whole layered plans (no earlier row of
+     * this ref sets an alignment; three full/options/port-border-offset rows set an offset on external ports only).
+     * scenarios/PortAlignment: default x five values; one side x {BEGIN, CENTER, END, JUSTIFIED} (an unset side is placed DISTRIBUTED:
+     * NodeContext.java:205-235 reads the CoreOptions default, not the JUSTIFIED of LayeredOptions); a default with two side overrides; a
+     * node with one port on its west and north sides (the single-port centring of JUSTIFIED and DISTRIBUTED against BEGIN); a 10 x 10
+     * node whose ports overhang (PORTS_OVERHANG: the fallback to CENTER). scenarios/PortBorderOffset: +5 / -5 on the north and south
+     * ports alone and under BEGIN and END, on every port, and +5 north with -5 south. Every graph is recorded twice (ports()): the whole
+     * plan records no port position (only bend points and margins show them), the LABEL_AND_NODE_SIZE_PROCESSOR stop does.
+     */
+    static void portScenarios() {
+        String two = "W W E E N N S S", twoE = "a>m.p0 b>m.p1 m.p2>c m.p3>d a>m.p4 m.p5>c b>m.p6 m.p7>d";
+        String one = "W E E N S S", oneE = "a>m.p0 m.p1>c m.p2>d m.p3>c b>m.p4 m.p5>d";
+        String pa = "PortAlignment", pbo = "PortBorderOffset", dflt = "PORT_ALIGNMENT_DEFAULT";
+        for (String v : List.of("BEGIN", "CENTER", "END", "JUSTIFIED", "DISTRIBUTED")) {
+            ports(pa, "default/" + v, gAlign(ropts(dflt, v), two, twoE));
+        }
+        for (String side : List.of("NORTH", "SOUTH", "EAST", "WEST")) {
+            for (String v : List.of("BEGIN", "CENTER", "END", "JUSTIFIED")) {
+                ports(pa, side.toLowerCase(Locale.ROOT) + "/" + v, gAlign(ropts("PORT_ALIGNMENT_" + side, v), two, twoE));
+            }
+        }
+        ports(pa, "override/default-BEGIN-north-END-east-CENTER", gAlign(ropts(dflt, "BEGIN", "PORT_ALIGNMENT_NORTH", "END", "PORT_ALIGNMENT_EAST", "CENTER"), two, twoE));
+        for (String v : List.of("JUSTIFIED", "DISTRIBUTED", "BEGIN")) {
+            ports(pa, "single-port/" + v, gAlign(ropts(dflt, v), one, oneE));
+        }
+        for (String v : List.of("JUSTIFIED", "DISTRIBUTED")) { // m is 10 x 10: two ports and their spacing do not fit, PORTS_OVERHANG lets them overhang (the fallback to CENTER)
+            ports(pa, "overhang/" + v, gAlign(ropts(dflt, v, "NODE_SIZE_OPTIONS", "[PORTS_OVERHANG]"), two, twoE, 10, 10));
+        }
+        for (int off : new int[] {5, -5}) {
+            String ns = "W W E E N:" + off + " N:" + off + " S:" + off + " S:" + off, n = off > 0 ? "plus5" : "minus5";
+            ports(pbo, "north-south/" + n, gAlign("", ns, twoE));
+            ports(pbo, "north-south/" + n + "-BEGIN", gAlign(ropts(dflt, "BEGIN"), ns, twoE));
+            ports(pbo, "north-south/" + n + "-END", gAlign(ropts(dflt, "END"), ns, twoE));
+            ports(pbo, "all-sides/" + n, gAlign("", ("W: W: E: E: N: N: S: S:").replace(":", ":" + off), twoE));
+        }
+        ports(pbo, "north-south/north-plus5-south-minus5", gAlign("", "W W E E N:5 N:5 S:-5 S:-5", twoE));
     }
 
     // Group sites (T15, F12, plans/layered-pipeline/unreached.md): step rows recorded by the interpreter above, one per S scenario.
@@ -2997,7 +3073,7 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
     static String fileText(Map<String, Integer> counts, List<Row> rows) {
         StringBuilder out = new StringBuilder("{\n  \"jdk\": ");
         str(out, System.getProperty("java.version"));
-        out.append(",\n  \"oracle\": \"").append(ELK_COMMIT).append("\",\n  \"rowCounts\": {");
+        out.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"rowCounts\": {");
         int k = 0;
         for (Map.Entry<String, Integer> e : counts.entrySet()) {
             out.append(k++ == 0 ? "" : ", ").append('"').append(e.getKey()).append("\": ").append(e.getValue());
@@ -3659,6 +3735,7 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
             planDump(args);
             return;
         }
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         setup(args[1]);
         String file;
         try {

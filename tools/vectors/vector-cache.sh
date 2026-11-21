@@ -4,8 +4,10 @@
 # elkj-vectors.sh after their own definitions; not executed. A program's results are reused only when everything they
 # depend on is byte-identical, so a warm run proves the refs equal the cached outputs (a cold run or a miss proves
 # they equal the oracle).
-#   salt   = sha256 over the program source, the calling script, this file, $ELK_ORACLE_DIR/oracle-build.json, the
-#            classpath string and `java -version` output: a recorder edit, oracle rebuild or JDK change starts afresh.
+#   salt   = sha256 over the program's entry source, the calling script, this file, $ELK_ORACLE_DIR/oracle-build.json,
+#            the classpath string, `java -version` output, every other source of a multi-file program (each framed
+#            with its repository path) and java-program.sh, which decides how a program is built and started: a
+#            recorder edit, oracle rebuild or JDK change starts afresh.
 #            The JVM's "Picked up JAVA_TOOL_OPTIONS: ..." banners are left out: heap and GC flags (the round-trip
 #            recorder needs a large heap) do not change what is recorded, and must not turn a warm run cold.
 #   inputs = sha256 over every file under tools/vectors/, test/corpus/elkt-curated/ and test/corpus/elkj-curated/
@@ -19,8 +21,16 @@
 # ELK_VECTORS_CACHE=off reads and writes no cache and passes no <cacheDir>.
 # stderr, one line per program: "cache: <Program> hit" | "cache: <Program> recorded" |
 #   "cache: <Program> rows <hit>/<recorded>" (the recorder's "cached"/"done" lines) | "cache: off".
+# Every run passes the pinned ELK commit to the recorder as -Delk.commit, read from $ROOT/tools/oracle/ELK_COMMIT
+# (issue #96): the recorders stamp their vector file with it and hold no copy. It is not part of the salt: the caller
+# has checked that oracle-build.json, which is, names the same commit.
+# Every program starts through jp_run of java-program.sh (issue #50): a single-file program by the source launcher
+# line written here, a multi-file one (a directory beside <Program>.java) compiled by javac first.
 # Expects from the caller: ROOT, ELK_ORACLE_DIR, VECTORS_DIR and die(). Callers run vc_run as `vc_run ... || rc=$?`,
 # where errexit does not apply, so every step below that can fail returns its status explicitly.
+
+# shellcheck source=tools/vectors/java-program.sh
+. "$VECTORS_DIR/java-program.sh"
 
 VC_ROW_PROGRAMS="ElkjRoundTripVectors ElkjWriteVectors"
 VC_SELF="$VECTORS_DIR/vector-cache.sh"
@@ -83,7 +93,16 @@ vc_init() { # vc_init <lang>; once per script run, before the first vc_run
 }
 
 vc_salt() { # vc_salt <callingScript> <classpath> <program>
-  vc_digest "f:$3" "f:$1" "f:$VC_SELF" "f:$ELK_ORACLE_DIR/oracle-build.json" "s:$2" "s:$VC_JAVA_VERSION"
+  local helpers=() source
+  while IFS= read -r source; do
+    helpers+=("s:${source#"$ROOT"/}" "f:$source")
+  done < <(jp_sources "$3" | tail -n +2)
+  vc_digest "f:$3" "f:$1" "f:$VC_SELF" "f:$ELK_ORACLE_DIR/oracle-build.json" "s:$2" "s:$VC_JAVA_VERSION" \
+    ${helpers[@]+"${helpers[@]}"} "f:$VC_JAVA_PROGRAM"
+}
+
+vc_elk_commit() { # the pinned ELK commit (AD-2), the recorders' -Delk.commit
+  tr -d '[:space:]' <"$ROOT/tools/oracle/ELK_COMMIT"
 }
 
 vc_is_row_program() { # vc_is_row_program <Program>
@@ -95,7 +114,7 @@ vc_run() { # vc_run <callingScript> <classpath> <program> <outDir>; runs (or reu
   name="$(basename "$program" .java)"
   if ! vc_enabled; then
     echo "cache: off" >&2
-    java -cp "$cp" "$program" "$out" "$VECTORS_DIR"
+    jp_run java -Delk.commit="$(vc_elk_commit)" -cp "$cp" "$program" "$out" "$VECTORS_DIR"
     return
   fi
   salt="$(vc_salt "$script" "$cp" "$program")"
@@ -118,7 +137,7 @@ vc_run_whole() { # vc_run_whole <classpath> <program> <outDir> <Program> <entryD
   rm -rf "$entry" && mkdir -p "$(dirname "$entry")" || return
   stage="$(mktemp -d "$(dirname "$entry")/.stage.XXXXXX")" || return
   rc=0
-  java -cp "$cp" "$program" "$stage" "$VECTORS_DIR" || rc=$?
+  jp_run java -Delk.commit="$(vc_elk_commit)" -cp "$cp" "$program" "$stage" "$VECTORS_DIR" || rc=$?
   if [ "$rc" -ne 0 ]; then
     rm -rf "$stage"
     return "$rc"
@@ -136,7 +155,10 @@ vc_run_rows() { # vc_run_rows <classpath> <program> <outDir> <Program> <rowsDir>
   log="$(mktemp "${TMPDIR:-/tmp}/vector-cache.XXXXXX")" || return
   rc=0
   # The recorder's stderr stays live (tee) and is kept for the hit/recorded counts; its stdout passes through on fd 3.
-  { java -cp "$cp" "$program" "$out" "$VECTORS_DIR" "$rows" 2>&1 >&3 3>&- | tee "$log" >&2; } 3>&1 || rc=$?
+  {
+    jp_run java -Delk.commit="$(vc_elk_commit)" -cp "$cp" "$program" "$out" "$VECTORS_DIR" "$rows" 2>&1 >&3 3>&- |
+      tee "$log" >&2
+  } 3>&1 || rc=$?
   hit="$(grep -c '^cached ' "$log" || true)"
   recorded="$(grep -c '^done ' "$log" || true)"
   rm -f "$log"

@@ -2362,3 +2362,776 @@ tells them apart" is a missing row until a proof for every input exists: seven o
 rows. A brief that appends rows to a ref names every literal that pins its counts; grep the counts over `src/` and
 `test/` before recording. A survivor of an initial-value or `>` mutant is checked against NaN before it is called
 equivalent.
+
+## Revision 2026-11-20 (p3order-test-titles)
+
+Appended; no earlier line is edited. Source: issue #62 and D1-D3 in `plans/p3order-test-titles/decisions.md`; the
+journal is `plans/p3order-test-titles/decision-journal.md`. Where this section conflicts with the text above, this
+section wins. Task ids are T1-T2; the base is `68f37f6e5364ff71ea977d5c528bd5591f163641`.
+
+**One follow-up is closed: the three `describe` titles that mission 7h left** (`plans/layered-compound/decision-journal.md`,
+T8 rows of 2026-11-10: "H7 names header comments only, so the titles stay and go to a `follow-up` issue"). Three
+lines of `src/` changed, each a title; no assertion, `it` title, body or comment changed (D2), no ref changed, no
+oracle run.
+
+| File | Old title | New title |
+| ---- | --------- | --------- |
+| `p3order/LayerSweepCrossingMinimizerSweep.test.ts:122` | `the hierarchical sweep (hand-built nested graph; U for the rows until 7h)` | `the hierarchical sweep (hand-built nested graph; the layered-compound.json rows reach it, 7h)` |
+| `p3order/LayerSweepTypeDecider.test.ts:109` | `LayerSweepTypeDecider on a nested graph (hand-built; U for the rows until 7h)` | `LayerSweepTypeDecider on a nested graph (hand-built; the layered-compound.json rows reach it, the deterministic arm only the ported suites, 7h)` |
+| `p3order/GraphInfoHolder.test.ts:151` | `GraphInfoHolder: a graph nested in a node (hand-built; U until 7h)` | `GraphInfoHolder: a graph nested in a node (hand-built; the layered-compound.json rows reach it, parentGraphData only the ported suites, 7h)` |
+
+**Backing (D1).** Cited: `plans/layered-compound/unreached.md`, § H8 closure row 4.1 (reached:
+`LayerSweepCrossingMinimizerHierarchical.ts` both functions and `LayerSweepTypeDecider.useBottomUp` on
+`full/hierarchy-aware/deep3/sweepiness-0.1`), row 4.1a and the table of § Crossing minimisation (H8 4), which mark
+`GraphInfoHolder.parentGraphData` / `portPositions` and the `crossMinDeterministic()` arm of `useBottomUp` **J**
+(ported suites only). Measured again on the base tree (TypeScript v8 coverage, no JVM): `LayeredCompoundVectors.test.ts`
+alone reaches every function and branch of `LayerSweepCrossingMinimizerSweep.ts` (`sweepInHierarchicalNodes` 10,085
+calls, `sweepInHierarchicalNode` 907) and all 23 functions of `LayerSweepTypeDecider.ts`, and has 0 hits on
+`parentGraphData`, `portPositions` and `LayerSweepTypeDecider.ts:66 if[0]`; the three ported suites
+(`LayerSweepHierarchicalTwoSidedGreedySwitchTest`, `LayerSweepCrossingMinimizerTest`, `SwitchDeciderTest`) reach all
+three. Two of the suites assert one of those items (`GraphInfoHolder.test.ts:167`, `LayerSweepTypeDecider.test.ts:136`),
+so titles 2 and 3 name it instead of D1's shorter proposed words, which would have overclaimed.
+
+**Gates (queue gates 1-7, on the final tree, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377
+files, 10,718 functions, no violation line). The three suites: 3 files and 31 tests passed before and after.
+Coverage, full suite with the nine sweep directories off: 1,173 files and 49,305 tests passed, 93 skipped, 0 failed,
+as at the base; statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200
+typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`.
+Gate 7: `git diff --exit-code 68f37f6e -- test/golden/refs/` is empty.
+
+**Oracle.** Not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003; no rebuild.
+`git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
+
+**Open rows.** #130 (`follow-up`): other staging text that an earlier mission made false, not fixed here (D3). Checked
+and stale: `ElkLayeredTestExecutionState.ts:6` ("staged until 7f"; `ElkLayered.prepareLayoutTest` is ported),
+`OrthogonalRoutingGenerator.ts:255`, `DebugUtil.ts:12-13`, `docs/architecture/alg-layered.md:394-396`,
+`tools/vectors/LayeredOrderVectors.java:26-27` (a recorder source), and the header comments of
+`LayerSweepTypeDecider.test.ts:3-4` and `GraphInfoHolder.test.ts:3-4`, which say the rows prove the two items above.
+Candidates not checked: ten `intermediate/*.test.ts` headers ("staged until T8" / "T11"),
+`test/helpers/layered-pipeline-replay-ops.ts:6-7`, `docs/architecture/alg-layered-placement.md:83-84`. No
+`needs-ruling` issue was filed.
+
+**For later missions.** "The rows reach it" is checked per function before it is written: one vitest run of the
+ref's vector test with `--coverage.include` on the files in question prints the hits of every function in about ten
+seconds (`.agent-notes/p3order-test-titles.md`). A comment that names a mission as the end of a staged state is
+removed by the mission that ends it, titles included: a rule limited to comments leaves the titles behind.
+
+## Revision 2026-11-20 (oracle-stale-caches)
+
+Appended; no earlier line is edited. Source: issue #85 and D1-D5 in `plans/oracle-stale-caches/decisions.md`; the
+journal is `plans/oracle-stale-caches/decision-journal.md`. Where this section conflicts with the text above, this
+section wins. Task ids are T1-T3; the base is `b6b946015df56a9130f2016c67f01afe242b5b07`.
+
+**One follow-up is closed: `tools/oracle/build.sh` called the oracle worktree stale over the vector cache.**
+`verify_worktree` counts every `git status --porcelain` line outside `OUTPUT_FILTER` as dirt, and the filter did not
+know the `vector-cache/` root that `tools/vectors/vector-cache.sh` writes. An in-place rebuild therefore exited `2`,
+and the only documented answer removed the worktree with every cache under it. #85's option 1 is taken (D1); option 2
+(one cache root, which would change `tools/vectors/` and turn every cache cold) and option 3 (document the
+environment-scoped excludes file) are rejected.
+
+**`build.sh` (T1), 4 lines added and 3 removed.** The filter's last alternative is now
+`^\?\? (census|sweep|vector-cache)/$`, with a comment that names the script-written caches. The last line is
+`if [ "${BASH_SOURCE[0]}" = "$0" ]; then main "$@"; fi`, so a test can source the file; executing it is unchanged
+(`build.sh --bogus` still exits 1 with the usage error). Nothing else joins the filter: the three ad hoc directories
+that #85 names (`t4/`, `rerecord/`, `final-gate/`) were already gone from the live worktree (D4).
+
+**Test (T1).** `test/architecture/oracle-build.test.ts`, 8 cases, drives the real `verify_worktree` on a throwaway
+git repository and one detached worktree per case, with the maintainer's git configuration shut out, and compares
+exit status, stdout and stderr whole.
+
+| Worktree holds | Result |
+| -------------- | ------ |
+| nothing untracked | verified (0) |
+| `vector-cache/` only | verified (0) |
+| `census/`, `sweep/`, `vector-cache/`, `oracle-build.json` | verified (0) |
+| those four and `t4/` | stale (2) |
+| `vector-cache-old/` | stale (2) |
+| `sub/vector-cache/`, `sub/` untracked | stale (2) |
+| `plugins/vector-cache/`, `plugins/` tracked | stale (2) |
+| those four and a modified tracked file | stale (2) |
+
+Red first: against the unguarded script all 8 failed (sourcing ran `main`, which stopped at the usage check); with
+the guard alone exactly rows 2 and 3 failed with exit 2; with the filter all pass. `shellcheck` and `bash -n` clean.
+
+**Live proof (T2), read-only.** With the base filter the live porcelain leaves exactly `?? vector-cache/`. With the
+new script, sourced and called with `GIT_OPTIONAL_LOCKS=0`, `verify_worktree` prints
+`existing oracle worktree verified` and exits 0. `oracle-build.json` has sha256 `87705f69…9911` before and after, and
+the worktree's index file kept its mtime, size and hash. `build.sh` was never run on the live oracle, so there was no
+rebuild and the 192 MB vector cache is still warm.
+
+**Docs (T2).** `docs/conformance.md` § 1, § 4 step 1 and § 5 rows 1-2, `docs/architecture/elk-upgrade.md` (the
+"Stale worktree (issue #85)" hazard, without the pointer to the excludes workaround) and
+`docs/architecture/elk-json-text.md` step 5 name the three exempt roots, say that any other untracked root directory
+still gives exit `2` and that run output belongs under `sweep/`, and warn that removing the worktree deletes the
+caches. They also say what the exemption does not do: a rebuild rewrites `oracle-build.json`, which is part of every
+vector-cache salt, so each cached recorder still runs cold once after it. `tools/oracle/README.md` needed no change.
+
+**Gates (queue gates 1-7, on the final tree, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377
+files, 10,718 functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,174 files
+and 49,313 tests passed, 93 skipped, 0 failed (one file and 8 tests more than the base); statements 98.81 %, branches
+96.99 %, functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`:
+every finding accepted, no new entry in `tools/codeql/accepted.json`. Gate 7:
+`git diff --exit-code b6b94601 -- test/golden/refs/ tools/vectors/` is empty; no recorder or regen script has a
+changed input.
+
+**Oracle.** Not rebuilt and not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003.
+`git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
+
+**Open rows.** #131 (`follow-up`): the 23 translated `docs-site/<locale>/conformance.md` pages still carry the old
+text of the four paragraphs (D5; the brief counted 21). No `needs-ruling` issue was filed; no stop condition was met.
+
+**For later missions.** To learn whether the live oracle worktree is stale, source `build.sh` and call
+`verify_worktree` (`.agent-notes/oracle-stale-caches.md`); running `build.sh`, with or without `--record-only`,
+rewrites `oracle-build.json` and turns every vector cache cold. Local run output still goes under `sweep/`: a new
+directory at the oracle root makes the next rebuild exit `2`, and the answer is to move it, not to widen the filter.
+
+## Revision 2026-11-20 (bundle-deps-pinned-read)
+
+Appended; no earlier line is edited. Source: issue #89 and D1-D5 in `plans/bundle-deps-pinned-read/decisions.md`; the
+journal is `plans/bundle-deps-pinned-read/decision-journal.md`. Where this section conflicts with the text above, this
+section wins. Task ids are T1-T3; the base is `6a16e697346e49a67c7340ac2b9ea7d34100f4bc`.
+
+**One follow-up is closed: two guards asked for the ELK checkout's `HEAD` to be the pin where the pin only has to be
+present.** `regeneration › regenerated deps equal the committed file` in
+`test/architecture/module-boundaries.fitness.test.ts` is the only check that ties `test/architecture/bundle-deps.json`
+to the manifests and to `IN_SCOPE_SUFFIXES`. It was skipped unless `git rev-parse HEAD` of the ELK checkout was the
+file's `elkCommit`, because `tools/bundle-deps.ts` read the manifests from the working tree. `tools/melk/sync-sources.sh`
+died on the same condition although it reads every blob as `<pin>:<path>`. Both were dead whenever `../elk` sat past
+the pin (observed on 2026-11-13; it is at the pin again since the 2026-11-18 pin move) and with the oracle worktree at
+any time. #89's suggested fix is taken.
+
+**`tools/bundle-deps.ts` (T1).** `readManifests(elkDir, commit)` reads each in-scope manifest with
+`git -C <elkDir> show <commit>:plugins/<bundle>/META-INF/MANIFEST.MF`, never the working tree, and
+`generateBundleDeps(elkDir, commit)` stamps the commit it read, so a stamp can no longer name a commit the content
+did not come from. The CLI reads at `tools/oracle/ELK_COMMIT` (new `readPinnedCommit`), not at `HEAD`:
+`npx tsx tools/bundle-deps.ts --write` now writes the pin's table from any checkout that holds the pin. New
+`elkCommitPresent(elkDir, commit)` is `git cat-file -e <commit>^{commit}`. `readElkCommit` (the `HEAD` reader) is
+removed. `buildBundleDeps`, `serializeBundleDeps`, the parsers and `IN_SCOPE_SUFFIXES` are unchanged.
+
+**Fitness test (T1).** The regeneration case skips only when the ELK directory is missing or does not contain the
+committed `elkCommit` (`ELK checkout <dir> does not contain committed elkCommit <sha>`); its name and both
+expectations are unchanged. One new case always runs: `pinned commit › committed elkCommit equals
+tools/oracle/ELK_COMMIT`; before it, no test tied the table's stamp to the pin. No other case changed.
+
+**`sync-sources.sh` (T2), four lines.** The two `HEAD` checks become `rev-parse --git-dir`
+(`ELK_SOURCE_DIR is not a git checkout: <dir>`, as before) and `cat-file -e "$PINNED^{commit}"`
+(`ELK checkout <dir> does not contain <pin>`). Nothing else in the script changed.
+
+**Tests that run in CI (T1, T2).** `test/architecture/bundle-deps.test.ts` (7 cases) builds a throwaway repository
+with the 16 in-scope manifests, two commits and an uncommitted third edit, and checks that reading at each commit
+gives that commit's stamp and `requires` and never the working tree; it also covers `elkCommitPresent` (present,
+absent commit, not a repository) and `readPinnedCommit`. `test/melk/sync-sources.test.ts` (3 cases) runs the script
+with `--check` on a non-repository and on a repository without the pin, comparing exit status, stdout and stderr
+whole, and runs it live against the configured ELK checkout when that holds the pin. Both were red before the change
+(6 of 7 and 1 of 3 failing).
+
+**Proofs.** `module-boundaries.fitness.test.ts`: 58 passed, none skipped with the default `../elk` (`HEAD` = pin) and
+with `ELK_SOURCE_DIR=../elk-oracle` (`HEAD` `cb2b6d54`, the pin plus three patch commits; 56 passed, 1 skipped
+before); 57 passed, 1 skipped with `/nonexistent` and with a throwaway repository that lacks the pin, each with its
+reason in the test name. Negative proof, on temporary hand edits of `bundle-deps.json` that were reverted and checked
+against the base: with `src/alg/common` deleted from `src/alg/layered` the regeneration case fails with both
+checkouts (with two other cases); with `src/alg/force` added in sorted position to `src/alg/radial` it is the only
+failing case with both checkouts, and with `/nonexistent` nothing fails, so it is still the only check of the table's
+content. The CLI's output equals the committed file byte for byte with both checkouts; the base CLI with
+`../elk-oracle` stamped `cb2b6d54…`. `ELK_SOURCE_DIR=../elk-oracle tools/melk/sync-sources.sh --check` exits 0 with
+no output; the base script died there with `ELK checkout is at cb2b6d54… but ELK_COMMIT pins 8bca22f4…`.
+
+**Unchanged.** `test/architecture/bundle-deps.json`, `tools/melk/sources/`, `test/golden/refs/` and `tools/vectors/`
+are byte-identical to the base. No assertion, vector or golden changed. No oracle build, recorder or sweep ran;
+every git call against an ELK checkout was read-only.
+
+**Docs (T3).** `docs/architecture/elk-upgrade.md`: section 6 (the `sync-sources.sh` comment, the hazard row with
+the new message, the `bundle-deps.ts --write` paragraph), the rehearsal note (the regeneration test is no longer a
+difference between the clone and the original) and the section 11 list of tests that fail between the pin bump and
+the re-record, which gains the two new stamp checks. `docs/architecture/melk-codegen.md`: step 1 of the regeneration
+table. `docs/architecture/deferred-bundles-adr.md`: the "Enforced now" sentence, and its four line citations, which
+T1 moved. No `docs-site/` page describes either guard.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,718
+functions, no violation line; `tools/bundle-deps.ts` checked on its own, 19 functions). Coverage, full suite with the
+nine sweep directories off: 1,176 files and 49,324 tests passed, 93 skipped, 0 failed (2 files and 11 tests more than
+the base); statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200
+typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`.
+Gate 7: `git diff --exit-code 6a16e697 -- test/golden/refs/ tools/vectors/ tools/melk/sources/
+test/architecture/bundle-deps.json` is empty; no recorder or regen script has a changed input.
+
+**Oracle.** Not rebuilt and not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003.
+`git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
+
+**Open rows.** #132 (`follow-up`): the pin file's path and its read-and-trim are written in 13 TypeScript files (two
+tools, eleven tests); this mission added the second tool reader. No `needs-ruling` issue was filed; no stop condition
+was met. #89 stays open until the branch merges.
+
+**For later missions.** No pin-stamped tool needs the ELK checkout at `HEAD` any more: `tools/bundle-deps.ts`,
+`tools/melk/sync-sources.sh` and `tools/oracle/build.sh` all read the pin by object id, so `../elk-oracle` (or any
+clone that has fetched the pin) serves when `../elk` has moved on. During a pin move, bump `tools/oracle/ELK_COMMIT`
+before `tools/bundle-deps.ts --write`: the CLI stamps that file's commit, and the `pinned commit` case fails until
+the table is rewritten.
+
+## Revision 2026-11-20 (overview-status)
+
+Appended; no earlier line is edited. Source: issue #93 and D1-D6 in `plans/overview-status/decisions.md`; the journal
+is `plans/overview-status/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+Task ids are T1-T3; the base is `9c31c988647273d0aba2bf41a9612ef3d171de97`.
+
+**One follow-up of docs-publish-prep is done: the site and the README no longer say that no layout algorithm is
+ported.** `docs-site/guide/overview.md`, the home page `docs-site/index.md` and `README.md` carried the pre-alpha
+notice ("No layout algorithm is ported yet… `src/index.ts` exports nothing public yet") and the sentence "The first
+npm publish freezes this surface". The first has been false since rows 7a-8c landed; the second since ruling 8 on #90
+as amended on #91 (0.x may change, 1.0 freezes the surface). The docs-publish-prep mission (#43) found the text and
+could not change it (DP6); #93 became ready with the #90 ruling.
+
+**English text (T1).** Four blocks on the two site pages and two in the README, nothing else: the overview's warning
+and § Public contract; the home page's fourth feature tile and its warning; the README's § Status and § Public
+contract. Each now says, with a journaled source per claim: all in-scope ELK layout algorithms are ported and checked
+against ELK built from source, with a link to the parity report (rows 7a-8c above, `docs/parity-report.md`); the
+public export surface is accepted but not yet in `src/index.ts` (#90, `src/index.ts` is `export {}`); versions stay
+0.x until 1.0 and 1.0 freezes the surface (ruling 8 as amended). § Public contract names the accepted surface by kind
+(the ElkGraph model and `ElkGraphUtil`, the layout engine, each algorithm's metadata provider and options with their
+value types, ELK JSON and the textual graph formats) and links the getting-started page; it does not name the
+registration helper or the error classes, which #90 leaves to the implementation. The container and tile title
+`Pre-alpha` is `Pre-1.0`. The phrases "No layout algorithm", "Pre-alpha" and "first npm publish" are gone from the
+three files.
+
+**One sentence per page depends on the #90 implementation.** It is the same in all three English files: "The public
+export surface is accepted but not yet in `src/index.ts`, so the package entry exports nothing public yet." Its
+counterparts sit in the warning of each of the 46 locale pages. #90 has a comment listing all 49 files, the
+getting-started notice ("has not accepted yet", false since 2026-11-14, #90 step 5) and the header of
+`docs/architecture/public-api.md` ("Status: Proposed", "The first npm publish freezes this surface"), which the
+README now links and this mission did not edit.
+
+**Scope line (D2): the navigation is left to the #90 implementation.** No change to `navFor`/`sidebarFor`,
+`test/docs/locale-complete.test.ts`, `src/index.ts`, the `i18nRouting` setting or any `.vitepress/` file. The
+getting-started page and `/reference/` stay out of the navigation; the overview's § Public contract links the
+getting-started page in the body, unprefixed in every locale because the page is English-only.
+
+**Translations (T2).** The 23 locale copies of `guide/overview.md` and `index.md` (46 pages) take the counterparts of
+the four site blocks and the new `sourceHash`. Per page the difference from the base is three hunks (the hash line and
+two blocks) and nothing outside them, checked by the orchestrator with a line diff per file, not taken from the
+translators' reports. Six `general-purpose` subagents on `sonnet` with Edit, never Write, each with its own locale
+directories, made the edits from one shared brief; the orchestrator then corrected six wordings (a singular "textual
+graph format" in de and sv, a dropped "in-scope" in the fi and et tiles, the ko and ru container titles). Container
+titles: `Pre-1.0`, except `Pré-1.0` (fr, pt-br), `1.0 以前` (ja), `1.0 이전` (ko), `До 1.0` (ru). `/parity`,
+`/guide/getting-started` and `/guide/roadmap` stay unprefixed in every locale; the brief's "`/guide/roadmap` takes
+`/<p>/`" was wrong (the roadmap page is English-only) and was not followed.
+
+**Translation status.** Before: three stale pages in each of the 23 locales (`conformance.md`,
+`guide/architecture.md`, `guide/overview.md`). After: two (`conformance.md`, `guide/architecture.md`); `index.md` is
+stale nowhere. The overview copies had been stale through the hash alone since the pin moves `3da09a9c` and
+`a23e0219` edited their sha line; that is cleared.
+
+**Finding: the other two stale pages are not stale through the hash alone.** The brief took `conformance.md` and
+`guide/architecture.md` to be in the overview's state. They are not: all 23 copies of each record the hash of the
+English sources at `0932a534` (2026-10-11), and since then `docs/conformance.md` gained 2,189 lines over 44 commits
+and the two architecture sources 71 lines over 26 commits. #109 and #131 ask for single paragraphs of the conformance
+copies. #133 (`follow-up`) records the measurement and asks for a translation pass or a ruling that the conformance
+page becomes English-only, and for step 13.2 of `docs/architecture/elk-upgrade.md` to refresh `sourceHash` when a pin
+move edits the sha line of a copy whose only drift is that line (every overview copy, from now on).
+
+**Unchanged.** No file under `src/`, `test/`, `tools/` or `docs/`. No assertion, vector or golden changed (D6: no
+test pins this prose). No oracle build, recorder, sweep or JVM ran.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,718
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,176 files and 49,324 tests
+passed, 93 skipped, 0 failed, as at the base; statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %.
+`docs:build` exit 0 with 200 typedoc warnings, as at the base; `docs:linkcheck` scanned 555 links with none broken;
+`npx vitest run test/docs` 9 files and 897 tests passed, the translation lint over the 23 registered locales among
+them. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`. Gate 7:
+`git diff --exit-code 9c31c988 -- test/golden/refs/` is empty; no recorder or regen script has a changed input.
+
+**Oracle.** Not rebuilt and not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003.
+`git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
+
+## Revision 2026-11-20 (recorder-pin-source)
+
+Appended; no earlier line is edited. Source: issue #96 and D1-D6 in `plans/recorder-pin-source/decisions.md`; the
+journal is `plans/recorder-pin-source/decision-journal.md`. Where this section conflicts with the text above, this
+section wins. Task ids are T0-T4; the base is `f69bbe41328863e14ea646533e11c604949d5715`.
+
+**One follow-up is closed: under `tools/` the pinned ELK commit is written once.** Row 7 of the upgrade-runbook
+revision ("the pinned sha is repeated in 41 recorder constants; two recorders have no script") is done. Before, each
+of 41 `tools/vectors/*Vectors.java` held `ELK_COMMIT = "<sha>"`, and that constant, not the oracle, was the
+`elkCommit` / `oracle` stamp of its vector ref; a pin move had to `sed` all of them, and a forgotten `sed` re-recorded
+refs with the old stamp. Now the pin is in `tools/oracle/ELK_COMMIT` (AD-2) and in the generated `.melk` stamp
+`tools/melk/sources/manifest.json`, and nowhere else under `tools/`.
+
+**The scripts pass the pin; the recorders read it (T1, D1, D2).** `tools/vectors/vector-cache.sh` has a new
+`vc_elk_commit` and passes `-Delk.commit=<pin>` on its three `java` lines (cache off, whole program, per row), which
+covers the 26 scripts that call `vc_run`; `graph-vectors.sh`, `graph-json-vectors.sh`, `metadata-vectors.sh` and
+`transfer-vectors.sh` pass `-Delk.commit="$pinned"` on their own line. Every one of these scripts already refused to
+run unless `oracle-build.json` named the pin. The cache salt formula is unchanged: `oracle-build.json` is in it, and
+it names the same commit. In each of the 41 recorders the constant became a lazy accessor of the same visibility,
+`elkCommit()`, which throws `system property elk.commit is <value>, not a 40-digit sha; run this recorder through its
+tools/vectors/*-vectors.sh script` unless the property is 40 lowercase hex digits. It is lazy because eight recorders
+also run in `--sweep` / `--dump` mode from `tools/oracle/*-sweep.sh`, which stamp nothing and pass nothing; no sweep
+script changed. 38 recorders call it once more at the start of their vector path, so a recorder started by hand
+refuses before it records a row (the other three stamp before their first row). Nothing else in a recorder changed.
+
+**Fitness test (T1, D4).** New `test/architecture/elk-pin.fitness.test.ts`, written first and seen red on the base (41
+offenders for each of the first two rules): the pin occurs in no file under `tools/` but the two named above; no
+`tools/vectors/*.java` holds a quoted 40-hex literal (a copy at an older pin); every `java` line of
+`vector-cache.sh` (exactly three) passes `-Delk.commit=`; exactly 41 recorders call `elkCommit()`, and each is named
+by a `*-vectors.sh` that calls `vc_run` or passes the property on every `java` line it has. The program-name rule it
+shares with `test/docs/elk-upgrade-runbook.test.ts` moved, unchanged, to `test/helpers/recorder-scripts.ts`.
+
+**Two new scripts (T2, D3).** `tools/vectors/core-jdk-vectors.sh <outDir>` (JDK major 21, then the command of the
+program's header) and `tools/vectors/guava-vectors.sh <outDir>` (oracle built from the pin; `com.google.guava`
+`Bundle-Version` `33.3.0.jre` and `com.google.guava.failureaccess` `1.0.2` from the p2 cache, each checked). Neither
+adds a JVM flag, and `CoreJdkVectors.java` and `GuavaVectors.java` are unedited: both scripts' output into a fresh
+directory is `cmp`-identical to the six committed refs. Their stale `Run:` header lines are #134.
+
+**Runbook (T2).** `docs/architecture/elk-upgrade.md` § 5 step 3 keeps its number and now says there is nothing to
+edit, with one check (`git grep -c "$OLD" -- tools` prints only the `.melk` stamp); § 7.3 names the two scripts in
+place of the hand-built command lines. `docs/architecture/core-engine.md` § 7.6 runs `core-jdk-vectors.sh`. From the
+next pin move on, the bump is the pin file alone.
+
+**Cold proof (T3, D5): no ref changed.** Every script whose program, own text or `vector-cache.sh` changed ran cold
+into `test/golden/refs/java`: the 29 short scripts in 6 min 17 s of recorder time (31 programs `cache: … recorded`,
+the four direct scripts uncached, no `hit`), and `elkj-vectors.sh` in 4 h 03 min (four programs `recorded`, `ElkjRoundTripVectors rows 0/281` in
+3 h 22 min, `ElkjWriteVectors rows 0/126`). After each script,
+and at the end, `git diff --exit-code f69bbe41 -- test/golden/refs/` was empty with no untracked file. The planner's
+risk did not occur: 13 of these scripts do not pin `-XX:hashCode=2`, and their 24 refs are byte-identical although
+each program's source changed (`.agent-notes/recorder-pin-source.md`). The eight sweeps whose program changed
+(`compound`, `labels`, `loops`, `order`, `phase`, `pipeline`, `placement`, `routing`) were fresh at the base, reran
+without `--force` after T1 (12 min 48 s) and wrote `results.jsonl` files `cmp`-identical to the before-side (67,111
+lines in all); their eight consumer tests pass on the real sweep dirs. Negative path: `MetaDataVectors.java` without
+the property exits 1 with the message above and writes no file; with 40 `a`s as the property its output differs from
+the ref in the `elkCommit` line only. All 41 recorders, started without the property, exit 1 with that message
+before writing a file.
+
+**Not done, on purpose.** #50 (multi-file `javac` build and two other recorder debts) stays separate (D6): bundled, a
+ref change could not have been attributed. The four scripts whose programs stamp nothing (`java-vectors.sh`,
+`gson-vectors.sh`, `label-sizing-vectors.sh`, `layered-label-metrics-vectors.sh`) are untouched and were not rerun.
+The translated `docs-site/` pages are untouched.
+
+**Issues filed.** #134 (`follow-up`): the `Run:` lines of the two unedited recorders and one sentence of
+`docs/translation-rules.md` still give the bare `java` command. #135 (`follow-up`): `AlgCommonVectors.java` does not
+compile under `-XX:hashCode=2` (javac's inference of one `List.of(Map.entry(…))` changes when every identity hash is
+equal; the base source fails the same way), which matters only if that script is ever pinned. No `needs-ruling`
+issue: no stop condition fired.
+
+**Unchanged.** No file under `src/`. No assertion of an existing test, no vector and no golden changed (AD-13). The
+oracle was not rebuilt and no patch changed.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,718
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,177 files and 49,333 tests
+passed, 93 skipped, 0 failed (the base's 1,176 and 49,324 plus the new fitness test's file and 9 tests); statements
+98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %, as at the base. `docs:build` exit 0 with 200 typedoc
+warnings, as at the base. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`. Gate 7:
+every recorder and sweep whose input changed was rerun (above) and `git diff --exit-code f69bbe41 --
+test/golden/refs/` is empty.
+
+**Oracle.** Not rebuilt. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
+2026-11-18T15:18:16Z, sha256 `87705f69…`). `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
+`$ELK_MODELS_DIR` is at `ac5af2ba…`, the commit of `test/corpus/manifest.json`.
+
+## Revision 2026-11-20 (java-tests-bundles)
+
+Appended; no earlier line is edited. Source: issue #97 and D1-D6 in `plans/java-tests-bundles/decisions.md`; the
+journal is `plans/java-tests-bundles/decision-journal.md`. Where this section conflicts with the text above, this
+section wins. Task ids are T1-T3; the base is `5beafe570c607909f5cae92593f17a367418bbed`.
+
+**One follow-up is closed: `tools/oracle/java-tests.sh` runs every ported JUnit class.** The script's `TEST_BUNDLES`
+held two bundles (`alg.layered.test`, `alg.test`), so every ported class of another test bundle ran only through a
+`sed`-made scratch copy of the script, and section 10 of the upgrade runbook left those classes out of a pin move.
+`TEST_BUNDLES` is now a fixed list of thirteen (T1, D1): the two it had, then `alg.common.test`, `alg.disco.test`,
+`alg.force.test`, `alg.mrtree.test`, `alg.radial.test`, `alg.rectpacking.test`, `alg.spore.test`, `alg.topdown.test`,
+`core.test`, `graph.json.test` and `graph.test` (each `org.eclipse.elk.`-prefixed). Only the array, its comment and
+the header comment changed; `THIRD_PARTY`, `build_classpath`, `run_class` and everything under `tools/vectors/` are
+as they were (D2). `org.eclipse.elk.shared.test` stays out: nothing cites it, and it needs
+`org.eclipse.elk.alg.graphviz.layouter`, which is not an oracle jar.
+
+**The count is 143, not the issue's 124.** The issue's grep matched `Test.java` only. Eight `graph.json.test` suites
+are cited as `src/…Test.xtend` (`EdgeCoordsTest`, `EdgesTest`, `ExportTest`, `GraphTest`, `IndividualSpacingsTest`,
+`LayoutOptionsTest`, `SectionsTest`, `TransferLayoutTest`); their compiled classes run as plain JUnit 4. With the
+ports landed since #44 the list is 100 `alg.layered.test` classes, 35 other `.java` classes and the 8 Xtend suites
+(D4).
+
+**The option the issue named was rejected (D1).** An environment variable appended to the list would have left the
+runbook spelling out eleven bundle names, would silently drop 43 classes when unset, and is a knob with one caller.
+A glob over the oracle's test directories would take `shared.test` and any future bundle unseen.
+
+**Fitness test (T1, D3).** New `test/architecture/java-tests-bundles.fitness.test.ts` (4 tests), written first and
+seen red on the base script with exactly the eleven new bundles listed as missing: every test bundle a `.ts` file
+under `src/` or `test/` cites by path is in `TEST_BUNDLES`, `alg.test` is carried, the scan finds an `.xtend`
+citation of `graph.json.test` (so an empty scan cannot pass), and the array parser reads a list that wraps over
+lines. A port that cites a new test bundle fails there until the script carries it. The test needs no oracle.
+
+**Evidence on the pinned oracle (T1, D5).** Before the edit, the landed two-bundle script over the 100 layered
+classes: 51,299 runs, 0 failures, 402 s. After it, one call over all 143 classes with section 10's commands: exit 0,
+**51,577 runs, 0 failures**, 432 s under `nice -n 10`. The 100 layered lines of the two runs are byte-identical, so
+thirteen bundles on the classpath changed no count; the 43 other lines (278 runs) equal the planning probe class by
+class, and agree with the counts earlier missions recorded through scratch copies. Per bundle (classes/runs):
+`alg.layered.test` 100/51,299, `alg.common.test` 7/49, `alg.disco.test` 1/3, `alg.force.test` 1/3,
+`alg.mrtree.test` 1/6, `alg.radial.test` 1/2, `alg.rectpacking.test` 5/23, `alg.spore.test` 3/11,
+`alg.topdown.test` 3/11, `core.test` 11/127, `graph.json.test` 9/36, `graph.test` 1/7. All 143 lines are the
+baseline in `plans/java-tests-bundles/java-baseline.md`.
+
+**Docs (T2, D6).** `docs/architecture/elk-upgrade.md` § 10 lists the `.java` and `.xtend` citations and runs them
+with two commands (they were three, for two bundles); it gives 143 classes, 51,577 runs and about 7 minutes at the
+`8bca22f4` pin, and says once that an old-oracle file from the two-bundle commands shows the 43 other rows as
+additions the first time. § 5 step 1 follows. The Java-baseline paragraphs of `alg-trees.md`, `alg-force-disco.md`,
+`alg-packing.md`, `alg-layered-pipeline.md`, `alg-layered-compound.md` and `text-sizing-seam.md` call the landed
+script directly; each keeps its expected counts. The scratch-copy recipes in `plans/*/java-baseline.md` and the
+past-tense records of `docs/conformance.md` are history and were not edited. From the next pin move on, section 10
+covers every ported JUnit class.
+
+**Not done, on purpose.** The TS half of section 10 (`PIPELINE_SUITES_FULL`) is unchanged. The translated
+`docs-site/` pages hold no architecture page and are untouched.
+
+**Issues filed.** #136 (`follow-up`): `tools/vectors/label-sizing-vectors.sh:11` says its classpath "is the one of
+tools/oracle/java-tests.sh"; with thirteen bundles in the script and two in the recorder that is no longer exact.
+Not edited here, because any edit under `tools/vectors/` colds the vector cache. No `needs-ruling` issue: no stop
+condition fired.
+
+**Unchanged.** No file under `src/`. No assertion of an existing test, no vector and no golden changed (AD-13).
+The oracle was not rebuilt and no patch changed.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,718
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,178 files and 49,337
+tests passed, 93 skipped, 0 failed (the base's 1,177 and 49,333 plus the new fitness test's file and 4 tests);
+statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %, as at the base. `docs:build` exit 0 with
+200 typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry in
+`tools/codeql/accepted.json`. Gate 7: `java-tests.sh` is an input of no recorder, regen script or sweep stamp, so
+none was rerun; `git diff --exit-code 5beafe57 -- test/golden/refs/ tools/vectors/` is empty.
+
+**Oracle.** Not rebuilt. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
+2026-11-18T15:18:16Z). `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/ test/` is empty. `$ELK_MODELS_DIR`
+is at `ac5af2ba…`, the commit of `test/corpus/manifest.json`. The JVM runs wrote nothing under `$ELK_ORACLE_DIR`.
+
+## Revision 2026-11-20 (models-dir-env)
+
+Appended; no earlier line is edited. Source: issue #98 and D1-D4 in `plans/models-dir-env/decisions.md`; the journal
+is `plans/models-dir-env/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+Task ids are T1-T2; the base is `6307bf36c0ff4cd50c7349625e9550c96a06e53f`.
+
+**One follow-up is closed: `census.test.ts` and `corpus.test.ts` read `ELK_MODELS_DIR`.** Both files resolved the
+models directory at module scope with `resolveModelsDir({})`. The resolver (`test/corpus/corpus.ts:122-131`) reads
+the variable from the environment it is handed, so a literal empty object always gave the default relative path, and
+on a checkout that supplies the corpus only through the variable the census drift test, the four golden-input tests
+and the `goldens not verified` placeholder skipped without a failure. `census.test.ts:25` and `corpus.test.ts:41`
+now call `resolveModelsDir()`, as the 22 other callers do (T1, D1). The constant `defaultResolution` of
+`corpus.test.ts` is renamed `resolution` (three lines): under the variable it no longer holds the default path's
+result. The resolver's own two tests (`corpus.test.ts:49`, `:58`) keep their env objects. `test/corpus/corpus.ts` and
+every other caller are unchanged. This fixes tool-side row 6 of the 2026-11-14 revision on the branch; that row and
+the follow-ups line naming #98 stay as written (D4).
+
+**Proof (T1, D2): three runs of the two files, no new test.** The module-scope call has no unit seam, so the evidence
+is behavioural. In a scratch `git clone --shared` under `$TMPDIR` whose `../../eclipse-elk/elk-models` does not
+exist, with `ELK_MODELS_DIR` naming the pinned models checkout: at the base 46 tests passed and 6 skipped (52), both
+skip texts naming the clone's default path; at the T1 commit 51 passed and none skipped (51; the placeholder is
+registered only when the directory does not resolve). In the queue worktree after the fix,
+`ELK_MODELS_DIR=/nonexistent` gives 46 passed and 6 skipped with skip texts naming `/nonexistent`, so the variable
+wins over an existing default; unset, the two files give 51 passed, as at the base. The clone was removed.
+
+**Runbook (T1, D3).** `docs/architecture/elk-upgrade.md` § 14 step 5 loses the paragraph about the two files and
+its `mkdir`/`ln -s`/`vitest`/`rm` block; the paragraph after it now opens "Some differences between the clone's
+suite and the original checkout's are expected". Step numbers and anchors are unchanged, and
+`test/docs/elk-upgrade-runbook.test.ts` is green. A rehearsal clone runs the census and golden-input checks from its
+`env.sh` alone.
+
+**Not done, on purpose.** No fitness test forbids `resolveModelsDir({})` (D2: not asked for). The only other
+literal-env resolver calls in `test/` are `inputsRoot({…})` in `test/helpers/layout-test-runner.test.ts:229-255`,
+tests of that resolver's own rule. `.agent-notes/elk-upgrade-runbook.md` and `plans/elk-upgrade-runbook/` are history
+and were not edited; `.agent-notes/models-dir-env.md` says what supersedes them.
+
+**Issues filed.** None: no stop condition fired, so no `needs-ruling`, and nothing was found for a `follow-up`.
+
+**Unchanged.** No file under `src/` or `tools/`. No assertion, title literal or expected value of a test, no vector
+and no golden changed (AD-13): the edit changes which directory two landed tests read when the variable is set. The
+oracle was not rebuilt and no patch changed.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,718
+functions, no violation line). Coverage, full suite with the nine sweep directories off and `ELK_MODELS_DIR` unset:
+1,178 files and 49,337 tests passed, 93 skipped, 0 failed; statements 98.81 %, branches 96.99 %, functions 98.56 %,
+lines 98.86 %; counts and percentages equal the base's. `docs:build` exit 0 with 200 typedoc warnings, as at the
+base. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`. Gate 7: no input of a
+recorder, regen script or sweep stamp changed, so none was rerun; `git diff --exit-code 6307bf36 --
+test/golden/refs/ tools/vectors/` is empty.
+
+**Oracle.** Not rebuilt and not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
+2026-11-18T15:18:16Z). `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty. `$ELK_MODELS_DIR` is at
+`ac5af2ba…`, the commit of `test/corpus/manifest.json`; the models checkout was read, never written.
+
+## Revision 2026-11-20 (dev-assert-restore)
+
+Appended; no earlier line is edited. Source: issue #127 (the maintainer's rulings of 2026-11-20 on #112 row #32,
+#113 and #119) and D1-D9 in `plans/dev-assert-restore/decisions.md`; the journal is
+`plans/dev-assert-restore/decision-journal.md`, the firing census `plans/dev-assert-restore/census.md`. Where this
+section conflicts with the text above, this section wins. Task ids are T1-T7; the base is
+`b716710e5098cc2ab9392c251702a2d8bcda6e88`.
+
+**Ten Java asserts that #45 left as comments are `devAssert` calls again.** `InstancePool.java:59`,
+`NodeContext.java:277`, `HorizontalPortPlacementSizeCalculator.java:212`, `LGraphUtil.java:821` and `:907`,
+`LNode.java:165`, `EndLabelPreprocessor.java:377`, `HighDegreeNodeLayeringProcessor.java:255`,
+`EdgeLabelSideSelection.java:58` and `ForsterConstraintResolver.java:239` (with Java's `lastValue`, start
+`Short.MIN_VALUE`) (T2, D5). Of the 143 statements, 132 are now restored, 6 are restored before a kept throw, and 5
+stay comments: `BoxLayoutProvider.java:738, 754` and `SingleEdgeGraphWrapper.java:193` (upstream defects, #112;
+knowvah/elk#27, #28) and `ThresholdStrategy.java:395, 403` (#128). `plans/dev-assert/inventory.md` has a superseding
+section; its earlier rows are unchanged.
+
+**Census (T2).** With the sites live and nothing wrapped, the suite failed in exactly the ruled sets: 170 tests in
+12 files at #32 (plus 6 that follow in `LayeredCompoundTwins`), and #113's tests and rows for the other nine. Nothing
+else fired.
+
+**The switch (T1, D1).** `withAssertions(enabled, body)` lives in `test/helpers/with-assertions.ts` (one export;
+`DevAssert.test.ts` imports it). A step that a test drives into a state the Java assert rejects runs inside
+`withAssertions(false, …)`: the `create()` calls without a provider factory in four core test files, one call each
+in `NodeContext`, `LNode`, `HighDegreeNodeLayeringProcessor`, `EdgeLabelSideSelection` and (two) in
+`ForsterConstraintResolver` tests, the nine `adapters/sweep-*` rows of `LayeredFrameworkAdapterVectors`, and the four
+`site/lgraphutil/externalPorts/*` rows in both of their replays (T4, T5, D4). Ten new tests, one per site, pin the
+`AssertionError` with assertions on through `assertionErrorOf` (`test/helpers/assertion-error-of.ts`): message `''`,
+and `UNDEFINED` at `LGraphUtil.java:907` as on the JVM (D6).
+
+**The #32 rule (T3, D2, D3).** `hasUnsizedEndLabel(root)` (`test/helpers/unsized-end-labels.ts`): some label of an
+edge anywhere in the prepared root has `EDGE_LABELS_PLACEMENT` `HEAD` or `TAIL` and fails `width > 0 && height > 0`.
+`withEndLabelRule(root, body)` runs the layout step with assertions off when it holds. It is applied in the three
+runners the census found (`runRoutingPrefix`, `runRow`, `runPlainFullRow`) and, after T6, in the labels sweep's
+`replayCase`. **The predicate selects 572 tests, not the 170 that #127 expected.** All 170 are among them; 6 more
+are the twins; 43 never run `EndLabelPreprocessor`; 353 run it without handing the assert a label cell, because
+`removeLabelOverlaps` only visits the NORTH and SOUTH sides of a horizontal layout and the EAST and WEST sides of a
+vertical one. The oracle under `-ea` exits 0 on `labelStacking_left_down.elkt` and throws at `:377` on
+`labelStacking_down_up.elkt`. Whether a model fires depends on port sides and direction, so the rule is per model;
+issue #138 records the cost (396 replays with assertions off that would not fire) and the narrowing options.
+
+**#119 (T1, D7).** `Issue447Test.test.ts` uses `junit-delta`'s `assertEqualsWithin`; its private copy is gone and
+its two calls are unchanged.
+
+**Sweeps (T6, D9).** The ten sweep files at stride 1 with assertions on, against oracle results of 2026-11-20:
+`label-sizing`, `loops` (3,073 checked), `phase` (30,265), `pipeline` (6,646), `order` (6,280), `placement` (1,970),
+`routing` (6,280) and `sweep.test.ts` were green as they were. `labels` (68 cases) and `compound` (4 cases, the
+`.elkt` model `hierarchy01`) failed, every case at `EndLabelPreprocessorPlacement.ts:117` on a model that meets the
+predicate, and are green after the one wrap in the labels sweep helper (950 and 1,169 checked). No other assert
+fired. `sweep.test.ts` is a planner unit test that lays nothing out, and `ts-layout-compare` runs its workers with
+assertions off, so neither is evidence about asserts (issue #137).
+
+**Issues filed.** #137 and #138, both `follow-up`. No `needs-ruling`: no stop condition fired.
+
+**Unchanged (AD-13).** No expected value, tolerance, case list or existing test title; every edited `expect` line
+keeps its text. No vector, golden, recorder or oracle patch. `src/` changed only at the ten sites (nine files).
+With assertions off the library behaves as before.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,729
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,190 files (10 skipped),
+49,361 tests passed, 93 skipped, 0 failed; statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %,
+equal to the base; +2 files and +24 tests against the base (the ten site tests, 11 for the predicate helper, 3 for
+`assertionErrorOf`). The same suite with `ELK_DEV_ASSERTIONS=off`: 49,361 passed, 0 failed. `docs:build` exit 0 with
+200 typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry. Gate 7:
+`git diff --exit-code b716710e -- test/golden/refs/ tools/vectors/ tools/oracle/` is empty.
+
+**Oracle.** Not rebuilt. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
+2026-11-18T15:18:16Z); `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty. It ran twice under
+`JAVA_TOOL_OPTIONS=-ea:org.eclipse.elk...` for the #32 evidence, writing to `$TMPDIR` only.
+
+## Revision 2026-11-21 (spore-scanline-0004)
+
+Appended; no earlier line is edited. Source: issue #111 (the maintainer's carried-patch ruling of 2026-11-13) and
+D1-D8 in `plans/spore-scanline-0004/decisions.md`; the journal is `plans/spore-scanline-0004/decision-journal.md`.
+Where this section conflicts with the text above, this section wins. Task ids are T1-T6; the base is
+`832a847d2bebbd10324811509384088fc09fb0a4`.
+
+**Oracle patch `0004` is the first carried upstream patch.** Upstream pull request eclipse-elk/elk#1247 (fixes
+eclipse-elk/elk#1246; fork knowvah/elk#19 and #26), open at head `1bf1da95561140eb78d70d5dd747dd46803ead2a` whose
+parent is the pin `8bca22f4`, is carried as
+`tools/oracle/patches/0004-Report-all-overlaps-of-a-node-inserted-into-the-over.patch` (sha256 `71ad3d68…b140db`),
+written by `git format-patch` from the PR's head commit in a scratch clone; its hunks equal `gh pr diff 1247` (T1).
+Patches 0001-0003 are seams; `0004` changes what ELK computes, and the port follows the patched Java. It is dropped in
+the mission that moves the pin past the PR's merge. If the PR's head moves or it closes unmerged, that is a ruling.
+
+**The change.** `ScanlineOverlapCheck`'s handler `insert` walked the nodes on the scanline in the order of their left
+sides and stopped at the first node that did not overlap the inserted node once it had found an overlap, which drops
+every overlapping node behind such a node. It now stops at the first node whose left side is at or right of the
+inserted node's right side. Port: `src/alg/common/spore/ScanlineOverlapCheckHandler.ts` `insert`, `@see` unchanged,
+with a comment naming the PR and the patch (T3). The PR's two tests are ported into
+`src/alg/spore/ScanlineOverlapRemovalTest.test.ts` (red on the old walk, both missing the pair `c-p`; green on the
+new one). Only `sporeOverlap` runs that check.
+
+**Oracle.** Rebuilt in place with `tools/oracle/build.sh` (the first attempt failed on a 504 from the Eclipse
+Foundation licence service, the second built in 143 s): `oracle-build.json` names `8bca22f4…` and patches 0001-0004,
+`builtAt` 2026-11-21T05:47:58Z, JDK 21.0.1, Darwin arm64. The per-class diff of the 16 jars and 14 test bundles shows
+three changed classes: `ScanlineOverlapCheck`, `ScanlineOverlapCheck$OverlapsScanlineHandler` and the test class
+`ScanlineOverlapRemovalTest`. `tools/oracle/java-tests.sh org.eclipse.elk.alg.spore.test.ScanlineOverlapRemovalTest`:
+`runs=4 failures=0`. `git -C ../elk log --oneline 8bca22f4..HEAD` over alg.common, alg.spore and the spore test
+bundle is empty.
+
+**Refs regenerated by script, patch id `0004` (T2).** Every other ref is byte-identical.
+
+- `test/golden/refs/java/alg-common.json`: 3 of 8 `scanline` rows gain handler calls (`scanline-random-n16` 14 → 17,
+  `scanline-random-n24` 40 → 51, `scanline-dense-n30` 84 → 166).
+- `test/golden/refs/java/spore-layout.json`: 23 of 340 rows, all `sporeOverlap`: 14 `stops` rows (scanline,
+  triangulation and tree stops only; every grow, update and end stop is equal) and 9 `minst` rows. No `full`,
+  `throws`, `jitter`, `objects` or `sporeCompaction` row.
+- `test/golden/refs/elk-packing/sporeOverlap--overlapRemoval.maxIterations-1.json`: two node positions and one edge
+  section.
+- The `patches` array of ten `_meta.json` files.
+
+The unported walk fails exactly those rows; the port reproduces all of them at AD-4. No hand-written assertion
+changed (AD-13).
+
+**Sweep evidence (T4), nothing committed.** `sporeOverlap` on the patched oracle, 906 cases: 880 `ok`, 26 `throws`;
+the port: 880 `ok`, 26 `both-throw`, 0 mismatch. Against the sweep before the patch, 609 of 879 outputs differ, and
+one case no longer throws, `…/realworld/ptolemy/hierarchical/pn_brockackerman_BrockAckerman`: its two `NaN` compound
+nodes tied on centre x before the patch (both 509.73 wide after their own layouts) and no longer do (643.34 and
+442.99), so the scanline's `TreeSet` keeps both. The issue expected the 27 `NaN` throws of #108 to stay; 26 do.
+`docs/parity-report.md` is not regenerated (D6) and, like the cached full sweep, still shows 879 / 27.
+
+**Docs (T5).** `docs/conformance.md` § 1 lists four patches and has a "Carried upstream patches" subsection (the
+convention, the `0004` row, the refs moved, the sweep evidence); § 4 and two alg-packing passages point to it.
+`docs/architecture/elk-upgrade.md` § 4 says a carried patch ends as "merged upstream".
+
+**Issues filed.** #139 (`follow-up`): the corpus sweep cache is keyed by commits, not the patch series, so the cached
+full sweep and the parity report predate `0004`. No `needs-ruling`: no stop condition fired.
+
+**Gates (queue gates 1-7, 2026-11-21).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,729
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,190 files (10 skipped),
+49,363 tests passed (+2, the ported tests), 93 skipped, 0 failed; statements 98.81 %, branches 96.99 %, functions
+98.56 %, lines 98.86 %, equal to the base. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`:
+every finding accepted, no new entry. Gate 7: the D3 recorders and regen scripts rerun on the final tree leave
+`git diff --exit-code test/golden/refs/ test/corpus/generated` empty, and a cache-off rerun of the two vector
+recorders is byte-identical to the committed files.
+
+## Revision 2026-11-21 (layered-evidence-gaps)
+
+Queue mission for issue #49, on `chore/issue-queue` (plan and journal in `plans/layered-evidence-gaps/`). It closes the
+four coverage-evidence follow-ups the layered missions left open (revisions 2026-10-27, 2026-10-30, 2026-11-02 and
+2026-11-03 above). Every new expected value comes from the oracle (`8bca22f4` + patches 0001-0004, no patch change); no
+`src/` file changed, and every new row replays at the AD-4 bar.
+
+**1. `InvertedPortProcessorTest.testValidNodeOrder` (found rows, D1).** The 13 ptolemy rows stay vacuous: the nine
+vendored ptolemy inputs have no edge leaving a WEST port or entering an EAST port of a side-fixed node (0 edges reach an
+assertion on each row). The port of the test now also runs on the 16 other rows of `layered-order.json` that end at
+`INVERTED_PORT_PROCESSOR` behind `PORT_SIDE_PROCESSOR`; six execute assertions and pass
+(`scenarios/InvertedPortProcessor/inverted-ports` 5 edges, `…/long-edges` 3, `sites/HeadLabels/invertedPort/short`,
+`…/both` and `sites/HeadLabels/westOutput` 1 each, `models/ticket-528-violatedNodeOrder/root` 1). Positivity is asserted
+where the row's imported input has such an edge. `sites/InvertedPortProcessor/freePorts` omits `PORT_SIDE_PROCESSOR`
+on purpose and fails the Java assertion on the oracle's own recorded state (a free-port node keeps an EAST input the
+processor skips, `InvertedPortProcessor.java:117-119`); it is outside the test's contract and a test pins that it is
+the only row left out. No ref changed.
+
+**2. `HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR` (new rows, D2).** Six site rows in `layered-placement.json` (604 → 610,
+`sites` 26 → 32): `sites/HierarchicalPortDummySizeProcessor/{two-north, two-south, three-north, three-south,
+two-south-out, mixed}`. With `spacing.edgeEdgeBetweenLayers` 7 the oracle's dummy widths per layer are `[0, 14]`,
+`[14, 0]`, `[0, 14, 28]`, `[28, 14, 0]`, `[14, 0]` and (two north, two south) `[0, 14, 14, 0]`, and each dummy's EAST
+port sits at its width: `delta` and `step` are oracle values.
+
+**3. The three Medium splitter arms (new rows, D3 rung 1 for all).** Seven plan-A site rows in
+`layered-routing-steps.json` (277 → 284, `sites` 25 → 32; `layered-routing.json` byte-identical):
+`sites/HyperEdgeSegmentSplitter/noFreeArea/{unbounded, finite, consumed}` reach `HyperEdgeSegmentSplitter.ts:220 if[1]`,
+`…/areaStartRounding/{single, consumed}` reach `:400 if[1]`, `…/areaEndRounding/{single, consumed}` reach `:406 if[1]`.
+Breakpoints on the unmodified oracle classes (`jdb`) count each arm on the JVM; the five earlier splitter rows take
+none. The generic routing replay now takes all 24 branches of the splitter, and
+`HyperEdgeSegmentSplitter.sites.test.ts` pins the oracle's counts and split positions. No direct-call row and no
+unreachability proof was needed. Mechanisms and the count table: `plans/layered-evidence-gaps/unreached.md`.
+
+Corrections to `plans/layered-edge-routing/unreached.md` (that file is not edited): its `:31` says two Medium arms where
+its rows list three; its `:105` argument that a critical-cycle segment always has a free area in its own span does not
+hold (two segments sharing both coordinates have none); its `:114` classification of the two rounding arms as
+unreached is superseded. Open, not blocking: `:406` with only non-negative coordinates, and a span emptied by
+consumption without exactly equal coordinates.
+
+**4. Port alignment and border offsets through layered (new rows, D4).** 72 `scenarios` rows in
+`layered-pipeline.json` (1,239 → 1,311, `scenarios` 93 → 165; `full` stays 199): `scenarios/PortAlignment/*` (27
+graphs: `portAlignment.default` × BEGIN, CENTER, END, JUSTIFIED, DISTRIBUTED; each side's option × BEGIN, CENTER, END,
+JUSTIFIED; a default with two side overrides; single-port sides; overhanging ports) and `scenarios/PortBorderOffset/*`
+(9 graphs: +5 and −5 on north and south ports, alone, under BEGIN and END, on every side, and mixed). Each graph is
+recorded at `LABEL_AND_NODE_SIZE_PROCESSOR` (`…/ports`, where the row holds every port position) and at the end of the
+plan (`…/end`), because a whole-plan row records no port position. Layered sizes nodes through
+`NodeDimensionCalculation`, never `NodeMicroLayout`, so `node-micro-layout.json` is untouched (planning D4). Under the
+pipeline replay alone, the untaken branch arms of `PortPlacementCalculator.ts` drop from 8 to 2 (the two left are the
+FIXED_RATIO cases, reached by other suites).
+
+**Findings.**
+
+- An unset port alignment is placed DISTRIBUTED in layered, although `Layered.melk:144` declares JUSTIFIED:
+  `NodeContext.getPortAlignment` reads the `CoreOptions` default. The oracle rows record it and the port agrees (#142).
+- The planning scan missed two earlier whole-layout rows that set per-side alignments
+  (`full/labels/examples-general-spacing-ports/default` and `…-portsSurrounding/default` in `layered-labels.json`);
+  neither sets END or `portAlignment.default`.
+- The acceptance line of T1 that named `freePorts` as a passing row was a planning assumption; see item 1.
+
+**Refs regenerated by script (D5).** `layered-placement.json`, `layered-routing-steps.json`, `layered-pipeline.json`:
+for each, an id-keyed diff against the base shows every base row JSON-equal and in order, the new ids only under the
+mission's prefixes, and the header differing only in `rowCounts`. Every other file under `test/golden/refs/` is
+byte-identical. Recorder runtimes: 9 s, 11 s and 15 s. Inventory growth (D6): `HierarchicalPortDummySizeProcessor.test.ts`
+row list, `layered-routing-replay-rows.test.ts` group counts, `OrthogonalEdgeRouter.test.ts` `P5_EDGE_ROUTING` 29 → 36.
+No assertion about an existing row changed (AD-13).
+
+**Docs.** `docs/conformance.md` parts c-f, `docs/architecture/alg-layered-placement.md`, `alg-layered-routing.md`,
+`alg-layered-pipeline.md` and the three counts in `docs/architecture/overview.md`.
+
+**Issues filed.** #140 (`follow-up`): a ptolemy row where the Java test asserts needs a vendored corpus model and
+`.elkg` conversion tooling. #141 (`follow-up`): the superseded statements of `plans/layered-edge-routing/unreached.md`
+and the two open points. #142 (`follow-up`): the unset-alignment default. No `needs-ruling`: no stop condition fired.
+
+**Gates (queue gates 1-7, 2026-11-21).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,729
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,191 files (10 skipped),
+49,487 tests passed (+124 over the base's 49,363), 93 skipped, 0 failed; statements 98.81 %, branches 97.00 % (base
+96.99), functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`:
+every finding accepted, no new entry (one new finding, an unchecked `Integer.parseInt` in the pipeline recorder, was
+fixed instead). Gate 7: the three recorders rerun on the final tree are byte-identical to the committed refs and
+`git diff --exit-code test/golden/refs/` is empty. Two gate fixes on the way, both in the pipeline recorder and both
+journaled: a helper deleted by a comment edit (the recorder did not compile), and the `parseInt` finding.
+
+## Revision 2026-11-21 (vector-recorder-debts)
+
+Queue mission for issue #50, on `chore/issue-queue` (plan and journal in `plans/vector-recorder-debts/`). It closes the
+three recorder-tooling debts of revisions 2026-10-28 and 2026-10-29 above. No file under `src/` changed, no oracle
+patch or pin changed, and every file under `test/golden/refs/` is byte-identical to the base.
+
+**1. A multi-file build for the recorders (D1, D2).** JDK 21's source launcher takes one file, which is why the layered
+recorders ran to 4,752 lines. `tools/vectors/java-program.sh` now starts every cached recorder: a program
+`tools/vectors/<Program>.java` with a directory `tools/vectors/<Program>/` beside it is compiled by `javac` (the entry
+and every `*.java` under the directory, into a temporary directory that is removed afterwards) and run by class name;
+without the directory the launch is word for word the old source-launcher line. `jp_run` takes that line as its
+arguments, so the three launch lines of `vector-cache.sh` still read `java -Delk.commit=…` and the pin fitness test
+(#96) is unedited. The cache salt and the loops sweep's stamp cover every source of a program and the helper script.
+
+**2. One recorder split as the proof (D3).** `LayeredLoopsVectors.java` (4,571 lines) is now an entry file of 358
+lines and ten helper sources of 291 to 659 lines in `tools/vectors/LayeredLoopsVectors/`: the former file cut at its
+section comments, by verbatim moves. The helpers are one chain of superclasses ending in the entry, so static
+initialization keeps the single file's textual order (JLS 12.4.1) and inherited names need no qualifier; the cut
+needed 123 compiler-derived insertions on 118 of 3,983 body lines (77 qualifiers for what stays nested in the entry, 6
+for a later helper, 40 record accessors), and a script check found no other difference. Two things keep recorded
+output fixed: `ShrinkWidthManager` and the four exception classes stay nested in the entry (the ref records
+`LayeredLoopsVectors$ShrinkWidthManager`), and every helper class name starts with `LayeredLoopsVectors`, because
+`elkFrame` tells the recorder's stack frames from ELK's by that prefix (found during the cut, not at planning).
+`layered-loops-vectors.sh` passes `--plan-dump` through, since `java LayeredLoopsVectors.java` no longer compiles.
+
+**3. The melk recorder encodes `List<Integer>` defaults (D4).** `test/melk/recorder.ts` takes a list's element number
+kind from the declared type in the vendored `.melk` model (three options, all `List<Integer>`). Both melk tests now
+compare the `cmEnforcedGroupOrders` option and support records, and the framework service dump, with the unfiltered
+JVM dump; the `ShapePrimer` exclusions and their three "unencodable" assertions are gone (D4: they asserted a tool's
+limit). A mutated default item fails the full comparison naming the record. No oracle value changed.
+
+**4. `dumpLGraph` encodes `KVectorChain` (D5).** As the recorder does: a list of `KVector` objects. The patch module
+`test/helpers/layered-site-replay-dump.ts` stays: instrumented after the change, it patches no `KVectorChain` (2,307
+before) but still `Random` 1,870, `Spacings` 1,870, `LayeredLabelsVectors$ShrinkWidthManager` 170,
+`LayoutOptionProxy` 28 and `LPort` 8 values over 62 test files. Planning expected only `KVectorChain` and 10
+importers; there are 56. No replay assertion changed.
+
+**Proof (D6).** `vector-cache.sh` is in every salt, so all 26 scripts that source it recorded afresh on their first
+run after the change: 24 of the 25 short scripts print `recorded` only (30 programs, 276 s), `layered-loops` recorded
+on its final sources in T4's check (`cmp` equal) and hit that entry in the batch, and the `elkj` lane recorded all 407 rows of
+its two row programs (`rows 0/281`, `rows 0/126`) and its four whole programs in 3 h 47 min, exit 0, with no `hit`.
+`git diff --exit-code f9e33263 -- test/golden/refs/` is empty. The loops sweep, run at the base and again on the split
+recorder, wrote 3,073 results both times, `cmp`-identical (sha256 `7f9633a8…8712`); its consumer test checks 1,537
+cases with 0 mismatches; `--dump` of four cases is byte-equal. The nine unpinned scripts among the 26 are launched as
+before and their refs did not move. The 10 scripts that do not use the cache are untouched and were not rerun.
+
+**Not done (D3, rejected (a)).** The other 14 recorders of 1,800 lines or more are still single files, and the ten
+layered recorders still carry their own copies of the `Dump` and `Encoder` (#143).
+
+**Docs.** Runbook `docs/architecture/elk-upgrade.md` § 7.1 ("Multi-file recorders") and
+`docs/architecture/alg-layered-loops.md` § 3. Notes: `.agent-notes/vector-recorder-debts.md`.
+
+**Issues filed.** #143 (`follow-up`): split the remaining multi-thousand-line recorders, with the six preconditions
+this mission met. #144 (`follow-up`): the five classes `dumpLGraph` still leaves as `{ class }`. No `needs-ruling`: no
+stop condition fired.
+
+**Gates (queue gates 1-7, 2026-11-21).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,729
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,194 files (10 skipped),
+49,509 tests passed (+22 over the base's 49,487), 93 skipped, 0 failed; statements 98.81 %, branches 97.00 %,
+functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`: every
+finding accepted, no new entry; the Java suite scanned the ten helper files and reports 0 findings. Gate 7: every
+recorder whose inputs changed was rerun (all 26 cached scripts and the loops sweep), and
+`git diff --exit-code test/golden/refs/` against the base is empty.

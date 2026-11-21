@@ -33,6 +33,7 @@ import { levelPathOf } from './layered-pipeline-replay-ops.js';
 import { planNames } from './layered-pipeline-replay-names.js';
 import type { CompoundOptions, PlanMap } from './layered-compound-replay-rows.js';
 import { dumpTree } from './layered-compound-replay-dump.js';
+import { withEndLabelRule } from './unsized-end-labels.js';
 
 export const COMPOUND_PREPROCESSOR = 'CompoundGraphPreprocessor';
 export const COMPOUND_POSTPROCESSOR = 'CompoundGraphPostprocessor';
@@ -257,7 +258,8 @@ export function prepareRow(row: RunnableRow): ElkNode {
 
 /**
  * Runs a row through the recursive engine with a controller and a `RunRecorder`. Errors the run throws propagate, except the
- * internal abort signal (`env.abortAfter`).
+ * internal abort signal (`env.abortAfter`). The layout of a model with an unsized end label runs with assertions off, as
+ * the recording JVM did (`withEndLabelRule`).
  */
 export function runRow(row: RunnableRow, env: RunEnvironment = {}): RowRun {
   const root = prepareRow(row);
@@ -266,7 +268,9 @@ export function runRow(row: RunnableRow, env: RunEnvironment = {}): RowRun {
   controller.addLayoutExecutionListener(recorder);
   const layout = (): void => {
     try {
-      new RecursiveGraphLayoutEngine().layout(root, controller, env.monitor ?? new BasicProgressMonitor());
+      withEndLabelRule(root, () => {
+        new RecursiveGraphLayoutEngine().layout(root, controller, env.monitor ?? new BasicProgressMonitor());
+      });
     } catch (error) {
       if (!(error instanceof StopAbort) && !(error instanceof Error && error.cause instanceof StopAbort)) {
         throw error;

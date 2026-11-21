@@ -16,6 +16,7 @@ import type { ElkNode } from '../../src/graph/ElkNode.js';
 import { ElkGraphText } from '../../src/graph/text/ElkGraphText.js';
 import { registerLayered } from './layered-framework-replay.js';
 import { elkDump, pipelineHash } from './layered-pipeline-sweep.js';
+import { withEndLabelRule } from './unsized-end-labels.js';
 
 export { isOk, isThrows, readSweep, STATUS_REFUSED, STATUS_TIMEOUT, type SweepLine } from './layered-phase-sweep.js';
 export const labelsHash = pipelineHash;
@@ -80,12 +81,18 @@ function loadModel(line: LabelsSweepCase, modelsDir: string): ElkNode {
   return root;
 }
 
-/** The canonical tree of a case replayed through the port. */
+/**
+ * The canonical tree of a case replayed through the port. A model with an unsized end label is laid out with
+ * assertions off, as the oracle's sweep ran it (no `-ea`): `EndLabelPreprocessor.java:377` rejects its empty label
+ * cells in the directions that put them on an overlap-removal side (`withEndLabelRule`, issue #127).
+ */
 export function replayCase(line: LabelsSweepCase, modelsDir: string): { [key: string]: unknown } {
   const root = loadModel(line, modelsDir);
   if (line.variant !== VARIANT_DEFAULT) {
     root.setProperty(CoreOptions.DIRECTION, Direction.valueOf(line.variant));
   }
-  new RecursiveGraphLayoutEngine().layout(root, new BasicProgressMonitor());
+  withEndLabelRule(root, () => {
+    new RecursiveGraphLayoutEngine().layout(root, new BasicProgressMonitor());
+  });
   return elkDump(root);
 }

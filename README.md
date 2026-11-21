@@ -8,9 +8,10 @@ TypeScript and verified against the Java implementation.
 
 ## Status
 
-**Pre-alpha skeleton. No layout algorithms yet.** The repository currently holds the toolchain,
-architecture, and verification scaffolding; algorithms are ported in later missions (see
-[`plans/roadmap.md`](plans/roadmap.md)). `src/index.ts` exports nothing public yet.
+**Pre-1.0.** All in-scope ELK layout algorithms are ported and checked against ELK built from
+source; [`docs/parity-report.md`](docs/parity-report.md) has the results. The public export surface
+is accepted but not yet in `src/index.ts`, so the package entry exports nothing public yet. Until
+1.0 the API may still change. See [`plans/roadmap.md`](plans/roadmap.md) for what comes next.
 
 ## Goals
 
@@ -22,8 +23,12 @@ architecture, and verification scaffolding; algorithms are ported in later missi
 
 ## Public contract
 
-The public API will be the ElkGraph object model plus `ElkGraphUtil` factories; ELK JSON is an
-I/O adapter, and the first npm publish freezes this surface.
+The public API is the export surface accepted in
+[#90](https://github.com/knowvah/elk-engine/issues/90) and described in
+[`docs/architecture/public-api.md`](docs/architecture/public-api.md): the ElkGraph object model and
+the `ElkGraphUtil` factories, the layout engine, each algorithm's metadata provider and options with
+their value types, and the ELK JSON and textual graph formats. ELK JSON is an I/O adapter, not the
+core model. Versions stay 0.x until 1.0; 1.0 freezes the surface.
 
 ## Development
 

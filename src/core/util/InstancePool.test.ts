@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { assertionErrorOf } from '../../../test/helpers/assertion-error-of.js';
 import type { IFactory } from './IFactory.js';
 import { InstancePool } from './InstancePool.js';
 
@@ -18,6 +19,10 @@ class CountingFactory implements IFactory<{ id: number }> {
 describe('InstancePool', () => {
   it('INFINITE is -1', () => {
     expect(InstancePool.INFINITE).toBe(-1);
+  });
+
+  it('throws AssertionError under -ea for a null factory (InstancePool.java:59)', () => {
+    expect(assertionErrorOf(() => new InstancePool<object>(null as never)).message).toBe('');
   });
 
   it('with limit 2 keeps two released instances and destroys the third', () => {

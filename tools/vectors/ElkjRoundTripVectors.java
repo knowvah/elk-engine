@@ -72,7 +72,16 @@ import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.util.LazyStringInputStream;
 
 public class ElkjRoundTripVectors {
-    private static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    private static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     private static final String XTEXT_VERSION = "2.36.0";
     private static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     private static final String OUT_NAME = "graph-json-text-roundtrip.json";
@@ -95,6 +104,7 @@ public class ElkjRoundTripVectors {
             int size) { }
 
     public static void main(String[] args) throws Exception {
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         LayoutMetaDataService.getInstance(new ClassLoader(null) { });
         System.setProperty(SEED_PROPERTY, "1");
         // The .elkj setup does not register the ElkGraph EPackage; without this touch every load fails with
@@ -220,7 +230,7 @@ public class ElkjRoundTripVectors {
 
     private static String document(Map<String, String> rows) {
         StringBuilder out = new StringBuilder("{\n");
-        out.append("  \"elkCommit\": \"").append(ELK_COMMIT).append("\",\n");
+        out.append("  \"elkCommit\": \"").append(elkCommit()).append("\",\n");
         out.append("  \"xtextVersion\": \"").append(XTEXT_VERSION).append("\",\n");
         out.append("  \"registry\": \"core\",\n  \"cases\": [\n");
         out.append(String.join(",\n", rows.values())).append("\n  ]\n}\n");

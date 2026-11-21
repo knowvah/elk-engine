@@ -21,6 +21,7 @@ export const DEFAULT_ELK_SOURCE_DIR = '../elk';
 export const WRITE_FLAG = '--write';
 export const REQUIRE_BUNDLE_HEADER = 'Require-Bundle';
 export const COMMITTED_JSON_RELATIVE = 'test/architecture/bundle-deps.json';
+export const PINNED_COMMIT_RELATIVE = 'tools/oracle/ELK_COMMIT';
 
 /**
  * In-scope bundles (decisions.md "Bundle scope", amended by conformance-corpus D0),
@@ -133,30 +134,42 @@ export function resolveElkDir(
   return resolve(repoRoot, arg ?? env[ELK_SOURCE_DIR_ENV] ?? DEFAULT_ELK_SOURCE_DIR);
 }
 
-export function readElkCommit(elkDir: string): string {
-  return execFileSync('git', ['-C', elkDir, 'rev-parse', 'HEAD'], {
-    encoding: 'utf8',
-  }).trim();
+/** The pinned ELK commit (AD-2): the trimmed content of `tools/oracle/ELK_COMMIT`. */
+export function readPinnedCommit(repoRoot: string = REPO_ROOT): string {
+  return readFileSync(join(repoRoot, PINNED_COMMIT_RELATIVE), 'utf8').trim();
 }
 
-export function readManifests(elkDir: string): Record<string, string> {
+/** Whether the checkout's object store holds the commit; `HEAD` may be anywhere (issue #89). */
+export function elkCommitPresent(elkDir: string, commit: string): boolean {
+  try {
+    execFileSync('git', ['-C', elkDir, 'cat-file', '-e', `${commit}^{commit}`], { stdio: 'ignore' });
+    return true;
+  } catch {
+    // git exits non-zero when the object is absent or `elkDir` is not a checkout: both mean "not present".
+    return false;
+  }
+}
+
+/** Reads each in-scope manifest from the object store at `commit`, never from the working tree (issue #89). */
+export function readManifests(elkDir: string, commit: string): Record<string, string> {
   const manifests: Record<string, string> = {};
   for (const bundle of IN_SCOPE_BUNDLES) {
-    const path = join(elkDir, 'plugins', bundle, 'META-INF', 'MANIFEST.MF');
-    manifests[bundle] = readFileSync(path, 'utf8');
+    const blob = `${commit}:plugins/${bundle}/META-INF/MANIFEST.MF`;
+    manifests[bundle] = execFileSync('git', ['-C', elkDir, 'show', blob], { encoding: 'utf8' });
   }
   return manifests;
 }
 
-export function generateBundleDeps(elkDir: string): BundleDeps {
-  return buildBundleDeps(readManifests(elkDir), readElkCommit(elkDir));
+/** The table for the manifests at `commit`, stamped with that commit. */
+export function generateBundleDeps(elkDir: string, commit: string): BundleDeps {
+  return buildBundleDeps(readManifests(elkDir, commit), commit);
 }
 
 function main(argv: readonly string[]): void {
   const write = argv.includes(WRITE_FLAG);
   const positional = argv.find((arg) => arg !== WRITE_FLAG);
   const elkDir = resolveElkDir(positional, process.env);
-  const output = serializeBundleDeps(generateBundleDeps(elkDir));
+  const output = serializeBundleDeps(generateBundleDeps(elkDir, readPinnedCommit()));
   if (write) {
     writeFileSync(join(REPO_ROOT, COMMITTED_JSON_RELATIVE), output);
   } else {

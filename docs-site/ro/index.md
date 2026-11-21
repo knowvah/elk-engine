@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, în TypeScript pur
@@ -26,16 +26,18 @@ features:
   - title: Nativ în browser, fără dependențe de runtime
     details: Fără Java, fără WASM, fără module încorporate Node în codul bibliotecii. Îl includeți în bundle și îl
       livrați.
-  - title: Pre-alfa
-    details: Lanțul de unelte, arhitectura, shim-urile runtime-ului Java și infrastructura de verificare există. Încă
-      nu a fost portat niciun algoritm de layout.
+  - title: Pre-1.0
+    details: Toți algoritmii de layout ELK prevăzuți sunt portați și verificați față de ELK compilat din surse. Până la
+      1.0, API-ul se mai poate schimba.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alfa
-Încă nu a fost portat niciun algoritm de layout, iar `src/index.ts` nu exportă nimic public. Prima publicare pe npm
-va îngheța API-ul public. Consultați [foaia de parcurs](/guide/roadmap) pentru ce urmează.
+::: warning Pre-1.0
+Toți algoritmii de layout ELK prevăzuți sunt portați și verificați față de ELK compilat din surse; [raportul de
+paritate](/parity) conține rezultatele. Suprafața de export publică este acceptată, dar nu se află încă în
+`src/index.ts`, astfel că punctul de intrare al pachetului nu exportă încă nimic public. Versiunile rămân 0.x până la
+1.0, iar până atunci API-ul se mai poate schimba. Consultați [foaia de parcurs](/guide/roadmap) pentru ce urmează.
 :::
 
 ## Alegeți drumul dumneavoastră

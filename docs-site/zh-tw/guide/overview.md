@@ -1,6 +1,6 @@
 ---
 title: 概覽
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -9,8 +9,8 @@ sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
 
 `@knowvah/elk-engine` 是 [Eclipse Layout Kernel](https://www.eclipse.org/elk)（ELK，Java 圖形版面配置程式庫）的忠實 TypeScript 移植。沒有 Java，也沒有 WASM：版面配置演算法以純 TypeScript 重新實作，並對照 Java 實作進行驗證。
 
-::: warning Pre-alpha
-尚未移植任何版面配置演算法。儲存庫目前包含工具鏈、架構文件、驗證骨架與 Java 執行階段 shim。`src/index.ts` 目前沒有匯出任何公開內容。演算法加入的順序請見[路線圖](/guide/roadmap)（英文）。
+::: warning Pre-1.0
+範圍內的所有 ELK 版面配置演算法均已移植，並已對照從原始碼建置的 ELK 進行驗證；結果請見[一致性報告](/parity)（英文）。公開匯出介面已獲核准，但尚未寫入 `src/index.ts`，因此套件進入點目前沒有匯出任何公開內容。在 1.0 之前，API 仍可能變動。後續計畫請見[路線圖](/guide/roadmap)（英文）。
 :::
 
 ## Java 即是規格
@@ -35,7 +35,7 @@ sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
 
 ## 公開契約
 
-公開 API 將是 ElkGraph 物件模型加上 `ElkGraphUtil` 工廠。ELK JSON 是 I/O 轉接器，而非核心模型。首次發布 npm 套件時將凍結此介面。
+公開 API 是 [#90](https://github.com/knowvah/elk-engine/issues/90) 中核准的匯出介面：ElkGraph 物件模型與 `ElkGraphUtil` 工廠、版面配置引擎、每個演算法的中繼資料提供者及其選項（含選項值的型別），以及 ELK JSON 與文字圖形格式。ELK JSON 是 I/O 轉接器，而非核心模型。[快速入門](/guide/getting-started)（英文）展示了此介面的用法。在 1.0 之前版本號維持 0.x；1.0 將凍結此介面。
 
 ## 執行階段限制
 

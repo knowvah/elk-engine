@@ -1,6 +1,6 @@
 ---
 title: Panoramica
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), la libreria Java per il layout di gr
 WASM: gli algoritmi di layout sono reimplementati in semplice TypeScript e verificati rispetto
 all'implementazione Java.
 
-::: warning Pre-alpha
-Nessun algoritmo di layout è ancora portato. Il repository contiene la toolchain, i documenti di architettura,
-l'impalcatura di verifica e gli shim del runtime Java. `src/index.ts` non esporta ancora nulla di pubblico.
-Per l'ordine in cui arrivano gli algoritmi vedi la [roadmap](/guide/roadmap).
+::: warning Pre-1.0
+Tutti gli algoritmi di layout di ELK previsti sono portati e verificati rispetto all'ELK compilato dai sorgenti; il
+[report di parità](/parity) riporta i risultati. La superficie di esportazione pubblica è accettata, ma non è ancora
+in `src/index.ts`, quindi l'entry del pacchetto non esporta ancora nulla di pubblico. Fino alla 1.0 l'API può ancora
+cambiare. Per quello che arriva dopo vedi la [roadmap](/guide/roadmap).
 :::
 
 ## Il Java è la specifica
@@ -45,8 +46,12 @@ La procedura completa è nella pagina [Conformità](/it/conformance).
 
 ## Contratto pubblico
 
-L'API pubblica sarà il modello a oggetti ElkGraph più le factory `ElkGraphUtil`. ELK JSON è un
-adattatore di I/O, non il modello centrale. La prima pubblicazione su npm congela questa superficie.
+L'API pubblica è la superficie di esportazione accettata in
+[#90](https://github.com/knowvah/elk-engine/issues/90): il modello a oggetti ElkGraph e le factory `ElkGraphUtil`, il
+motore di layout, il provider di metadati e le opzioni di ogni algoritmo con i rispettivi tipi di valore, e i formati
+ELK JSON e grafo testuale. ELK JSON è un adattatore di I/O, non il modello centrale.
+[Per iniziare](/guide/getting-started) mostra la superficie in uso. Le versioni restano 0.x fino alla 1.0; la 1.0
+congela la superficie.
 
 ## Vincoli di runtime
 

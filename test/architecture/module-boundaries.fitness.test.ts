@@ -7,10 +7,11 @@ import {
   REPO_ROOT,
   TS_ROOT,
   buildBundleDeps,
+  elkCommitPresent,
   generateBundleDeps,
   parseManifestHeaders,
   parseRequireBundle,
-  readElkCommit,
+  readPinnedCommit,
   resolveElkDir,
   serializeBundleDeps,
   type BundleDeps,
@@ -325,15 +326,22 @@ describe('src tree respects bundle boundaries', () => {
   });
 });
 
+// Always runs: `tools/bundle-deps.ts --write` stamps the pin, so the stamp and tools/oracle/ELK_COMMIT move together.
+describe('pinned commit', () => {
+  it('committed elkCommit equals tools/oracle/ELK_COMMIT', () => {
+    expect(committed.elkCommit).toBe(readPinnedCommit());
+  });
+});
+
+/** The manifests are read by commit id, so the checkout only has to hold the commit, at any `HEAD` (issue #89). */
 function regenerationSkipReason(): string | undefined {
   const elkDir = resolveElkDir(undefined, process.env);
   if (!existsSync(elkDir)) {
     return `ELK source dir not found: ${elkDir}`;
   }
-  const head = readElkCommit(elkDir);
-  return head === committed.elkCommit
+  return elkCommitPresent(elkDir, committed.elkCommit)
     ? undefined
-    : `ELK HEAD ${head} differs from committed elkCommit ${committed.elkCommit}`;
+    : `ELK checkout ${elkDir} does not contain committed elkCommit ${committed.elkCommit}`;
 }
 
 describe('regeneration', () => {
@@ -341,8 +349,8 @@ describe('regeneration', () => {
   if (reason === undefined) {
     it('regenerated deps equal the committed file', () => {
       const elkDir = resolveElkDir(undefined, process.env);
-      expect(generateBundleDeps(elkDir)).toEqual(committed);
-      expect(serializeBundleDeps(generateBundleDeps(elkDir))).toBe(
+      expect(generateBundleDeps(elkDir, committed.elkCommit)).toEqual(committed);
+      expect(serializeBundleDeps(generateBundleDeps(elkDir, committed.elkCommit))).toBe(
         readFileSync(join(REPO_ROOT, COMMITTED_JSON_RELATIVE), 'utf8'),
       );
     });

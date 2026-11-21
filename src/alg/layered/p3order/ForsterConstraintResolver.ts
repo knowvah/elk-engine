@@ -14,6 +14,13 @@ import { ForsterConstraintResolverConstraintGroup, removeFirst } from './Forster
 import type { IInitializable } from './counting/IInitializable.js';
 
 /**
+ * Java's `Short.MIN_VALUE` (-2^15), the start value of `lastValue` in `findViolatedConstraint`.
+ *
+ * @see https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Short.html#MIN_VALUE
+ */
+const SHORT_MIN_VALUE = -32768;
+
+/**
  * Detects and resolves violated constraints. Inspired by
  *
  * - Michael Forster. A fast and simple heuristic for constrained two-level crossing reduction. In _Graph Drawing_,
@@ -287,11 +294,11 @@ export class ForsterConstraintResolver implements IInitializable {
     let activeGroups: ForsterConstraintResolverConstraintGroup[] | null = null;
 
     // Iterate through the constrained vertices
-    // Java also tracks `lastValue` (start `Short.MIN_VALUE`, then `group.getBarycenter()`) for `assert
-    // group.getBarycenter() != null && group.getBarycenter() >= lastValue;` (ForsterConstraintResolver.java:237-240);
-    // nothing else reads it. Not a devAssert yet: two tests pass barycenters that are not sorted, which the Java
-    // assert rejects under -ea too (issue #113).
+    let lastValue = SHORT_MIN_VALUE;
     for (const group of groups) {
+      // ForsterConstraintResolver.java:239
+      devAssert(() => group.getBarycenter() !== null && group.getBarycenter()! >= lastValue);
+      lastValue = group.getBarycenter()!;
       group.resetIncomingConstraints();
 
       // Find sources of the constraint graph to start the constraints check

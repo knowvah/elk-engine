@@ -22,8 +22,9 @@ GIT_IDENT=(-c user.name=elk-engine-oracle -c user.email=oracle@invalid)
 BUNDLES=(core graph graph.json alg.common alg.layered alg.mrtree alg.radial
   alg.force alg.disco alg.rectpacking alg.spore alg.topdownpacking
   alg.vertiflex graph.text graph.json.text core.debug.grandom)
-# Build outputs ELK does not fully gitignore.
-OUTPUT_FILTER='(^|/)(target|xtend-gen|src-gen)/|oracle-build\.json$|^\?\? (census|sweep)/$'
+# Build outputs ELK does not fully gitignore, and the local caches this repo's
+# scripts write at the worktree root (vector-cache/ by tools/vectors/vector-cache.sh).
+OUTPUT_FILTER='(^|/)(target|xtend-gen|src-gen)/|oracle-build\.json$|^\?\? (census|sweep|vector-cache)/$'
 
 abs_path() { # abs_path <path>; normalizes, parent dir must exist
   (cd "$(dirname "$1")" 2>/dev/null && echo "$PWD/$(basename "$1")") || echo "$1"
@@ -176,4 +177,4 @@ main() {
   echo "oracle build OK in $((SECONDS - start))s (exit 0)"
 }
 
-main "$@"
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then main "$@"; fi

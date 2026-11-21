@@ -1,6 +1,6 @@
 ---
 title: Yleiskatsaus
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,12 @@ Kernelistä](https://www.eclipse.org/elk) (ELK), Java-pohjaisesta graafien asett
 eikä WASMia: asettelualgoritmit on toteutettu uudelleen tavallisella TypeScriptillä ja varmennettu Java-toteutusta
 vasten.
 
-::: warning Pre-alfa
-Yhtään asettelualgoritmia ei ole vielä porttattu. Repositoriossa on työkaluketju, arkkitehtuuridokumentit,
-varmennuksen runko ja Javan ajonaikaiset shimit. `src/index.ts` ei vie vielä mitään julkista.
-Järjestyksen, jossa algoritmit saapuvat, näet [tiekartasta](/guide/roadmap).
+::: warning Pre-1.0
+Kaikki ELKin tavoitteena olleet asettelualgoritmit on porttattu ja varmennettu lähdekoodista käännettyä ELKiä
+vasten; tulokset ovat [pariteettiraportissa](/parity). Julkinen vientipinta on hyväksytty, mutta sitä ei ole vielä
+tiedostossa `src/index.ts`, joten paketin sisääntulomoduuli ei vie vielä mitään julkista. Ennen versiota 1.0 API voi
+vielä muuttua.
+Seuraavaksi tulevat asiat näet [tiekartasta](/guide/roadmap).
 :::
 
 ## Java on määritelmä
@@ -45,8 +47,11 @@ Koko menettely on [yhdenmukaisuus](/fi/conformance)-sivulla.
 
 ## Julkinen sopimus
 
-Julkinen API on ElkGraph-oliomalli sekä `ElkGraphUtil`-tehtaat. ELK JSON on I/O-adapteri, ei ydinmalli.
-Ensimmäinen npm-julkaisu lukitsee tämän pinnan.
+Julkinen API on vientipinta, joka hyväksyttiin tiketissä
+[#90](https://github.com/knowvah/elk-engine/issues/90): ElkGraph-oliomalli ja `ElkGraphUtil`-tehtaat,
+asettelumoottori, kunkin algoritmin metatietojen tarjoaja ja asetukset arvotyyppeineen sekä ELK JSON ja
+tekstimuotoiset graafiformaatit. ELK JSON on I/O-adapteri, ei ydinmalli. [Aloitusopas](/guide/getting-started)
+näyttää pinnan käytössä. Versiot pysyvät 0.x-sarjassa versioon 1.0 asti; 1.0 lukitsee pinnan.
 
 ## Ajonaikaiset rajoitteet
 

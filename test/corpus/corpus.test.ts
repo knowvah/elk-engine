@@ -38,9 +38,9 @@ function makeTempGitRepo(): string {
 }
 
 const manifest = loadManifest();
-const defaultResolution = resolveModelsDir({});
-const modelsDir = 'dir' in defaultResolution ? defaultResolution.dir : undefined;
-const skipReason = 'skip' in defaultResolution ? defaultResolution.skip : '';
+const resolution = resolveModelsDir();
+const modelsDir = 'dir' in resolution ? resolution.dir : undefined;
+const skipReason = 'skip' in resolution ? resolution.skip : '';
 
 describe('resolveModelsDir', () => {
   it('uses <repoRoot>/../../eclipse-elk/elk-models when env is unset', () => {

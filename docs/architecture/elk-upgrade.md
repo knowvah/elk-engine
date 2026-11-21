@@ -120,7 +120,9 @@ stops at the first patch that fails and leaves the new worktree in place).
 
 - **Applies cleanly**: nothing to do.
 - **Merged upstream** (the patch's change is in `$OLD..$NEW`): the patch is dropped. `git am --3way` reports it as
-  already applied or as an empty patch.
+  already applied or as an empty patch. This is how a carried upstream patch
+  ([conformance.md](../conformance.md#carried-upstream-patches)) ends: the port already follows the patched Java, so
+  dropping it changes no ref beyond the `patches` arrays.
 - **Conflicts**: the patch is rebased in the oracle worktree and re-exported with `git format-patch`
   ([`tools/oracle/README.md`](../../tools/oracle/README.md) "Add a seam patch").
 
@@ -146,7 +148,7 @@ Dropping, rebasing or renumbering a patch is the maintainer's decision (AD-3). J
 
    A file that is missing was never produced in this checkout, or was produced by an older oracle build: run its sweep
    of section 9 on the old oracle first (each is skipped when its output is fresh). Then record the JUnit counts of the
-   old oracle with the three commands of section 10, writing `"$B/java-tests.txt"`.
+   old oracle with the commands of section 10, writing `"$B/java-tests.txt"`.
 
 2. **The pin file.**
 
@@ -154,15 +156,19 @@ Dropping, rebasing or renumbering a patch is the maintainer's decision (AD-3). J
    printf '%s\n' "$NEW" >tools/oracle/ELK_COMMIT
    ```
 
-3. **The recorder constants.** Every recorder that stamps its ref holds the sha as `ELK_COMMIT = "…"`; the stamp in a
-   vector ref comes from this constant, not from the oracle. Change all of them in one step and check that none is left:
+3. **The recorders: nothing to edit.** A recorder that stamps its ref holds no copy of the sha. Its script reads
+   `tools/oracle/ELK_COMMIT`, checks that the oracle was built from it, and passes it to the recorder as the system
+   property `elk.commit`; the stamp in a vector ref is that property (issue #96). A recorder started without it refuses
+   before it records a row. `test/architecture/elk-pin.fitness.test.ts` fails when the pin, or any quoted sha, is
+   written into a recorder again. Check that the old pin is left nowhere under `tools/` but the `.melk` stamp, which
+   section 6 rewrites:
 
    ```sh
-   git grep -l "$OLD" -- tools/vectors | xargs sed -i '' "s/$OLD/$NEW/"
-   git grep -c "$OLD" -- tools/vectors
+   git grep -c "$OLD" -- tools
    ```
 
-   The second command prints nothing. The edit changes each recorder's source, which is part of its cache salt.
+   It prints `tools/melk/sources/manifest.json:1` only. No recorder source changes with the pin, so the step leaves the
+   vector cache alone; the build of step 5 is what turns it cold (last hazard below).
 
 4. **Remove the old oracle worktree** (a real move only; a rehearsal builds a second one, section 14). The vector cache,
    the sweep outputs and the census cache under it go with it:
@@ -189,9 +195,9 @@ Hazards:
   `~/.m2/repository` are then the new commit's. Anything else that resolves them (an ELK fix worktree's test run) sees
   the new jars. A rehearsal redirects the repository (section 14).
 - **Stale worktree (issue #85).** `build.sh` exits `2` on an existing worktree that holds an untracked directory other
-  than build output, `census/` and `sweep/`; `vector-cache/` is such a directory. Rebuilding in place needs the
-  environment-scoped excludes file described in `.agent-notes/text-sizing-seam.md`; a move removes the worktree first
-  (step 4), so it does not meet this.
+  than build output and the cache roots `census/`, `sweep/` and `vector-cache/`. A rebuild in place keeps those three
+  (the vector cache still runs cold after it, see the last hazard below); run output in any other directory at the
+  worktree root has to move under `sweep/` first. A move removes the worktree first (step 4), so it does not meet this.
 - **Maven series.** When the net diff bumps Tycho, the build is the test of whether `MAVEN_SERIES` still fits. A failure
   to start is diagnosed from `.oracle-build.log` (conformance.md § 5, first row); `build.sh` is never edited to force a
   build without a stated mechanism. Tycho 4.0.13 starts and builds on Maven 3.9.11.
@@ -211,7 +217,7 @@ option classes under `src/` come from them.
 
 ```sh
 git -C "$ELK_SOURCE_DIR" diff --stat "$OLD" "$NEW" -- '*.melk'
-tools/melk/sync-sources.sh                       # needs $ELK_SOURCE_DIR checked out at $NEW
+tools/melk/sync-sources.sh                       # needs $NEW present in $ELK_SOURCE_DIR, at any HEAD
 git diff --stat tools/melk/sources
 tools/vectors/metadata-vectors.sh "$REFS"
 git diff --stat "$REFS/metadata.json"
@@ -225,12 +231,12 @@ npx vitest run test/melk
 | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | only `manifest.json` (`elkCommit`) and the stamp of `metadata.json` change | no metadata change; `melk:generate` leaves `src/` untouched                                                                                                                                                                                                                                                                                                                              |
 | a `.melk` copy or `metadata.json` rows change                              | an option, default or algorithm changed upstream: the regenerated `src/` files are the port of that change; review them against the Java and journal them (section 11). `npm run melk:generate` without arguments writes only `Core` and `Labels`: name the changed bundles (`npm run melk:generate -- <Bundle>...`, the `.melk` file names), or the freshness tests of `test/melk` fail |
-| `sync-sources.sh` dies with `ELK checkout is at …`                         | `$ELK_SOURCE_DIR` is not checked out at `$NEW`: the script compares `HEAD` with the pin although it reads the blobs by commit id (issue #89). Check the commit out there (maintainer), or point `ELK_SOURCE_DIR` at a checkout whose `HEAD` is `$NEW`                                                                                                                                    |
+| `sync-sources.sh` dies with `ELK checkout … does not contain …`            | `$NEW` is not in `$ELK_SOURCE_DIR`'s object store. The script reads the blobs by commit id, so `HEAD` may be anywhere, but the commit has to be there: fetch it there (maintainer), or point `ELK_SOURCE_DIR` at a checkout that has it                                                                                                                                                  |
 | `test/melk/sources.test.ts` fails on the pinned commit                     | `sync-sources.sh` has not run since the bump                                                                                                                                                                                                                                                                                                                                             |
 
 `test/architecture/bundle-deps.json` stamps the commit as well: `npx tsx tools/bundle-deps.ts --write` rewrites it from
-the `Require-Bundle` headers at `$ELK_SOURCE_DIR`, and a diff beyond `elkCommit` is a changed bundle dependency (issue
-#89 covers the check that is skipped while the checkout is not at the pin).
+the `Require-Bundle` headers it reads at `tools/oracle/ELK_COMMIT` from `$ELK_SOURCE_DIR`'s object store, whatever is
+checked out there, and stamps that commit. A diff beyond `elkCommit` is a changed bundle dependency.
 
 ## 7. JVM vectors {#elk-upgrade-vectors}
 
@@ -293,6 +299,21 @@ The evidence modes (`radial-vectors.sh --unpinned`, the `*_UNPINNED=1` variables
 recorders, the `--sweep` and `--dump` modes of the layered recorders) are diagnosis aids, never a ref.
 `ELK_VECTORS_CACHE=off` runs a script cold and touches no cache.
 
+**Multi-file recorders.** A recorder is one source file, `tools/vectors/<Program>.java`, which the JDK's source launcher
+compiles and runs (JDK 21's launcher takes one file), unless a directory `tools/vectors/<Program>/` sits beside it.
+That directory makes the program multi-file: `tools/vectors/java-program.sh` (`jp_run`, which `vector-cache.sh` sources
+for every launch) compiles `<Program>.java` and every `*.java` under the directory with `javac` into a temporary
+directory, runs the class, and removes the directory. `LayeredLoopsVectors` is the one multi-file recorder (issue #50):
+its helper sources are in `tools/vectors/LayeredLoopsVectors/`, and the header of the entry file says how they are cut.
+
+- Run a multi-file recorder only through its script: `java <Program>.java` no longer compiles.
+  `tools/vectors/layered-loops-vectors.sh` passes `--sweep`, `--dump` and `--plan-dump` to the program.
+- The cache salt and the loops sweep's stamp cover every source of the program and `java-program.sh`.
+- Before splitting another recorder, check two things. Its script and its sweep script must start it through `jp_run`
+  (a script that calls `java` itself still names one file). And if its script does not pin `-XX:hashCode=2`, the split
+  must be shown to leave its refs byte-identical: `javac` moves the compile out of the recording JVM, which shifts the
+  identity hashes an unpinned recorder may read (`.agent-notes/recorder-identity-hash.md`).
+
 ### 7.2 Text measurement: the TX1 re-proof and the AWT remeasure {#elk-upgrade-vectors-text}
 
 Row 10 patched only the test bundle `org.eclipse.elk.alg.test`, on the proof that no plugin measures text (TX1,
@@ -324,24 +345,21 @@ to show that (`git diff --exit-code "$REFS/layered-label-metrics.json"`).
 These depend on the JDK, or on a third-party bundle whose version ELK's target platform chooses. Rerun them on a pin
 move to show the refs do not change; a diff means the JDK or the bundle version moved, not ELK.
 
-| Command                                                                    | Refs written under `test/golden/refs/java/`                                                                     | Depends on                    |
-| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `tools/vectors/java-vectors.sh "$REFS"`                                    | `random.json`, `lang.json`, `numeric.json`, `hash.json`, `text.json`, `random-setseed.json`, `collections.json` | JDK 21                        |
-| `java tools/vectors/CoreJdkVectors.java "$REFS"`                           | `awt.json`, `regex.json`, `character.json`, `regex-boundary.json`, `stream-sum.json`                            | JDK 21 (no script)            |
-| `java -cp "$GUAVA:$FAILUREACCESS" tools/vectors/GuavaVectors.java "$REFS"` | `guava.json`                                                                                                    | Guava 33.3.0-jre (no script)  |
-| `tools/vectors/gson-vectors.sh "$REFS"`                                    | `gson.json`                                                                                                     | Gson 2.11.0 from the p2 cache |
-| `tools/vectors/layered-label-metrics-vectors.sh "$REFS"`                   | `layered-label-metrics.json`                                                                                    | JDK 21 AWT, macOS arm64       |
+| Command                                                  | Refs written under `test/golden/refs/java/`                                                                     | Depends on                         |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `tools/vectors/java-vectors.sh "$REFS"`                  | `random.json`, `lang.json`, `numeric.json`, `hash.json`, `text.json`, `random-setseed.json`, `collections.json` | JDK 21                             |
+| `tools/vectors/core-jdk-vectors.sh "$REFS"`              | `awt.json`, `regex.json`, `character.json`, `regex-boundary.json`, `stream-sum.json`                            | JDK 21                             |
+| `tools/vectors/guava-vectors.sh "$REFS"`                 | `guava.json`                                                                                                    | Guava 33.3.0-jre from the p2 cache |
+| `tools/vectors/gson-vectors.sh "$REFS"`                  | `gson.json`                                                                                                     | Gson 2.11.0 from the p2 cache      |
+| `tools/vectors/layered-label-metrics-vectors.sh "$REFS"` | `layered-label-metrics.json`                                                                                    | JDK 21 AWT, macOS arm64            |
 
-`GuavaVectors.java` takes the two Guava jars of the p2 cache:
-
-```sh
-P2="${P2_BUNDLES:-$HOME/.m2/repository/p2/osgi/bundle}"
-GUAVA="$(ls "$P2"/com.google.guava/*/com.google.guava-*.jar | grep -v sources | sort -V | tail -n1)"
-FAILUREACCESS="$(ls "$P2"/com.google.guava.failureaccess/*/*.jar | grep -v sources | sort -V | tail -n1)"
-```
-
-The recorder's header names the Guava version it was written against; when the p2 cache holds another one after the
-build, the target platform moved it, and the shims under `src/guava/` are re-proved against the new version.
+`tools/vectors/core-jdk-vectors.sh` and `tools/vectors/guava-vectors.sh` run the commands the headers of
+`CoreJdkVectors.java` and `GuavaVectors.java` name, with no extra JVM flag (the refs were recorded that way; neither
+program stamps a commit). The Guava script finds the `com.google.guava` and `com.google.guava.failureaccess` jars in
+the p2 cache and refuses unless their `Bundle-Version` is `33.3.0.jre` and `1.0.2`, the versions the ref was recorded
+with; the recorder's header names the same Guava version. When the p2 cache holds another one after the build, the
+target platform moved it: the script's two version constants follow, and the shims under `src/guava/` are re-proved
+against the new version.
 
 ## 8. Goldens and other oracle-recorded files {#elk-upgrade-goldens}
 
@@ -457,21 +475,21 @@ script header) on both oracles.
 
 `tools/oracle/java-tests.sh <fully.qualified.TestClass>...` runs JUnit 4 classes on the oracle, one JVM per class, and
 prints `<class> runs=<n> failures=<n>`. The suites that read models need `MODELS_REPO`. The ported classes are the ones
-a TS test cites by path; list them and run those of the two bundles the script carries (`alg.layered.test`, `alg.test`):
+a TS test cites by path, as `.java` or as `.xtend` (the `graph.json.test` suites). The script carries every test bundle
+so cited, and `test/architecture/java-tests-bundles.fitness.test.ts` fails when a port cites one it does not carry, so
+one call runs them all:
 
 ```sh
-git grep -hoE 'org\.eclipse\.elk\.[a-z.]+test[a-z.]*/src/[A-Za-z0-9_/]+Test\.java' -- src test | sort -u >"$TMPDIR/ported-suites.txt"
-grep -E '^org\.eclipse\.elk\.alg\.(layered\.)?test/' "$TMPDIR/ported-suites.txt" |
-  sed -E 's|^[^/]+/src/||; s|\.java$||; s|/|.|g' >"$TMPDIR/ported-classes.txt"
+git grep -hoE 'org\.eclipse\.elk\.[a-z.]+test[a-z.]*/src/[A-Za-z0-9_/]+Test\.(java|xtend)' -- src test | sort -u |
+  sed -E 's#^[^/]+/src/##; s#\.(java|xtend)$##; s#/#.#g' >"$TMPDIR/ported-classes.txt"
 MODELS_REPO="$ELK_MODELS_DIR" nice -n 10 tools/oracle/java-tests.sh $(cat "$TMPDIR/ported-classes.txt") | tee "$TMPDIR/java-tests.txt"
 ```
 
-About 8 minutes for the 100 layered classes (51,299 runs at the `8bca22f4` pin).
-`diff "$B/java-tests.txt" <(grep runs= "$TMPDIR/java-tests.txt")` compares it with the old oracle's run of section 5
-step 1: a class whose `runs` or `failures` changed is a content finding (section 11). The 32 ported classes of the ten
-other test bundles (`alg.common.test`, `core.test`, `graph.json.test` and the tree, force and packing bundles; issue
-#97) need a scratch copy of the script with the bundle added to `TEST_BUNDLES`, as [alg-trees.md](alg-trees.md) and
-[alg-force-disco.md](alg-force-disco.md) show; never edit the script in place for a run.
+About 7 minutes for the 143 classes of twelve test bundles (51,577 runs at the `8bca22f4` pin, 51,299 of them in the
+100 `alg.layered.test` classes). `diff "$B/java-tests.txt" <(grep runs= "$TMPDIR/java-tests.txt")` compares it with
+the old oracle's run of section 5 step 1: a class whose `runs` or `failures` changed is a content finding (section 11).
+An old-oracle file recorded before issue #97, with the two-bundle commands this section had then, holds only the
+layered rows, so the 43 rows of the eleven other bundles show as additions the first time.
 
 Then the TS ports of the same suites over the whole corpus rather than the vendored subset:
 
@@ -519,10 +537,12 @@ Two tool-side cases come with a Java diff and are checked before the re-record i
   of #99, the `scanlineHitboxes` row of #104).
 
 Tests that compare a stamp with `tools/oracle/ELK_COMMIT` fail between the bump and the re-record and pass after it:
-`test/melk/sources.test.ts`, `test/corpus/census.test.ts`, `test/corpus/elkt-sweep.test.ts`,
-`test/corpus/elkj-sweep.test.ts`, `test/golden/oracle-refs.test.ts`, `test/golden/algorithm-refs.test.ts`, the golden
-tests of the layered, tree, force-disco and packing sets, `test/docs/examples.test.ts`, and the parity-report tests. A
-failure of any other kind after the re-record is content.
+`test/melk/sources.test.ts`, `test/melk/sync-sources.test.ts` (its live `--check` case),
+`test/architecture/module-boundaries.fitness.test.ts` (its `pinned commit` case, until `bundle-deps.ts --write`),
+`test/corpus/census.test.ts`, `test/corpus/elkt-sweep.test.ts`, `test/corpus/elkj-sweep.test.ts`,
+`test/golden/oracle-refs.test.ts`, `test/golden/algorithm-refs.test.ts`, the golden tests of the layered, tree,
+force-disco and packing sets, `test/docs/examples.test.ts`, and the parity-report tests. A failure of any other kind
+after the re-record is content.
 
 **Port Java diffs** (a real move only; a rehearsal stops at the list). For each changed `.java` file of an in-scope
 bundle from section 3: read the Java diff, port it into the matching file under `src/` by the rules of CLAUDE.md ("The
@@ -610,20 +630,9 @@ the scratch directory is deleted.
    original checkout before the clone is made, and step 4 is skipped: the shared oracle stays, and `build.sh` adds a
    second worktree at `$R/oracle`. Nothing is committed in the clone; `git diff` there is the diff list.
 
-   Two test files resolve the models directory from the default relative path only and ignore `ELK_MODELS_DIR`
-   (`test/corpus/census.test.ts`, `test/corpus/corpus.test.ts`; issue #98), so in the clone the census drift test and
-   the golden-input tests skip. To run them, make the clone's default path exist for the duration of the test run and
-   remove it again:
-
-   ```sh
-   mkdir "${TMPDIR%/}/eclipse-elk" && ln -s "$ELK_MODELS_DIR" "${TMPDIR%/}/eclipse-elk/elk-models"
-   (cd "$R/repo" && npx vitest run test/corpus/census.test.ts test/corpus/corpus.test.ts)
-   rm "${TMPDIR%/}/eclipse-elk/elk-models" && rmdir "${TMPDIR%/}/eclipse-elk"
-   ```
-
-   Other differences between the clone's suite and the original checkout's are expected: the bundle-deps regeneration
-   test runs in the clone (its pin equals the ELK checkout's `HEAD`) and is skipped in the original (issue #89); a sweep
-   consumer test runs wherever its sweep output exists.
+   Some differences between the clone's suite and the original checkout's are expected: a sweep consumer test runs
+   wherever its sweep output exists. The bundle-deps regeneration test is not one of them: it reads the manifests by
+   commit id, so it runs in the clone and in the original once the ELK checkout each uses holds its pin (issue #89).
 
 6. **Checks after the build.**
 

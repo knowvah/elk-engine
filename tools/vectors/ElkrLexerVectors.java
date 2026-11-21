@@ -28,13 +28,23 @@ import org.eclipse.elk.core.debug.grandom.parser.antlr.internal.InternalGRandomL
 import org.eclipse.elk.core.debug.grandom.parser.antlr.internal.InternalGRandomParser;
 
 public class ElkrLexerVectors {
-    private static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    private static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     private static final String XTEXT_VERSION = "2.36.0";
     private static final String CASES = "elkr-lexer-cases.txt";
     private static final String OUT = "grandom-lexer.json";
     private static final String LEX = "lex ";
 
     public static void main(String[] args) throws IOException {
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         List<Object> rows = new ArrayList<>();
         Set<String> ids = new HashSet<>();
         for (String line : Files.readAllLines(Path.of(args[1], CASES), StandardCharsets.UTF_8)) {
@@ -43,7 +53,7 @@ public class ElkrLexerVectors {
             }
         }
         StringBuilder out = new StringBuilder("{\n");
-        out.append("  \"elkCommit\": \"").append(ELK_COMMIT).append("\",\n");
+        out.append("  \"elkCommit\": \"").append(elkCommit()).append("\",\n");
         out.append("  \"xtextVersion\": \"").append(XTEXT_VERSION).append("\",\n");
         out.append("  \"tokens\": [\n");
         for (int i = 0; i < rows.size(); i++) {

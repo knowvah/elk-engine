@@ -40,7 +40,16 @@ import org.eclipse.elk.core.util.Pair;
 import org.eclipse.elk.graph.properties.Property;
 
 public class MetaDataVectors {
-    private static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    private static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     private static final String T = "t", V = "v", C = "c", ID = "id", DEFAULT = "default", VALUE = "value";
     private static final String CALL = "call", DATA = "data", SOURCE = "source", TARGET = "target";
     private static final String INDENT = "  ";
@@ -70,7 +79,7 @@ public class MetaDataVectors {
         Path dir = Path.of(args[0]);
         Files.createDirectories(dir);
         Map<String, Object> root = new TreeMap<>();
-        root.put("elkCommit", ELK_COMMIT);
+        root.put("elkCommit", elkCommit());
         root.put("providers", providers());
         root.put("service", service());
         StringBuilder out = new StringBuilder();

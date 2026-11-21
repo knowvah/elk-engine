@@ -156,7 +156,16 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 
 public class LayeredRoutingVectors {
-    static final String ELK_COMMIT = "8bca22f4afa3371562d2f702d59929818f7f7b71";
+    /** The pinned ELK commit: the recorder script passes tools/oracle/ELK_COMMIT as -Delk.commit (issue #96). */
+    static String elkCommit() {
+        String commit = System.getProperty("elk.commit");
+        if (commit == null || !commit.matches("[0-9a-f]{40}")) {
+            throw new IllegalStateException("system property elk.commit is " + commit
+                + ", not a 40-digit sha; run this recorder through its tools/vectors/*-vectors.sh script");
+        }
+        return commit;
+    }
+
     static final String OUTPUT_MODELS = "layered-routing.json", OUTPUT_STEPS = "layered-routing-steps.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed", REPO_PREFIX = "repo:";
     static final String PTOLEMY = "test/golden/inputs/realworld/ptolemy/", LAYERED_TESTS = "test/golden/inputs/tests/layered/";
@@ -2734,6 +2743,61 @@ b6ced8d3f6be2d7f744b6d3496d6c76167ba6ba91b2d7ab9992e5bbc160db031  repo:test/gold
         String ro = rr(spl, SPLINES_MODE, "SLOPPY", "COMPACTION_POST_COMPACTION_STRATEGY", "LEFT");
         site(out, "FinalSplineBendpoints/compaction/near", gLong(ro), null, chain("", spl, FSBC, null));
         site(out, "FinalSplineBendpoints/compaction/far", gFan(ro), null, chain("", spl, FSBC, null));
+        splitterArms(out);
+    }
+
+    /** Two 30 x 400 FIXED_POS nodes L (x 0) and R (x 100) at y 0 with EAST / WEST ports p0.. at the given y (4 x 4: a segment coordinate is y + 2). */
+    static String tall(double[] ly, double[] ry, String edges) {
+        String[] kids = new String[2];
+        for (int col = 0; col < 2; col++) {
+            String id = col == 0 ? "L" : "R";
+            double[] ys = col == 0 ? ly : ry;
+            List<String> ports = new ArrayList<>();
+            for (int i = 0; i < ys.length; i++) {
+                ports.add(pj(id, i, col == 0 ? E_ : W_, new double[] {col == 0 ? 30 : -4, ys[i]}));
+            }
+            kids[col] = sz(nodeJson(id, new double[] {100 * col, 0}, ropts("PORT_CONSTRAINTS", FP), "\"ports\":[" + String.join(",", ports) + "]"), 30, 400);
+        }
+        return flat(rr(EdgeRouting.ORTHOGONAL), join(kids), eds(edges.split(" ")));
+    }
+
+    static double[] thrice(double... v) {
+        double[] r = new double[3 * v.length];
+        for (int i = 0; i < r.length; i++) {
+            r[i] = v[i % v.length];
+        }
+        return r;
+    }
+
+    /** n edges L.p<i> > R.p<i> (straight), or the pairs L.p<2i> > R.p<2i+1>, L.p<2i+1> > R.p<2i> (crossed). */
+    static String pairs(int n, boolean crossed) {
+        List<String> e = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            e.add("L.p" + i + ">R.p" + (crossed ? i ^ 1 : i));
+        }
+        return String.join(" ", e);
+    }
+
+    /**
+     * layered-evidence-gaps T3 (#49): the three HyperEdgeSegmentSplitter arms plans/layered-edge-routing/unreached.md left Medium, each reached
+     * through plan A (HyperEdgeSegmentSplitter.java:228 no reachable free area; :398 / :404 a new area dropped by rounding).
+     * noFreeArea: two segments with equal incoming and equal outgoing coordinates (unbounded: no other coordinate, so the threshold is
+     * 0.2 x Double.MAX_VALUE; finite: a third pair 200 below; consumed: three identical critical 2-cycles use up the only area).
+     * areaStartRounding / areaEndRounding: a critical 2-cycle whose coordinates (55.4, 218.64999999999998 against 186, 22.750000000000004;
+     * negated for the end arm) make the used area [88.05, 153.35] exactly four thresholds (32.65) wide while fl(centre - T) is one ulp below
+     * its start (resp. fl(centre + T) one ulp above its end); consumed: three such cycles, where the bend points depend on the dropped area.
+     */
+    static void splitterArms(List<Spec> out) {
+        EdgeRouting ortho = EdgeRouting.ORTHOGONAL;
+        String c = "HyperEdgeSegmentSplitter/";
+        double[] sl = {53.4, 216.64999999999998}, sr = {20.750000000000004, 184}, el = {-57.4, -220.64999999999998}, er = {-24.750000000000004, -188};
+        site(out, c + "noFreeArea/unbounded", tall(new double[] {13, 13}, new double[] {68, 68}, pairs(2, false)), null, planA(ortho, "P5"));
+        site(out, c + "noFreeArea/finite", tall(new double[] {13, 13, 213}, new double[] {18, 18, 218}, pairs(3, false)), null, planA(ortho, "P5"));
+        site(out, c + "noFreeArea/consumed", tall(thrice(10, 110), thrice(110, 10), pairs(6, false)), null, planA(ortho, "P5"));
+        site(out, c + "areaStartRounding/single", tall(sl, sr, pairs(2, true)), null, planA(ortho, "P5"));
+        site(out, c + "areaStartRounding/consumed", tall(thrice(sl), thrice(sr), pairs(6, true)), null, planA(ortho, "P5"));
+        site(out, c + "areaEndRounding/single", tall(el, er, pairs(2, true)), null, planA(ortho, "P5"));
+        site(out, c + "areaEndRounding/consumed", tall(thrice(el), thrice(er), pairs(6, true)), null, planA(ortho, "P5"));
     }
 
     /** calls/<id>: importGraph of the inline graph, then the call. */
@@ -2828,7 +2892,7 @@ b6ced8d3f6be2d7f744b6d3496d6c76167ba6ba91b2d7ab9992e5bbc160db031  repo:test/gold
     static String fileText(Map<String, Integer> counts, List<Row> rows) {
         StringBuilder out = new StringBuilder("{\n  \"jdk\": ");
         str(out, System.getProperty("java.version"));
-        out.append(",\n  \"oracle\": \"").append(ELK_COMMIT).append("\",\n  \"rowCounts\": {");
+        out.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"rowCounts\": {");
         int k = 0;
         for (Map.Entry<String, Integer> e : counts.entrySet()) {
             out.append(k++ == 0 ? "" : ", ").append('"').append(e.getKey()).append("\": ").append(e.getValue());
@@ -2991,6 +3055,7 @@ b6ced8d3f6be2d7f744b6d3496d6c76167ba6ba91b2d7ab9992e5bbc160db031  repo:test/gold
     }
 
     public static void main(String[] args) throws Exception {
+        elkCommit(); // refuse before the first row is recorded, not at the stamp, when the pin was not passed
         // ELK keeps LNodes in HashSets/HashMaps: LNode has no hashCode, so the iteration order follows the identity
         // hash and changes from run to run. AD-10 ports such collections in insertion order, so the oracle runs with
         // a constant identity hash (-XX:hashCode=2, set by the script): every key lands in one bucket and iterates in

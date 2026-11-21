@@ -1,6 +1,6 @@
 ---
 title: Översikt
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -11,10 +11,11 @@ sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
 Kernel](https://www.eclipse.org/elk) (ELK), Java-biblioteket för grafayout. Det finns ingen Java och ingen
 WASM: layoutalgoritmerna är omimplementerade i vanlig TypeScript och verifierade mot Java-implementationen.
 
-::: warning Pre-alfa
-Ännu är ingen layoutalgoritm portad. Repositoryt innehåller verktygskedjan, arkitekturdokumenten,
-verifieringsställningen och Java-runtime-shimmarna. `src/index.ts` exporterar ännu inget publikt.
-Se [färdplanen](/guide/roadmap) för i vilken ordning algoritmerna kommer.
+::: warning Pre-1.0
+Alla ELK-layoutalgoritmer som ingår är portade och kontrollerade mot ELK byggt från källkod;
+[paritetsrapporten](/parity) har resultaten. Den publika exportytan är godkänd men ännu inte i
+`src/index.ts`, så paketets ingång exporterar ännu inget publikt. Fram till 1.0 kan API:et fortfarande ändras.
+Se [färdplanen](/guide/roadmap) för vad som kommer härnäst.
 :::
 
 ## Java är specifikationen
@@ -44,8 +45,12 @@ proceduren finns på sidan [överensstämmelse](/sv/conformance).
 
 ## Publikt kontrakt
 
-Det publika API:et blir ElkGraph-objektmodellen plus fabrikerna i `ElkGraphUtil`. ELK JSON är en
-I/O-adapter, inte kärnmodellen. Den första npm-publiceringen fryser denna yta.
+Det publika API:et är den exportyta som godkänts i
+[#90](https://github.com/knowvah/elk-engine/issues/90): ElkGraph-objektmodellen och
+fabrikerna i `ElkGraphUtil`, layoutmotorn, varje algoritms metadataleverantör och alternativ med
+deras värdetyper samt ELK JSON och de textuella grafformaten. ELK JSON är en I/O-adapter, inte
+kärnmodellen. [Kom igång](/guide/getting-started) visar ytan i bruk. Versionerna förblir 0.x
+fram till 1.0; 1.0 fryser ytan.
 
 ## Körtidsbegränsningar
 

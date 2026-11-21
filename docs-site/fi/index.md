@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, puhtaalla TypeScriptillä
@@ -25,16 +25,19 @@ features:
       1e-6:n tarkkuudella.
   - title: Selainnatiivi, ei ajonaikaisia riippuvuuksia
     details: Ei Javaa, ei WASMia, ei Node-sisäänrakennettuja moduuleja kirjastokoodissa. Niputa ja julkaise.
-  - title: Pre-alfa
-    details: Työkaluketju, arkkitehtuuri, Javan ajonaikaiset shimit ja varmennuksen runko ovat olemassa.
-      Yhtään asettelualgoritmia ei ole vielä porttattu.
+  - title: Pre-1.0
+    details: Kaikki ELKin tavoitteena olleet asettelualgoritmit on porttattu ja varmennettu lähdekoodista käännettyä
+      ELKiä vasten. Ennen versiota 1.0 API voi vielä muuttua.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alfa
-Yhtään asettelualgoritmia ei ole vielä porttattu, eikä `src/index.ts` vie mitään julkista. Ensimmäinen npm-julkaisu
-lukitsee julkisen API:n. Seuraavaksi tulevat asiat löydät [tiekartasta](/guide/roadmap).
+::: warning Pre-1.0
+Kaikki ELKin tavoitteena olleet asettelualgoritmit on porttattu ja varmennettu lähdekoodista käännettyä ELKiä vasten;
+tulokset ovat [pariteettiraportissa](/parity). Julkinen vientipinta on hyväksytty, mutta sitä ei ole vielä
+tiedostossa `src/index.ts`, joten paketin sisääntulomoduuli ei vie vielä mitään julkista. Versiot pysyvät 0.x-sarjassa
+versioon 1.0 asti, ja siihen saakka API voi vielä muuttua. Seuraavaksi tulevat asiat löydät
+[tiekartasta](/guide/roadmap).
 :::
 
 ## Valitse polkusi

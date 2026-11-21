@@ -15,7 +15,7 @@ import { decodeHex, encodeHex, type HexPair, type HexQuad } from './layered-fram
 import { elementAt } from './layered-phase-replay-dump.js';
 import { normalise } from './layered-phase-replay-normalise.js';
 import { runSteps, type Factories } from './layered-phase-replay-ops.js';
-import { importRow } from './layered-phase-replay-rows.js';
+import { importTarget, prepareRoot } from './layered-phase-replay-rows.js';
 import {
   CALL_OP,
   P5_EDGE_ROUTING,
@@ -27,6 +27,7 @@ import {
   type RoutingFileRow,
   type RoutingRow,
 } from './layered-routing-replay-rows.js';
+import { withEndLabelRule } from './unsized-end-labels.js';
 
 const PHASE_SEPARATOR = '/';
 const PHASES: ReadonlySet<string> = new Set([
@@ -54,14 +55,21 @@ function runPrefixEntry(entry: string, graph: LGraph, factories: Factories): voi
   runOn(factories.createPhase(phase, entry.slice(at + PHASE_SEPARATOR.length)), graph);
 }
 
-/** Replays a model row: import, `normalise`, then the recorded `prefix` in order (cf. `runPlacementPrefix`). */
+/**
+ * Replays a model row: import, `normalise`, then the recorded `prefix` in order (cf. `runPlacementPrefix`). The prefix
+ * of a model with an unsized end label runs with assertions off, as the recording JVM did (`withEndLabelRule`).
+ */
 export function runRoutingPrefix(row: RoutingRow, factories: Factories): LGraph {
-  if (row.prefix === null) {
+  const { prefix } = row;
+  if (prefix === null) {
     throw new Error(`row ${row.id} has no prefix`);
   }
-  const { graph } = importRow(row);
+  const root = prepareRoot(row);
+  const graph = importTarget(root, row.target);
   normalise(graph);
-  row.prefix.forEach((entry) => runPrefixEntry(entry, graph, factories));
+  withEndLabelRule(root, () => {
+    prefix.forEach((entry) => runPrefixEntry(entry, graph, factories));
+  });
   return graph;
 }
 

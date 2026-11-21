@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { assertionErrorOf } from '../../../../test/helpers/assertion-error-of.js';
+import { withAssertions } from '../../../../test/helpers/with-assertions.js';
 import { addLayer, addNode, addPort, connect } from '../../../../test/helpers/lgraph-builders.js';
 import { dumpLGraph } from '../../../../test/helpers/layered-framework-replay.js';
 import { compareExpected, compareFullDump } from '../../../../test/helpers/layered-phase-replay-compare.js';
@@ -286,9 +288,23 @@ describe('HighDegreeNodeLayeringProcessor (deep trees, B8)', () => {
     const processor = new HighDegreeNodeLayeringProcessor();
     const root = graph.getLayers()[2]!.getNodes()[0]!;
     const tooFew = [new Layer(graph)];
-    expect(() => {
+    // as a JVM without -ea: under -ea `assert layers.size() > 0` fires before `layers.get(0)` (issue #113, row 40)
+    withAssertions(false, () => {
+      expect(() => {
+        processor['moveTree'](root, (n) => n.getIncomingEdges(), tooFew);
+      }).toThrow(/out of bounds/);
+    });
+  });
+
+  it('throws AssertionError under -ea when a tree is deeper than its layers (HighDegreeNodeLayeringProcessor.java:255)', () => {
+    const { graph } = deepIncomingPath(3);
+    const processor = new HighDegreeNodeLayeringProcessor();
+    const root = graph.getLayers()[2]!.getNodes()[0]!;
+    const tooFew = [new Layer(graph)];
+    const error = assertionErrorOf(() => {
       processor['moveTree'](root, (n) => n.getIncomingEdges(), tooFew);
-    }).toThrow(/out of bounds/);
+    });
+    expect(error.message).toBe('');
   });
 });
 

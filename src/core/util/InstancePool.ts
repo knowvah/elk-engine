@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../java/lang/DevAssert.js';
 import { LinkedList } from '../../java/util/LinkedList.js';
 import type { IFactory } from './IFactory.js';
 
@@ -33,8 +34,7 @@ export class InstancePool<T> {
    * @param limit the maximal number of instances that shall be kept in the pool
    */
   constructor(factory: IFactory<T>, limit: number = InstancePool.INFINITE) {
-    // Java: `assert thefactory != null;` (InstancePool.java:59). Not a devAssert yet: tests build a
-    // `LayoutAlgorithmData` without a provider factory, which the Java assert rejects under -ea too (issue #113).
+    devAssert(() => factory != null); // InstancePool.java:59
     this.factory = factory;
     this.limit = limit;
   }

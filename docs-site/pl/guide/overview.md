@@ -1,6 +1,6 @@
 ---
 title: Przegląd
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), javowej biblioteki do layoutu grafó
 WASM: algorytmy layoutu są zaimplementowane od nowa w zwykłym TypeScripcie i zweryfikowane względem implementacji
 w Javie.
 
-::: warning Pre-alpha
-Żaden algorytm layoutu nie jest jeszcze zportowany. Repozytorium zawiera toolchain, dokumenty architektury, szkielet
-weryfikacji i shimy środowiska uruchomieniowego Javy. `src/index.ts` nie eksportuje jeszcze niczego publicznego.
-Kolejność, w jakiej pojawią się algorytmy, opisuje [plan rozwoju](/guide/roadmap).
+::: warning Pre-1.0
+Wszystkie algorytmy layoutu ELK objęte zakresem projektu są zportowane i sprawdzone względem ELK zbudowanego
+ze źródeł; wyniki zawiera [raport zgodności](/parity). Publiczna powierzchnia eksportu jest zaakceptowana, ale nie
+ma jej jeszcze w `src/index.ts`, więc punkt wejścia pakietu nie eksportuje jeszcze niczego publicznego. Do wersji 1.0
+API może się jeszcze zmienić. Co dalej, opisuje [plan rozwoju](/guide/roadmap).
 :::
 
 ## Java jest specyfikacją
@@ -45,8 +46,12 @@ Pełna procedura znajduje się na stronie [Zgodność](/pl/conformance).
 
 ## Publiczny kontrakt
 
-Publiczne API będzie modelem obiektowym ElkGraph plus fabrykami `ElkGraphUtil`. ELK JSON jest adapterem we/wy,
-a nie modelem rdzenia. Pierwsza publikacja w npm zamrozi tę powierzchnię.
+Publiczne API to powierzchnia eksportu zaakceptowana w
+[#90](https://github.com/knowvah/elk-engine/issues/90): model obiektowy ElkGraph i fabryki `ElkGraphUtil`, silnik
+layoutu, dostawca metadanych każdego algorytmu oraz jego opcje wraz z typami wartości, a także formaty ELK JSON
+i tekstowe formaty grafów. ELK JSON jest adapterem we/wy, a nie modelem rdzenia.
+[Pierwsze kroki](/guide/getting-started) pokazują tę powierzchnię w użyciu. Wersje pozostają 0.x do wersji 1.0;
+wersja 1.0 zamraża tę powierzchnię.
 
 ## Ograniczenia środowiska uruchomieniowego
 

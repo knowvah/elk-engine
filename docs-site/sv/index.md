@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, i ren TypeScript
@@ -24,16 +24,18 @@ features:
     details: Utdata jämförs med ELK byggt från källkod. Strukturen stämmer exakt; koordinaterna stämmer inom 1e-6.
   - title: Webbläsarnativ, utan körtidsberoenden
     details: Ingen Java, ingen WASM, inga inbyggda Node-moduler i bibliotekskoden. Bundla och leverera.
-  - title: Pre-alfa
-    details: Verktygskedjan, arkitekturen, Java-runtime-shimmarna och verifieringsställningen finns. Ännu är ingen
-      layoutalgoritm portad.
+  - title: Pre-1.0
+    details: Alla ingående ELK-layoutalgoritmer är portade och kontrollerade mot ELK byggt från källkod. Fram till 1.0
+      kan API:et fortfarande ändras.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alfa
-Ännu är ingen layoutalgoritm portad, och `src/index.ts` exporterar inget publikt. Den första npm-publiceringen
-fryser det publika API:et. Se [färdplanen](/guide/roadmap) för vad som kommer härnäst.
+::: warning Pre-1.0
+Alla ELK-layoutalgoritmer som ingår är portade och kontrollerade mot ELK byggt från källkod;
+[paritetsrapporten](/parity) har resultaten. Den publika exportytan är godkänd men ännu inte i
+`src/index.ts`, så paketets ingång exporterar ännu inget publikt. Versionerna förblir 0.x fram till 1.0, och
+till dess kan API:et fortfarande ändras. Se [färdplanen](/guide/roadmap) för vad som kommer härnäst.
 :::
 
 ## Välj din väg

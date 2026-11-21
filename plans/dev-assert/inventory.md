@@ -200,3 +200,37 @@ no `assert` sits anywhere but at the start of a line.
 | 139 | `alg.layered/…/p5edges/splines/NubsSelfLoop.java:273` | `assert cornerBendPoints.size() == 3` | `src/alg/layered/p5edges/splines/NubsSelfLoop.ts:239` | `comment` | restored |
 | 140 | `alg.layered/…/p5edges/splines/NubsSelfLoop.java:305` | `assert cornerBendPoints.size() == 4` | `src/alg/layered/p5edges/splines/NubsSelfLoop.ts:277` | `comment` | restored |
 | 141 | `alg.layered/…/p5edges/splines/SplineEdgeRouter.java:582` | `assert false : "sideToProcess must be either LEFT or RIGHT."` | `src/alg/layered/p5edges/splines/SplineEdgeRouterSegments.ts:339` | `no-arm` | restored |
+
+## Superseded by #127 (2026-11-20)
+
+The rows above are as the dev-assert mission (#45) left them and are not edited. Mission `dev-assert-restore` (issue
+#127; rulings on #112 row #32 and #113, all nine rows) restored the ten rows below as `devAssert` calls; their status
+above (`not-portable: pending #112` / `pending #113`) is superseded by this table. The tests and JVM rows that drive
+these sites on purpose run that step with assertions off (`plans/dev-assert-restore/census.md` lists them), and one
+test per site pins the `AssertionError` with assertions on.
+
+| # | Java file:line | TS `devAssert` line | Status |
+| - | -------------- | ------------------- | ------ |
+| 9 | `core/…/util/InstancePool.java:59` | `src/core/util/InstancePool.ts:37` | restored |
+| 12 | `alg.common/…/nodespacing/internal/NodeContext.java:277` | `src/alg/common/nodespacing/internal/NodeContext.ts:244` | restored |
+| 13 | `alg.common/…/nodespacing/internal/algorithm/HorizontalPortPlacementSizeCalculator.java:212` | `src/alg/common/nodespacing/internal/algorithm/HorizontalPortPlacementSizeCalculator.ts:272` | restored |
+| 21 | `alg.layered/…/graph/LGraphUtil.java:821` | `src/alg/layered/graph/LGraphUtilExternalPorts.ts:154` | restored |
+| 22 | `alg.layered/…/graph/LGraphUtil.java:907` | `src/alg/layered/graph/LGraphUtilExternalPorts.ts:193` | restored |
+| 23 | `alg.layered/…/graph/LNode.java:165` | `src/alg/layered/graph/LNode.ts:133` | restored |
+| 32 | `alg.layered/…/intermediate/EndLabelPreprocessor.java:377` | `src/alg/layered/intermediate/EndLabelPreprocessorPlacement.ts:117` | restored |
+| 40 | `alg.layered/…/intermediate/HighDegreeNodeLayeringProcessor.java:255` | `src/alg/layered/intermediate/HighDegreeNodeLayeringProcessor.ts:291` | restored |
+| 116 | `alg.layered/…/options/EdgeLabelSideSelection.java:58` | `src/alg/layered/options/EdgeLabelSideSelection.ts:85` | restored |
+| 123 | `alg.layered/…/p3order/ForsterConstraintResolver.java:239` | `src/alg/layered/p3order/ForsterConstraintResolver.ts:300` (with `lastValue`, `:297-301`) | restored |
+
+Two more rows changed after #45 landed and before this mission, in `ec315bf5` (issue #112, comment of 2026-11-20):
+rows 134 and 135 (`ThresholdStrategy.java:395`, `:403`) read `restored` above and are comments again
+(`src/alg/layered/p4nodes/bk/ThresholdStrategySimpleThresholdStrategy.ts:236-239`, `:246-248`), pending the diagnosis of
+issue #128.
+
+Corrected status totals (143 statements):
+
+| Status | Sites | Rows |
+| ------ | ----- | ---- |
+| `restored` | 132 | the 124 above, less 134 and 135, plus the ten of this section |
+| `restored (throw kept)` | 6 | unchanged |
+| comment naming an issue | 5 | 4, 5 (`BoxLayoutProvider.java:738`, `:754`; #112, knowvah/elk#27), 114 (`SingleEdgeGraphWrapper.java:193`; #112, knowvah/elk#28), 134, 135 (#128) |

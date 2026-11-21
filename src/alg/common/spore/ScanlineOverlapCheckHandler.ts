@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: EPL-2.0
+import { fuzzyCompare } from '../../../guava/DoubleMath.js';
 import { compare as doubleCompare } from '../../../java/lang/DoubleCompare.js';
 import { IllegalStateException } from '../../../java/lang/IllegalStateException.js';
 import type { SVGImage } from '../utils/SVGImage.js';
 import type { EventHandler } from '../compaction/ScanlineEventHandler.js';
+import { InternalProperties } from './InternalProperties.js';
 import type { IOverlapHandler } from './IOverlapHandler.js';
 import type { Node } from './Node.js';
 import type { ScanlineOverlapCheckTimestamp } from './ScanlineOverlapCheckTimestamp.js';
@@ -110,18 +112,20 @@ export class ScanlineOverlapCheckHandler implements EventHandler<ScanlineOverlap
     }
 
     // find overlaps with rectangles on current scanline and apply the overlapHandler
-    let overlapsFound = false;
     // have to start with first(left side) node because the last(right side) that does not overlap is not
     // necessarily the first candidate to overlap (there could be a wide node).
+    // eclipse-elk/elk#1247 (oracle patch 0004, carried until the pin moves past its merge): the walk no longer stops
+    // at the first node that does not overlap once an overlap was found.
     for (const other of this.intervalsSortLeft) {
       if (this.overlap(p.node, other)) {
         this.overlapHandler.handle(p.node, other);
         this.svg.g('o').addRect(p.node.rect, 'stroke="none" fill="red" opacity="0.18"');
         this.svg.g('o').addRect(other.rect, 'stroke="none" fill="red" opacity="0.18"');
         this.svg.g('e').addLine(p.node.vertex.x, p.node.vertex.y, other.vertex.x, other.vertex.y, 'stroke="blue"');
-        overlapsFound = true;
-      } else if (overlapsFound) {
-        break; // there cannot be any more overlaps because the set is sorted
+      } else if (fuzzyCompare(other.rect.x, p.node.rect.x + p.node.rect.width, InternalProperties.FUZZINESS) >= 0) {
+        // other starts at or right of the inserted node's right side; the set is sorted by left
+        // sides, so no later node can overlap the inserted node either
+        break;
       }
     }
   }

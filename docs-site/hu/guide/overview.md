@@ -1,6 +1,6 @@
 ---
 title: Áttekintés
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -11,10 +11,11 @@ A `@knowvah/elk-engine` az [Eclipse Layout Kernel](https://www.eclipse.org/elk) 
 könyvtár hű TypeScript-portolása. Nincs Java és nincs WASM: az elrendezési algoritmusok egyszerű
 TypeScriptben vannak újraimplementálva, és a Java implementációval szemben ellenőrzöttek.
 
-::: warning Pre-alfa
-Egyetlen elrendezési algoritmus sincs még portolva. A repository a toolchaint, az architektúradokumentumokat,
-az ellenőrzési vázat és a Java futtatókörnyezeti shimeket tartalmazza. A `src/index.ts` még nem exportál semmi nyilvánosat.
-Az algoritmusok érkezésének sorrendjét az [ütemterv](/guide/roadmap) tartalmazza.
+::: warning Pre-1.0
+Az ELK összes hatókörbe tartozó elrendezési algoritmusa portolva van, és a forrásból fordított ELK-val szemben
+ellenőrzött; az eredményeket a [paritásjelentés](/parity) tartalmazza. A nyilvános exportfelület elfogadott, de még
+nincs a `src/index.ts`-ben, ezért a csomag belépési pontja még nem exportál semmi nyilvánosat. Az 1.0-s verzióig
+az API még változhat. Hogy mi következik, azt az [ütemterv](/guide/roadmap) tartalmazza.
 :::
 
 ## A Java a specifikáció
@@ -44,8 +45,11 @@ A teljes eljárás a [megfelelőség](/hu/conformance) oldalon található.
 
 ## Nyilvános szerződés
 
-A nyilvános API az ElkGraph objektummodell és az `ElkGraphUtil` factoryk lesz. Az ELK JSON I/O-adapter,
-nem a magmodell. Az első npm-publikálás befagyasztja ezt a felületet.
+A nyilvános API a [#90](https://github.com/knowvah/elk-engine/issues/90) hibajegyben elfogadott exportfelület:
+az ElkGraph objektummodell és az `ElkGraphUtil` factoryk, az elrendezési motor, az egyes algoritmusok
+metaadat-szolgáltatója és opciói az értéktípusaikkal együtt, valamint az ELK JSON és a szöveges gráfformátumok.
+Az ELK JSON I/O-adapter, nem a magmodell. Az [Első lépések](/guide/getting-started) oldal a felületet használat
+közben mutatja be. A verziók 1.0-ig 0.x-ek maradnak; az 1.0 befagyasztja a felületet.
 
 ## Futásidejű megszorítások
 

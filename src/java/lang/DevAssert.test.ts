@@ -1,19 +1,9 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it, vi } from 'vitest';
+import { withAssertions } from '../../../test/helpers/with-assertions.js';
 import { AssertionError } from './AssertionError.js';
-import { assertionsEnabled, devAssert, setAssertionsEnabled } from './DevAssert.js';
+import { assertionsEnabled, devAssert } from './DevAssert.js';
 import { Exception } from './Exception.js';
-
-/** Runs `body` with the switch at `enabled`, then restores the state the suite setup chose. */
-function withAssertions<T>(enabled: boolean, body: () => T): T {
-  const before = assertionsEnabled();
-  setAssertionsEnabled(enabled);
-  try {
-    return body();
-  } finally {
-    setAssertionsEnabled(before);
-  }
-}
 
 /** The error `body` throws; fails the test when it returns normally. */
 function thrownBy(body: () => void): unknown {

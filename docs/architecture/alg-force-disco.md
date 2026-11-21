@@ -351,14 +351,12 @@ npx tsx tools/corpus/ts-layout-compare.ts --algorithms force --sweep-dir "$TMPDI
 Repeat with `stress` and `disco`. Expect the numbers of section 2; a long run is started detached,
 `nohup nice -n 10 bash -c '<command>; echo "exit $?"' >"$TMPDIR/<name>.log" 2>&1 &`, and polled.
 
-**The Java baseline.** `tools/oracle/java-tests.sh` lists only the layered and `alg.test` bundles. Use a scratch copy, never an
-edit of the landed script; the recipe is in [java-baseline.md](../../plans/alg-force-disco/java-baseline.md):
+**The Java baseline.** `tools/oracle/java-tests.sh` carries the `alg.force.test` and `alg.disco.test` bundles (issue #97), so the
+landed script runs both classes; the scratch-copy recipe of the mission is in
+[java-baseline.md](../../plans/alg-force-disco/java-baseline.md) as history:
 
 ```bash
-mkdir -p "$TMPDIR/alg-force-disco"
-sed -e 's/^TEST_BUNDLES=(org.eclipse.elk.alg.layered.test org.eclipse.elk.alg.test)/TEST_BUNDLES=(org.eclipse.elk.alg.layered.test org.eclipse.elk.alg.test org.eclipse.elk.alg.force.test org.eclipse.elk.alg.disco.test)/' \
-    -e "17s|.*|ROOT=\"$(pwd)\"|" tools/oracle/java-tests.sh > "$TMPDIR/alg-force-disco/java-tests.sh"
-MODELS_REPO=$ELK_MODELS_DIR nice -n 10 bash "$TMPDIR/alg-force-disco/java-tests.sh" \
+MODELS_REPO=$ELK_MODELS_DIR nice -n 10 bash tools/oracle/java-tests.sh \
   org.eclipse.elk.alg.force.test.ForceImportTest org.eclipse.elk.alg.disco.test.TwoBitGridTest
 ```
 

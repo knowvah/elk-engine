@@ -1,6 +1,6 @@
 ---
 title: Ülevaade
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -11,10 +11,12 @@ sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
 truu TypeScripti portimine. Javat ega WASM-i pole: paigutusalgoritmid on lihtsas TypeScriptis uuesti realiseeritud
 ja Java realisatsiooni vastu kontrollitud.
 
-::: warning Pre-alpha
-Ühtegi paigutusalgoritmi pole veel portitud. Hoidla sisaldab tööriistaahelat, arhitektuuridokumente, kontrolli
-tugikonstruktsiooni ja Java käitusaja shime. `src/index.ts` ei ekspordi veel midagi avalikku.
-Algoritmide lisandumise järjekorra leiate [teekaardilt](/guide/roadmap).
+::: warning Pre-1.0
+Kõik ELK-i paigutusalgoritmid, mis projekti ulatusse kuuluvad, on portitud ja lähtekoodist ehitatud ELK-iga
+kontrollitud; tulemused leiate [pariteediaruandest](/parity). Avalik ekspordipind on heaks kiidetud, kuid veel mitte
+failis `src/index.ts`, nii et paketi sisendmoodul ei ekspordi veel midagi avalikku. Kuni 1.0-ni võib API veel
+muutuda.
+Mis tuleb järgmisena, leiate [teekaardilt](/guide/roadmap).
 :::
 
 ## Java on spetsifikatsioon
@@ -44,8 +46,12 @@ Täielik protseduur on lehel [Vastavus](/et/conformance).
 
 ## Avalik leping
 
-Avalik API on ElkGraphi objektimudel pluss `ElkGraphUtil`i fabrikud. ELK JSON on I/O adapter, mitte
-põhimudel. Esimene npm-i avaldamine külmutab selle pinna.
+Avalik API on ekspordipind, mis kiideti heaks ülesandes
+[#90](https://github.com/knowvah/elk-engine/issues/90): ElkGraphi objektimudel ja `ElkGraphUtil`i
+fabrikud, paigutusmootor, iga algoritmi metaandmete pakkuja ja valikud väärtusetüüpidega ning ELK JSON
+ja tekstilised graafivormingud. ELK JSON on I/O adapter, mitte põhimudel.
+[Alustamine](/guide/getting-started) näitab pinda kasutuses. Versioonid jäävad 0.x-iks kuni 1.0-ni;
+1.0 külmutab pinna.
 
 ## Käitusaja piirangud
 

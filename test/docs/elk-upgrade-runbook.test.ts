@@ -5,6 +5,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../corpus/corpus.js';
+import { scriptNames } from '../helpers/recorder-scripts.js';
 
 const RUNBOOK_RELATIVE = 'docs/architecture/elk-upgrade.md';
 const VECTORS_DIR = 'tools/vectors';
@@ -14,8 +15,6 @@ const REGEN_SCRIPT = /^regen-.*\.sh$/;
 const SWEEP_SCRIPT = /sweep.*\.sh$/;
 const RECORDER_PROGRAM = /\.java$/;
 const SHELL_SCRIPT = /\.sh$/;
-/** A Java file name in a script, possibly a glob: `AlgCommonVectors.java`, `Elkj*Vectors.java`; never a bare `*.java`. */
-const PROGRAM_TOKEN = /[A-Z][A-Za-z0-9*]*\.java/g;
 /** A repo-relative `tools/...` path; a longer path that merely contains `tools/` (`.tools/`, `$R/repo/tools/`) is not one. */
 const TOOLS_PATH = /(?<![\w./$-])tools\/[\w./*<>-]+/g;
 const PATTERN_CHARS = /[*<>]/;
@@ -48,13 +47,6 @@ export function missingFrom(markdown: string, inventory: readonly string[]): str
 /** The named paths that do not exist under `root`. */
 export function danglingPaths(markdown: string, root: string): string[] {
   return namedToolPaths(markdown).filter((file) => !existsSync(path.join(root, file)));
-}
-
-/** Whether a script text names the program file, literally or by a `find -name` glob such as `Elkj*Vectors.java`. */
-function scriptNames(scriptText: string, programFile: string): boolean {
-  return (scriptText.match(PROGRAM_TOKEN) ?? []).some((token) =>
-    new RegExp(`^${token.replaceAll('.', '\\.').replaceAll('*', '.*')}$`).test(programFile),
-  );
 }
 
 /** Recorder programs that neither a script of `scriptTexts` nor the runbook names. */

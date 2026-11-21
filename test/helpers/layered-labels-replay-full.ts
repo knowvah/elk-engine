@@ -20,6 +20,7 @@ import { capturedLogged } from './layered-labels-replay-ops.js';
 import { applyOptions, loadInput } from './layered-phase-replay-rows.js';
 import { compareFullRow, plansFromRun, type FullResult, type PlanCapture } from './layered-pipeline-replay-ops.js';
 import type { FullRow } from './layered-pipeline-replay-rows.js';
+import { withEndLabelRule } from './unsized-end-labels.js';
 
 export const LOGGED_FAMILY = 'logged';
 export const INTERACTIVE_FAMILY = 'interactive';
@@ -106,11 +107,16 @@ export function runInteractiveFullRow(row: FullRow, env: LabelsFullEnvironment):
   return { layout1, layout: exportOf(graph), plans };
 }
 
-/** 7f's `runFullRow` (`layered-pipeline-replay-ops.ts`) on the input with unresolved options dropped. */
+/**
+ * 7f's `runFullRow` (`layered-pipeline-replay-ops.ts`) on the input with unresolved options dropped. The layout of a
+ * model with an unsized end label runs with assertions off, as the recording JVM did (`withEndLabelRule`).
+ */
 export function runPlainFullRow(row: FullRow, env: LabelsFullEnvironment = {}): LabelsFullResult {
   const graph = preparedRoot(row);
   const plans = (env.capture ?? plansFromRun)(row, () => {
-    new RecursiveGraphLayoutEngine().layout(graph, new BasicProgressMonitor());
+    withEndLabelRule(graph, () => {
+      new RecursiveGraphLayoutEngine().layout(graph, new BasicProgressMonitor());
+    });
   });
   return { layout: exportOf(graph), plans };
 }

@@ -4,6 +4,7 @@ import { PortSide } from '../../../core/options/PortSide.js';
 import { Pair } from '../../../core/util/Pair.js';
 import * as Iterables from '../../../guava/Iterables.js';
 import * as Strings from '../../../guava/Strings.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { IndexOutOfBoundsException } from '../../../java/lang/IndexOutOfBoundsException.js';
 import { UnsupportedOperationException } from '../../../java/lang/UnsupportedOperationException.js';
@@ -129,8 +130,7 @@ export class LNode extends LShape {
    * @param newGraph the new containing graph
    */
   setGraph(newGraph: LGraph | null): void {
-    // Java: `assert layer == null;` (LNode.java:165). Not a devAssert yet: a test sets the graph of a node that has
-    // a layer, which the Java assert rejects under -ea too (issue #113).
+    devAssert(() => this.layer === null); // LNode.java:165
     this.graph = newGraph;
   }
 

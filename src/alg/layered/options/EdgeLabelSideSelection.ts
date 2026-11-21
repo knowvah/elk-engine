@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: EPL-2.0
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 
 /**
@@ -80,8 +81,8 @@ export class EdgeLabelSideSelection {
       case EdgeLabelSideSelection.SMART_DOWN:
         return EdgeLabelSideSelection.SMART_UP;
       default:
-        // Java: `assert false; return null;` (EdgeLabelSideSelection.java:58). Unreachable (the enum is closed). Not
-        // a devAssert yet: a test drives this arm on purpose (issue #113).
+        // Java: `assert false; return null;` (EdgeLabelSideSelection.java:58). Unreachable (the enum is closed).
+        devAssert(() => false);
         return null;
     }
   }

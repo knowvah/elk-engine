@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { beforeAll, describe, expect, it } from 'vitest';
+import { assertionErrorOf } from '../../../../../../test/helpers/assertion-error-of.js';
 import { loadLayoutMetaData } from '../../../../../../test/helpers/node-context-fixtures.js';
 import {
   contextsOn,
@@ -205,6 +206,12 @@ describe('calculateHorizontalPortPlacementSize, FIXED_RATIO', () => {
 });
 
 describe('minSizeRequiredToRespectSpacing', () => {
+  // (0.125, 0) is the ratio pair of `adapters/sweep-002` (layered-framework.json), whose ports are not sorted yet;
+  // the recorder under -ea stops at this line on that row (issue #113, row 13).
+  it('throws AssertionError under -ea for descending ratios (HorizontalPortPlacementSizeCalculator.java:212)', () => {
+    expect(assertionErrorOf(() => minSize(12, 0.125, 0)).message).toBe('');
+  });
+
   // The seven triples below are the cases of oracle row t4/min-size-tolerance
   // (HorizontalPortPlacementSizeCalculator.java:209-220: fuzzyEquals within EQUALITY_TOLERANCE 0.01, :195, else a
   // division). The last triple is 599.9999999999994 in the oracle, hence toBeCloseTo.

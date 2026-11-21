@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 6f88122550dfc00bb2332f343e3dff749434fa3d18c5c73a1f0457f5115d46dd
+sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK w czystym TypeScripcie
@@ -26,16 +26,19 @@ features:
       z dokładnością do 1e-6.
   - title: Natywny dla przeglądarki, bez zależności uruchomieniowych
     details: Bez Javy, bez WASM, bez wbudowanych modułów Node w kodzie biblioteki. Zbundluj i wydaj.
-  - title: Pre-alpha
-    details: Toolchain, architektura, shimy środowiska uruchomieniowego Javy i szkielet weryfikacji już istnieją. Żaden
-      algorytm layoutu nie jest jeszcze zportowany.
+  - title: Pre-1.0
+    details: Wszystkie algorytmy layoutu ELK objęte zakresem projektu są zportowane i sprawdzone względem ELK
+      zbudowanego ze źródeł. Do wersji 1.0 API może się jeszcze zmienić.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alpha
-Żaden algorytm layoutu nie jest jeszcze zportowany, a `src/index.ts` nie eksportuje niczego publicznego. Pierwsza
-publikacja w npm zamrozi publiczne API. Co nastąpi dalej, opisuje [plan rozwoju](/guide/roadmap).
+::: warning Pre-1.0
+Wszystkie algorytmy layoutu ELK objęte zakresem projektu są zportowane i sprawdzone względem ELK zbudowanego
+ze źródeł; wyniki zawiera [raport zgodności](/parity). Publiczna powierzchnia eksportu jest zaakceptowana, ale nie
+ma jej jeszcze w `src/index.ts`, więc punkt wejścia pakietu nie eksportuje jeszcze niczego publicznego. Wersje
+pozostają 0.x do wersji 1.0, a do tego czasu API może się jeszcze zmienić. Co nastąpi dalej, opisuje
+[plan rozwoju](/guide/roadmap).
 :::
 
 ## Wybierz swoją drogę

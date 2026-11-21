@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { beforeAll, describe, expect, it } from 'vitest';
+import { assertionErrorOf } from '../../../../../test/helpers/assertion-error-of.js';
+import { withAssertions } from '../../../../../test/helpers/with-assertions.js';
 import {
   NODE_HEIGHT,
   NODE_WIDTH,
@@ -258,7 +260,15 @@ describe('NodeContext comparators', () => {
 
   it('returns 0 for two ports without a side (the Java default arm, assert false at :277)', () => {
     const { ports } = contextsFor([UNDEFINED, 1], [UNDEFINED, 2]);
-    expect(NodeContext.comparePortContexts(ports[0]!, ports[1]!)).toBe(0);
+    // as a JVM without -ea: the arm's `assert false` is live (issue #113, row 12)
+    withAssertions(false, () => {
+      expect(NodeContext.comparePortContexts(ports[0]!, ports[1]!)).toBe(0);
+    });
+  });
+
+  it('throws AssertionError under -ea for two ports without a side (NodeContext.java:277)', () => {
+    const { ports } = contextsFor([UNDEFINED, 1], [UNDEFINED, 2]);
+    expect(assertionErrorOf(() => NodeContext.comparePortContexts(ports[0]!, ports[1]!)).message).toBe('');
   });
 });
 

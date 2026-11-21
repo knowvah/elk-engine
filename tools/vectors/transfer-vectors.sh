@@ -3,6 +3,7 @@
 # Records JsonImporter.transferLayout replays (AD-13, J6) by running TransferVectors.java against every
 # jar of the source-built oracle (AD-3) plus the third-party bundles they need from the p2 cache; the
 # scenarios are tools/vectors/transfer-scenarios/. Writes <outDir>/graph-json-transfer.json.
+# Passes the pinned commit (tools/oracle/ELK_COMMIT) to the recorder as -Delk.commit: the ref's elkCommit stamp.
 # Usage: transfer-vectors.sh <outDir>
 # Honours ELK_ORACLE_DIR (default <repo>/../elk-oracle) and P2_BUNDLES.
 set -euo pipefail
@@ -61,7 +62,7 @@ main() {
   pinned="$(tr -d '[:space:]' <"$ROOT/tools/oracle/ELK_COMMIT")"
   built="$(oracle_field commit)"
   [ "$pinned" = "$built" ] || die "oracle built from $built, pinned commit is $pinned"
-  java -cp "$(build_classpath)" "$VECTORS_DIR/TransferVectors.java" "$1" "$VECTORS_DIR/transfer-scenarios"
+  java -Delk.commit="$pinned" -cp "$(build_classpath)" "$VECTORS_DIR/TransferVectors.java" "$1" "$VECTORS_DIR/transfer-scenarios"
 }
 
 main "$@"

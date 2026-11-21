@@ -348,7 +348,7 @@ Two user amendments to R2 during execution (journal rows of T9 and T16):
 Re-record the pure-JDK vectors (writes `awt`, `regex`, `character`, `regex-boundary`, `stream-sum`):
 
 ```bash
-java tools/vectors/CoreJdkVectors.java test/golden/refs/java
+tools/vectors/core-jdk-vectors.sh test/golden/refs/java
 git status --short test/golden/refs/java    # must show nothing for a same-JDK re-record
 ```
 

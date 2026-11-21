@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
 import { Spacing } from '../../src/core/math/Spacing.js';
 import { KVector } from '../../src/core/math/KVector.js';
+import { KVectorChain } from '../../src/core/math/KVectorChain.js';
 import { ElkNode } from '../../src/graph/ElkNode.js';
 import { isElkGraphElement } from '../../src/graph/ElkGraphElement.js';
 import { ElkGraphJson } from '../../src/graph/json/ElkGraphJson.js';
@@ -272,6 +273,11 @@ function encodeObject(value: object, paths: ReadonlyMap<object, string>, depth: 
       c: 'KVector',
       fields: { x: encodeValue(value.x, paths, depth + 1), y: encodeValue(value.y, paths, depth + 1) },
     };
+  }
+  if (value instanceof KVectorChain) {
+    // The recorder's collection arm (LayeredFrameworkVectors.java, Encoder.collection): the class name, then every
+    // point one level down. Before the array arm: the port's chain is a LinkedList, not a TS array.
+    return { t: 'list', c: 'KVectorChain', items: [...value].map((v) => encodeValue(v, paths, depth + 1)) };
   }
   if (value instanceof Spacing) {
     const fields: Record<string, EncodedValue> = {};

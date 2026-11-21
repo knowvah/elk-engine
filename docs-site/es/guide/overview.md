@@ -1,6 +1,6 @@
 ---
 title: Visión general
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), la biblioteca de Java para el layout
 WASM: los algoritmos de layout están reimplementados en TypeScript simple y verificados contra la
 implementación de Java.
 
-::: warning Pre-alpha
-Todavía no se ha portado ningún algoritmo de layout. El repositorio contiene la cadena de herramientas, los documentos
-de arquitectura, el andamiaje de verificación y los shims del runtime de Java. `src/index.ts` aún no exporta nada
-público. Consulta la [hoja de ruta](/guide/roadmap) para conocer el orden en que llegan los algoritmos.
+::: warning Pre-1.0
+Todos los algoritmos de layout de ELK previstos están portados y verificados contra el ELK compilado desde el código
+fuente; el [informe de paridad](/parity) recoge los resultados. La superficie de exportación pública está aceptada,
+pero aún no está en `src/index.ts`, así que la entrada del paquete todavía no exporta nada público. Hasta la 1.0 la
+API aún puede cambiar. Consulta la [hoja de ruta](/guide/roadmap) para saber qué viene después.
 :::
 
 ## El Java es la especificación
@@ -45,8 +46,12 @@ una JVM. El procedimiento completo está en la página de [conformidad](/es/conf
 
 ## Contrato público
 
-La API pública será el modelo de objetos ElkGraph más las factorías de `ElkGraphUtil`. ELK JSON es un adaptador de
-E/S, no el modelo central. La primera publicación en npm congela esta superficie.
+La API pública es la superficie de exportación aceptada en
+[#90](https://github.com/knowvah/elk-engine/issues/90): el modelo de objetos ElkGraph y las factorías de
+`ElkGraphUtil`, el motor de layout, el proveedor de metadatos y las opciones de cada algoritmo con sus tipos de valor,
+y los formatos ELK JSON y de grafo textual. ELK JSON es un adaptador de E/S, no el modelo central.
+[Primeros pasos](/guide/getting-started) muestra la superficie en uso. Las versiones se mantienen en 0.x hasta la
+1.0; la 1.0 congela la superficie.
 
 ## Restricciones de ejecución
 

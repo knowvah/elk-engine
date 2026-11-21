@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { assertionErrorOf } from '../../../../test/helpers/assertion-error-of.js';
+import { withAssertions } from '../../../../test/helpers/with-assertions.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { EdgeLabelSideSelection } from './EdgeLabelSideSelection.js';
 
@@ -100,6 +102,14 @@ describe('EdgeLabelSideSelection.transpose default arm', () => {
   // Not an oracle row: the Java default arm (`assert false; return null;`) is unreachable for a closed enum. A foreign
   // receiver reaches it; the JVM without -ea returns null.
   it('returns null for a receiver that is no constant', () => {
-    expect(Reflect.apply(EdgeLabelSideSelection.prototype.transpose, {}, [])).toBeNull();
+    // as a JVM without -ea: the arm's `assert false` is live (issue #113, row 116)
+    withAssertions(false, () => {
+      expect(Reflect.apply(EdgeLabelSideSelection.prototype.transpose, {}, [])).toBeNull();
+    });
+  });
+
+  it('throws AssertionError under -ea for a receiver that is no constant (EdgeLabelSideSelection.java:58)', () => {
+    const error = assertionErrorOf(() => Reflect.apply(EdgeLabelSideSelection.prototype.transpose, {}, []) as unknown);
+    expect(error.message).toBe('');
   });
 });

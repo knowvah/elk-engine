@@ -333,14 +333,12 @@ npx tsx tools/corpus/ts-layout-compare.ts --algorithms mrtree --sweep-dir "$TMPD
 Run the three algorithms one after another (three at once peaked the load at 51). Expect the numbers of § 3 only with layered
 registered; without it the options-only mismatches of the second table appear.
 
-**The Java baseline.** `tools/oracle/java-tests.sh` lists only the layered and `alg.test` bundles. Use a scratch copy, never an
-edit of the landed script; the recipe is in [java-baseline.md](../../plans/alg-trees/java-baseline.md):
+**The Java baseline.** `tools/oracle/java-tests.sh` carries the `alg.mrtree.test` and `alg.radial.test` bundles (issue #97), so the
+landed script runs both classes; the scratch-copy recipe of the mission is in
+[java-baseline.md](../../plans/alg-trees/java-baseline.md) as history:
 
 ```bash
-mkdir -p "$TMPDIR/alg-trees"
-sed -e 's/^TEST_BUNDLES=(org.eclipse.elk.alg.layered.test org.eclipse.elk.alg.test)/TEST_BUNDLES=(org.eclipse.elk.alg.layered.test org.eclipse.elk.alg.test org.eclipse.elk.alg.mrtree.test org.eclipse.elk.alg.radial.test)/' \
-    -e "17s|.*|ROOT=\"$(pwd)\"|" tools/oracle/java-tests.sh > "$TMPDIR/alg-trees/java-tests.sh"
-MODELS_REPO=$ELK_MODELS_DIR nice -n 10 bash "$TMPDIR/alg-trees/java-tests.sh" \
+MODELS_REPO=$ELK_MODELS_DIR nice -n 10 bash tools/oracle/java-tests.sh \
   org.eclipse.elk.alg.mrtree.test.MrTreeGraphSizeTest org.eclipse.elk.alg.radial.test.CenterOnRootTest
 ```
 

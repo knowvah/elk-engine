@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { withAssertions } from '../../../test/helpers/with-assertions.js';
 import { AbstractLayoutProvider } from '../AbstractLayoutProvider.js';
 import type { ElkNode } from '../../graph/ElkNode.js';
 import { GraphFeature } from '../../graph/properties/GraphFeature.js';
@@ -36,8 +37,12 @@ function prop(id: string): Property<unknown> {
   return new Property<unknown>(id);
 }
 
+/**
+ * An algorithm without a provider factory. `create()` runs as on a JVM without `-ea`: the pool's constructor asserts
+ * a factory (`InstancePool.java:59`), and the tests below pin the data object such a JVM builds (issue #113, row 9).
+ */
 function algorithm(): LayoutAlgorithmData {
-  return new LayoutAlgorithmData.Builder().id(ALGORITHM_ID).create();
+  return withAssertions(false, () => new LayoutAlgorithmData.Builder().id(ALGORITHM_ID).create());
 }
 
 describe('LayoutAlgorithmData', () => {
@@ -70,7 +75,8 @@ describe('LayoutAlgorithmData', () => {
   });
 
   it('defaults to no features, null values and an empty id', () => {
-    const data = new LayoutAlgorithmData.Builder().create();
+    // no provider factory: see `algorithm()`
+    const data = withAssertions(false, () => new LayoutAlgorithmData.Builder().create());
     expect(data.getSupportedFeatures().size()).toBe(0);
     expect(data.getName()).toBeNull();
     expect(data.getValidatorClass()).toBeNull();
@@ -138,7 +144,10 @@ describe('LayoutAlgorithmData', () => {
     expect(data.toString()).toBe(`Layout Algorithm: ${ALGORITHM_ID}`);
     expect(data.hashCode()).toBe(JavaString.hashCode(ALGORITHM_ID));
     expect(data.equals(algorithm())).toBe(true);
-    expect(data.equals(new LayoutAlgorithmData.Builder().id('x').create())).toBe(false);
+    // no provider factory: see `algorithm()`
+    withAssertions(false, () => {
+      expect(data.equals(new LayoutAlgorithmData.Builder().id('x').create())).toBe(false);
+    });
     expect(data.equals('x')).toBe(false);
   });
 });

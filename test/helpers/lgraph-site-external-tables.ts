@@ -36,6 +36,22 @@ export interface ExternalPortRow {
   };
 }
 
+/** The id prefix of the rows: `site/lgraphutil/externalPorts/<key of EXTERNAL_PORT_ROWS>`. */
+export const EXTERNAL_PORT_ROW_PREFIX = 'site/lgraphutil/externalPorts/';
+
+/**
+ * The rows a JVM under `-ea` rejects (issue #113, rows 21 and 22): a free port with the layout direction `UNDEFINED`
+ * (`LGraphUtil.java:821`, `assert layoutDirection != Direction.UNDEFINED`) and a fixed side `UNDEFINED`
+ * (`LGraphUtil.java:907`, `assert false : finalExternalPortSide`). The recorder's JVM ran without `-ea`, so their replays
+ * run `createExternalPortDummy` with assertions off.
+ */
+export const EXTERNAL_PORT_ROWS_REJECTED_UNDER_EA: ReadonlySet<string> = new Set([
+  'site/lgraphutil/externalPorts/free-undefined-netflow-positive',
+  'site/lgraphutil/externalPorts/free-undefined-netflow-zero',
+  'site/lgraphutil/externalPorts/free-undefined-netflow-negative',
+  'site/lgraphutil/externalPorts/fixed-side-undefined',
+]);
+
 // prettier-ignore
 export const EXTERNAL_PORT_ROWS: Readonly<Record<string, ExternalPortRow>> = {
   'north-implicit-anchor-negative-offset': {

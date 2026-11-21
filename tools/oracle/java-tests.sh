@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: EPL-2.0
 # Runs JUnit 4 suites of ELK's test bundles against the source-built oracle (AD-3; mission 7c-tests, T2): the oracle
-# jars of $ELK_ORACLE_DIR/oracle-build.json, the compiled classes of the layered and alg test bundles, the third-party
-# bundles the vector scripts use plus the ones JUnit, Hamcrest, the Xtext standalone setup and Guice need at test time,
-# and junit 4.13.2 from ~/.m2. Each class runs in its own JVM under -XX:hashCode=2 (constant identity hashes, the
-# AD-10 convention the vector scripts use) and prints one line "<fqcn> runs=<n> failures=<n>"; the JUnitCore output of
-# every class is kept under a temp dir whose path is printed when a class fails. The baseline the mission brief cites
-# (plans/layered-crossing-min-tests/decisions.md#baseline) is this script over the fourteen crossing-minimization
-# suites; 7d–7h reuse it for theirs.
+# jars of $ELK_ORACLE_DIR/oracle-build.json, the compiled classes of every test bundle a TS test cites by path plus
+# alg.test (the test framework; issue #97), the third-party bundles the vector scripts use plus the ones JUnit,
+# Hamcrest, the Xtext standalone setup and Guice need at test time, and junit 4.13.2 from ~/.m2.
+# test/architecture/java-tests-bundles.fitness.test.ts keeps TEST_BUNDLES complete. Each class runs in its own JVM
+# under -XX:hashCode=2 (constant identity hashes, the AD-10 convention the vector scripts use) and prints one line
+# "<fqcn> runs=<n> failures=<n>"; the JUnitCore output of every class is kept under a temp dir whose path is printed
+# when a class fails. The baseline the mission brief cites (plans/layered-crossing-min-tests/decisions.md#baseline) is
+# this script over the fourteen crossing-minimization suites; 7d–7h reuse it for theirs.
 # Usage: java-tests.sh <fully.qualified.TestClass>...
 # Exit: 0 all classes passed; 1 usage, a missing bundle (named), a stale oracle, or a failing class.
 # Honours ELK_ORACLE_DIR (default <repo>/../elk-oracle), P2_BUNDLES (default ~/.m2/repository/p2/osgi/bundle) and
@@ -29,8 +30,14 @@ THIRD_PARTY=(com.google.gson com.google.guava com.google.guava.failureaccess
   com.google.inject jakarta.inject.jakarta.inject-api org.aopalliance
   org.apache.log4j org.eclipse.equinox.common
   org.eclipse.core.runtime org.eclipse.osgi org.eclipse.xtext.common.types org.objectweb.asm org.hamcrest)
-# Compiled test bundles of the oracle worktree (built by tools/oracle/build.sh's Tycho run).
-TEST_BUNDLES=(org.eclipse.elk.alg.layered.test org.eclipse.elk.alg.test)
+# Compiled test bundles of the oracle worktree (built by tools/oracle/build.sh's Tycho run): every bundle a TS test
+# cites by path, plus alg.test. org.eclipse.elk.shared.test stays out: nothing cites it, and it needs
+# org.eclipse.elk.alg.graphviz.layouter, which is not an oracle jar.
+TEST_BUNDLES=(org.eclipse.elk.alg.layered.test org.eclipse.elk.alg.test
+  org.eclipse.elk.alg.common.test org.eclipse.elk.alg.disco.test org.eclipse.elk.alg.force.test
+  org.eclipse.elk.alg.mrtree.test org.eclipse.elk.alg.radial.test org.eclipse.elk.alg.rectpacking.test
+  org.eclipse.elk.alg.spore.test org.eclipse.elk.alg.topdown.test org.eclipse.elk.core.test
+  org.eclipse.elk.graph.json.test org.eclipse.elk.graph.test)
 
 die() {
   echo "error: $1" >&2

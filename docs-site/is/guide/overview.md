@@ -1,6 +1,6 @@
 ---
 title: Yfirlit
-sourceHash: bb2ac033ff5e11b5eeb097e9f6ec4fde43df251e5cde278b11990d2e9cd671aa
+sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,10 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), Java-safnsins fyrir uppröðun grafa
 né WASM: uppröðunaralgrímin eru endurútfærð í venjulegu TypeScript og sannprófuð gegn
 Java-útfærslunni.
 
-::: warning Pre-alpha
-Ekkert uppröðunaralgrím hefur verið yfirfært enn. Hugbúnaðarsafnið geymir verkfærakeðjuna, arkitektúrskjölin,
-sannprófunargrindina og Java-keyrslutímashimin. `src/index.ts` flytur ekkert opinbert út enn.
-Sjá [vegvísinn](/guide/roadmap) fyrir þá röð sem algrímin koma í.
+::: warning Pre-1.0
+Öll uppröðunaralgrím ELK innan umfangs hafa verið yfirfærð og sannprófuð gegn ELK byggðu úr frumkóða;
+[jafngildisskýrslan](/parity) geymir niðurstöðurnar. Opinbera útflutningsyfirborðið er samþykkt en er ekki enn í
+`src/index.ts`, svo aðalinngangur pakkans flytur ekkert opinbert út enn. Fram að 1.0 getur API enn breyst.
+Sjá [vegvísinn](/guide/roadmap) fyrir það sem kemur næst.
 :::
 
 ## Java er skilgreiningin
@@ -45,8 +46,12 @@ verklag er á síðunni um [samræmi](/is/conformance).
 
 ## Opinber samningur
 
-Opinbera API verður ElkGraph-hlutalíkanið ásamt `ElkGraphUtil`-smiðjunum. ELK JSON er
-I/O-millistykki, ekki kjarnalíkanið. Fyrsta npm-útgáfan festir þetta yfirborð.
+Opinbera API er útflutningsyfirborðið sem var samþykkt í
+[#90](https://github.com/knowvah/elk-engine/issues/90): ElkGraph-hlutalíkanið og
+`ElkGraphUtil`-smiðjurnar, uppröðunarvélin, lýsigagnaveita hvers algríms og valkostir þess með
+gildistegundum sínum, auk ELK JSON og textasniða grafa. ELK JSON er I/O-millistykki, ekki
+kjarnalíkanið. [Fyrstu skref](/guide/getting-started) sýna yfirborðið í notkun. Útgáfur haldast 0.x
+fram að 1.0; 1.0 festir yfirborðið.
 
 ## Takmarkanir á keyrslutíma
 

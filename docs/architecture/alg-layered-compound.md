@@ -384,8 +384,8 @@ MODELS_REPO=$ELK_MODELS_DIR bash tools/oracle/java-tests.sh <the suites of plans
 
 The site-arm check reads the arms named per row in `test/helpers/layered-compound-site-arms.json` and reports any not taken
 (19 rows with named arms, 0 not taken, 49 s). It is run by hand: a coverage run inside a test that may itself run under
-coverage would reset v8's counters. The graph.json suites of the baseline need a scratch copy of `java-tests.sh` with
-`org.eclipse.elk.graph.json.test` added to `TEST_BUNDLES`; the landed script is never edited. Check `uptime` before a JVM run
+coverage would reset v8's counters. The graph.json suites of the baseline run with the landed `java-tests.sh`, which
+carries `org.eclipse.elk.graph.json.test` (issue #97). Check `uptime` before a JVM run
 (load above 12: wait) and start long runs in the background with `nice`. `--force` is needed after any run that set
 `COMPOUND_SWEEP_ONLY` or `COMPOUND_SWEEP_DUMP_DIR`, because the stamp does not cover them.
 

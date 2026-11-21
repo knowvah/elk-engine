@@ -24,16 +24,18 @@ features:
     details: Outputs are compared with ELK built from source. Structure matches exactly; coordinates match within 1e-6.
   - title: Browser-native, zero runtime dependencies
     details: No Java, no WASM, no Node built-ins in the library code. Bundle it and ship.
-  - title: Pre-alpha
-    details: The toolchain, architecture, Java runtime shims, and verification scaffolding exist. No layout algorithm is
-      ported yet.
+  - title: Pre-1.0
+    details: All in-scope ELK layout algorithms are ported and checked against ELK built from source. Until 1.0 the API
+      may still change.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-alpha
-No layout algorithm is ported yet, and `src/index.ts` exports nothing public. The first npm publish
-will freeze the public API. See the [roadmap](/guide/roadmap) for what comes next.
+::: warning Pre-1.0
+All in-scope ELK layout algorithms are ported and checked against ELK built from source; the
+[parity report](/parity) has the results. The public export surface is accepted but not yet in
+`src/index.ts`, so the package entry exports nothing public yet. Versions stay 0.x until 1.0, and
+until then the API may still change. See the [roadmap](/guide/roadmap) for what comes next.
 :::
 
 ## Choose your path

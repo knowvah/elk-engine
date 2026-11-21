@@ -57,8 +57,9 @@ compiler) and then `mvn clean install -DskipTests -Dmaven.test.skip=true` from
 `radial`, `force`, `disco`, `rectpacking`, `spore`, `topdownpacking`,
 `vertiflex` algorithms) in `oracle-build.json`. An existing worktree is reused
 only if it descends from `ELK_COMMIT`, carries exactly the patch subjects in
-`tools/oracle/patches/`, and is clean apart from build output; otherwise
-`build.sh` exits `2` and leaves it untouched.
+`tools/oracle/patches/`, and is clean apart from build output,
+`oracle-build.json` and the untracked cache roots `census/`, `sweep/` and
+`vector-cache/`; otherwise `build.sh` exits `2` and leaves it untouched.
 
 **Run.** `run.sh` compiles `ElkOracle.java` against the bundle jars plus the
 third-party bundles (Gson, Guava, EMF, Xtext/Xtend libs) from the Tycho p2
@@ -70,20 +71,62 @@ options omitted. A failing input prints `ERROR <input>: <message>`; the
 JVM exits `1` if any input failed. Input basenames must be unique within one
 run, since the output name is the basename.
 
-**Patch series semantics.** The series holds three patches:
+**Patch series semantics.** The series holds four patches:
 
-| Patch                                                                                                          | Effect                                                                                                                                                                                                                                                                                                                                                                                               | Paired TS seam                                                                                                                                                                                                                                              |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b)                                        | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1`                                                                                                                                                                  | Optional `random` parameter of the `JsonExporter` constructor (J4, [elk-json.md](architecture/elk-json.md#exporter-random)); tests pass `new Random(1)` (the TS `Random` shim reproduces the stream: seed 1 gives 548985, 764588)                           |
-| `0002-graph-seedable-GraphIdentifierGenerator-random.patch` (added with the `.elkj` harness modes, `9ec3d1d5`) | `GraphIdentifierGenerator` resolves id collisions with an unseeded `Random`; the patch seeds it from the system property `org.eclipse.elk.graph.util.identifierSeed` (unset = ELK behavior). Only the harness convert mode sets it                                                                                                                                                                   | None: the TS port parses the converted files and needs no paired seam (D12, stated in the patch message)                                                                                                                                                    |
-| `0003-alg.test-pluggable-label-text-measurer.patch` (row 10, TX1, TX2)                                         | In the test bundle `org.eclipse.elk.alg.test` only, `TestConfiguration.computeLabelSize` takes a label's size from `TextMeasurer.fromSystemProperty()`. The property `org.eclipse.elk.alg.test.textMeasurer` selects the measurer: unset or `awt` keeps the AWT font metrics (the default, unchanged), `fixed` gives `[length × 6, 12]`, any other value throws `IllegalArgumentException` naming it | `test/helpers/layout-test-text-measurer.ts` (`TextMeasurer`, `AWT_SNAPSHOT_TEXT_MEASURER`, `FIXED_ADVANCE_TEXT_MEASURER`, `textMeasurerFrom`); env `ELK_TEST_TEXT_MEASURER` with the same values and the same throw ([text-sizing-seam](#text-sizing-seam)) |
+| Patch                                                                                                          | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Paired TS seam                                                                                                                                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0001-graph.json-seedable-JsonExporter-id-collision-random.patch` (D5b)                                        | `JsonExporter` resolves id collisions with `"_g" + Random.nextInt(1000000)`; the patch seeds that `Random` from the system property `org.eclipse.elk.graph.json.exportSeed` (unset = ELK behavior). `run.sh` passes `EXPORT_SEED=1`                                                                                                                                                                                                                                                                                                                         | Optional `random` parameter of the `JsonExporter` constructor (J4, [elk-json.md](architecture/elk-json.md#exporter-random)); tests pass `new Random(1)` (the TS `Random` shim reproduces the stream: seed 1 gives 548985, 764588)                           |
+| `0002-graph-seedable-GraphIdentifierGenerator-random.patch` (added with the `.elkj` harness modes, `9ec3d1d5`) | `GraphIdentifierGenerator` resolves id collisions with an unseeded `Random`; the patch seeds it from the system property `org.eclipse.elk.graph.util.identifierSeed` (unset = ELK behavior). Only the harness convert mode sets it                                                                                                                                                                                                                                                                                                                          | None: the TS port parses the converted files and needs no paired seam (D12, stated in the patch message)                                                                                                                                                    |
+| `0003-alg.test-pluggable-label-text-measurer.patch` (row 10, TX1, TX2)                                         | In the test bundle `org.eclipse.elk.alg.test` only, `TestConfiguration.computeLabelSize` takes a label's size from `TextMeasurer.fromSystemProperty()`. The property `org.eclipse.elk.alg.test.textMeasurer` selects the measurer: unset or `awt` keeps the AWT font metrics (the default, unchanged), `fixed` gives `[length × 6, 12]`, any other value throws `IllegalArgumentException` naming it                                                                                                                                                        | `test/helpers/layout-test-text-measurer.ts` (`TextMeasurer`, `AWT_SNAPSHOT_TEXT_MEASURER`, `FIXED_ADVANCE_TEXT_MEASURER`, `textMeasurerFrom`); env `ELK_TEST_TEXT_MEASURER` with the same values and the same throw ([text-sizing-seam](#text-sizing-seam)) |
+| `0004-Report-all-overlaps-of-a-node-inserted-into-the-over.patch` (issue #111)                                 | In `org.eclipse.elk.alg.common`, `ScanlineOverlapCheck`'s handler `insert` no longer ends its walk over the scanline at the first node that does not overlap the inserted node once an overlap was found. It ends at the first node whose left side is at or right of the inserted node's right side (`DoubleMath.fuzzyCompare(…, InternalProperties.FUZZINESS) >= 0`), so the scanline reports every overlapping pair. Only `sporeOverlap` (`OverlapRemovalLayoutProvider`) runs that check. The patch also adds two tests to `ScanlineOverlapRemovalTest` | None: a carried upstream fix (eclipse-elk/elk#1247), not a seam. It is ported at its site, `src/alg/common/spore/ScanlineOverlapCheckHandler.ts` ([carried upstream patches](#carried-upstream-patches))                                                    |
 
-Patches exist only to add narrowly scoped seams that make JVM and JS behavior comparable;
-each is paired with a TS-side seam (section 4). Patch `0002` is the one exception: it needs no TS seam, as its row says.
+Patches are of two kinds. A **seam patch** (`0001`-`0003`) adds a narrowly scoped seam that makes JVM and JS behavior
+comparable; each is paired with a TS-side seam (section 4). Patch `0002` is the one exception: it needs no TS seam, as its row
+says. A **carried upstream patch** (`0004`) is a fix filed upstream as a pull request that the pin does not hold yet; it changes
+what ELK computes, and the port follows the patched Java ([carried upstream patches](#carried-upstream-patches)).
 
 **Why not elkjs?** elkjs is ELK compiled by GWT. It cannot carry our patch
 series, and GWT emulation of the JRE differs from the JVM we are porting from.
 It is not consulted as an oracle.
+
+### Carried upstream patches {#carried-upstream-patches}
+
+A fix that is filed upstream and not merged yet is carried as an oracle patch, as if it were merged (maintainer ruling of
+2026-11-13, issue #111). The patch is the pull request's head commit, exported with `git format-patch` (never written by
+hand), and the port follows the patched Java at its site, with a comment naming the pull request and the patch. Tests the
+pull request adds are ported like any other JUnit test. A carried patch is dropped in the mission that moves the pin past
+the pull request's merge ([elk-upgrade.md](architecture/elk-upgrade.md#elk-upgrade-patches)). If the pull request's head
+moves or it is closed without a merge, the patch is neither refreshed nor dropped without a ruling.
+
+| Patch  | Upstream                                                                                                                                                                                  | Head commit                                                             | What changes                                                                                                                                                                                                                                                                                                | Port site                                                                                                                                                         |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0004` | [eclipse-elk/elk#1247](https://github.com/eclipse-elk/elk/pull/1247), fixes [eclipse-elk/elk#1246](https://github.com/eclipse-elk/elk/issues/1246) (fork: knowvah/elk#19, knowvah/elk#26) | `1bf1da95561140eb78d70d5dd747dd46803ead2a`, parent `8bca22f4` (the pin) | `ScanlineOverlapCheck.java` (+5 −6): the walk in `OverlapsScanlineHandler.insert` ends at the first node that starts at or right of the inserted node's right side, where it used to end at the first node without an overlap after one with an overlap. `ScanlineOverlapRemovalTest.java` (+62): two tests | `ScanlineOverlapCheckHandler.insert` (`src/alg/common/spore/ScanlineOverlapCheckHandler.ts`); the two tests in `src/alg/spore/ScanlineOverlapRemovalTest.test.ts` |
+
+**Refs that moved with `0004`** (regenerated by script on the patched oracle, 2026-11-20; every other ref is byte-identical):
+
+- `test/golden/refs/java/alg-common.json`: 3 of the 8 `scanline` rows of the `spore` group gain handler calls, the old
+  sequence staying a subsequence of the new one: `scanline-random-n16` 14 → 17, `scanline-random-n24` 40 → 51,
+  `scanline-dense-n30` 84 → 166.
+- `test/golden/refs/java/spore-layout.json`: 23 of 340 rows, all `sporeOverlap`: 14 `stops` rows (twelve of `deco10`,
+  `grid4/default`, `scanlineHitboxes/default`) and 9 `minst` rows (`gridO3`, `gridO4`, `gridO5`, `polyO6`, `polyO8`,
+  `randO12`, `deco10`, `plain14`, `randO20`). In the `stops` rows only `scanline`, `triangulation` and `tree` stops differ
+  (more scanline pairs, and the candidate edges, hash classification and weights that follow); every `grow`, `update` and
+  `end` stop is equal, so these rows end at the same positions. No `full`, `throws`, `jitter` or `objects` row and no
+  `sporeCompaction` row changed.
+- `test/golden/refs/elk-packing/sporeOverlap--overlapRemoval.maxIterations-1.json`: two node positions and one edge
+  section. The other six `sporeOverlap--*.json` goldens are unchanged.
+- The `patches` array of the ten `_meta.json` files under `test/golden/refs/` gains the patch's file name.
+
+**Corpus sweep with `0004`** (`tools/oracle/sweep.sh --filter /sporeOverlap/ --out <scratch>`, 906 cases, 2026-11-20):
+880 `ok` and 26 `throws` on the oracle; the port agrees on all 906 (880 `ok`, 26 `both-throw`, no mismatch). Against the
+sweep before the patch, 609 of the 879 cases that lay out both times have a different output, and one case no longer
+throws: `retarget/sporeOverlap/default/realworld/ptolemy/hierarchical/pn_brockackerman_BrockAckerman`. Its root holds two
+compound nodes with `NaN` rectangles (the #108 cases). The scanline's `TreeSet` orders nodes by left side, then centre x,
+then centre y (`ScanlineOverlapCheck.java:131-141`); the two share the left side and, from the second iteration, a `NaN`
+centre y, so only the centre x can tell them apart. Before the patch both were 509.73 wide after their own layouts, the
+centres tied, and the second insertion threw "Invalid hitboxes for scanline overlap calculation."; with the patch their
+own layouts find more overlaps and end 643.34 and 442.99 wide, so the centres differ. The other 26 throws are unchanged. `docs/parity-report.md` and the full sweep cache it was generated from predate the
+patch: their `sporeOverlap` rows (879 `ok`, 27 `throws`) describe the unpatched oracle until the next full sweep.
 
 ## 1a. Conformance unit
 
@@ -347,16 +390,19 @@ test yet; it arrives with the first ported algorithm.
 
 ## 4. Seam patches
 
-Seam patches change the oracle; they are rare and always paired with a TS seam.
+Seam patches change the oracle; they are rare and always paired with a TS seam. A carried upstream patch
+([section 1](#carried-upstream-patches)) is installed by the same steps; in place of step 3 the patched Java is ported at
+its site, and its tests with it.
 
 1. Edit and commit in the oracle worktree (`$ELK_ORACLE_DIR`), or author the patch in a scratch
    clone at `ELK_COMMIT`. To add a finished patch to the existing worktree in place (keeps the
-   `census/` and `sweep/` caches, which removing the worktree deletes), apply it with
+   `census/`, `sweep/` and `vector-cache/` roots, which removing the worktree deletes), apply it with
    `build.sh`'s identity:
    `git -C "$ELK_ORACLE_DIR" -c user.name=elk-engine-oracle \
 -c user.email=oracle@invalid am --3way <patch>`;
    `build.sh` then verifies the series and rebuilds in place (about 3 minutes), so steps 4-5
-   can be skipped.
+   can be skipped. The rebuild rewrites `oracle-build.json`, which is part of every vector-cache
+   salt, so each cached recorder still runs cold once after it.
 2. Export:
    `git -C "$ELK_ORACLE_DIR" format-patch -o tools/oracle/patches <ELK_COMMIT>..HEAD`
    (or only the new commits). Files are named `NNNN-<slug>.patch`; the numeric
@@ -379,8 +425,8 @@ Never leave an uncommitted edit in the worktree: `build.sh` treats it as stale
 
 | Failure                                                                             | Detection                                                                                                                                                                                                                                                               | Mitigation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tycho build fails (p2 unreachable, JDK, Maven version)                              | `tools/oracle/build.sh` exits non-zero; full Maven output in `.oracle-build.log` at the repo root. Exit `1` is a missing tool or wrong Maven; exit `3` means a bundle jar was not produced                                                                              | Maven must be **3.9.x**: Tycho 4.0.12 fails on Maven 3.10 (Homebrew's 3.10.0) with `ProvisionException: No implementation for MavenTargetLocationFactory was bound`. A local 3.9.11 lives at `.tools/apache-maven-3.9.11/` (gitignored): `ELK_MVN=$PWD/.tools/apache-maven-3.9.11/bin/mvn tools/oracle/build.sh`. Use JDK 21, or JDK 17 via `JAVA_HOME`. Check network (first run downloads p2 artifacts), then rerun. `build.sh --record-only` skips Maven and only rewrites `oracle-build.json` from jars already built. Exit `2`: remove the worktree (section 4 step 4) and rebuild. Otherwise escalate with the log tail |
-| `build.sh` exits `2` right after applying a patch                                   | Worktree reported stale                                                                                                                                                                                                                                                 | `build.sh` unfolds wrapped patch subjects (`git format-patch` folds those over about 78 chars) and ignores the untracked `census/` and `sweep/` caches; other dirt or an unlisted patch still gives exit `2`: fix the worktree (section 4)                                                                                                                                                                                                                                                                                                                                                                                    |
+| Tycho build fails (p2 unreachable, JDK, Maven version)                              | `tools/oracle/build.sh` exits non-zero; full Maven output in `.oracle-build.log` at the repo root. Exit `1` is a missing tool or wrong Maven; exit `3` means a bundle jar was not produced                                                                              | Maven must be **3.9.x**: Tycho 4.0.12 fails on Maven 3.10 (Homebrew's 3.10.0) with `ProvisionException: No implementation for MavenTargetLocationFactory was bound`. A local 3.9.11 lives at `.tools/apache-maven-3.9.11/` (gitignored): `ELK_MVN=$PWD/.tools/apache-maven-3.9.11/bin/mvn tools/oracle/build.sh`. Use JDK 21, or JDK 17 via `JAVA_HOME`. Check network (first run downloads p2 artifacts), then rerun. `build.sh --record-only` skips Maven and only rewrites `oracle-build.json` from jars already built. Exit `2`: follow the next row before you remove the worktree. Otherwise escalate with the log tail |
+| `build.sh` exits `2` right after applying a patch                                   | Worktree reported stale                                                                                                                                                                                                                                                 | `build.sh` unfolds wrapped patch subjects (`git format-patch` folds those over about 78 chars) and ignores build output, `oracle-build.json` and the untracked root directories `census/`, `sweep/` and `vector-cache/`. Any other untracked directory at the worktree root (put run output under `sweep/`), a tracked change or an unlisted patch still gives exit `2`; `git -C "$ELK_ORACLE_DIR" status --porcelain` names the dirt. Fix the worktree (section 4); removing it (step 4) is the last resort, because it deletes the three caches                                                                             |
 | Golden drift after a patch or commit bump                                           | `tools/oracle/regen-goldens.sh` followed by `git diff --exit-code test/golden/refs` is non-empty; `test/golden/oracle-refs.test.ts` fails on a stale `_meta.json` (`elkCommit`, `modelsCommit`); a TS conformance test, once present, fails with a `formatDiffs` report | Rebuild (`build.sh`), run `regen-goldens.sh`, review the diff, journal the patch id. Never hand-edit a ref or loosen `tol`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Xtext/ANTLR jar missing from the p2 cache (`.elkt`, `.elkr`, or any `run.sh` start) | `run.sh` exits non-zero with `bundle <name> not in p2 cache <dir>` (e.g. `org.eclipse.xtext`, `org.antlr.runtime`, `org.eclipse.xtext.xbase`)                                                                                                                           | Set `P2_BUNDLES` to the Tycho p2 cache that holds it, or run `build.sh` with network access so Tycho fetches it; rerun `run.sh`. Do not substitute jars from elsewhere                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | Sweep hang or OOM                                                                   | A case runs to the timeout and reports `timeout` (a stderr line names it); a run with no result line gives `oracle-error` and `sweep: shard <n> run <A or B> exited <code>` on stderr; the machine swaps under 8 concurrent JVMs                                        | Lower concurrency and batch size: `sweep.sh --shards 2`, narrow with `--filter` or `--limit`. Raise `ELK_SWEEP_TIMEOUT_MS` only for a model that is slow but correct. A reproducible `timeout` is a finding: journal the case id, do not widen the limit to hide it                                                                                                                                                                                                                                                                                                                                                           |
@@ -947,9 +993,9 @@ test/golden/inputs/` shows only the added `refs/java/node-micro-layout.json`.
   here; unreachable, because `NodeLabelCellCreator.java:80` returns first (T2). Each site is unreachable from
   `NodeMicroLayout`.
 - **`assert` sites (NS5).** `PortLabelPlacementCalculator.java:208` is a `devAssert` call since issue #45
-  (translation rules 6.8). `NodeContext.java:277` and
-  `HorizontalPortPlacementSizeCalculator.java:212` stay comments naming the line: a unit test and nine `adapters` sweep
-  rows drive them on purpose, and the Java asserts fire there under `-ea` too (issue #113).
+  (translation rules 6.8), `NodeContext.java:277` and `HorizontalPortPlacementSizeCalculator.java:212` since issue
+  #127. A unit test and nine `adapters` sweep rows drive those two on purpose, where the Java asserts fire under `-ea`
+  too (issue #113); they run that step with assertions off, and a second test pins the `AssertionError`.
 - **Prose typos corrected:** none found in this mission.
 
 **AD-13 re-derivation (mission 6c).** Five 6b unit tests had their hand-derived expectations corrected after a first
@@ -1068,9 +1114,9 @@ was re-recorded once (X4). The port-side view proxy returned `undefined`/`Unsupp
   `NullPointerException`; the JDK 21 helpful-NPE message is not reproduced. The site replay compares those rows by
   class only and every other exception by class and message.
 - **`assert` sites:** `ElkGraphImporter.java:205, 620-621, 789` are `devAssert` calls since issue #45
-  (translation rules 6.8). `LNode.setGraph` and `LGraphUtil.createExternalPortDummy` ×2
-  stay comments: a unit test and four site vectors drive them on purpose, and the Java asserts fire there under `-ea`
-  too (issue #113).
+  (translation rules 6.8), `LNode.setGraph` and `LGraphUtil.createExternalPortDummy` ×2 since issue #127. Two unit tests
+  and four site vectors drive those three on purpose, where the Java asserts fire under `-ea` too (issue #113); they
+  run that step with assertions off, and a second test pins the `AssertionError`.
 - **TS-only surface:** `isHierarchyAwareLayoutProcessor`'s null/primitive guards (the brand stands in for `instanceof`);
   the `getPortSideView` proxy's membership-by-index trap.
 - **Staged boundary:** `LayeredLayoutProvider.layout` reaches `ElkLayered.doLayout`/`doCompoundLayout`, which throw
@@ -1158,6 +1204,13 @@ Decisions: `plans/layered-crossing-min/decisions.md` (C1–C13).
   `ModelOrderBarycenterHeuristicTest`, `PortListSorterTest`, `LongEdgeSplitterTest`, `InvertedPortProcessorTest`,
   `PortSideProcessorTest`, `NorthSouthPortPreprocessorTest`, `SortByInputModelProcessorTest`,
   `BasicConsiderModelOrderTest`) ported verbatim over the replayed rows of their Java configurations.
+  `InvertedPortProcessorTest.testValidNodeOrder` reaches no assertion on its 13 ptolemy rows (the nine vendored ptolemy
+  inputs have no edge leaving a WEST port or entering an EAST port of a side-fixed node), so since 2026-11-21 (issue
+  #49) the port of the test also runs on the 16 other rows that end at `INVERTED_PORT_PROCESSOR` behind
+  `PORT_SIDE_PROCESSOR`: six of them execute assertions (`scenarios/InvertedPortProcessor/inverted-ports` 5 edges,
+  `…/long-edges` 3, `sites/HeadLabels/invertedPort/{short, both}` and `sites/HeadLabels/westOutput` 1 each,
+  `models/ticket-528-violatedNodeOrder/root` 1) and pass. `sites/InvertedPortProcessor/freePorts` omits
+  `PORT_SIDE_PROCESSOR` on purpose and is outside the Java test's contract.
 - Breadth sweep (B6, gitignored): 6,728 oracle cases at the P3 stop over the 1,682 edge-bearing hierarchy levels of
   all 550 ptolemy models, once per `CrossingMinimizationStrategy` (6,280 ok, 448 refused, 0 throws, 0 timeouts); the
   port's canonical order-dump hash equals the oracle's for every ok case (stride 1).
@@ -1225,17 +1278,24 @@ oracle's pipeline recorded at the P4 stop and at each processor. Decisions: `pla
 
 **Evidence.**
 
-- `test/golden/refs/java/layered-placement.json` (5,242,236 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
-  `tools/vectors/layered-placement-vectors.sh`, JVM flag `-XX:hashCode=2`): 604 rows, byte-stable; `models` 494 (the
+- `test/golden/refs/java/layered-placement.json` (5,311,993 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-placement-vectors.sh`, JVM flag `-XX:hashCode=2`): 610 rows, byte-stable; `models` 494 (the
   vendored ptolemy models and `.elkt` inputs at every edge-bearing hierarchy level, the 22 `tests/layered/node_placement`
   `.elkt` newly vendored, run through the real Java pipeline to the P4 class per `NodePlacementStrategy`, to each of the
   five processors, and on the variant set to the BK straightening × alignment matrix, `favorStraightEdges`,
   `deflectionDampening` and the three flexibility defaults with and without `recomputeNodePlacement`), `scenarios` 84
-  (step rows: two or more small graphs per strategy, BK configuration, flexibility value and processor), `sites` 26
-  (step rows for the T9 branch scenarios). Every row carries `geometry` (node position, size and margin; layer sizes;
+  (step rows: two or more small graphs per strategy, BK configuration, flexibility value and processor), `sites` 32
+  (step rows for the T9 branch scenarios, and since 2026-11-21 the six `sites/HierarchicalPortDummySizeProcessor/*` rows
+  of issue #49). Every row carries `geometry` (node position, size and margin; layer sizes;
   port and label positions where the stop moves them or a node is flexible, N3). `LayeredPlacementVectors.test.ts`
-  replays all 604 at the AD-4 bar (coordinates within 1e-6, orders exact); step rows under ten nodes also match the
+  replays all 610 at the AD-4 bar (coordinates within 1e-6, orders exact); step rows under ten nodes also match the
   full 7a dump.
+- `HierarchicalPortDummySizeProcessor`'s `delta` (twice `spacing.edgeEdgeBetweenLayers`) and the `step` of `setWidths`
+  are oracle values since 2026-11-21 (issue #49): the six `sites/HierarchicalPortDummySizeProcessor/*` rows
+  (`two-north`, `two-south`, `three-north`, `three-south`, `two-south-out`, `mixed`) put two or three north or south
+  external-port dummies in one layer (spacing 7: widths `[0, 14]`, `[14, 0]`, `[0, 14, 28]`, `[28, 14, 0]`; the dummy's
+  EAST port moves to its width).
+  Every earlier row held at most one such dummy per layer.
 - The JUnit invariant `BasicNodePlacementTest.testProperCoordinates` ported verbatim over the `models` P4 rows of its
   15 runs (14 configurator providers and the default; 236 row cases); the Java suite runs on the oracle with
   `MODELS_REPO=$ELK_MODELS_DIR bash tools/oracle/java-tests.sh …BasicNodePlacementTest`: `runs=8008 failures=0` at
@@ -1261,7 +1321,7 @@ the recorder's `-XX:hashCode=2` gives the Java up to 10 entries; `BKNodePlacer.j
 **Divergences found during the mission, fixed at origin.** None reached the oracle rows: a draft chained
 `.origin(lEdge)` on two network-simplex auxiliary edges where the Java (`NEdge.java:59-61`) discards the argument
 (removed before commit); hand-built tests with Java-derived behavioural literals were removed under L4 and routed
-through site rows. No numeric divergence between the port and the oracle in 604 rows and 1,970 sweep cases.
+through site rows. No numeric divergence between the port and the oracle in 610 rows and 1,970 sweep cases.
 
 **Known divergences found.** None numeric. Open by design:
 
@@ -1298,18 +1358,19 @@ pipeline recorded at the P5 stop of each router and at each processor. Decisions
 
 **Evidence.**
 
-- `test/golden/refs/java/layered-routing.json` (5,190,239 bytes) and `layered-routing-steps.json` (1,734,502 bytes;
+- `test/golden/refs/java/layered-routing.json` (5,190,239 bytes) and `layered-routing-steps.json` (1,789,169 bytes;
   JDK 21.0.1; oracle `8aaa3c14`; recorder `tools/vectors/layered-routing-vectors.sh`, JVM flags `-XX:hashCode=2
--XX:-OmitStackTraceInFastThrow`): 943 rows, byte-stable; `models` 666 (the vendored models at every edge-bearing
+-XX:-OmitStackTraceInFastThrow`): 950 rows, byte-stable; `models` 666 (the vendored models at every edge-bearing
   hierarchy level, the 32 `tests/layered/{splines,hyperedge_merging,hierarchical_ports}` and ticket inputs newly
   vendored, run through the real Java pipeline to `LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR`, `P5` under each of the three
   routers, `LONG_EDGE_JOINER`, `NORTH_SOUTH_PORT_POSTPROCESSOR`, `FINAL_SPLINE_BENDPOINTS_CALCULATOR`,
   `HIERARCHICAL_PORT_POSITION_PROCESSOR`, and `HYPEREDGE_DUMMY_MERGER` + `P4` on the hyperedge levels 7d refused; on the
   variant set the bend-point, merge-edges, sloppy-spline, polyline-zone, spacing and feedback-edge families),
-  `scenarios` 94 (step rows: eleven graph shapes per router, the option families, the six processors), `sites` 25 (the
-  T11 branch scenarios), `calls` 158 (direct calls of the spline geometry classes and the self-loop factories). Every
+  `scenarios` 94 (step rows: eleven graph shapes per router, the option families, the six processors), `sites` 32 (the
+  T11 branch scenarios, and since 2026-11-21 the seven splitter rows of issue #49), `calls` 158 (direct calls of the
+  spline geometry classes and the self-loop factories). Every
   row carries `geometry` with the graph size and offset, every edge's bend and junction points and, at a SPLINES P5
-  stop, the spline segment summaries (R3). `LayeredRoutingVectors.test.ts` replays all 943 at the AD-4 bar
+  stop, the spline segment summaries (R3). `LayeredRoutingVectors.test.ts` replays all 950 at the AD-4 bar
   (coordinates within 1e-6, orders exact); step rows under ten nodes also match the full 7a dump.
 - The JUnit invariants `BasicEdgeRouterTest.checkEdgeRouteIsOrthogonal` (orthogonal configurator only, as upstream),
   `Issue726Test.testOrthogonalEdges` and `LayerSizeAndGraphHeigthCalculatorTest.testAllNodesContained` ported verbatim
@@ -1341,7 +1402,7 @@ semantics, membership only; `HyperEdgeCycleDetector.java:152` keeps its `TreeSet
 null `SPLINE_NS_PORT_Y_COORD` flow where the Java unboxes and throws (explicit `TypeError`, AD-16); the landed 7a dump
 context named a removed node as a fresh `ref` and the enum registry lacked `EdgeRouting` (both twinned in the 7e
 helpers, the landed helpers untouched); one hand-derived test expectation (`isStraight(10, 10.2)`) was wrong in
-floating point and was replaced by a twin (L4). No numeric divergence between the port and the oracle in 943 rows and
+floating point and was replaced by a twin (L4). No numeric divergence between the port and the oracle in 950 rows and
 6,280 sweep cases.
 
 **Known divergences found.** None numeric. Open by design:
@@ -1362,7 +1423,13 @@ floating point and was replaced by a twin (L4). No numeric divergence between th
   two `sites/FinalSplineBendpoints/compaction/*` rows set the compaction option without the 7g compactor; every other
   site row equals its pipeline twin.
 - **Unreached arms with a named mechanism:** `plans/layered-edge-routing/unreached.md` § T13 corrections (the far arms of
-  `segmentAllowsSloppyRouting`, provably unreachable by the horizontal placement; three Medium splitter arms).
+  `segmentAllowsSloppyRouting`, provably unreachable by the horizontal placement). The three Medium splitter arms it
+  lists (`HyperEdgeSegmentSplitter.ts:220`, `:400`, `:406`) are reached since 2026-11-21 (issue #49) by the layout rows
+  `sites/HyperEdgeSegmentSplitter/noFreeArea/{unbounded, finite, consumed}`,
+  `…/areaStartRounding/{single, consumed}` and `…/areaEndRounding/{single, consumed}`: a segment with no free area in
+  reach is split at its centre, and a new area is dropped when rounding puts `centre ∓ threshold` one ulp outside the
+  used area. Breakpoints on the oracle JVM confirm each arm; the generic replay now takes every branch of the splitter.
+  Mechanisms, counts and the corrections to the earlier record: `plans/layered-evidence-gaps/unreached.md`.
 - **Randomness scope:** the two draws (`HyperEdgeCycleDetector`, `SplineEdgeRouter.breakCycles`) come from the graph's
   `Random`; rows replay the recorded prefix under seed 1, the `tie` rows under seeds 1 and 4096; no 7e class creates a
   `Random`.
@@ -1379,13 +1446,23 @@ Decisions: `plans/layered-pipeline/decisions.md` (F1–F16, FX1–FX8).
 
 **Evidence.**
 
-- `test/golden/refs/java/layered-pipeline.json` (9,182,521 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
-  `tools/vectors/layered-pipeline-vectors.sh`, `-XX:hashCode=2`): 1,239 rows, byte-stable; `full` 199 (whole layouts
+- `test/golden/refs/java/layered-pipeline.json` (10,156,153 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-pipeline-vectors.sh`, `-XX:hashCode=2`): 1,311 rows, byte-stable; `full` 199 (whole layouts
   through `RecursiveGraphLayoutEngine` with every level's plan: the 4 goldens, 79 vendored models, routing × direction,
   components, options and 20 issue rows), `models` 905 (stops at the six new arms through `ElkLayered`'s test API),
-  `scenarios` 93, `sites` 42. `LayeredPipelineVectors.test.ts` replays 1,181 of them at the AD-4 bar and pins 58 to the
-  throw of a later mission's stage (FX7). The four `refs/elk/ptolemy-*` goldens equal the flagged recorder byte for byte
+  `scenarios` 165, `sites` 42. `LayeredPipelineVectors.test.ts` replays all of them at the AD-4 bar (at 7f it pinned 58
+  to the throw of a later mission's stage, FX7; `PINNED_PIPELINE_ROWS` is empty today). The four `refs/elk/ptolemy-*`
+  goldens equal the flagged recorder byte for byte
   and the TS layout at AD-4.
+- Port alignment and port border offsets through layered layouts (2026-11-21, issue #49): 72 `scenarios` rows,
+  `scenarios/PortAlignment/*` (27 graphs: `portAlignment.default` × BEGIN, CENTER, END, JUSTIFIED, DISTRIBUTED; each
+  side's option × BEGIN, CENTER, END, JUSTIFIED; a default with two side overrides; single-port sides; overhanging
+  ports) and `scenarios/PortBorderOffset/*` (9 graphs: `port.borderOffset` +5 and −5 on north and south ports, alone,
+  under BEGIN and END, on every side, and mixed), each graph recorded at `LABEL_AND_NODE_SIZE_PROCESSOR` (`…/ports`:
+  every port position is compared) and at the end of the plan (`…/end`). Layered sizes nodes through
+  `NodeDimensionCalculation`, never `NodeMicroLayout`, so this evidence belongs here and not in
+  `node-micro-layout.json`. An unset side is placed DISTRIBUTED (`NodeContext.getPortAlignment` reads the `CoreOptions`
+  default, not the JUSTIFIED default `LayeredOptions` declares); the rows record it.
 - SC4: the 2,351 `models` rows of the 7b–7e refs replay through the real driver with plan equality, 2 pinned (FX6);
   `normalise` and the real configurator are state-equal on all of them.
 - 28 Java suites ported with their own assertions (allocation in `plans/layered-pipeline/suite-allocation.md`: 7f 28,
@@ -2076,7 +2153,8 @@ spore:
   `full/overlap/scanlineHitboxes/default` with its stops. The throw is still reachable through `NaN` rectangles, which the
   scanline `TreeSet` compares as equal (`:131-141`, `Double.compare`): 27 corpus cases, all hierarchical ptolemy models under
   sporeOverlap, where a compound node without a size gets `NaN` port positions from `ElkUtil.resizeNode` (`ElkUtil.java:266-267`)
-  and so a `NaN` margin. Both sides throw the same exception (upstream behaviour, kept).
+  and so a `NaN` margin. Both sides throw the same exception (upstream behaviour, kept). With oracle patch `0004` it is 26
+  cases ([carried upstream patches](#carried-upstream-patches)).
 - `ElkUtil.debugFolderPath('spore')` is `null` in the port and the Java concatenates the string `"null..."`; the five sites write
   `String(...)` (`DelaunayTriangulationPhase.java:46`, `MinSTPhase.java:62`, `MaxSTPhase.java:48`, `GrowTreePhase.java:52`,
   `ShrinkTreeCompactionPhase.java:46`); nothing is written to disk. `DEBUG_SVG` is a programmatic option and is kept.
@@ -2118,6 +2196,8 @@ topdownpacking:
   or `throws` by chance and flickered in the TS comparison. With the seeded shift every spore case has one verdict on the oracle:
   sporeCompaction 906 `ok`; sporeOverlap 879 `ok` and 27 `throws` (the `NaN` scanline cases above). The port agrees on all 1,812:
   906 `ok`, and 879 `ok` with 27 `both-throw`. The six `#79` annotations of `tools/corpus/ts-findings.json` are removed.
+  With oracle patch `0004` sporeOverlap is 880 `ok` and 26 `throws`, and the port agrees on all 906
+  ([carried upstream patches](#carried-upstream-patches)).
 - **Jitter rows (PK4).** The 4 `jitter` rows (corpus inputs x2, `dup5` x2) record invariants only: node count, no remaining
   overlap and an input-derived displacement bound; the TS test checks the same over three runs. Since the `8bca22f4` pin
   `runsAgree` is recorded `true` and the three runs give one dump. Exact values for the seeded shift come from the rows

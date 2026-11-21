@@ -8,6 +8,7 @@ import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { repoRoot } from '../../../../test/corpus/corpus.js';
+import { assertionErrorOf } from '../../../../test/helpers/assertion-error-of.js';
 import { compareLabels, labelsDump, type LabelsExpected } from '../../../../test/helpers/layered-labels-replay-dump.js';
 import { runLabelsRow, type LabelsStepsResult } from '../../../../test/helpers/layered-labels-replay-ops.js';
 import { loadLabelsRows, rowsByGroup } from '../../../../test/helpers/layered-labels-replay-rows.js';
@@ -172,6 +173,34 @@ describe('EndLabelPreprocessor (oracle rows)', () => {
       }
     });
   }
+});
+
+describe('EndLabelPreprocessor under -ea', () => {
+  // `labelStacking_down_up.elkt` has nine edge labels and no label size; the oracle with `JAVA_TOOL_OPTIONS=-ea` throws
+  // at `EndLabelPreprocessor.removeLabelOverlaps` (:377) on it (issue #112, row 32). The row's replay runs with
+  // assertions off (`withEndLabelRule`), so only the preprocessor of this test runs with them on.
+  const UNSIZED_END_LABEL_ROW = `models/edge_label_placement-labelStacking_down_up/root/${PRE}/default`;
+
+  it('throws AssertionError for the empty cell of an end label without a size (EndLabelPreprocessor.java:377)', () => {
+    const row = preRows.find((candidate) => candidate.id === UNSIZED_END_LABEL_ROW)!;
+    let preprocessorRuns = 0;
+    const underEa: Factories = {
+      ...forward,
+      createProcessor: (name) =>
+        name === PRE
+          ? {
+              process: (graph, monitor): void => {
+                preprocessorRuns += 1;
+                throw assertionErrorOf(() => new EndLabelPreprocessor().process(graph, monitor));
+              },
+            }
+          : forward.createProcessor(name),
+    };
+    const error = assertionErrorOf(() => replay(row, underEa));
+    expect(error.message).toBe('');
+    expect(error.stack).toContain('removeLabelOverlaps');
+    expect(preprocessorRuns).toBe(1);
+  });
 });
 
 describe('EndLabelPostprocessor (oracle rows, forward and reversed label cell order)', () => {
