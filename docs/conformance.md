@@ -1204,6 +1204,13 @@ Decisions: `plans/layered-crossing-min/decisions.md` (C1–C13).
   `ModelOrderBarycenterHeuristicTest`, `PortListSorterTest`, `LongEdgeSplitterTest`, `InvertedPortProcessorTest`,
   `PortSideProcessorTest`, `NorthSouthPortPreprocessorTest`, `SortByInputModelProcessorTest`,
   `BasicConsiderModelOrderTest`) ported verbatim over the replayed rows of their Java configurations.
+  `InvertedPortProcessorTest.testValidNodeOrder` reaches no assertion on its 13 ptolemy rows (the nine vendored ptolemy
+  inputs have no edge leaving a WEST port or entering an EAST port of a side-fixed node), so since 2026-11-21 (issue
+  #49) the port of the test also runs on the 16 other rows that end at `INVERTED_PORT_PROCESSOR` behind
+  `PORT_SIDE_PROCESSOR`: six of them execute assertions (`scenarios/InvertedPortProcessor/inverted-ports` 5 edges,
+  `…/long-edges` 3, `sites/HeadLabels/invertedPort/{short, both}` and `sites/HeadLabels/westOutput` 1 each,
+  `models/ticket-528-violatedNodeOrder/root` 1) and pass. `sites/InvertedPortProcessor/freePorts` omits
+  `PORT_SIDE_PROCESSOR` on purpose and is outside the Java test's contract.
 - Breadth sweep (B6, gitignored): 6,728 oracle cases at the P3 stop over the 1,682 edge-bearing hierarchy levels of
   all 550 ptolemy models, once per `CrossingMinimizationStrategy` (6,280 ok, 448 refused, 0 throws, 0 timeouts); the
   port's canonical order-dump hash equals the oracle's for every ok case (stride 1).
@@ -1271,17 +1278,24 @@ oracle's pipeline recorded at the P4 stop and at each processor. Decisions: `pla
 
 **Evidence.**
 
-- `test/golden/refs/java/layered-placement.json` (5,242,236 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
-  `tools/vectors/layered-placement-vectors.sh`, JVM flag `-XX:hashCode=2`): 604 rows, byte-stable; `models` 494 (the
+- `test/golden/refs/java/layered-placement.json` (5,311,993 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-placement-vectors.sh`, JVM flag `-XX:hashCode=2`): 610 rows, byte-stable; `models` 494 (the
   vendored ptolemy models and `.elkt` inputs at every edge-bearing hierarchy level, the 22 `tests/layered/node_placement`
   `.elkt` newly vendored, run through the real Java pipeline to the P4 class per `NodePlacementStrategy`, to each of the
   five processors, and on the variant set to the BK straightening × alignment matrix, `favorStraightEdges`,
   `deflectionDampening` and the three flexibility defaults with and without `recomputeNodePlacement`), `scenarios` 84
-  (step rows: two or more small graphs per strategy, BK configuration, flexibility value and processor), `sites` 26
-  (step rows for the T9 branch scenarios). Every row carries `geometry` (node position, size and margin; layer sizes;
+  (step rows: two or more small graphs per strategy, BK configuration, flexibility value and processor), `sites` 32
+  (step rows for the T9 branch scenarios, and since 2026-11-21 the six `sites/HierarchicalPortDummySizeProcessor/*` rows
+  of issue #49). Every row carries `geometry` (node position, size and margin; layer sizes;
   port and label positions where the stop moves them or a node is flexible, N3). `LayeredPlacementVectors.test.ts`
-  replays all 604 at the AD-4 bar (coordinates within 1e-6, orders exact); step rows under ten nodes also match the
+  replays all 610 at the AD-4 bar (coordinates within 1e-6, orders exact); step rows under ten nodes also match the
   full 7a dump.
+- `HierarchicalPortDummySizeProcessor`'s `delta` (twice `spacing.edgeEdgeBetweenLayers`) and the `step` of `setWidths`
+  are oracle values since 2026-11-21 (issue #49): the six `sites/HierarchicalPortDummySizeProcessor/*` rows
+  (`two-north`, `two-south`, `three-north`, `three-south`, `two-south-out`, `mixed`) put two or three north or south
+  external-port dummies in one layer (spacing 7: widths `[0, 14]`, `[14, 0]`, `[0, 14, 28]`, `[28, 14, 0]`; the dummy's
+  EAST port moves to its width).
+  Every earlier row held at most one such dummy per layer.
 - The JUnit invariant `BasicNodePlacementTest.testProperCoordinates` ported verbatim over the `models` P4 rows of its
   15 runs (14 configurator providers and the default; 236 row cases); the Java suite runs on the oracle with
   `MODELS_REPO=$ELK_MODELS_DIR bash tools/oracle/java-tests.sh …BasicNodePlacementTest`: `runs=8008 failures=0` at
@@ -1307,7 +1321,7 @@ the recorder's `-XX:hashCode=2` gives the Java up to 10 entries; `BKNodePlacer.j
 **Divergences found during the mission, fixed at origin.** None reached the oracle rows: a draft chained
 `.origin(lEdge)` on two network-simplex auxiliary edges where the Java (`NEdge.java:59-61`) discards the argument
 (removed before commit); hand-built tests with Java-derived behavioural literals were removed under L4 and routed
-through site rows. No numeric divergence between the port and the oracle in 604 rows and 1,970 sweep cases.
+through site rows. No numeric divergence between the port and the oracle in 610 rows and 1,970 sweep cases.
 
 **Known divergences found.** None numeric. Open by design:
 
@@ -1344,18 +1358,19 @@ pipeline recorded at the P5 stop of each router and at each processor. Decisions
 
 **Evidence.**
 
-- `test/golden/refs/java/layered-routing.json` (5,190,239 bytes) and `layered-routing-steps.json` (1,734,502 bytes;
+- `test/golden/refs/java/layered-routing.json` (5,190,239 bytes) and `layered-routing-steps.json` (1,789,169 bytes;
   JDK 21.0.1; oracle `8aaa3c14`; recorder `tools/vectors/layered-routing-vectors.sh`, JVM flags `-XX:hashCode=2
--XX:-OmitStackTraceInFastThrow`): 943 rows, byte-stable; `models` 666 (the vendored models at every edge-bearing
+-XX:-OmitStackTraceInFastThrow`): 950 rows, byte-stable; `models` 666 (the vendored models at every edge-bearing
   hierarchy level, the 32 `tests/layered/{splines,hyperedge_merging,hierarchical_ports}` and ticket inputs newly
   vendored, run through the real Java pipeline to `LAYER_SIZE_AND_GRAPH_HEIGHT_CALCULATOR`, `P5` under each of the three
   routers, `LONG_EDGE_JOINER`, `NORTH_SOUTH_PORT_POSTPROCESSOR`, `FINAL_SPLINE_BENDPOINTS_CALCULATOR`,
   `HIERARCHICAL_PORT_POSITION_PROCESSOR`, and `HYPEREDGE_DUMMY_MERGER` + `P4` on the hyperedge levels 7d refused; on the
   variant set the bend-point, merge-edges, sloppy-spline, polyline-zone, spacing and feedback-edge families),
-  `scenarios` 94 (step rows: eleven graph shapes per router, the option families, the six processors), `sites` 25 (the
-  T11 branch scenarios), `calls` 158 (direct calls of the spline geometry classes and the self-loop factories). Every
+  `scenarios` 94 (step rows: eleven graph shapes per router, the option families, the six processors), `sites` 32 (the
+  T11 branch scenarios, and since 2026-11-21 the seven splitter rows of issue #49), `calls` 158 (direct calls of the
+  spline geometry classes and the self-loop factories). Every
   row carries `geometry` with the graph size and offset, every edge's bend and junction points and, at a SPLINES P5
-  stop, the spline segment summaries (R3). `LayeredRoutingVectors.test.ts` replays all 943 at the AD-4 bar
+  stop, the spline segment summaries (R3). `LayeredRoutingVectors.test.ts` replays all 950 at the AD-4 bar
   (coordinates within 1e-6, orders exact); step rows under ten nodes also match the full 7a dump.
 - The JUnit invariants `BasicEdgeRouterTest.checkEdgeRouteIsOrthogonal` (orthogonal configurator only, as upstream),
   `Issue726Test.testOrthogonalEdges` and `LayerSizeAndGraphHeigthCalculatorTest.testAllNodesContained` ported verbatim
@@ -1387,7 +1402,7 @@ semantics, membership only; `HyperEdgeCycleDetector.java:152` keeps its `TreeSet
 null `SPLINE_NS_PORT_Y_COORD` flow where the Java unboxes and throws (explicit `TypeError`, AD-16); the landed 7a dump
 context named a removed node as a fresh `ref` and the enum registry lacked `EdgeRouting` (both twinned in the 7e
 helpers, the landed helpers untouched); one hand-derived test expectation (`isStraight(10, 10.2)`) was wrong in
-floating point and was replaced by a twin (L4). No numeric divergence between the port and the oracle in 943 rows and
+floating point and was replaced by a twin (L4). No numeric divergence between the port and the oracle in 950 rows and
 6,280 sweep cases.
 
 **Known divergences found.** None numeric. Open by design:
@@ -1408,7 +1423,13 @@ floating point and was replaced by a twin (L4). No numeric divergence between th
   two `sites/FinalSplineBendpoints/compaction/*` rows set the compaction option without the 7g compactor; every other
   site row equals its pipeline twin.
 - **Unreached arms with a named mechanism:** `plans/layered-edge-routing/unreached.md` § T13 corrections (the far arms of
-  `segmentAllowsSloppyRouting`, provably unreachable by the horizontal placement; three Medium splitter arms).
+  `segmentAllowsSloppyRouting`, provably unreachable by the horizontal placement). The three Medium splitter arms it
+  lists (`HyperEdgeSegmentSplitter.ts:220`, `:400`, `:406`) are reached since 2026-11-21 (issue #49) by the layout rows
+  `sites/HyperEdgeSegmentSplitter/noFreeArea/{unbounded, finite, consumed}`,
+  `…/areaStartRounding/{single, consumed}` and `…/areaEndRounding/{single, consumed}`: a segment with no free area in
+  reach is split at its centre, and a new area is dropped when rounding puts `centre ∓ threshold` one ulp outside the
+  used area. Breakpoints on the oracle JVM confirm each arm; the generic replay now takes every branch of the splitter.
+  Mechanisms, counts and the corrections to the earlier record: `plans/layered-evidence-gaps/unreached.md`.
 - **Randomness scope:** the two draws (`HyperEdgeCycleDetector`, `SplineEdgeRouter.breakCycles`) come from the graph's
   `Random`; rows replay the recorded prefix under seed 1, the `tie` rows under seeds 1 and 4096; no 7e class creates a
   `Random`.
@@ -1425,13 +1446,23 @@ Decisions: `plans/layered-pipeline/decisions.md` (F1–F16, FX1–FX8).
 
 **Evidence.**
 
-- `test/golden/refs/java/layered-pipeline.json` (9,182,521 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
-  `tools/vectors/layered-pipeline-vectors.sh`, `-XX:hashCode=2`): 1,239 rows, byte-stable; `full` 199 (whole layouts
+- `test/golden/refs/java/layered-pipeline.json` (10,156,153 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
+  `tools/vectors/layered-pipeline-vectors.sh`, `-XX:hashCode=2`): 1,311 rows, byte-stable; `full` 199 (whole layouts
   through `RecursiveGraphLayoutEngine` with every level's plan: the 4 goldens, 79 vendored models, routing × direction,
   components, options and 20 issue rows), `models` 905 (stops at the six new arms through `ElkLayered`'s test API),
-  `scenarios` 93, `sites` 42. `LayeredPipelineVectors.test.ts` replays 1,181 of them at the AD-4 bar and pins 58 to the
-  throw of a later mission's stage (FX7). The four `refs/elk/ptolemy-*` goldens equal the flagged recorder byte for byte
+  `scenarios` 165, `sites` 42. `LayeredPipelineVectors.test.ts` replays all of them at the AD-4 bar (at 7f it pinned 58
+  to the throw of a later mission's stage, FX7; `PINNED_PIPELINE_ROWS` is empty today). The four `refs/elk/ptolemy-*`
+  goldens equal the flagged recorder byte for byte
   and the TS layout at AD-4.
+- Port alignment and port border offsets through layered layouts (2026-11-21, issue #49): 72 `scenarios` rows,
+  `scenarios/PortAlignment/*` (27 graphs: `portAlignment.default` × BEGIN, CENTER, END, JUSTIFIED, DISTRIBUTED; each
+  side's option × BEGIN, CENTER, END, JUSTIFIED; a default with two side overrides; single-port sides; overhanging
+  ports) and `scenarios/PortBorderOffset/*` (9 graphs: `port.borderOffset` +5 and −5 on north and south ports, alone,
+  under BEGIN and END, on every side, and mixed), each graph recorded at `LABEL_AND_NODE_SIZE_PROCESSOR` (`…/ports`:
+  every port position is compared) and at the end of the plan (`…/end`). Layered sizes nodes through
+  `NodeDimensionCalculation`, never `NodeMicroLayout`, so this evidence belongs here and not in
+  `node-micro-layout.json`. An unset side is placed DISTRIBUTED (`NodeContext.getPortAlignment` reads the `CoreOptions`
+  default, not the JUSTIFIED default `LayeredOptions` declares); the rows record it.
 - SC4: the 2,351 `models` rows of the 7b–7e refs replay through the real driver with plan equality, 2 pinned (FX6);
   `normalise` and the real configurator are state-equal on all of them.
 - 28 Java suites ported with their own assertions (allocation in `plans/layered-pipeline/suite-allocation.md`: 7f 28,

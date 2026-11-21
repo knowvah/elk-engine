@@ -104,8 +104,9 @@ describe('loadRoutingRows', () => {
   it('loads both landed ref files, in the group counts of the oracle recorder', () => {
     const rows = loadRoutingRows(ROUTING_FILE, STEPS_FILE);
     const count = (group: string): number => rows.filter((r) => r.group === group).length;
-    expect([count('models'), count('scenarios'), count('sites'), count('calls')]).toEqual([666, 94, 25, 158]);
-    expect(rows).toHaveLength(666 + 94 + 25 + 158);
+    // sites: 25 + the seven splitter-arm rows of layered-evidence-gaps T3 (#49)
+    expect([count('models'), count('scenarios'), count('sites'), count('calls')]).toEqual([666, 94, 32, 158]);
+    expect(rows).toHaveLength(666 + 94 + 32 + 158);
     expect(new Set(rows.map((r) => r.id)).size).toBe(rows.length);
   });
 

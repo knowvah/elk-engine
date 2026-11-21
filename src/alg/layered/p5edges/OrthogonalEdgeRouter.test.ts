@@ -113,7 +113,8 @@ describe('OrthogonalEdgeRouter (oracle rows)', () => {
       'LONG_EDGE_JOINER/ORTHOGONAL-unnecessary-bendpoints': 3,
       'LONG_EDGE_JOINER/ORTHOGONAL-merge-edges': 3,
       'NORTH_SOUTH_PORT_POSTPROCESSOR/ORTHOGONAL': 24,
-      P5_EDGE_ROUTING: 29,
+      // 29 + the seven `sites/HyperEdgeSegmentSplitter/{noFreeArea,areaStartRounding,areaEndRounding}/*` rows (layered-evidence-gaps T3, #49)
+      P5_EDGE_ROUTING: 36,
       LONG_EDGE_JOINER: 5,
       NORTH_SOUTH_PORT_POSTPROCESSOR: 3,
     });

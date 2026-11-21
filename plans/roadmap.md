@@ -2989,3 +2989,85 @@ functions, no violation line). Coverage, full suite with the nine sweep director
 every finding accepted, no new entry. Gate 7: the D3 recorders and regen scripts rerun on the final tree leave
 `git diff --exit-code test/golden/refs/ test/corpus/generated` empty, and a cache-off rerun of the two vector
 recorders is byte-identical to the committed files.
+
+## Revision 2026-11-21 (layered-evidence-gaps)
+
+Queue mission for issue #49, on `chore/issue-queue` (plan and journal in `plans/layered-evidence-gaps/`). It closes the
+four coverage-evidence follow-ups the layered missions left open (revisions 2026-10-27, 2026-10-30, 2026-11-02 and
+2026-11-03 above). Every new expected value comes from the oracle (`8bca22f4` + patches 0001-0004, no patch change); no
+`src/` file changed, and every new row replays at the AD-4 bar.
+
+**1. `InvertedPortProcessorTest.testValidNodeOrder` (found rows, D1).** The 13 ptolemy rows stay vacuous: the nine
+vendored ptolemy inputs have no edge leaving a WEST port or entering an EAST port of a side-fixed node (0 edges reach an
+assertion on each row). The port of the test now also runs on the 16 other rows of `layered-order.json` that end at
+`INVERTED_PORT_PROCESSOR` behind `PORT_SIDE_PROCESSOR`; six execute assertions and pass
+(`scenarios/InvertedPortProcessor/inverted-ports` 5 edges, `…/long-edges` 3, `sites/HeadLabels/invertedPort/short`,
+`…/both` and `sites/HeadLabels/westOutput` 1 each, `models/ticket-528-violatedNodeOrder/root` 1). Positivity is asserted
+where the row's imported input has such an edge. `sites/InvertedPortProcessor/freePorts` omits `PORT_SIDE_PROCESSOR`
+on purpose and fails the Java assertion on the oracle's own recorded state (a free-port node keeps an EAST input the
+processor skips, `InvertedPortProcessor.java:117-119`); it is outside the test's contract and a test pins that it is
+the only row left out. No ref changed.
+
+**2. `HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR` (new rows, D2).** Six site rows in `layered-placement.json` (604 → 610,
+`sites` 26 → 32): `sites/HierarchicalPortDummySizeProcessor/{two-north, two-south, three-north, three-south,
+two-south-out, mixed}`. With `spacing.edgeEdgeBetweenLayers` 7 the oracle's dummy widths per layer are `[0, 14]`,
+`[14, 0]`, `[0, 14, 28]`, `[28, 14, 0]`, `[14, 0]` and (two north, two south) `[0, 14, 14, 0]`, and each dummy's EAST
+port sits at its width: `delta` and `step` are oracle values.
+
+**3. The three Medium splitter arms (new rows, D3 rung 1 for all).** Seven plan-A site rows in
+`layered-routing-steps.json` (277 → 284, `sites` 25 → 32; `layered-routing.json` byte-identical):
+`sites/HyperEdgeSegmentSplitter/noFreeArea/{unbounded, finite, consumed}` reach `HyperEdgeSegmentSplitter.ts:220 if[1]`,
+`…/areaStartRounding/{single, consumed}` reach `:400 if[1]`, `…/areaEndRounding/{single, consumed}` reach `:406 if[1]`.
+Breakpoints on the unmodified oracle classes (`jdb`) count each arm on the JVM; the five earlier splitter rows take
+none. The generic routing replay now takes all 24 branches of the splitter, and
+`HyperEdgeSegmentSplitter.sites.test.ts` pins the oracle's counts and split positions. No direct-call row and no
+unreachability proof was needed. Mechanisms and the count table: `plans/layered-evidence-gaps/unreached.md`.
+
+Corrections to `plans/layered-edge-routing/unreached.md` (that file is not edited): its `:31` says two Medium arms where
+its rows list three; its `:105` argument that a critical-cycle segment always has a free area in its own span does not
+hold (two segments sharing both coordinates have none); its `:114` classification of the two rounding arms as
+unreached is superseded. Open, not blocking: `:406` with only non-negative coordinates, and a span emptied by
+consumption without exactly equal coordinates.
+
+**4. Port alignment and border offsets through layered (new rows, D4).** 72 `scenarios` rows in
+`layered-pipeline.json` (1,239 → 1,311, `scenarios` 93 → 165; `full` stays 199): `scenarios/PortAlignment/*` (27
+graphs: `portAlignment.default` × BEGIN, CENTER, END, JUSTIFIED, DISTRIBUTED; each side's option × BEGIN, CENTER, END,
+JUSTIFIED; a default with two side overrides; single-port sides; overhanging ports) and `scenarios/PortBorderOffset/*`
+(9 graphs: +5 and −5 on north and south ports, alone, under BEGIN and END, on every side, and mixed). Each graph is
+recorded at `LABEL_AND_NODE_SIZE_PROCESSOR` (`…/ports`, where the row holds every port position) and at the end of the
+plan (`…/end`), because a whole-plan row records no port position. Layered sizes nodes through
+`NodeDimensionCalculation`, never `NodeMicroLayout`, so `node-micro-layout.json` is untouched (planning D4). Under the
+pipeline replay alone, the untaken branch arms of `PortPlacementCalculator.ts` drop from 8 to 2 (the two left are the
+FIXED_RATIO cases, reached by other suites).
+
+**Findings.**
+
+- An unset port alignment is placed DISTRIBUTED in layered, although `Layered.melk:144` declares JUSTIFIED:
+  `NodeContext.getPortAlignment` reads the `CoreOptions` default. The oracle rows record it and the port agrees (#142).
+- The planning scan missed two earlier whole-layout rows that set per-side alignments
+  (`full/labels/examples-general-spacing-ports/default` and `…-portsSurrounding/default` in `layered-labels.json`);
+  neither sets END or `portAlignment.default`.
+- The acceptance line of T1 that named `freePorts` as a passing row was a planning assumption; see item 1.
+
+**Refs regenerated by script (D5).** `layered-placement.json`, `layered-routing-steps.json`, `layered-pipeline.json`:
+for each, an id-keyed diff against the base shows every base row JSON-equal and in order, the new ids only under the
+mission's prefixes, and the header differing only in `rowCounts`. Every other file under `test/golden/refs/` is
+byte-identical. Recorder runtimes: 9 s, 11 s and 15 s. Inventory growth (D6): `HierarchicalPortDummySizeProcessor.test.ts`
+row list, `layered-routing-replay-rows.test.ts` group counts, `OrthogonalEdgeRouter.test.ts` `P5_EDGE_ROUTING` 29 → 36.
+No assertion about an existing row changed (AD-13).
+
+**Docs.** `docs/conformance.md` parts c-f, `docs/architecture/alg-layered-placement.md`, `alg-layered-routing.md`,
+`alg-layered-pipeline.md` and the three counts in `docs/architecture/overview.md`.
+
+**Issues filed.** #140 (`follow-up`): a ptolemy row where the Java test asserts needs a vendored corpus model and
+`.elkg` conversion tooling. #141 (`follow-up`): the superseded statements of `plans/layered-edge-routing/unreached.md`
+and the two open points. #142 (`follow-up`): the unset-alignment default. No `needs-ruling`: no stop condition fired.
+
+**Gates (queue gates 1-7, 2026-11-21).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,729
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,191 files (10 skipped),
+49,487 tests passed (+124 over the base's 49,363), 93 skipped, 0 failed; statements 98.81 %, branches 97.00 % (base
+96.99), functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`:
+every finding accepted, no new entry (one new finding, an unchecked `Integer.parseInt` in the pipeline recorder, was
+fixed instead). Gate 7: the three recorders rerun on the final tree are byte-identical to the committed refs and
+`git diff --exit-code test/golden/refs/` is empty. Two gate fixes on the way, both in the pipeline recorder and both
+journaled: a helper deleted by a comment edit (the recorder did not compile), and the `parseInt` finding.

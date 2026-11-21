@@ -2397,6 +2397,17 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
         return elk.replace(h, h + ropts("PORT_ANCHOR", anchor) + ",");
     }
 
+    /** sites/HierarchicalPortDummySizeProcessor/<name>: T (FIXED_SIDE, edgeEdgeBetweenLayers 7) with external ports on the sides "N S ...", children c0 and c1. */
+    static void hpds(String name, String sides, String edges) {
+        List<String> ports = new ArrayList<>();
+        String[] sd = sides.split(" ");
+        for (int i = 0; i < sd.length; i++) {
+            ports.add(pj("T", i, sd[i].equals("N") ? N_ : S_, null));
+        }
+        scenario("HierarchicalPortDummySizeProcessor/" + name, hier(ropts("SPACING_EDGE_EDGE_BETWEEN_LAYERS", "7"), String.join(",", ports),
+                join(at("c0", 40, 40), at("c1", 90, 40)), eds(edges.split(" "))), "T", "e", HPDS);
+    }
+
     static void siteScenarios() {
         grp = "sites";
         NodePlacementStrategy ls = NodePlacementStrategy.LINEAR_SEGMENTS, bk = NodePlacementStrategy.BRANDES_KOEPF,
@@ -2456,6 +2467,15 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
                 pn("n2", 30, 80, FS, lab("n2l", 40, 14), "E", o), pn("n3", 30, 50, FS, lab("n3l", 40, 14), "E W E", o), pn("n4", 30, 10, FS, lab("n4l", 40, 14), "E", o),
                 pn("n5", 30, 50, FS, lab("n5l", 40, 14), "N E S", o), pn("n6", 30, 200, FS, null, "W", o)),
                 eds("n2.p0>n3.p0", "n5.p2>n0.p0", "n6.p0>n3.p2", "n5.p1>n1.p0")), null, "ni", p4(bk));
+        // layered-evidence-gaps T2 (#49): two and three N or S external port dummies in ONE layer, so delta (2 x edgeEdgeBetweenLayers,
+        // HierarchicalPortDummySizeProcessor.java:47-48) and the step of setWidths (:84-104) are recorded values. One inner node fed by (in) or
+        // feeding (out) several N / S ports gets one dummy per port in the adjacent layer (HierarchicalPortConstraintProcessor.java:251-292).
+        hpds("two-north", "N N", "T.p0>c0 T.p1>c0 c0>c1");
+        hpds("two-south", "S S", "T.p0>c0 T.p1>c0 c0>c1");
+        hpds("three-north", "N N N", "T.p0>c0 T.p1>c0 T.p2>c0 c0>c1");
+        hpds("three-south", "S S S", "T.p0>c0 T.p1>c0 T.p2>c0 c0>c1");
+        hpds("two-south-out", "S S", "c0>c1 c1>T.p0 c1>T.p1");
+        hpds("mixed", "N S N S", "T.p0>c0 T.p1>c0 T.p2>c0 T.p3>c0 c0>c1");
         grp = "scenarios";
     }
 

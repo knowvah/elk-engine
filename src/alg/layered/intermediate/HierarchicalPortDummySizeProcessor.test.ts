@@ -26,6 +26,13 @@ const ROW_NAMES: readonly string[] = [
   'models/node_placement-flexible_ports-graph04/parent/HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR/default',
   'scenarios/port-dummy-size/external-chain',
   'scenarios/port-dummy-size/external-fan',
+  // layered-evidence-gaps T2 (#49): two and three N or S dummies in one layer, so `delta` and `step` are oracle values
+  'sites/HierarchicalPortDummySizeProcessor/two-north',
+  'sites/HierarchicalPortDummySizeProcessor/two-south',
+  'sites/HierarchicalPortDummySizeProcessor/three-north',
+  'sites/HierarchicalPortDummySizeProcessor/three-south',
+  'sites/HierarchicalPortDummySizeProcessor/two-south-out',
+  'sites/HierarchicalPortDummySizeProcessor/mixed',
 ];
 
 /** The entries a row replays, spelled like prefix entries (`NAME` or `PHASE/STRATEGY`). */

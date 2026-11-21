@@ -51,11 +51,23 @@ One recorder, `tools/vectors/LayeredPipelineVectors.java` (a JDK 21 single-file 
   `compareLayout` at AD-4 and the plans exactly. Plans are captured during the real run (`plansFromRun`): a laid-out
   child level fixes its compound node's ports, so the parent's plan gains `NON_FREE_PORTS` additions an untouched input
   lacks.
-- **`models`** (905) and **`scenarios`** (93): 7e's stop rows through `ElkLayered.prepareLayoutTest` and
+- **`models`** (905) and **`scenarios`** (165): 7e's stop rows through `ElkLayered.prepareLayoutTest` and
   `runLayoutTestStep`, with plan equality against the row's `prefix`. Component rows use the step ops `componentsSplit`
   and `componentsCombine`.
 - **`sites`** (42, T15): one step row per scenario of `plans/layered-pipeline/unreached.md`, with the ops `layout` and
   `layoutCancelled` for whole provider layouts.
+- **Port alignment and border offsets** (72 of the `scenarios` rows, 2026-11-21, issue #49): `scenarios/PortAlignment/*`
+  and `scenarios/PortBorderOffset/*` lay out `a, b > m > c, d`, where `m` is a fixed-size 100 × 80 node with FIXED_SIDE
+  and two ports per side. The alignment family sets `portAlignment.default` to each of BEGIN, CENTER, END, JUSTIFIED and
+  DISTRIBUTED, each side's option (`north`, `south`, `east`, `west`) to BEGIN, CENTER, END and JUSTIFIED, a default with
+  two side overrides, a node with single-port sides (JUSTIFIED and DISTRIBUTED centre the lone port, BEGIN does not) and
+  a 10 × 10 node whose ports overhang. The offset family sets `port.borderOffset` to +5 and −5 on the north and south
+  ports, alone, under BEGIN and END, on every side, and +5 north with −5 south. Each graph is recorded twice: `…/ports`
+  stops at `LABEL_AND_NODE_SIZE_PROCESSOR`, where the geometry holds every port position, and `…/end` runs the whole
+  plan, whose dump shows ports only through bend points and margins. Layered sizes nodes through
+  `NodeDimensionCalculation` (`LabelAndNodeSizeProcessor`), never through `NodeMicroLayout`; both share
+  `PortPlacementCalculator`. A side with no alignment set is placed DISTRIBUTED, because
+  `NodeContext.getPortAlignment` reads the `CoreOptions` default and not the JUSTIFIED default of `LayeredOptions`.
 
 **The F4 hash check.** The four manifest goldens (`refs/elk/ptolemy-*`) were recorded without `-XX:hashCode=2`; the
 flagged recorder reproduces them byte for byte, so the flagged rows are trustworthy against them.
@@ -110,7 +122,7 @@ ptolemy models, or the whole corpus with `PIPELINE_SUITES_FULL=1` and `ELK_MODEL
 
 | Layer                       | What                                                                                                                                                                                                                                                            |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pipeline rows (T1, T9, T15) | `layered-pipeline.json`: `full` 199, `models` 905 (847 replayed, 58 pinned), `scenarios` 93, `sites` 42; 4 goldens equal at AD-4; no port fix was needed to match                                                                                               |
+| Pipeline rows (T1, T9, T15) | `layered-pipeline.json`: `full` 199, `models` 905 (847 replayed, 58 pinned), `scenarios` 165, `sites` 42; 4 goldens equal at AD-4; no port fix was needed to match                                                                                              |
 | SC4 re-replay (T10)         | 2,351 landed `models` rows: 2,349 replayed with plan equality, 2 pinned                                                                                                                                                                                         |
 | Ported suites (T11, T12)    | 28 suites allocated here, every Java literal kept; reviewed against the Java by an independent pass (one runner defect fixed, `ConcreteSortByInputModelTest`'s table checked mechanically against its 32 methods); oracle `failures=0` at mission start and end |
 | Breadth sweep (T14)         | 7,246 oracle cases; 6,646 `ok` hash-match exactly at stride 1; 600 refused, all self loops (7g)                                                                                                                                                                 |
