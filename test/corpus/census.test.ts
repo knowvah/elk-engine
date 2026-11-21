@@ -22,7 +22,7 @@ const STRESS = 'org.eclipse.elk.stress';
 const ID = 'tickets/layered/546_borderGaps';
 const ALL_FORMATS = ['elkg', 'elkt', 'json'];
 
-const resolution = resolveModelsDir({});
+const resolution = resolveModelsDir();
 const modelsDir = 'dir' in resolution ? resolution.dir : undefined;
 const skipReason = 'skip' in resolution ? resolution.skip : '';
 const committed = JSON.parse(

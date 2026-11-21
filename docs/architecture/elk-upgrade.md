@@ -613,18 +613,7 @@ the scratch directory is deleted.
    original checkout before the clone is made, and step 4 is skipped: the shared oracle stays, and `build.sh` adds a
    second worktree at `$R/oracle`. Nothing is committed in the clone; `git diff` there is the diff list.
 
-   Two test files resolve the models directory from the default relative path only and ignore `ELK_MODELS_DIR`
-   (`test/corpus/census.test.ts`, `test/corpus/corpus.test.ts`; issue #98), so in the clone the census drift test and
-   the golden-input tests skip. To run them, make the clone's default path exist for the duration of the test run and
-   remove it again:
-
-   ```sh
-   mkdir "${TMPDIR%/}/eclipse-elk" && ln -s "$ELK_MODELS_DIR" "${TMPDIR%/}/eclipse-elk/elk-models"
-   (cd "$R/repo" && npx vitest run test/corpus/census.test.ts test/corpus/corpus.test.ts)
-   rm "${TMPDIR%/}/eclipse-elk/elk-models" && rmdir "${TMPDIR%/}/eclipse-elk"
-   ```
-
-   Other differences between the clone's suite and the original checkout's are expected: a sweep consumer test runs
+   Some differences between the clone's suite and the original checkout's are expected: a sweep consumer test runs
    wherever its sweep output exists. The bundle-deps regeneration test is not one of them: it reads the manifests by
    commit id, so it runs in the clone and in the original once the ELK checkout each uses holds its pin (issue #89).
 

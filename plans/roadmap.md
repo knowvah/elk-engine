@@ -2798,3 +2798,57 @@ none was rerun; `git diff --exit-code 5beafe57 -- test/golden/refs/ tools/vector
 **Oracle.** Not rebuilt. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
 2026-11-18T15:18:16Z). `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/ test/` is empty. `$ELK_MODELS_DIR`
 is at `ac5af2ba…`, the commit of `test/corpus/manifest.json`. The JVM runs wrote nothing under `$ELK_ORACLE_DIR`.
+
+## Revision 2026-11-20 (models-dir-env)
+
+Appended; no earlier line is edited. Source: issue #98 and D1-D4 in `plans/models-dir-env/decisions.md`; the journal
+is `plans/models-dir-env/decision-journal.md`. Where this section conflicts with the text above, this section wins.
+Task ids are T1-T2; the base is `6307bf36c0ff4cd50c7349625e9550c96a06e53f`.
+
+**One follow-up is closed: `census.test.ts` and `corpus.test.ts` read `ELK_MODELS_DIR`.** Both files resolved the
+models directory at module scope with `resolveModelsDir({})`. The resolver (`test/corpus/corpus.ts:122-131`) reads
+the variable from the environment it is handed, so a literal empty object always gave the default relative path, and
+on a checkout that supplies the corpus only through the variable the census drift test, the four golden-input tests
+and the `goldens not verified` placeholder skipped without a failure. `census.test.ts:25` and `corpus.test.ts:41`
+now call `resolveModelsDir()`, as the 22 other callers do (T1, D1). The constant `defaultResolution` of
+`corpus.test.ts` is renamed `resolution` (three lines): under the variable it no longer holds the default path's
+result. The resolver's own two tests (`corpus.test.ts:49`, `:58`) keep their env objects. `test/corpus/corpus.ts` and
+every other caller are unchanged. This fixes tool-side row 6 of the 2026-11-14 revision on the branch; that row and
+the follow-ups line naming #98 stay as written (D4).
+
+**Proof (T1, D2): three runs of the two files, no new test.** The module-scope call has no unit seam, so the evidence
+is behavioural. In a scratch `git clone --shared` under `$TMPDIR` whose `../../eclipse-elk/elk-models` does not
+exist, with `ELK_MODELS_DIR` naming the pinned models checkout: at the base 46 tests passed and 6 skipped (52), both
+skip texts naming the clone's default path; at the T1 commit 51 passed and none skipped (51; the placeholder is
+registered only when the directory does not resolve). In the queue worktree after the fix,
+`ELK_MODELS_DIR=/nonexistent` gives 46 passed and 6 skipped with skip texts naming `/nonexistent`, so the variable
+wins over an existing default; unset, the two files give 51 passed, as at the base. The clone was removed.
+
+**Runbook (T1, D3).** `docs/architecture/elk-upgrade.md` § 14 step 5 loses the paragraph about the two files and
+its `mkdir`/`ln -s`/`vitest`/`rm` block; the paragraph after it now opens "Some differences between the clone's
+suite and the original checkout's are expected". Step numbers and anchors are unchanged, and
+`test/docs/elk-upgrade-runbook.test.ts` is green. A rehearsal clone runs the census and golden-input checks from its
+`env.sh` alone.
+
+**Not done, on purpose.** No fitness test forbids `resolveModelsDir({})` (D2: not asked for). The only other
+literal-env resolver calls in `test/` are `inputsRoot({…})` in `test/helpers/layout-test-runner.test.ts:229-255`,
+tests of that resolver's own rule. `.agent-notes/elk-upgrade-runbook.md` and `plans/elk-upgrade-runbook/` are history
+and were not edited; `.agent-notes/models-dir-env.md` says what supersedes them.
+
+**Issues filed.** None: no stop condition fired, so no `needs-ruling`, and nothing was found for a `follow-up`.
+
+**Unchanged.** No file under `src/` or `tools/`. No assertion, title literal or expected value of a test, no vector
+and no golden changed (AD-13): the edit changes which directory two landed tests read when the variable is set. The
+oracle was not rebuilt and no patch changed.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,718
+functions, no violation line). Coverage, full suite with the nine sweep directories off and `ELK_MODELS_DIR` unset:
+1,178 files and 49,337 tests passed, 93 skipped, 0 failed; statements 98.81 %, branches 96.99 %, functions 98.56 %,
+lines 98.86 %; counts and percentages equal the base's. `docs:build` exit 0 with 200 typedoc warnings, as at the
+base. `codeql`: every finding accepted, no new entry in `tools/codeql/accepted.json`. Gate 7: no input of a
+recorder, regen script or sweep stamp changed, so none was rerun; `git diff --exit-code 6307bf36 --
+test/golden/refs/ tools/vectors/` is empty.
+
+**Oracle.** Not rebuilt and not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
+2026-11-18T15:18:16Z). `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty. `$ELK_MODELS_DIR` is at
+`ac5af2ba…`, the commit of `test/corpus/manifest.json`; the models checkout was read, never written.
