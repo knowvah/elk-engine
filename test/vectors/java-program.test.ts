@@ -88,9 +88,14 @@ interface Run {
   readonly calls: readonly (readonly string[])[];
 }
 
-/** Sources the helper in a fresh bash, runs `script` with `args` as `$1`…, and reads the stubs' log. */
+/**
+ * Sources the helper in a fresh bash, runs `script` with `args` as `$1`…, and reads the stubs' log. bash runs a driver
+ * file, not `bash -c`, and gets the helper's path as an argument, so CodeQL does not read the paths as a shell command.
+ */
 function bash(script: string, args: readonly string[], env: Record<string, string> = {}): Run {
-  const run = spawnSync('bash', ['-c', `. "${HELPER}"; ${script}`, '_', ...args], {
+  const driver = path.join(dir, 'driver.sh');
+  writeFileSync(driver, `. "$1"; shift\n${script}\n`);
+  const run = spawnSync('bash', [driver, HELPER, ...args], {
     encoding: 'utf8',
     env: { ...process.env, PATH: `${bin}:${process.env['PATH'] ?? ''}`, STUB_LOG: log, TMPDIR: scratch, ...env },
   });
@@ -213,25 +218,28 @@ describe('tools/vectors/vector-cache.sh: the salt covers every source of a progr
   const callingScript = path.join(vectors, 'split-vectors.sh');
   const oracle = path.join(dir, 'oracle');
   const JAVA_VERSION = 'openjdk version "0"';
+  // A driver file with the cache layer's path as `$1`, not `bash -c`: see `bash` above.
   const SALT_DRIVER = [
+    'CACHE_LAYER="$1"; shift',
     'ROOT="$1"; VECTORS_DIR="$2"; ELK_ORACLE_DIR="$3"',
     'die() { echo "error: $1" >&2; exit 1; }',
-    `. "${CACHE_LAYER}"`,
+    '. "$CACHE_LAYER"',
     'VC_JAVA_VERSION="$4"',
     'vc_salt "$5" "$6" "$7"',
   ].join('\n');
+  const saltDriver = path.join(dir, 'salt-driver.sh');
 
   mkdirSync(oracle);
   writeFileSync(path.join(oracle, 'oracle-build.json'), '{"commit":"0"}\n');
   writeFileSync(callingScript, '#!/usr/bin/env bash\n');
+  writeFileSync(saltDriver, `${SALT_DRIVER}\n`);
 
   function salt(program: string): string {
     const run = spawnSync(
       'bash',
       [
-        '-c',
-        SALT_DRIVER,
-        '_',
+        saltDriver,
+        CACHE_LAYER,
         root,
         path.dirname(CACHE_LAYER),
         oracle,

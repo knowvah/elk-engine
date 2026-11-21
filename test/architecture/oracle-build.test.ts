@@ -25,6 +25,9 @@ const GIT_ENV = { ...process.env, GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOS
 const dir = realpathSync(mkdtempSync(path.join(tmpdir(), 'oracle-build-')));
 const source = path.join(dir, 'elk');
 const tools = path.join(dir, 'tools');
+// bash runs the driver from a file, not `bash -c`, so CodeQL does not read the temp paths as a shell command.
+const driverFile = path.join(dir, 'driver.sh');
+writeFileSync(driverFile, `${DRIVER}\n`);
 
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -65,7 +68,7 @@ interface Verdict {
 }
 
 function verify(oracle: string): Verdict {
-  const run = spawnSync('bash', ['-c', DRIVER, '_', SCRIPT, source, oracle, commit, tools], {
+  const run = spawnSync('bash', [driverFile, SCRIPT, source, oracle, commit, tools], {
     encoding: 'utf8',
     env: GIT_ENV,
   });
