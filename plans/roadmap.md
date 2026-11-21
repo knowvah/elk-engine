@@ -2724,3 +2724,77 @@ test/golden/refs/` is empty.
 **Oracle.** Not rebuilt. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
 2026-11-18T15:18:16Z, sha256 `87705f69…`). `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty.
 `$ELK_MODELS_DIR` is at `ac5af2ba…`, the commit of `test/corpus/manifest.json`.
+
+## Revision 2026-11-20 (java-tests-bundles)
+
+Appended; no earlier line is edited. Source: issue #97 and D1-D6 in `plans/java-tests-bundles/decisions.md`; the
+journal is `plans/java-tests-bundles/decision-journal.md`. Where this section conflicts with the text above, this
+section wins. Task ids are T1-T3; the base is `5beafe570c607909f5cae92593f17a367418bbed`.
+
+**One follow-up is closed: `tools/oracle/java-tests.sh` runs every ported JUnit class.** The script's `TEST_BUNDLES`
+held two bundles (`alg.layered.test`, `alg.test`), so every ported class of another test bundle ran only through a
+`sed`-made scratch copy of the script, and section 10 of the upgrade runbook left those classes out of a pin move.
+`TEST_BUNDLES` is now a fixed list of thirteen (T1, D1): the two it had, then `alg.common.test`, `alg.disco.test`,
+`alg.force.test`, `alg.mrtree.test`, `alg.radial.test`, `alg.rectpacking.test`, `alg.spore.test`, `alg.topdown.test`,
+`core.test`, `graph.json.test` and `graph.test` (each `org.eclipse.elk.`-prefixed). Only the array, its comment and
+the header comment changed; `THIRD_PARTY`, `build_classpath`, `run_class` and everything under `tools/vectors/` are
+as they were (D2). `org.eclipse.elk.shared.test` stays out: nothing cites it, and it needs
+`org.eclipse.elk.alg.graphviz.layouter`, which is not an oracle jar.
+
+**The count is 143, not the issue's 124.** The issue's grep matched `Test.java` only. Eight `graph.json.test` suites
+are cited as `src/…Test.xtend` (`EdgeCoordsTest`, `EdgesTest`, `ExportTest`, `GraphTest`, `IndividualSpacingsTest`,
+`LayoutOptionsTest`, `SectionsTest`, `TransferLayoutTest`); their compiled classes run as plain JUnit 4. With the
+ports landed since #44 the list is 100 `alg.layered.test` classes, 35 other `.java` classes and the 8 Xtend suites
+(D4).
+
+**The option the issue named was rejected (D1).** An environment variable appended to the list would have left the
+runbook spelling out eleven bundle names, would silently drop 43 classes when unset, and is a knob with one caller.
+A glob over the oracle's test directories would take `shared.test` and any future bundle unseen.
+
+**Fitness test (T1, D3).** New `test/architecture/java-tests-bundles.fitness.test.ts` (4 tests), written first and
+seen red on the base script with exactly the eleven new bundles listed as missing: every test bundle a `.ts` file
+under `src/` or `test/` cites by path is in `TEST_BUNDLES`, `alg.test` is carried, the scan finds an `.xtend`
+citation of `graph.json.test` (so an empty scan cannot pass), and the array parser reads a list that wraps over
+lines. A port that cites a new test bundle fails there until the script carries it. The test needs no oracle.
+
+**Evidence on the pinned oracle (T1, D5).** Before the edit, the landed two-bundle script over the 100 layered
+classes: 51,299 runs, 0 failures, 402 s. After it, one call over all 143 classes with section 10's commands: exit 0,
+**51,577 runs, 0 failures**, 432 s under `nice -n 10`. The 100 layered lines of the two runs are byte-identical, so
+thirteen bundles on the classpath changed no count; the 43 other lines (278 runs) equal the planning probe class by
+class, and agree with the counts earlier missions recorded through scratch copies. Per bundle (classes/runs):
+`alg.layered.test` 100/51,299, `alg.common.test` 7/49, `alg.disco.test` 1/3, `alg.force.test` 1/3,
+`alg.mrtree.test` 1/6, `alg.radial.test` 1/2, `alg.rectpacking.test` 5/23, `alg.spore.test` 3/11,
+`alg.topdown.test` 3/11, `core.test` 11/127, `graph.json.test` 9/36, `graph.test` 1/7. All 143 lines are the
+baseline in `plans/java-tests-bundles/java-baseline.md`.
+
+**Docs (T2, D6).** `docs/architecture/elk-upgrade.md` § 10 lists the `.java` and `.xtend` citations and runs them
+with two commands (they were three, for two bundles); it gives 143 classes, 51,577 runs and about 7 minutes at the
+`8bca22f4` pin, and says once that an old-oracle file from the two-bundle commands shows the 43 other rows as
+additions the first time. § 5 step 1 follows. The Java-baseline paragraphs of `alg-trees.md`, `alg-force-disco.md`,
+`alg-packing.md`, `alg-layered-pipeline.md`, `alg-layered-compound.md` and `text-sizing-seam.md` call the landed
+script directly; each keeps its expected counts. The scratch-copy recipes in `plans/*/java-baseline.md` and the
+past-tense records of `docs/conformance.md` are history and were not edited. From the next pin move on, section 10
+covers every ported JUnit class.
+
+**Not done, on purpose.** The TS half of section 10 (`PIPELINE_SUITES_FULL`) is unchanged. The translated
+`docs-site/` pages hold no architecture page and are untouched.
+
+**Issues filed.** #136 (`follow-up`): `tools/vectors/label-sizing-vectors.sh:11` says its classpath "is the one of
+tools/oracle/java-tests.sh"; with thirteen bundles in the script and two in the recorder that is no longer exact.
+Not edited here, because any edit under `tools/vectors/` colds the vector cache. No `needs-ruling` issue: no stop
+condition fired.
+
+**Unchanged.** No file under `src/`. No assertion of an existing test, no vector and no golden changed (AD-13).
+The oracle was not rebuilt and no patch changed.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,718
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,178 files and 49,337
+tests passed, 93 skipped, 0 failed (the base's 1,177 and 49,333 plus the new fitness test's file and 4 tests);
+statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %, as at the base. `docs:build` exit 0 with
+200 typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry in
+`tools/codeql/accepted.json`. Gate 7: `java-tests.sh` is an input of no recorder, regen script or sweep stamp, so
+none was rerun; `git diff --exit-code 5beafe57 -- test/golden/refs/ tools/vectors/` is empty.
+
+**Oracle.** Not rebuilt. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
+2026-11-18T15:18:16Z). `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/ test/` is empty. `$ELK_MODELS_DIR`
+is at `ac5af2ba…`, the commit of `test/corpus/manifest.json`. The JVM runs wrote nothing under `$ELK_ORACLE_DIR`.

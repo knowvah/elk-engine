@@ -76,9 +76,9 @@ Check the machine is quiet first (`uptime`, 1-minute load at most 12) and run th
 
 1. **A suite in fixed mode, Java.** Set `JAVA_TOOL_OPTIONS` to `-Dorg.eclipse.elk.alg.test.textMeasurer=fixed`, then run
    `tools/oracle/java-tests.sh <fully.qualified.TestClass>...`; the script keeps an existing `JAVA_TOOL_OPTIONS` and appends
-   `-XX:hashCode=2` itself. The JVM prints a banner on stderr. The committed script covers the `alg.layered.test` and `alg.test` bundles only; the three
-   `alg.common.nodespacing` suites live in `org.eclipse.elk.alg.common.test`, so running them needs a scratch copy of the
-   script with that bundle added to `TEST_BUNDLES`.
+   `-XX:hashCode=2` itself. The JVM prints a banner on stderr. The committed script carries every test bundle a TS test
+   cites (issue #97), so it also runs the three `alg.common.nodespacing` suites, which live in
+   `org.eclipse.elk.alg.common.test`.
 2. **A suite in fixed mode, TS.** `PIPELINE_SUITES_FULL=1 ELK_MODELS_DIR=<pinned elk-models> ELK_TEST_TEXT_MEASURER=fixed
 npx vitest run <suite files>`. Compare per class with step 1: `runs` and `failures`. `Issue665Test` and `Issue700Test`
    differ in every mode (issue #58).

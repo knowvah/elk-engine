@@ -514,12 +514,14 @@ A long run is started detached, `nohup nice -n 10 bash -c '<command>; echo "exit
 section 2 against the previous revision, update the count pins of the replay tests, and journal the row ids with the Java arm they
 reach. A new row that does not replay is a finding: instrument the oracle and dump actual values before changing the port.
 
-**The Java baseline.** `tools/oracle/java-tests.sh` lists only the layered and `alg.test` bundles. Use a scratch copy, never an edit
-of the landed script; the recipe is in [java-baseline.md](../../plans/alg-packing/java-baseline.md). Expect 0 failures. At the
+**The Java baseline.** `tools/oracle/java-tests.sh` carries the `alg.rectpacking.test`, `alg.spore.test` and `alg.topdown.test`
+bundles (issue #97): run `MODELS_REPO=$ELK_MODELS_DIR nice -n 10 bash tools/oracle/java-tests.sh <classes>` with the landed
+script. The class list and the scratch-copy recipe of the mission are in
+[java-baseline.md](../../plans/alg-packing/java-baseline.md) as history. Expect 0 failures. At the
 `8bca22f4` pin (#104) the rectpacking and spore classes run 34 times (`CompactionTest` 11, `PaddingTest` 4, `Issue583Test` 1,
 `Issue1214Test` 4, `InteractiveNodeReordererTest` 3, `UtilsTest` 3, `ScanlineOverlapRemovalTest` 2, `RandomSeedTest` 6); the
-topdownpacking classes were last run for mission 8c (`TopdownPackingTest` 4, `TopdownLayoutTest` 5,
-`PortPlacementCalculationTest` 2) and their bundle did not change since. Any difference is a stop.
+topdownpacking classes run 11 times (`TopdownPackingTest` 4, `TopdownLayoutTest` 5, `PortPlacementCalculationTest` 2: the
+counts of mission 8c, run again at the pin for #97). Any difference is a stop.
 
 **Failures.** A row that differs: instrument the oracle and dump actual values before changing the port; trace the divergence to
 the first stop where the port departs. A lone module that throws `Cannot access ... before initialization`: section 3.6. A sweep

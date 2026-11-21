@@ -129,8 +129,8 @@ java ... LayeredPipelineVectors.java --dump <case id> <modelsDir> <outDir>    # 
 MODELS_REPO=$ELK_MODELS_DIR bash tools/oracle/java-tests.sh <the 7f suites of suite-allocation.md>
 ```
 
-The S1 suites are not in `java-tests.sh`'s bundle list; a scratch copy with `org.eclipse.elk.alg.common.test` and
-`org.eclipse.elk.core.test` added runs them (1, 2, 24 and 4 runs, `failures=0`).
+The S1 suites live in `org.eclipse.elk.alg.common.test` and `org.eclipse.elk.core.test`, which `java-tests.sh` carries
+(issue #97): the same command runs them (1, 2, 24 and 4 runs, `failures=0`).
 
 | Failure                                            | Detection                                                                                                                   | Fix                                                                                                                              |
 | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |

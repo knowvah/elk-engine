@@ -146,7 +146,7 @@ Dropping, rebasing or renumbering a patch is the maintainer's decision (AD-3). J
 
    A file that is missing was never produced in this checkout, or was produced by an older oracle build: run its sweep
    of section 9 on the old oracle first (each is skipped when its output is fresh). Then record the JUnit counts of the
-   old oracle with the three commands of section 10, writing `"$B/java-tests.txt"`.
+   old oracle with the commands of section 10, writing `"$B/java-tests.txt"`.
 
 2. **The pin file.**
 
@@ -458,21 +458,21 @@ script header) on both oracles.
 
 `tools/oracle/java-tests.sh <fully.qualified.TestClass>...` runs JUnit 4 classes on the oracle, one JVM per class, and
 prints `<class> runs=<n> failures=<n>`. The suites that read models need `MODELS_REPO`. The ported classes are the ones
-a TS test cites by path; list them and run those of the two bundles the script carries (`alg.layered.test`, `alg.test`):
+a TS test cites by path, as `.java` or as `.xtend` (the `graph.json.test` suites). The script carries every test bundle
+so cited, and `test/architecture/java-tests-bundles.fitness.test.ts` fails when a port cites one it does not carry, so
+one call runs them all:
 
 ```sh
-git grep -hoE 'org\.eclipse\.elk\.[a-z.]+test[a-z.]*/src/[A-Za-z0-9_/]+Test\.java' -- src test | sort -u >"$TMPDIR/ported-suites.txt"
-grep -E '^org\.eclipse\.elk\.alg\.(layered\.)?test/' "$TMPDIR/ported-suites.txt" |
-  sed -E 's|^[^/]+/src/||; s|\.java$||; s|/|.|g' >"$TMPDIR/ported-classes.txt"
+git grep -hoE 'org\.eclipse\.elk\.[a-z.]+test[a-z.]*/src/[A-Za-z0-9_/]+Test\.(java|xtend)' -- src test | sort -u |
+  sed -E 's#^[^/]+/src/##; s#\.(java|xtend)$##; s#/#.#g' >"$TMPDIR/ported-classes.txt"
 MODELS_REPO="$ELK_MODELS_DIR" nice -n 10 tools/oracle/java-tests.sh $(cat "$TMPDIR/ported-classes.txt") | tee "$TMPDIR/java-tests.txt"
 ```
 
-About 8 minutes for the 100 layered classes (51,299 runs at the `8bca22f4` pin).
-`diff "$B/java-tests.txt" <(grep runs= "$TMPDIR/java-tests.txt")` compares it with the old oracle's run of section 5
-step 1: a class whose `runs` or `failures` changed is a content finding (section 11). The 32 ported classes of the ten
-other test bundles (`alg.common.test`, `core.test`, `graph.json.test` and the tree, force and packing bundles; issue
-#97) need a scratch copy of the script with the bundle added to `TEST_BUNDLES`, as [alg-trees.md](alg-trees.md) and
-[alg-force-disco.md](alg-force-disco.md) show; never edit the script in place for a run.
+About 7 minutes for the 143 classes of twelve test bundles (51,577 runs at the `8bca22f4` pin, 51,299 of them in the
+100 `alg.layered.test` classes). `diff "$B/java-tests.txt" <(grep runs= "$TMPDIR/java-tests.txt")` compares it with
+the old oracle's run of section 5 step 1: a class whose `runs` or `failures` changed is a content finding (section 11).
+An old-oracle file recorded before issue #97, with the two-bundle commands this section had then, holds only the
+layered rows, so the 43 rows of the eleven other bundles show as additions the first time.
 
 Then the TS ports of the same suites over the whole corpus rather than the vendored subset:
 
