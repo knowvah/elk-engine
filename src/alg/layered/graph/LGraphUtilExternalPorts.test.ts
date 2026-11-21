@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: EPL-2.0
 import { beforeAll, describe, expect, it } from 'vitest';
+import { assertionErrorOf } from '../../../../test/helpers/assertion-error-of.js';
 import { addNode } from '../../../../test/helpers/lgraph-builders.js';
-import { EXTERNAL_PORT_ROWS } from '../../../../test/helpers/lgraph-site-external-tables.js';
+import {
+  EXTERNAL_PORT_ROW_PREFIX,
+  EXTERNAL_PORT_ROWS,
+  EXTERNAL_PORT_ROWS_REJECTED_UNDER_EA,
+} from '../../../../test/helpers/lgraph-site-external-tables.js';
 import { xy } from '../../../../test/helpers/lgraph-site-shapes.js';
+import { withAssertions } from '../../../../test/helpers/with-assertions.js';
 import { LayoutMetaDataService } from '../../../core/data/LayoutMetaDataService.js';
 import { KVector } from '../../../core/math/KVector.js';
 import type { IProperty } from '../../../graph/properties/IProperty.js';
@@ -109,7 +115,8 @@ describe('createExternalPortDummy: side-specific properties', () => {
   });
 
   it('sets no layer or in-layer constraint for a side that is not WEST/EAST/NORTH/SOUTH', () => {
-    const dummy = createExternalPortDummy(args({ portSide: PortSide.UNDEFINED }));
+    // as a JVM without -ea: the default arm's `assert false` is live (issue #113, row 22)
+    const dummy = withAssertions(false, () => createExternalPortDummy(args({ portSide: PortSide.UNDEFINED })));
     expect(dummy.getAllProperties().containsKey(LayeredOptions.LAYERING_LAYER_CONSTRAINT)).toBe(false);
     expect(dummy.getAllProperties().containsKey(InternalProperties.IN_LAYER_CONSTRAINT)).toBe(false);
     expect(dummy.getPorts()[0]!.getSide()).toBe(PortSide.UNDEFINED);
@@ -368,7 +375,8 @@ describe('createExternalPortDummy and getExternalPortPosition (oracle rows)', ()
   // free-{right,left,up,down,undefined}-netflow-{positive,zero,negative}; LGraphUtil.java:800-1030
   it.each(Object.keys(EXTERNAL_PORT_ROWS))('site/lgraphutil/externalPorts/%s', (name) => {
     const { expect: want } = EXTERNAL_PORT_ROWS[name]!;
-    const { dummy, position } = runRow(name);
+    const rejectedUnderEa = EXTERNAL_PORT_ROWS_REJECTED_UNDER_EA.has(`${EXTERNAL_PORT_ROW_PREFIX}${name}`);
+    const { dummy, position } = rejectedUnderEa ? withAssertions(false, () => runRow(name)) : runRow(name);
     expect(dummy.getType()).toBe(NodeType.EXTERNAL_PORT);
     expect(xy(dummy.getSize())).toEqual([...want.size]);
     expect(dummy.getProperty(InternalProperties.EXT_PORT_SIDE).name()).toBe(want.externalPortSide);
@@ -382,5 +390,13 @@ describe('createExternalPortDummy and getExternalPortPosition (oracle rows)', ()
     expect([port.getSide().name(), ...xy(port.getPosition())]).toEqual([...want.port]);
     expect(xy(position)).toEqual([...want.position]);
     expect(xy(dummy.getPosition())).toEqual([...want.moved]);
+  });
+
+  it('throws AssertionError under -ea for a free port and an undefined layout direction (LGraphUtil.java:821)', () => {
+    expect(assertionErrorOf(() => runRow('free-undefined-netflow-positive')).message).toBe('');
+  });
+
+  it('throws AssertionError: UNDEFINED under -ea for a fixed side that is undefined (LGraphUtil.java:907)', () => {
+    expect(assertionErrorOf(() => runRow('fixed-side-undefined')).message).toBe('UNDEFINED');
   });
 });

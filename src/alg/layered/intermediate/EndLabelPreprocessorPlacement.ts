@@ -114,9 +114,7 @@ function removeLabelOverlaps(
     const cell = portLabelCells[port.id];
     if (cell !== null && cell !== undefined) {
       const labelCellRect = cell.getCellRectangle();
-      // Java: `assert labelCellRect.height > 0 && labelCellRect.width > 0;` (EndLabelPreprocessor.java:377). Not a
-      // devAssert yet: an end label without a size has an empty cell, and the Java assert fires on such models
-      // under -ea too (issue #112).
+      devAssert(() => labelCellRect.height > 0 && labelCellRect.width > 0); // EndLabelPreprocessor.java:377
       overlapRemover.addRectangle(labelCellRect);
     }
   }

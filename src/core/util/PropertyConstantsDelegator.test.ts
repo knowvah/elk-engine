@@ -2,6 +2,7 @@
 // CoreOptions first: it and TopdownSizeApproximator import each other, and CoreOptions must be the entry module.
 import { CoreOptions } from '../options/CoreOptions.js';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { withAssertions } from '../../../test/helpers/with-assertions.js';
 import { ElkGraphUtil } from '../../graph/util/ElkGraphUtil.js';
 import { Property } from '../../graph/properties/Property.js';
 import { EnumSet } from '../../java/util/EnumSet.js';
@@ -18,11 +19,14 @@ const ALGORITHM_NODE_NODE = 77;
 const ALGORITHM_PORT_PORT = 5;
 
 function algorithmData(): LayoutAlgorithmData {
-  const data = new LayoutAlgorithmData.Builder()
-    .id(ALGORITHM_ID)
-    .name(ALGORITHM_ID)
-    .supportedFeatures(EnumSet.noneOf(GraphFeature))
-    .create();
+  // No provider factory: `create()` runs as on a JVM without `-ea` (`InstancePool.java:59`; issue #113, row 9).
+  const data = withAssertions(false, () =>
+    new LayoutAlgorithmData.Builder()
+      .id(ALGORITHM_ID)
+      .name(ALGORITHM_ID)
+      .supportedFeatures(EnumSet.noneOf(GraphFeature))
+      .create(),
+  );
   data.addKnownOption(CoreOptions.SPACING_NODE_NODE, ALGORITHM_NODE_NODE);
   data.addKnownOption(CoreOptions.SPACING_PORT_PORT, ALGORITHM_PORT_PORT);
   return data;

@@ -502,10 +502,17 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 - Site: `assert e;` -> `devAssert(() => e);` and `assert e : m;` -> `devAssert(() => e, () => m);` at the Java
   statement's position, `e` translated like the code around it. A thunk only reads. After `assert false`, what
   follows in the Java stays as it is. CLAUDE.md row confirmed: `ElkSpacings.java:80`. HIGH.
-- Outcome (issue #45, `plans/dev-assert/inventory.md`): of the 143 statements, 124 are restored, 6 are
-  restored in front of a `throw` the port already had in place of `assert false; return x;`, and 13 stay comments
-  naming an issue, because the Java assert itself fires under `-ea` on an input the suite replays: 4 on layouts ELK
-  runs (#112), 9 that a unit test or a site vector drives on purpose (#113).
+- Outcome (issues #45 and #127, `plans/dev-assert/inventory.md`): of the 143 statements, 132 are restored, 6 are
+  restored in front of a `throw` the port already had in place of `assert false; return x;`, and 5 stay comments
+  naming an issue, because the Java assert itself fires under `-ea` on a layout ELK runs:
+  `BoxLayoutProvider.java:738, 754` and `SingleEdgeGraphWrapper.java:193` are upstream defects (#112; knowvah/elk#27 and
+  #28), and `ThresholdStrategy.java:395, 403` wait for a diagnosis (#128).
+- Tests that pin a JVM without `-ea`: ten restored asserts reject an input that a unit test or a recorded JVM row
+  drives on purpose (#112 row 32, #113). The step that violates the assert runs inside `withAssertions(false, …)`
+  (`test/helpers/with-assertions.ts`), and a second test pins the `AssertionError` with assertions on
+  (`test/helpers/assertion-error-of.ts`). For `EndLabelPreprocessor.java:377` the replay runners decide per model:
+  `withEndLabelRule` (`test/helpers/unsized-end-labels.ts`) lays a model out with assertions off when it has an end
+  label without a size, as the recording JVM did. No expected value differs between the two modes.
 
 ### 6.9 `Optional`, streams, `Iterable` laziness
 

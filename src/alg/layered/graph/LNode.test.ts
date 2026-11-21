@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { assertionErrorOf } from '../../../../test/helpers/assertion-error-of.js';
+import { withAssertions } from '../../../../test/helpers/with-assertions.js';
 import { addLayer, addNode, addPort, connect, label } from '../../../../test/helpers/lgraph-builders.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import { ElkGraphUtil } from '../../../graph/util/ElkGraphUtil.js';
@@ -55,8 +57,15 @@ describe('LNode defaults', () => {
     node.setLayer(layer);
     expect(node.getGraph()).toBe(graph);
     const other = new LGraph();
-    node.setGraph(other);
+    // as a JVM without -ea: `setGraph` asserts that the node has no layer (issue #113, row 23)
+    withAssertions(false, () => node.setGraph(other));
     expect(node.getGraph()).toBe(other);
+  });
+
+  it('throws AssertionError under -ea when the graph of a node with a layer is set (LNode.java:165)', () => {
+    const node = new LNode(null);
+    node.setLayer(addLayer(new LGraph()));
+    expect(assertionErrorOf(() => node.setGraph(new LGraph())).message).toBe('');
   });
 });
 

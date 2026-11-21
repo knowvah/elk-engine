@@ -949,9 +949,9 @@ test/golden/inputs/` shows only the added `refs/java/node-micro-layout.json`.
   here; unreachable, because `NodeLabelCellCreator.java:80` returns first (T2). Each site is unreachable from
   `NodeMicroLayout`.
 - **`assert` sites (NS5).** `PortLabelPlacementCalculator.java:208` is a `devAssert` call since issue #45
-  (translation rules 6.8). `NodeContext.java:277` and
-  `HorizontalPortPlacementSizeCalculator.java:212` stay comments naming the line: a unit test and nine `adapters` sweep
-  rows drive them on purpose, and the Java asserts fire there under `-ea` too (issue #113).
+  (translation rules 6.8), `NodeContext.java:277` and `HorizontalPortPlacementSizeCalculator.java:212` since issue
+  #127. A unit test and nine `adapters` sweep rows drive those two on purpose, where the Java asserts fire under `-ea`
+  too (issue #113); they run that step with assertions off, and a second test pins the `AssertionError`.
 - **Prose typos corrected:** none found in this mission.
 
 **AD-13 re-derivation (mission 6c).** Five 6b unit tests had their hand-derived expectations corrected after a first
@@ -1070,9 +1070,9 @@ was re-recorded once (X4). The port-side view proxy returned `undefined`/`Unsupp
   `NullPointerException`; the JDK 21 helpful-NPE message is not reproduced. The site replay compares those rows by
   class only and every other exception by class and message.
 - **`assert` sites:** `ElkGraphImporter.java:205, 620-621, 789` are `devAssert` calls since issue #45
-  (translation rules 6.8). `LNode.setGraph` and `LGraphUtil.createExternalPortDummy` ×2
-  stay comments: a unit test and four site vectors drive them on purpose, and the Java asserts fire there under `-ea`
-  too (issue #113).
+  (translation rules 6.8), `LNode.setGraph` and `LGraphUtil.createExternalPortDummy` ×2 since issue #127. Two unit tests
+  and four site vectors drive those three on purpose, where the Java asserts fire under `-ea` too (issue #113); they
+  run that step with assertions off, and a second test pins the `AssertionError`.
 - **TS-only surface:** `isHierarchyAwareLayoutProcessor`'s null/primitive guards (the brand stands in for `instanceof`);
   the `getPortSideView` proxy's membership-by-index trap.
 - **Staged boundary:** `LayeredLayoutProvider.layout` reaches `ElkLayered.doLayout`/`doCompoundLayout`, which throw

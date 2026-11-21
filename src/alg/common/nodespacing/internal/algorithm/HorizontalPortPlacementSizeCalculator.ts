@@ -8,6 +8,7 @@ import { SizeConstraint } from '../../../../../core/options/SizeConstraint.js';
 import { SizeOptions } from '../../../../../core/options/SizeOptions.js';
 import { getLabelsBounds } from '../../../../../core/util/ElkUtil.js';
 import { fuzzyEquals } from '../../../../../guava/DoubleMath.js';
+import { devAssert } from '../../../../../java/lang/DevAssert.js';
 import type { NodeContext } from '../NodeContext.js';
 import type { PortContext } from '../PortContext.js';
 import { PortPlacementCalculator } from './PortPlacementCalculator.js';
@@ -268,9 +269,7 @@ export class HorizontalPortPlacementSizeCalculator {
    * @returns minimum width required to satisfy the spacing.
    */
   static minSizeRequiredToRespectSpacing(spacing: number, firstRatio: number, secondRatio: number): number {
-    // Java: `assert secondRatio >= firstRatio;` (HorizontalPortPlacementSizeCalculator.java:212). Not a devAssert yet:
-    // the `adapters` sweep rows of layered-framework.json run this before layered sorts the ports, and the Java
-    // assert fires on them under -ea too (issue #113).
+    devAssert(() => secondRatio >= firstRatio); // HorizontalPortPlacementSizeCalculator.java:212
 
     // Some failsafing
     if (fuzzyEquals(firstRatio, secondRatio, HorizontalPortPlacementSizeCalculator.EQUALITY_TOLERANCE)) {

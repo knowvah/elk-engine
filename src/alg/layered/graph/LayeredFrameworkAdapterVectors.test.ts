@@ -4,6 +4,7 @@
 // every LGraph in pre-order, then every node of every graph (dump order) is compared at the AD-4 bar. This is also the
 // end-to-end check for port alignment (BEGIN/END/JUSTIFIED) and non-zero N/S PORT_BORDER_OFFSET (6c follow-up).
 import { describe, expect, it } from 'vitest';
+import { withAssertions } from '../../../../test/helpers/with-assertions.js';
 import { NodeDimensionCalculation } from '../../common/nodespacing/NodeDimensionCalculation.js';
 import {
   decodeHex,
@@ -258,13 +259,31 @@ function hasNorthSouthOffset(row: LayeredFrameworkRow): boolean {
 
 const rows = loadLayeredFrameworkRows('adapters');
 
+/**
+ * The rows whose replay a JVM under `-ea` rejects (`HorizontalPortPlacementSizeCalculator.java:212`, `assert
+ * secondRatio >= firstRatio`; issue #113, row 13): `NodeDimensionCalculation` runs straight after the import, before
+ * layered sorts the ports, so their `FIXED_RATIO` ratios are not ascending. They replay with assertions off, as the
+ * recorder's JVM ran them.
+ */
+const ROWS_WITH_UNSORTED_RATIOS: ReadonlySet<string> = new Set([
+  'adapters/sweep-002',
+  'adapters/sweep-014',
+  'adapters/sweep-018',
+  'adapters/sweep-026',
+  'adapters/sweep-032',
+  'adapters/sweep-036',
+  'adapters/sweep-064',
+  'adapters/sweep-065',
+  'adapters/sweep-069',
+]);
+
 describe('layered-framework.json adapters rows', () => {
   it('has the recorded rows', () => {
     expect(rows.length).toBe(142);
   });
 
   it.each(rows.map((row) => [row.id, row] as const))('%s', (_id, row) => {
-    const outcome = replay(row);
+    const outcome = ROWS_WITH_UNSORTED_RATIOS.has(row.id) ? withAssertions(false, () => replay(row)) : replay(row);
     if (row.exception !== undefined) {
       expect(outcome.exception).toEqual(row.exception);
       return;

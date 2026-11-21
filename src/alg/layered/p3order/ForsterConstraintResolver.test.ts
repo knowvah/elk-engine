@@ -4,6 +4,8 @@
 // graph is satisfied, merged groups share one barycenter, layout units do not mix). The oracle orders of the
 // constraint rows are proven by T7's replay of the sweep.
 import { describe, expect, it } from 'vitest';
+import { assertionErrorOf } from '../../../../test/helpers/assertion-error-of.js';
+import { withAssertions } from '../../../../test/helpers/with-assertions.js';
 import { addLayer, addNode, addPort } from '../../../../test/helpers/lgraph-builders.js';
 import { LGraph } from '../graph/LGraph.js';
 import type { LNode } from '../graph/LNode.js';
@@ -75,9 +77,16 @@ describe('ForsterConstraintResolver: processConstraints', () => {
   it('leaves an unconstrained layer and its barycenters alone', () => {
     const layer = layerOf(normals(3));
     const nodes = withBarycenters(layer, [3, 1, 2]);
-    layer.resolver.processConstraints(nodes);
+    // as a JVM without -ea: the resolver asserts barycenters in ascending order (issue #113, row 123)
+    withAssertions(false, () => layer.resolver.processConstraints(nodes));
     expect(nodes).toEqual(layer.nodes);
     expect(barycentersOf(layer, nodes)).toEqual([3, 1, 2]);
+  });
+
+  it('throws AssertionError under -ea for barycenters that are not sorted (ForsterConstraintResolver.java:239)', () => {
+    const layer = layerOf(normals(3));
+    const nodes = withBarycenters(layer, [3, 1, 2]);
+    expect(assertionErrorOf(() => layer.resolver.processConstraints(nodes)).message).toBe('');
   });
 
   it('keeps a satisfied constraint', () => {
@@ -125,7 +134,8 @@ describe('ForsterConstraintResolver: processConstraints', () => {
     const nodes = [a, b];
     layer.resolver.stateOf(a).barycenter = 1 + 1e-10;
     layer.resolver.stateOf(b).barycenter = 1;
-    layer.resolver.processConstraints(nodes);
+    // as a JVM without -ea: the assert compares doubles, so this order is not ascending (issue #113, row 123)
+    withAssertions(false, () => layer.resolver.processConstraints(nodes));
     expect(nodes).toEqual([a, b]);
     expect(barycentersOf(layer, nodes)).toEqual([1 + 1e-10, 1]);
   });

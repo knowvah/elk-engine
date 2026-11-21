@@ -12,10 +12,12 @@ import {
   compareRow,
   loadSiteFile,
   opsUsed,
-  replayRow,
+  replayRow as replaySiteRow,
   type SiteRow,
 } from '../../../test/helpers/layered-site-replay.js';
 import { hierarchyAwareClasses, isPorted } from '../../../test/helpers/layered-site-replay-ops-transform.js';
+import { EXTERNAL_PORT_ROWS_REJECTED_UNDER_EA } from '../../../test/helpers/lgraph-site-external-tables.js';
+import { withAssertions } from '../../../test/helpers/with-assertions.js';
 
 const file = loadSiteFile();
 const PROVIDER_SITE = 'LayeredLayoutProvider';
@@ -24,6 +26,16 @@ const HIERARCHY_AWARE_ROW = 'site/strings/hierarchyAware';
 /** The `ElkLayered` method a provider row reaches (named in the test title). */
 function stagedMethod(row: SiteRow): string {
   return row.id.includes('include-children') ? 'doCompoundLayout' : 'doLayout';
+}
+
+/**
+ * The helper's `replayRow`, with assertions off for the `externalPorts` rows a JVM under `-ea` rejects (issue #113,
+ * rows 21 and 22): the recorder's JVM ran them without `-ea`.
+ */
+function replayRow(row: SiteRow): ReturnType<typeof replaySiteRow> {
+  return EXTERNAL_PORT_ROWS_REJECTED_UNDER_EA.has(row.id)
+    ? withAssertions(false, () => replaySiteRow(row))
+    : replaySiteRow(row);
 }
 
 describe('layered-sites.json replay', () => {

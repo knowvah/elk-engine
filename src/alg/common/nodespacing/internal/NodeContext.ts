@@ -14,6 +14,7 @@ import { UnsupportedConfigurationException } from '../../../../core/UnsupportedC
 import { IndividualSpacings } from '../../../../core/util/IndividualSpacings.js';
 import type { GraphAdapters } from '../../../../core/util/adapters/GraphAdapters.js';
 import type { IProperty } from '../../../../graph/properties/IProperty.js';
+import { devAssert } from '../../../../java/lang/DevAssert.js';
 import type { EnumSet } from '../../../../java/util/EnumSet.js';
 import { EnumMap, newEnumMap } from '../../../../guava/Maps.js';
 import type { Multimap } from '../../../../guava/Multimap.js';
@@ -238,10 +239,9 @@ export class NodeContext {
         return Math.sign(portContext2.port.getVolatileId() - portContext1.port.getVolatileId());
 
       default:
-      // This should never happen since we have already checked whether a port has an undefined side in the
-      // constructor of this class
-      // Java: `assert false;` (NodeContext.java:277). Not a devAssert yet: a test drives this arm on purpose
-      // (issue #113).
+        // This should never happen since we have already checked whether a port has an undefined side in the
+        // constructor of this class
+        devAssert(() => false); // NodeContext.java:277
     }
 
     return 0;

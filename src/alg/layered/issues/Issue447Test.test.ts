@@ -5,7 +5,7 @@
  *
  * @see org.eclipse.elk.alg.layered.test/src/org/eclipse/elk/alg/layered/issues/Issue447Test.java
  */
-import { expect } from 'vitest';
+import { assertEqualsWithin } from '../../../../test/helpers/junit-delta.js';
 import { defineLayoutTest } from '../../../../test/helpers/layout-test-runner.js';
 import { KVector } from '../../../core/math/KVector.js';
 import { ElkUtil } from '../../../core/util/ElkUtil.js';
@@ -33,14 +33,6 @@ function configurePort(port: ElkPort): void {
   port.setWidth(PORT_SIZE);
   port.setHeight(PORT_SIZE);
   port.setProperty(LayeredOptions.PORT_ANCHOR, new KVector(PORT_ANCHOR, PORT_ANCHOR));
-}
-
-/** JUnit 4 `assertEquals(message, expected, actual, delta)`. */
-function assertEqualsWithin(message: string, expected: number, actual: number, delta: number): void {
-  expect(
-    Object.is(expected, actual) || Math.abs(expected - actual) <= delta,
-    `${message} expected:<${String(expected)}> but was:<${String(actual)}>`,
-  ).toBe(true);
 }
 
 function testEdgeEndPoint(containingNode: ElkNode, port: ElkPort, x: number, y: number): void {

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { withAssertions } from '../../../test/helpers/with-assertions.js';
 import * as JavaString from '../../java/lang/JavaString.js';
 import { LayoutAlgorithmData } from './LayoutAlgorithmData.js';
 import { LayoutCategoryData } from './LayoutCategoryData.js';
@@ -28,8 +29,9 @@ describe('LayoutCategoryData', () => {
 
   it('collects layouters and follows the id-based Java object contract', () => {
     const c = category(CATEGORY_ID);
-    const a = new LayoutAlgorithmData.Builder().id('a').create();
-    const b = new LayoutAlgorithmData.Builder().id('b').create();
+    // No provider factory: `create()` runs as on a JVM without `-ea` (`InstancePool.java:59`; issue #113, row 9).
+    const a = withAssertions(false, () => new LayoutAlgorithmData.Builder().id('a').create());
+    const b = withAssertions(false, () => new LayoutAlgorithmData.Builder().id('b').create());
     c.getLayouters().push(a, b);
     expect(c.getLayouters()).toEqual([a, b]);
     expect(c.toString()).toBe(`Layout Type: ${CATEGORY_ID}`);

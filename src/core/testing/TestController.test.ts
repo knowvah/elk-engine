@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { withAssertions } from '../../../test/helpers/with-assertions.js';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
 import { IllegalStateException } from '../../java/lang/IllegalStateException.js';
 import { AbstractLayoutProvider } from '../AbstractLayoutProvider.js';
@@ -49,7 +50,9 @@ describe('TestController', () => {
 
   it('targets only algorithm data with the same id', () => {
     const controller = new TestController(TARGET_ID);
-    const make = (id: string): LayoutAlgorithmData => new LayoutAlgorithmData.Builder().id(id).create();
+    // No provider factory: `create()` runs as on a JVM without `-ea` (`InstancePool.java:59`; issue #113, row 9).
+    const make = (id: string): LayoutAlgorithmData =>
+      withAssertions(false, () => new LayoutAlgorithmData.Builder().id(id).create());
     expect(controller.targets(make(TARGET_ID))).toBe(true);
     expect(controller.targets(make(OTHER_ID))).toBe(false);
   });

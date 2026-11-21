@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: EPL-2.0
 import { KVector } from '../../../core/math/KVector.js';
-import type { Direction } from '../../../core/options/Direction.js';
+import { Direction } from '../../../core/options/Direction.js';
 import { PortConstraints } from '../../../core/options/PortConstraints.js';
 import { PortSide } from '../../../core/options/PortSide.js';
 import type { IPropertyHolder } from '../../../graph/properties/IPropertyHolder.js';
+import { devAssert } from '../../../java/lang/DevAssert.js';
 import { EdgeConstraint } from '../options/EdgeConstraint.js';
 import { InLayerConstraint } from '../options/InLayerConstraint.js';
 import { InternalProperties } from '../options/InternalProperties.js';
@@ -150,8 +151,7 @@ export function createExternalPortDummy(args: ExternalPortDummyArgs): LNode {
 /** The free-side block of {@link createExternalPortDummy}: the side of a port whose constraints fix no side. */
 function freeExternalPortSide(netFlow: number, layoutDirection: Direction): PortSide {
   // we need some layout direction here, use RIGHT as default in case it is undefined
-  // Java: `assert layoutDirection != Direction.UNDEFINED;` (LGraphUtil.java:821). Not a devAssert yet: site vectors
-  // drive this with an undefined direction, which the Java assert rejects under -ea too (issue #113).
+  devAssert(() => layoutDirection !== Direction.UNDEFINED); // LGraphUtil.java:821
   if (netFlow >= 0) {
     return PortSide.fromDirection(layoutDirection);
   } else {
@@ -189,9 +189,11 @@ function placeDummy(side: PortSide, placement: DummyPlacement): void {
       placeSouthDummy(placement);
       break;
     default:
-    // Should never happen! Java: `assert false : finalExternalPortSide;` (LGraphUtil.java:907). Not a devAssert yet:
-    // a site vector and a test drive this arm with the side UNDEFINED, where the Java assert fires under -ea too
-    // (issue #113).
+      // Should never happen! (LGraphUtil.java:907)
+      devAssert(
+        () => false,
+        () => side,
+      );
   }
 }
 

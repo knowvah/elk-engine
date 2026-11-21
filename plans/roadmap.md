@@ -2852,3 +2852,73 @@ test/golden/refs/ tools/vectors/` is empty.
 **Oracle.** Not rebuilt and not run. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
 2026-11-18T15:18:16Z). `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty. `$ELK_MODELS_DIR` is at
 `ac5af2ba…`, the commit of `test/corpus/manifest.json`; the models checkout was read, never written.
+
+## Revision 2026-11-20 (dev-assert-restore)
+
+Appended; no earlier line is edited. Source: issue #127 (the maintainer's rulings of 2026-11-20 on #112 row #32,
+#113 and #119) and D1-D9 in `plans/dev-assert-restore/decisions.md`; the journal is
+`plans/dev-assert-restore/decision-journal.md`, the firing census `plans/dev-assert-restore/census.md`. Where this
+section conflicts with the text above, this section wins. Task ids are T1-T7; the base is
+`b716710e5098cc2ab9392c251702a2d8bcda6e88`.
+
+**Ten Java asserts that #45 left as comments are `devAssert` calls again.** `InstancePool.java:59`,
+`NodeContext.java:277`, `HorizontalPortPlacementSizeCalculator.java:212`, `LGraphUtil.java:821` and `:907`,
+`LNode.java:165`, `EndLabelPreprocessor.java:377`, `HighDegreeNodeLayeringProcessor.java:255`,
+`EdgeLabelSideSelection.java:58` and `ForsterConstraintResolver.java:239` (with Java's `lastValue`, start
+`Short.MIN_VALUE`) (T2, D5). Of the 143 statements, 132 are now restored, 6 are restored before a kept throw, and 5
+stay comments: `BoxLayoutProvider.java:738, 754` and `SingleEdgeGraphWrapper.java:193` (upstream defects, #112;
+knowvah/elk#27, #28) and `ThresholdStrategy.java:395, 403` (#128). `plans/dev-assert/inventory.md` has a superseding
+section; its earlier rows are unchanged.
+
+**Census (T2).** With the sites live and nothing wrapped, the suite failed in exactly the ruled sets: 170 tests in
+12 files at #32 (plus 6 that follow in `LayeredCompoundTwins`), and #113's tests and rows for the other nine. Nothing
+else fired.
+
+**The switch (T1, D1).** `withAssertions(enabled, body)` lives in `test/helpers/with-assertions.ts` (one export;
+`DevAssert.test.ts` imports it). A step that a test drives into a state the Java assert rejects runs inside
+`withAssertions(false, …)`: the `create()` calls without a provider factory in four core test files, one call each
+in `NodeContext`, `LNode`, `HighDegreeNodeLayeringProcessor`, `EdgeLabelSideSelection` and (two) in
+`ForsterConstraintResolver` tests, the nine `adapters/sweep-*` rows of `LayeredFrameworkAdapterVectors`, and the four
+`site/lgraphutil/externalPorts/*` rows in both of their replays (T4, T5, D4). Ten new tests, one per site, pin the
+`AssertionError` with assertions on through `assertionErrorOf` (`test/helpers/assertion-error-of.ts`): message `''`,
+and `UNDEFINED` at `LGraphUtil.java:907` as on the JVM (D6).
+
+**The #32 rule (T3, D2, D3).** `hasUnsizedEndLabel(root)` (`test/helpers/unsized-end-labels.ts`): some label of an
+edge anywhere in the prepared root has `EDGE_LABELS_PLACEMENT` `HEAD` or `TAIL` and fails `width > 0 && height > 0`.
+`withEndLabelRule(root, body)` runs the layout step with assertions off when it holds. It is applied in the three
+runners the census found (`runRoutingPrefix`, `runRow`, `runPlainFullRow`) and, after T6, in the labels sweep's
+`replayCase`. **The predicate selects 572 tests, not the 170 that #127 expected.** All 170 are among them; 6 more
+are the twins; 43 never run `EndLabelPreprocessor`; 353 run it without handing the assert a label cell, because
+`removeLabelOverlaps` only visits the NORTH and SOUTH sides of a horizontal layout and the EAST and WEST sides of a
+vertical one. The oracle under `-ea` exits 0 on `labelStacking_left_down.elkt` and throws at `:377` on
+`labelStacking_down_up.elkt`. Whether a model fires depends on port sides and direction, so the rule is per model;
+issue #138 records the cost (396 replays with assertions off that would not fire) and the narrowing options.
+
+**#119 (T1, D7).** `Issue447Test.test.ts` uses `junit-delta`'s `assertEqualsWithin`; its private copy is gone and
+its two calls are unchanged.
+
+**Sweeps (T6, D9).** The ten sweep files at stride 1 with assertions on, against oracle results of 2026-11-20:
+`label-sizing`, `loops` (3,073 checked), `phase` (30,265), `pipeline` (6,646), `order` (6,280), `placement` (1,970),
+`routing` (6,280) and `sweep.test.ts` were green as they were. `labels` (68 cases) and `compound` (4 cases, the
+`.elkt` model `hierarchy01`) failed, every case at `EndLabelPreprocessorPlacement.ts:117` on a model that meets the
+predicate, and are green after the one wrap in the labels sweep helper (950 and 1,169 checked). No other assert
+fired. `sweep.test.ts` is a planner unit test that lays nothing out, and `ts-layout-compare` runs its workers with
+assertions off, so neither is evidence about asserts (issue #137).
+
+**Issues filed.** #137 and #138, both `follow-up`. No `needs-ruling`: no stop condition fired.
+
+**Unchanged (AD-13).** No expected value, tolerance, case list or existing test title; every edited `expect` line
+keeps its text. No vector, golden, recorder or oracle patch. `src/` changed only at the ten sites (nine files).
+With assertions off the library behaves as before.
+
+**Gates (queue gates 1-7, 2026-11-20).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,729
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,190 files (10 skipped),
+49,361 tests passed, 93 skipped, 0 failed; statements 98.81 %, branches 96.99 %, functions 98.56 %, lines 98.86 %,
+equal to the base; +2 files and +24 tests against the base (the ten site tests, 11 for the predicate helper, 3 for
+`assertionErrorOf`). The same suite with `ELK_DEV_ASSERTIONS=off`: 49,361 passed, 0 failed. `docs:build` exit 0 with
+200 typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry. Gate 7:
+`git diff --exit-code b716710e -- test/golden/refs/ tools/vectors/ tools/oracle/` is empty.
+
+**Oracle.** Not rebuilt. `oracle-build.json` names `8bca22f4…` and patches 0001-0003 (`builtAt`
+2026-11-18T15:18:16Z); `git -C ../elk log --oneline 8bca22f4..HEAD -- plugins/` is empty. It ran twice under
+`JAVA_TOOL_OPTIONS=-ea:org.eclipse.elk...` for the #32 evidence, writing to `$TMPDIR` only.

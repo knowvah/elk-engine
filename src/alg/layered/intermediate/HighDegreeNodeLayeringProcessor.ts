@@ -286,9 +286,9 @@ export class HighDegreeNodeLayeringProcessor implements ILayoutProcessor<LGraph>
     const stack: { node: LNode; depth: number }[] = [{ node: root, depth: 0 }];
     while (stack.length > 0) {
       const { node, depth } = stack.pop()!;
-      // Java: `assert layers.size() > 0;` (HighDegreeNodeLayeringProcessor.java:255) of the recursive call, whose list
-      // is `layers.subList(depth, size)`. Not a devAssert yet: a test pins the exception below, which a JVM under -ea
-      // never reaches (issue #113).
+      // Java's `assert layers.size() > 0` (HighDegreeNodeLayeringProcessor.java:255) of the recursive call: that call's
+      // list is `layers.subList(depth, size)`.
+      devAssert(() => layers.length - depth > 0);
       if (depth >= layers.length) {
         throw new IndexOutOfBoundsException(`Index 0 out of bounds for length 0`);
       }
