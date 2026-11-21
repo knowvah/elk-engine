@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: EPL-2.0
 // The whole-graph dump of the layered site replay: T1's `dumpLGraph` (layered-framework-replay.ts), with the property
-// values that dump cannot encode filled in. T1's encoder knows a TS array but not the port's `KVectorChain` (a
-// `LinkedList`), so it writes { class: "KVectorChain" } where the recorder writes the list; this module re-encodes
-// exactly those values from the live element with the replay's own C4 encoder.
+// values that dump cannot encode filled in. `dumpLGraph` writes { class } for a value it has no encoder for: the
+// helper objects the layered options hold (`Random`, `Spacings`, `LayoutOptionProxy`, the labels vectors'
+// `ShrinkWidthManager`) and an `LPort` outside the dumped graph. This module re-encodes exactly those values from the
+// live element with the replay's own C4 encoder. (`KVectorChain` is no longer among them: `dumpLGraph` encodes it.)
 import type { LGraph } from '../../src/alg/layered/graph/LGraph.js';
 import type { LGraphElement } from '../../src/alg/layered/graph/LGraphElement.js';
 import { dumpLGraph, type LGraphDump } from './layered-framework-replay.js';

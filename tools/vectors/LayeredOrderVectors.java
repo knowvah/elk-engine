@@ -2488,7 +2488,7 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
         for (String r : table) { for (String[] m : MACROS) { r = r.replace(m[0], m[1]); } String[] f = r.split("\\|", -1); row(f[0], gr(f[1], f[2], f[3]), f[4]); }
     }
     static void siteScenarios() {
-        String ic = " LES PSP PLS p3:LAYER_SWEEP", conn = "a b c d e f|a>e b>f c>d|seed:1 base ", ir = "CROSSING_MINIMIZATION_STRATEGY=INTERACTIVE", ik = "a@0,0 b@100,40 c@200,0 p q r s t u v"; // 10 nodes: no full dump (the TS dump has no KVectorChain encoder)
+        String ic = " LES PSP PLS p3:LAYER_SWEEP", conn = "a b c d e f|a>e b>f c>d|seed:1 base ", ir = "CROSSING_MINIMIZATION_STRATEGY=INTERACTIVE", ik = "a@0,0 b@100,40 c@200,0 p q r s t u v"; // 10 nodes: no full dump
         String nsn = "a b[FS;W;N;N;S;S;E] c d e", nse = "a>b.p0 a>b.p1 b.p2>c b.p3>d a>b.p4 b.p5>e c>e d>e a>e", anc = "PORT_ANCHOR=(2.0,2.0)", pd = "ALLOW_NON_FLOW_PORTS_TO_SWITCH_SIDES=true;" + anc;
         String g1 = "{CONSIDER_MODEL_ORDER_GROUP_MODEL_ORDER_CROSSING_MINIMIZATION_ID=1}", g2 = g1.replace("=1", "=2"), sep = "{LAYERING_LAYER_CONSTRAINT=", lb = "base LES PSP IPP", xs = "base HPC LES PSP IPP PLS NSP p3:LAYER_SWEEP target:T";
         rows("LayerSweep/singleNode||a||norm layers:0 p3:LAYER_SWEEP", "LayerSweep/empty||||norm p3:LAYER_SWEEP", "InLayerConstraints/connected||" + conn + "ics:3>4 ics:4>5" + ic, "InLayerConstraints/cycle||" + conn + "ics:3>4 ics:4>3" + ic, "InLayerConstraints/selfReference||" + conn + "ics:3>3" + ic,

@@ -8,8 +8,9 @@
 #   c  an option family (wrapping.strategy SINGLE_EDGE / MULTI_EDGE, compaction.postCompaction.strategy EDGE_LENGTH /
 #      LEFT_RIGHT_CONNECTION_LOCKING) over the self loop, compaction and components models and every ptolemy model
 # test/corpus/loops-sweep.test.ts replays the cases through the port. Line format and case ids: see the header of
-# tools/vectors/LayeredLoopsVectors.java, whose --sweep and --dump modes this runs (single-file source launcher, run from the repo root).
-# Skipped when the sweep dir is fresh: same oracle build, same recorder source, same models commit, same input hash. The stamp does
+# tools/vectors/LayeredLoopsVectors.java, whose --sweep and --dump modes this runs (through jp_run of tools/vectors/java-program.sh,
+# from the repo root). Skipped when the sweep dir is fresh: same oracle build, same recorder sources (every file jp_sources lists) and
+# java-program.sh, which decides how they are built, same models commit, same input hash. The stamp does
 # not cover diagnosis-aid environment variables (LOOPS_FILTER, ...): run --force after a run that set one.
 # Uses the classpath and JVM flags of tools/vectors/layered-loops-vectors.sh (constant identity hash).
 # Usage: loops-sweep.sh [--force]   (LOOPS_SWEEP_DIR overrides the output directory)
@@ -39,6 +40,9 @@ die() {
   echo "error: $1" >&2
   exit 1
 }
+
+# shellcheck source=tools/vectors/java-program.sh
+. "$ROOT/tools/vectors/java-program.sh"
 
 oracle_jars() { # every oracle jar, one per line
   node -e '
@@ -90,9 +94,14 @@ models_present() { # every directory a part reads exists
   [ -d "$ROOT/$VENDORED_DIR" ]
 }
 
-compute_stamp() { # oracle build + recorder + models commit + hash of every input
+compute_stamp() { # oracle build + recorder sources + the build helper + models commit + hash of every input
+  local source
   {
-    cat "$ELK_ORACLE_DIR/oracle-build.json" "$PROGRAM"
+    cat "$ELK_ORACLE_DIR/oracle-build.json"
+    while IFS= read -r source; do
+      cat "$source"
+    done < <(jp_sources "$PROGRAM")
+    cat "$VC_JAVA_PROGRAM"
     git -C "$ELK_MODELS_DIR" rev-parse HEAD
     model_files | while IFS= read -r f; do
       echo "$f $(shasum -a 256 "$ELK_MODELS_DIR/$f" | cut -d' ' -f1)"
@@ -105,10 +114,10 @@ compute_stamp() { # oracle build + recorder + models commit + hash of every inpu
 # insertion order; the top frame of a repeated NullPointerException stays in the trace.
 export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-XX:+UnlockExperimentalVMOptions -XX:hashCode=2 -XX:-OmitStackTraceInFastThrow"
 
-run_program() { # run_program <mode args>...; the recorder's sweep and dump modes, run as a source program from the repo root
+run_program() { # run_program <mode args>...; the recorder's sweep and dump modes, run from the repo root
   local cp
   cp="$(build_classpath)"
-  (cd "$ROOT" && java -cp "$cp" "$PROGRAM" "$@")
+  (cd "$ROOT" && jp_run java -cp "$cp" "$PROGRAM" "$@")
 }
 
 dump_case() { # dump_case <case id> <outDir>

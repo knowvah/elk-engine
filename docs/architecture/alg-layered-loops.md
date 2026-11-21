@@ -155,8 +155,10 @@ ts --> helpers : dump, compared at AD-4 with twins (W6, W7)
 
 ## 3. The recorder and its rows (W3, W5) {#part-h-rows}
 
-One recorder, `tools/vectors/LayeredLoopsVectors.java` (a JDK 21 single-file launcher, 4,561 lines at T20, limit 5,000;
-core copied from 7f2's, origin cited in its header), writes one ref, `test/golden/refs/java/layered-loops.json`
+One recorder, `tools/vectors/LayeredLoopsVectors.java` (a JDK 21 single-file launcher of 4,561 lines at T20, limit
+5,000; since issue #50 a multi-file program, the entry file plus ten helper sources in
+`tools/vectors/LayeredLoopsVectors/`, built by `tools/vectors/java-program.sh`; core copied from 7f2's, origin cited in
+its header), writes one ref, `test/golden/refs/java/layered-loops.json`
 (16,358,809 bytes at T20, limit 16,777,216), with four groups; the counts equal the header's `rowCounts`:
 
 | Group       | Rows | What                                                                                                                                                                                                                |

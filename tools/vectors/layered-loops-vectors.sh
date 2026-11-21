@@ -3,21 +3,24 @@
 # Records the JVM behaviour of the self loop, wrapping and compaction family of org.eclipse.elk.alg.layered (SelfLoopPreProcessor,
 # SelfLoopPortRestorer, SelfLoopRouter, SelfLoopPostProcessor, DummySelfLoopProcessor, BreakingPointInserter, BreakingPointProcessor,
 # BreakingPointRemover, SingleEdgeGraphWrapper, HorizontalGraphCompactor, ComponentsCompactor and the loops/, wrapping/, compaction/
-# packages behind them) (mission 7g, T1, W3, AD-13): runs tools/vectors/LayeredLoopsVectors.java as a single-file source program against
-# the source-built oracle jars (AD-3) plus the third-party bundles graph.text needs (Xtext standalone). The program is invoked as
+# packages behind them) (mission 7g, T1, W3, AD-13): runs tools/vectors/LayeredLoopsVectors.java and its helper sources in
+# tools/vectors/LayeredLoopsVectors/ (a multi-file program, issue #50) against the source-built oracle jars (AD-3) plus the third-party
+# bundles graph.text needs (Xtext standalone). The program is started by jp_run of java-program.sh, which compiles a multi-file
+# program with javac and runs its class, from the line
 #   java -cp <classpath> LayeredLoopsVectors.java <outDir> <tools/vectors dir>
 # and writes <outDir>/layered-loops.json itself. A level whose WHOLE plan names a member outside the ported sets makes the program exit 1
 # naming the row unless the member is in its REFUSAL_CATEGORIES (7h: INCLUDE_CHILDREN, HIERARCHICAL_NODE_RESIZER), where the row is
 # counted per category on stderr.
 # Usage: layered-loops-vectors.sh <outDir>   (the landed output lives in test/golden/refs/java)
 #        layered-loops-vectors.sh --sweep <modelsDir> <outDir> | --dump <case id> <modelsDir> <outDir>   (T19: passed to the program as is)
+#        layered-loops-vectors.sh --plan-dump <tools/vectors dir> <modelsDir> <path>...   (diagnosis: passed to the program as is)
 # Honours ELK_ORACLE_DIR (default <repo>/../elk-oracle) and P2_BUNDLES. The cache salt does not cover the vendored
 # inputs the program reads (under test/golden/inputs), so before every run (warm or cold) this script checks
 # the SHA-256 table embedded in the program against the files on disk and fails naming each missing or changed file.
 # Results are cached by salted input hash under $ELK_ORACLE_DIR/vector-cache/layered-loops/ (vector-cache.sh) and
 # the run prints one "cache: ..." line. ELK_VECTORS_CACHE=off runs it cold, touching no cache.
 # Diagnosis aids (environment): LOOPS_FILTER, LOOPS_DISCOVER, LOOPS_MARKERS, LOOPS_STATS, LOOPS_CAP_MB (see the program header);
-# the plan dump is `java ... LayeredLoopsVectors.java --plan-dump ...`.
+# the plan dump is the --plan-dump mode above (the program is multi-file: `java ... LayeredLoopsVectors.java` does not compile).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -98,11 +101,12 @@ export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:+$JAVA_TOOL_OPTIONS }-XX:+UnlockEx
 
 main() {
   case "${1:-}" in
-    --sweep | --dump) # T19's modes: the program decides; never cached
+    --sweep | --dump | --plan-dump) # T19's modes and the plan dump: the program decides; never cached
       check_models
-      local cp
+      local cp rc=0
       cp="$(build_classpath)"
-      exec java -cp "$cp" "$PROGRAM" "$@"
+      jp_run java -cp "$cp" "$PROGRAM" "$@" || rc=$?
+      exit "$rc"
       ;;
   esac
   [ "$#" -eq 1 ] || die "usage: layered-loops-vectors.sh <outDir>"

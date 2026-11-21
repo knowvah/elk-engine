@@ -3071,3 +3071,67 @@ every finding accepted, no new entry (one new finding, an unchecked `Integer.par
 fixed instead). Gate 7: the three recorders rerun on the final tree are byte-identical to the committed refs and
 `git diff --exit-code test/golden/refs/` is empty. Two gate fixes on the way, both in the pipeline recorder and both
 journaled: a helper deleted by a comment edit (the recorder did not compile), and the `parseInt` finding.
+
+## Revision 2026-11-21 (vector-recorder-debts)
+
+Queue mission for issue #50, on `chore/issue-queue` (plan and journal in `plans/vector-recorder-debts/`). It closes the
+three recorder-tooling debts of revisions 2026-10-28 and 2026-10-29 above. No file under `src/` changed, no oracle
+patch or pin changed, and every file under `test/golden/refs/` is byte-identical to the base.
+
+**1. A multi-file build for the recorders (D1, D2).** JDK 21's source launcher takes one file, which is why the layered
+recorders ran to 4,752 lines. `tools/vectors/java-program.sh` now starts every cached recorder: a program
+`tools/vectors/<Program>.java` with a directory `tools/vectors/<Program>/` beside it is compiled by `javac` (the entry
+and every `*.java` under the directory, into a temporary directory that is removed afterwards) and run by class name;
+without the directory the launch is word for word the old source-launcher line. `jp_run` takes that line as its
+arguments, so the three launch lines of `vector-cache.sh` still read `java -Delk.commit=…` and the pin fitness test
+(#96) is unedited. The cache salt and the loops sweep's stamp cover every source of a program and the helper script.
+
+**2. One recorder split as the proof (D3).** `LayeredLoopsVectors.java` (4,571 lines) is now an entry file of 358
+lines and ten helper sources of 291 to 659 lines in `tools/vectors/LayeredLoopsVectors/`: the former file cut at its
+section comments, by verbatim moves. The helpers are one chain of superclasses ending in the entry, so static
+initialization keeps the single file's textual order (JLS 12.4.1) and inherited names need no qualifier; the cut
+needed 123 compiler-derived insertions on 118 of 3,983 body lines (77 qualifiers for what stays nested in the entry, 6
+for a later helper, 40 record accessors), and a script check found no other difference. Two things keep recorded
+output fixed: `ShrinkWidthManager` and the four exception classes stay nested in the entry (the ref records
+`LayeredLoopsVectors$ShrinkWidthManager`), and every helper class name starts with `LayeredLoopsVectors`, because
+`elkFrame` tells the recorder's stack frames from ELK's by that prefix (found during the cut, not at planning).
+`layered-loops-vectors.sh` passes `--plan-dump` through, since `java LayeredLoopsVectors.java` no longer compiles.
+
+**3. The melk recorder encodes `List<Integer>` defaults (D4).** `test/melk/recorder.ts` takes a list's element number
+kind from the declared type in the vendored `.melk` model (three options, all `List<Integer>`). Both melk tests now
+compare the `cmEnforcedGroupOrders` option and support records, and the framework service dump, with the unfiltered
+JVM dump; the `ShapePrimer` exclusions and their three "unencodable" assertions are gone (D4: they asserted a tool's
+limit). A mutated default item fails the full comparison naming the record. No oracle value changed.
+
+**4. `dumpLGraph` encodes `KVectorChain` (D5).** As the recorder does: a list of `KVector` objects. The patch module
+`test/helpers/layered-site-replay-dump.ts` stays: instrumented after the change, it patches no `KVectorChain` (2,307
+before) but still `Random` 1,870, `Spacings` 1,870, `LayeredLabelsVectors$ShrinkWidthManager` 170,
+`LayoutOptionProxy` 28 and `LPort` 8 values over 62 test files. Planning expected only `KVectorChain` and 10
+importers; there are 56. No replay assertion changed.
+
+**Proof (D6).** `vector-cache.sh` is in every salt, so all 26 scripts that source it recorded afresh on their first
+run after the change: 24 of the 25 short scripts print `recorded` only (30 programs, 276 s), `layered-loops` recorded
+on its final sources in T4's check (`cmp` equal) and hit that entry in the batch, and the `elkj` lane recorded all 407 rows of
+its two row programs (`rows 0/281`, `rows 0/126`) and its four whole programs in 3 h 47 min, exit 0, with no `hit`.
+`git diff --exit-code f9e33263 -- test/golden/refs/` is empty. The loops sweep, run at the base and again on the split
+recorder, wrote 3,073 results both times, `cmp`-identical (sha256 `7f9633a8…8712`); its consumer test checks 1,537
+cases with 0 mismatches; `--dump` of four cases is byte-equal. The nine unpinned scripts among the 26 are launched as
+before and their refs did not move. The 10 scripts that do not use the cache are untouched and were not rerun.
+
+**Not done (D3, rejected (a)).** The other 14 recorders of 1,800 lines or more are still single files, and the ten
+layered recorders still carry their own copies of the `Dump` and `Encoder` (#143).
+
+**Docs.** Runbook `docs/architecture/elk-upgrade.md` § 7.1 ("Multi-file recorders") and
+`docs/architecture/alg-layered-loops.md` § 3. Notes: `.agent-notes/vector-recorder-debts.md`.
+
+**Issues filed.** #143 (`follow-up`): split the remaining multi-thousand-line recorders, with the six preconditions
+this mission met. #144 (`follow-up`): the five classes `dumpLGraph` still leaves as `{ class }`. No `needs-ruling`: no
+stop condition fired.
+
+**Gates (queue gates 1-7, 2026-11-21).** `format:check`, `typecheck`, `complexity` exit 0 (1,377 files, 10,729
+functions, no violation line). Coverage, full suite with the nine sweep directories off: 1,194 files (10 skipped),
+49,509 tests passed (+22 over the base's 49,487), 93 skipped, 0 failed; statements 98.81 %, branches 97.00 %,
+functions 98.56 %, lines 98.86 %. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`: every
+finding accepted, no new entry; the Java suite scanned the ten helper files and reports 0 findings. Gate 7: every
+recorder whose inputs changed was rerun (all 26 cached scripts and the loops sweep), and
+`git diff --exit-code test/golden/refs/` against the base is empty.

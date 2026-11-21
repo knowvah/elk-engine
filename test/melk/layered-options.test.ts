@@ -8,7 +8,6 @@ import { LayeredMetaDataProvider } from '../../src/alg/layered/options/LayeredMe
 import { LayeredOptions } from '../../src/alg/layered/options/LayeredOptions.js';
 import type { ILayoutMetaDataProvider } from '../../src/core/data/ILayoutMetaDataProvider.js';
 import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
-import { LayoutOptionData } from '../../src/core/data/LayoutOptionData.js';
 import { CoreOptions } from '../../src/core/options/CoreOptions.js';
 import { diffCalls, dumpCalls, OPTION_MODEL_CALLS } from './helpers.js';
 import { RecordingRegistry } from './recorder.js';
@@ -23,26 +22,16 @@ type MetaData = Parameters<RecordingRegistry['register']>[0];
 
 /**
  * Forwards registrations to a recorder. Priming (the default) teaches it each option's shape and drops dependencies;
- * with `forward` it also forwards dependencies, and either way it collects the options whose default the landed
- * recorder cannot encode (a `List<Integer>`: it cannot tell an int from a double without an INT/DOUBLE option type).
+ * with `forward` it also forwards dependencies.
  */
 class ShapePrimer implements ILayoutMetaDataProvider.Registry {
-  readonly unencodable: LayoutOptionData[] = [];
-
   constructor(
     private readonly recorder: RecordingRegistry,
     private readonly forward = false,
   ) {}
 
   register(data: MetaData): void {
-    try {
-      this.recorder.register(data);
-    } catch (error) {
-      if (!(data instanceof LayoutOptionData)) {
-        throw error;
-      }
-      this.unencodable.push(data);
-    }
+    this.recorder.register(data);
   }
 
   addDependency(sourceOption: string, targetOption: string, requiredValue: unknown): void {
@@ -85,14 +74,10 @@ describe('LayeredOptions and LayeredMetaDataProvider', () => {
     // the bundle class also registers the algorithm (via LayeredOptions); its option supports are not forwarded here
     // (layered-registry.test.ts compares them)
     const expected = dumpCalls(PROVIDER_CLASS, [...OPTION_MODEL_CALLS, 'registerAlgorithm']);
-    expect(skipping.unencodable.map((data) => data.getId())).toEqual([ENFORCED_GROUP_ORDERS]);
-    const encodable = expected.filter(
-      (call) => !(call.call === 'registerOption' && call.data.id === ENFORCED_GROUP_ORDERS),
-    );
-    expect(diffCalls(recorder.calls.slice(coreCalls), encodable)).toBeNull();
+    expect(diffCalls(recorder.calls.slice(coreCalls), expected)).toBeNull();
   });
 
-  it('registers the List<Integer> default the recorder cannot encode with the dump items', () => {
+  it('registers the List<Integer> default with the dump items and freezes it', () => {
     const dumped = dumpCalls(PROVIDER_CLASS, ['registerOption']).find(
       (call) => call.call === 'registerOption' && call.data.id === ENFORCED_GROUP_ORDERS,
     );

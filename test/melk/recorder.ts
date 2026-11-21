@@ -16,9 +16,12 @@ import { MELK_NAMES, parseVendored, resolveVendored } from './helpers.js';
 /** A call as recorded and C4-encoded, comparable with the `providers` section of `metadata.json`. */
 export type EncodedCall = RegistryCall;
 
+/** How a JS number is encoded: as an `int` or as a `double`. */
+type NumberKind = 'INT' | 'DOUBLE';
+
 /** What the encoder needs to know about the option a value belongs to (a JS number is an int or a double). */
 interface ValueShape {
-  readonly numbers: 'INT' | 'DOUBLE' | null;
+  readonly numbers: NumberKind | null;
   readonly elementClass: string | null;
   /** Nested class paths by simple name (C4 names a nested enum `Outer.Inner`). */
   readonly nested: ReadonlyMap<string, string>;
@@ -80,11 +83,15 @@ function encodeBound(bound: unknown, shape: ValueShape): EncodedValue {
   return bound instanceof BoxedComparable ? encodeValue(bound.value, shape) : encodeValue(bound, shape);
 }
 
-function shapeOf(option: LayoutOptionData, nested: ReadonlyMap<string, string>): ValueShape {
+function shapeOf(
+  option: LayoutOptionData,
+  nested: ReadonlyMap<string, string>,
+  listElements: ReadonlyMap<string, NumberKind>,
+): ValueShape {
   const type = option.getType()?.name();
   const optionClass = option.getOptionClass();
   return {
-    numbers: type === 'INT' ? 'INT' : type === 'DOUBLE' ? 'DOUBLE' : null,
+    numbers: type === 'INT' ? 'INT' : type === 'DOUBLE' ? 'DOUBLE' : (listElements.get(option.getId()) ?? null),
     elementClass: type === 'ENUMSET' && optionClass !== null ? simpleNameOf(optionClass) : null,
     nested,
   };
@@ -100,6 +107,35 @@ export interface RecorderNames {
   readonly nestedClasses?: ReadonlyMap<string, string>;
   /** Factory class name to JVM binary name (default: the factories of the resolved vendored algorithms). */
   readonly factoryClasses?: ReadonlyMap<string, string>;
+  /**
+   * Option id to the number kind of its `List<Integer>` / `List<Double>` elements (default: the declared types of the
+   * options of the 13 vendored files), for the options whose own type (`OBJECT`) does not tell an int from a double.
+   */
+  readonly listElementNumbers?: ReadonlyMap<string, NumberKind>;
+}
+
+const LIST_TYPE = 'List';
+const ELEMENT_KINDS: ReadonlyMap<string, NumberKind> = new Map([
+  ['Integer', 'INT'],
+  ['Double', 'DOUBLE'],
+]);
+
+function lastSegment(name: string): string {
+  return name.slice(name.lastIndexOf('.') + 1);
+}
+
+/** Option id to element number kind, for every vendored option declared `List<Integer>` or `List<Double>`. */
+export function listElementNumberKinds(): Map<string, NumberKind> {
+  const kinds = new Map<string, NumberKind>();
+  for (const { entry } of resolveVendored().flatMap((bundle) => bundle.options)) {
+    const declared = entry.option.type;
+    const element = declared?.args.length === 1 ? declared.args[0] : undefined;
+    const kind = element === undefined ? undefined : ELEMENT_KINDS.get(lastSegment(element.name));
+    if (declared !== null && lastSegment(declared.name) === LIST_TYPE && kind !== undefined) {
+      kinds.set(entry.id, kind);
+    }
+  }
+  return kinds;
 }
 
 /** Factory class name (the TypeScript class name) to the binary name the JVM dump records, per resolved algorithm. */
@@ -123,15 +159,17 @@ export class RecordingRegistry implements ILayoutMetaDataProvider.Registry {
   private readonly shapes = new Map<string, ValueShape>();
   private readonly nested: ReadonlyMap<string, string>;
   private readonly factories: ReadonlyMap<string, string>;
+  private readonly listElements: ReadonlyMap<string, NumberKind>;
 
   constructor(names: RecorderNames = {}) {
     this.nested = names.nestedClasses ?? nestedClassPaths(MELK_NAMES.flatMap((name) => parseVendored(name).imports));
     this.factories = names.factoryClasses ?? factoryClassNames();
+    this.listElements = names.listElementNumbers ?? listElementNumberKinds();
   }
 
   register(data: ILayoutMetaData): void {
     if (data instanceof LayoutOptionData) {
-      const shape = shapeOf(data, this.nested);
+      const shape = shapeOf(data, this.nested, this.listElements);
       this.shapes.set(data.getId(), shape);
       this.calls.push({ call: 'registerOption', data: this.optionRecord(data, shape) });
     } else if (data instanceof LayoutCategoryData) {

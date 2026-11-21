@@ -299,6 +299,21 @@ The evidence modes (`radial-vectors.sh --unpinned`, the `*_UNPINNED=1` variables
 recorders, the `--sweep` and `--dump` modes of the layered recorders) are diagnosis aids, never a ref.
 `ELK_VECTORS_CACHE=off` runs a script cold and touches no cache.
 
+**Multi-file recorders.** A recorder is one source file, `tools/vectors/<Program>.java`, which the JDK's source launcher
+compiles and runs (JDK 21's launcher takes one file), unless a directory `tools/vectors/<Program>/` sits beside it.
+That directory makes the program multi-file: `tools/vectors/java-program.sh` (`jp_run`, which `vector-cache.sh` sources
+for every launch) compiles `<Program>.java` and every `*.java` under the directory with `javac` into a temporary
+directory, runs the class, and removes the directory. `LayeredLoopsVectors` is the one multi-file recorder (issue #50):
+its helper sources are in `tools/vectors/LayeredLoopsVectors/`, and the header of the entry file says how they are cut.
+
+- Run a multi-file recorder only through its script: `java <Program>.java` no longer compiles.
+  `tools/vectors/layered-loops-vectors.sh` passes `--sweep`, `--dump` and `--plan-dump` to the program.
+- The cache salt and the loops sweep's stamp cover every source of the program and `java-program.sh`.
+- Before splitting another recorder, check two things. Its script and its sweep script must start it through `jp_run`
+  (a script that calls `java` itself still names one file). And if its script does not pin `-XX:hashCode=2`, the split
+  must be shown to leave its refs byte-identical: `javac` moves the compile out of the recording JVM, which shifts the
+  identity hashes an unpinned recorder may read (`.agent-notes/recorder-identity-hash.md`).
+
 ### 7.2 Text measurement: the TX1 re-proof and the AWT remeasure {#elk-upgrade-vectors-text}
 
 Row 10 patched only the test bundle `org.eclipse.elk.alg.test`, on the proof that no plugin measures text (TX1,
