@@ -3,9 +3,10 @@
 # Publishing @knowvah/elk-engine
 
 **`1.0.0` was published by hand on 2026-11-23** from commit `304ef29f` (the `gitHead` npm recorded), with the export
-surface of `docs/architecture/public-api.md` (72 exports). Steps 1 to 3 of the bootstrap below are done. Steps 4 to 7
-remain, and they are the **maintainer's**, in the order given ([#91](https://github.com/knowvah/elk-engine/issues/91)):
-tag the published commit, configure the trusted publisher, switch the trigger. No semantic-release run has happened yet.
+surface of `docs/architecture/public-api.md` (72 exports). Steps 1 to 4 of the bootstrap below are done (the `v1.0.0`
+tag is on `304ef29f`) and step 6, the trigger switch, is in this change. Step 5, the trusted publisher, is the
+**maintainer's** ([#91](https://github.com/knowvah/elk-engine/issues/91)) and must be in place before the first
+semantic-release run.
 
 > **The first publish froze the ElkGraph API (AD-14) and cannot be undone.** A published version can be deprecated but
 > not changed, and after 72 hours not removed. Removing an export from the surface is a major version.
@@ -19,7 +20,7 @@ hand again.
 | Piece                           | State                                                                                               |
 | ------------------------------- | --------------------------------------------------------------------------------------------------- |
 | `.releaserc.json`               | Branch `main`, tags `v<version>`, plugins commit-analyzer, release-notes-generator, npm, github     |
-| `.github/workflows/release.yml` | **Manual trigger only** (`workflow_dispatch`), job limited to `main`, environment `release`         |
+| `.github/workflows/release.yml` | Runs on every push to `main`, job limited to `main`, environment `release`                          |
 | `package.json` `publishConfig`  | `access: public`; `registry` and `@knowvah:registry` both `https://registry.npmjs.org/` (see below) |
 | `npm run publish:check`         | Typecheck, build, `npm pack --dry-run`: shows exactly what would ship                               |
 | `npm run pack:smoke`            | Packs the tarball, installs it in a clean project, imports it; with `--entry`, lays out a graph     |
@@ -88,16 +89,17 @@ npmjs.com → **@knowvah/elk-engine → Settings → Trusted Publishers → Add 
 
 ### 6. Switch the release trigger
 
-In `.github/workflows/release.yml` replace `on: workflow_dispatch:` with
+**Done.** `.github/workflows/release.yml` now has
 
 ```yaml
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 ```
 
-and update its header comment. From then on every merge to `main` runs semantic-release. Until this step the workflow
-runs only when dispatched by hand, and a dispatch before steps 3 to 5 fails at the publish step.
+Every merge to `main` runs semantic-release; `workflow_dispatch` stays for a manual retry. A run before step 5 fails at
+the publish step.
 
 ### 7. Optional: require an approval per release
 

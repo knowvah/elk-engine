@@ -8,29 +8,26 @@ name: Release
 # changelog or version back to main (main requires signed commits); the
 # changelog lives in the GitHub Release.
 #
-# MANUAL TRIGGER ONLY, on purpose. 1.0.0 was published by hand (2026-11-23,
-# PUBLISHING.md), but the `v1.0.0` tag and the trusted publisher are the
-# maintainer's steps, and without the tag semantic-release would publish 1.0.0
-# again. After the tag and the trusted-publisher setup, the maintainer changes
-# the trigger below to
+# Runs on every push to main, and by hand for a retry. 1.0.0 was published by hand (2026-11-23,
+# PUBLISHING.md) and the `v1.0.0` tag marks it, so semantic-release computes the
+# next version from the commits after that tag. A merge with no releasable
+# commit (docs, chore, ci, test, refactor) publishes nothing.
 #
-#   on:
-#     push:
-#       branches: [main]
-#
-# and from then on every merge to main is analyzed. Until then a dispatch of
-# this workflow fails at the publish step, which is the intended state.
+# A run needs the trusted publisher on npmjs.com (below); without it the publish
+# step fails, and nothing else is changed by that failure.
 #
 # The trusted publisher on npmjs.com is pinned to THIS workflow file
 # (release.yml) and the "release" environment, so keep both names stable.
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+  workflow_dispatch: # a manual retry of a failed run
 
 concurrency: release-${{ github.ref }}
 
 jobs:
   release:
-    # Releases are cut from main only, whatever ref the dispatch names.
+    # Releases are cut from main only, whatever ref a dispatch names.
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: release
