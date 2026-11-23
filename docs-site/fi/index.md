@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
+sourceHash: 06b24b3367eb169498f37ff49ece535367d39841a44c96a6599e894ec6caaadf
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, puhtaalla TypeScriptillä
@@ -25,19 +25,18 @@ features:
       1e-6:n tarkkuudella.
   - title: Selainnatiivi, ei ajonaikaisia riippuvuuksia
     details: Ei Javaa, ei WASMia, ei Node-sisäänrakennettuja moduuleja kirjastokoodissa. Niputa ja julkaise.
-  - title: Pre-1.0
+  - title: Versio 1.0
     details: Kaikki ELKin tavoitteena olleet asettelualgoritmit on porttattu ja varmennettu lähdekoodista käännettyä
-      ELKiä vasten. Ennen versiota 1.0 API voi vielä muuttua.
+      ELKiä vasten. Julkinen API on lukittu versioon 1.0.0.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-1.0
-Kaikki ELKin tavoitteena olleet asettelualgoritmit on porttattu ja varmennettu lähdekoodista käännettyä ELKiä vasten;
-tulokset ovat [pariteettiraportissa](/parity). Julkinen vientipinta on hyväksytty, mutta sitä ei ole vielä
-tiedostossa `src/index.ts`, joten paketin sisääntulomoduuli ei vie vielä mitään julkista. Versiot pysyvät 0.x-sarjassa
-versioon 1.0 asti, ja siihen saakka API voi vielä muuttua. Seuraavaksi tulevat asiat löydät
-[tiekartasta](/guide/roadmap).
+::: tip Versio 1.0
+`@knowvah/elk-engine@1.0.0` on npm:ssä. Kaikki ELKin tavoitteena olleet asettelualgoritmit on porttattu ja varmennettu
+lähdekoodista käännettyä ELKiä vasten; tulokset ovat [pariteettiraportissa](/parity), ja vielä avoimet erot on kirjattu
+issueiksi. Julkinen API, 72 vientiä, on lukittu versioon 1.0.0 ja versiot noudattavat semveria. Aloita
+[Aloitusoppaasta](/guide/getting-started); seuraavaksi tulevat asiat löydät [tiekartasta](/guide/roadmap).
 :::
 
 ## Valitse polkusi

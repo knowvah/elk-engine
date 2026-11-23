@@ -1,6 +1,6 @@
 ---
 title: 개요
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -11,11 +11,11 @@ sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 Kernel](https://www.eclipse.org/elk)(ELK)을 충실하게 포팅한 TypeScript 구현입니다. Java도 WASM도 없습니다. 레이아웃
 알고리즘을 일반 TypeScript로 다시 구현했으며 Java 구현과 대조하여 검증했습니다.
 
-::: warning 1.0 이전
-범위에 포함된 모든 ELK 레이아웃 알고리즘을 포팅했으며, 소스에서 빌드한 ELK와 대조하여 검증했습니다. 결과는
-[패리티 보고서](/parity)(영어)에 있습니다. 공개 내보내기 표면은 승인되었지만 아직 `src/index.ts`에 반영되지 않았으므로,
-패키지 진입점은 아직 공개 항목을 내보내지 않습니다. 1.0 이전에는 API가 바뀔 수 있습니다. 다음 계획은
-[로드맵](/guide/roadmap)(영어)을 참고하십시오.
+::: tip 버전 1.0
+`@knowvah/elk-engine@1.0.0`이 npm에 공개되어 있습니다. 범위에 포함된 모든 ELK 레이아웃 알고리즘을 포팅했으며,
+소스에서 빌드한 ELK와 대조하여 검증했습니다. 결과는 [패리티 보고서](/parity)(영어)에 있으며, 아직 남아 있는 차이는
+이슈로 추적하고 있습니다. 공개 API(내보내기 72개)는 1.0.0에서 동결되었고 버전은 semver를 따릅니다.
+[시작하기](/guide/getting-started)부터 보시고, 다음 계획은 [로드맵](/guide/roadmap)(영어)을 참고하십시오.
 :::
 
 ## Java가 곧 명세입니다
@@ -43,10 +43,11 @@ Kernel](https://www.eclipse.org/elk)(ELK)을 충실하게 포팅한 TypeScript �
 
 ## 공개 계약
 
-공개 API는 [#90](https://github.com/knowvah/elk-engine/issues/90)에서 승인된 내보내기 표면입니다. ElkGraph 객체 모델과
-`ElkGraphUtil` 팩토리, 레이아웃 엔진, 각 알고리즘의 메타데이터 제공자와 옵션 및 그 값 타입, 그리고 ELK JSON과 텍스트
-그래프 형식이 여기에 포함됩니다. ELK JSON은 핵심 모델이 아니라 I/O 어댑터입니다. [시작하기](/guide/getting-started)(영어)는
-이 표면을 실제로 사용하는 모습을 보여 줍니다. 버전은 1.0까지 0.x를 유지하며, 1.0에서 이 표면이 고정됩니다.
+공개 API는 [#90](https://github.com/knowvah/elk-engine/issues/90)에서 승인된 내보내기 표면으로, 내보내기 72개입니다.
+ElkGraph 객체 모델과 `ElkGraphUtil` 팩토리, 레이아웃 엔진, 각 알고리즘의 메타데이터 제공자와 옵션 클래스, 코어 옵션의
+값 타입, ELK JSON 어댑터, 비동기 `layout` 함수가 여기에 포함됩니다. ELK JSON은 핵심 모델이 아니라 I/O 어댑터입니다.
+[시작하기](/guide/getting-started)(영어)는 이 표면을 실제로 사용하는 모습을 보여 줍니다. 이 표면은 1.0.0에서 동결되었으며
+버전은 semver를 따릅니다. 내보내기를 제거하면 메이저 버전입니다.
 
 ## 런타임 제약
 

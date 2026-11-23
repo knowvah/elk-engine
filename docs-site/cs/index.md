@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
+sourceHash: 06b24b3367eb169498f37ff49ece535367d39841a44c96a6599e894ec6caaadf
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK v čistém TypeScriptu
@@ -26,19 +26,19 @@ features:
       rozmezí 1e-6.
   - title: Nativní pro prohlížeč, bez závislostí za běhu
     details: Žádná Java, žádné WASM, žádné vestavěné moduly Node v kódu knihovny. Zabalte a nasaďte.
-  - title: Pre-1.0
+  - title: Verze 1.0
     details:
       Všechny algoritmy rozvržení ELK v rozsahu projektu jsou portovány a ověřeny proti ELK sestavenému ze zdrojů.
-      Do verze 1.0 se API ještě může změnit.
+      Veřejné API je zmrazeno ve verzi 1.0.0.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-1.0
-Všechny algoritmy rozvržení ELK v rozsahu projektu jsou portovány a ověřeny proti ELK sestavenému ze zdrojů;
-výsledky najdete ve [zprávě o shodě](/parity). Veřejný exportní povrch je schválen, ale zatím není v `src/index.ts`,
-takže vstupní bod balíčku zatím neexportuje nic veřejného. Verze zůstávají 0.x do verze 1.0 a do té doby se API ještě
-může změnit. Co přijde dál, najdete v [plánu vývoje](/guide/roadmap).
+::: tip Verze 1.0
+`@knowvah/elk-engine@1.0.0` je na npm. Všechny algoritmy rozvržení ELK v rozsahu projektu jsou portovány a ověřeny
+proti ELK sestavenému ze zdrojů; výsledky najdete ve [zprávě o shodě](/parity), rozdíly, které jsou stále otevřené,
+se sledují jako issues. Veřejné API, 72 exportů, je od verze 1.0.0 zmrazeno a verze se řídí semver. Začněte
+v [Začínáme](/guide/getting-started). Co přijde dál, najdete v [plánu vývoje](/guide/roadmap).
 :::
 
 ## Vyberte si svou cestu

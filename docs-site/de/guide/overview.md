@@ -1,6 +1,6 @@
 ---
 title: Überblick
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,11 +12,12 @@ Kernel](https://www.eclipse.org/elk) (ELK), der Java-Bibliothek für Graphlayout
 kein WASM: Die Layoutalgorithmen sind in schlichtem TypeScript neu implementiert und gegen die
 Java-Implementierung verifiziert.
 
-::: warning Pre-1.0
-Alle vorgesehenen ELK-Layoutalgorithmen sind portiert und gegen aus den Quellen gebautes ELK geprüft; die
-Ergebnisse stehen im [Paritätsbericht](/parity). Die öffentliche Export-Oberfläche ist abgenommen, aber noch
-nicht in `src/index.ts`, daher exportiert der Paketeinstieg noch nichts Öffentliches. Bis 1.0 kann sich die API
-noch ändern. Was als Nächstes kommt, steht in der [Roadmap](/guide/roadmap).
+::: tip Version 1.0
+`@knowvah/elk-engine@1.0.0` ist auf npm. Alle vorgesehenen ELK-Layoutalgorithmen sind portiert und gegen aus den
+Quellen gebautes ELK geprüft; die Ergebnisse stehen im [Paritätsbericht](/parity), noch offene Abweichungen werden
+als Issues verfolgt. Die öffentliche API, 72 Exporte, ist ab 1.0.0 eingefroren, und die Versionen folgen semver.
+Beginnen Sie mit [Erste Schritte](/guide/getting-started). Was als Nächstes kommt, steht in der
+[Roadmap](/guide/roadmap).
 :::
 
 ## Das Java ist die Spezifikation
@@ -47,10 +48,11 @@ Das vollständige Verfahren steht auf der Seite [Konformität](/de/conformance).
 ## Öffentlicher Vertrag
 
 Die öffentliche API ist die in [#90](https://github.com/knowvah/elk-engine/issues/90) abgenommene
-Export-Oberfläche: das ElkGraph-Objektmodell und die `ElkGraphUtil`-Factories, die Layout-Engine, der
-Metadaten-Provider und die Optionen jedes Algorithmus samt ihren Werttypen sowie ELK JSON und die
-textuellen Graphformate. ELK JSON ist ein E/A-Adapter, nicht das Kernmodell. [Erste Schritte](/guide/getting-started)
-zeigt die Oberfläche im Einsatz. Die Versionen bleiben bis 1.0 bei 0.x; 1.0 friert die Oberfläche ein.
+Export-Oberfläche, 72 Exporte: das ElkGraph-Objektmodell und die `ElkGraphUtil`-Factories, die Layout-Engine, der
+Metadaten-Provider und die Optionsklasse jedes Algorithmus, die Werttypen der Kernoptionen, der ELK-JSON-Adapter und
+die asynchrone Funktion `layout`. ELK JSON ist ein E/A-Adapter, nicht das Kernmodell.
+[Erste Schritte](/guide/getting-started) zeigt die Oberfläche im Einsatz. Die Oberfläche ist ab 1.0.0 eingefroren,
+und die Versionen folgen semver: Das Entfernen eines Exports ist eine Hauptversion.
 
 ## Laufzeit-Einschränkungen
 

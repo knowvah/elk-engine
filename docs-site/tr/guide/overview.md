@@ -1,6 +1,6 @@
 ---
 title: Genel bakış
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -11,11 +11,11 @@ sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 Kernel](https://www.eclipse.org/elk)'in (ELK) aslına sadık bir TypeScript taşımasıdır. Java yok, WASM yok:
 yerleşim algoritmaları düz TypeScript ile yeniden uygulanmıştır ve Java uygulamasına karşı doğrulanmıştır.
 
-::: warning Pre-1.0
-Kapsamdaki tüm ELK yerleşim algoritmaları taşındı ve kaynaktan derlenmiş ELK'ya karşı denetlendi; sonuçlar
-[eşdeğerlik raporunda](/parity) yer alır. Herkese açık dışa aktarım yüzeyi kabul edildi ancak henüz
-`src/index.ts` içinde değil; bu yüzden paket girişi henüz herkese açık hiçbir şey dışa aktarmaz. 1.0'a kadar API
-değişebilir. Sıradakiler için [yol haritasına](/guide/roadmap) bakın.
+::: tip Sürüm 1.0
+`@knowvah/elk-engine@1.0.0` npm'de yayımlandı. Kapsamdaki tüm ELK yerleşim algoritmaları taşındı ve kaynaktan
+derlenmiş ELK'ya karşı denetlendi; sonuçlar [eşdeğerlik raporunda](/parity) yer alır, hâlâ açık olan farklar ise
+issue olarak izlenir. Herkese açık API, 72 dışa aktarım, 1.0.0'da dondurulmuştur ve sürümler semver'i izler.
+[Başlangıç](/guide/getting-started) ile başlayın; sıradakiler için [yol haritasına](/guide/roadmap) bakın.
 :::
 
 ## Java belirtimdir
@@ -46,10 +46,11 @@ gerekmez. Tam yöntem [uygunluk](/tr/conformance) sayfasındadır.
 ## Herkese açık sözleşme
 
 Herkese açık API, [#90](https://github.com/knowvah/elk-engine/issues/90) numaralı konuda kabul edilen dışa
-aktarım yüzeyidir: ElkGraph nesne modeli ve `ElkGraphUtil` fabrikaları, yerleşim motoru, her algoritmanın
-meta veri sağlayıcısı ile seçenekleri ve değer türleri, ayrıca ELK JSON ve metin tabanlı graf biçimleri. ELK JSON
-bir G/Ç bağdaştırıcısıdır, çekirdek model değildir. [Başlangıç](/guide/getting-started) sayfası bu yüzeyi
-kullanım halinde gösterir. Sürümler 1.0'a kadar 0.x kalır; 1.0 yüzeyi sabitler.
+aktarım yüzeyidir, 72 dışa aktarım: ElkGraph nesne modeli ve `ElkGraphUtil` fabrikaları, yerleşim motoru, her
+algoritmanın meta veri sağlayıcısı ile seçenekler sınıfı, çekirdek seçeneklerin değer türleri, ELK JSON
+bağdaştırıcısı ve asenkron `layout` işlevi. ELK JSON bir G/Ç bağdaştırıcısıdır, çekirdek model değildir.
+[Başlangıç](/guide/getting-started) sayfası bu yüzeyi kullanım halinde gösterir. Yüzey 1.0.0'da dondurulmuştur ve
+sürümler semver'i izler: bir dışa aktarımı kaldırmak ana sürümdür.
 
 ## Çalışma zamanı kısıtları
 

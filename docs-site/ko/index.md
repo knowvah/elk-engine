@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
+sourceHash: 06b24b3367eb169498f37ff49ece535367d39841a44c96a6599e894ec6caaadf
 hero:
   name: '@knowvah/elk-engine'
   text: 순수 TypeScript로 만든 Eclipse ELK
@@ -26,18 +26,18 @@ features:
     details: 출력을 소스에서 빌드한 ELK와 비교합니다. 구조는 정확히 일치하고, 좌표는 1e-6 이내에서 일치합니다.
   - title: 브라우저 네이티브, 런타임 의존성 없음
     details: 라이브러리 코드에 Java, WASM, Node 내장 모듈이 없습니다. 번들링하여 바로 배포할 수 있습니다.
-  - title: 1.0 이전
-    details: 범위에 포함된 모든 ELK 레이아웃 알고리즘을 포팅했으며, 소스에서 빌드한 ELK와 대조하여 검증했습니다. 1.0
-      이전에는 API가 바뀔 수 있습니다.
+  - title: 버전 1.0
+    details: 범위에 포함된 모든 ELK 레이아웃 알고리즘을 포팅했으며, 소스에서 빌드한 ELK와 대조하여 검증했습니다. 공개
+      API는 1.0.0에서 동결되었습니다.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning 1.0 이전
-범위에 포함된 모든 ELK 레이아웃 알고리즘을 포팅했으며, 소스에서 빌드한 ELK와 대조하여 검증했습니다. 결과는
-[패리티 보고서](/parity)(영어)에 있습니다. 공개 내보내기 표면은 승인되었지만 아직 `src/index.ts`에 반영되지 않았으므로,
-패키지 진입점은 아직 공개 항목을 내보내지 않습니다. 버전은 1.0까지 0.x를 유지하며, 그 전까지는 API가 바뀔 수 있습니다.
-다음 계획은 [로드맵](/guide/roadmap)(영어)을 참고하십시오.
+::: tip 버전 1.0
+`@knowvah/elk-engine@1.0.0`이 npm에 공개되어 있습니다. 범위에 포함된 모든 ELK 레이아웃 알고리즘을 포팅했으며,
+소스에서 빌드한 ELK와 대조하여 검증했습니다. 결과는 [패리티 보고서](/parity)(영어)에 있으며, 아직 남아 있는 차이는
+이슈로 추적하고 있습니다. 공개 API(내보내기 72개)는 1.0.0에서 동결되었고 버전은 semver를 따릅니다.
+[시작하기](/guide/getting-started)부터 보시고, 다음 계획은 [로드맵](/guide/roadmap)(영어)을 참고하십시오.
 :::
 
 ## 경로 선택

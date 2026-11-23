@@ -11,3 +11,17 @@
 - **Finding**: 4,221 files, 4.5 MB packed, 23.4 MB unpacked (`dist/index.js` 3.6 MB, map 7.6 MB). `PUBLISHING.md` still says 2.2 MB / 11.5 MB, measured when the bundle was empty.
 - **Impact**: update that line before publishing; the source map is about a third of the unpacked size.
 - **Confidence**: High
+
+## Observation: a text-pattern sweep misses claims that are stale in meaning, not in wording
+
+- **Context**: #155 rewrote the "Pre-1.0 / exports nothing" notices found by grepping their phrases (2026-11-23).
+- **Finding**: The "Public contract" paragraph of `docs-site/guide/overview.md` and `README.md` was missed: it said "Versions stay 0.x until 1.0" (a phrase the sweep did not include) and, independently, listed textual graph formats and algorithm option value types that `docs/architecture/public-api.md` leaves out. It surfaced only when 23 translations of the same paragraph were read.
+- **Impact**: After a status change, check every sentence about the API surface or the version against `public-api.md`, not only the phrases that changed. Translated copies of a page multiply the cost of a missed English sentence (one more round of 6 agents).
+- **Confidence**: High
+
+## Observation: locale hashes equal the English file at the previous refresh commit
+
+- **Context**: Scoping the 1.0 refresh of the translated home and overview pages.
+- **Finding**: `shasum -a 256` of `docs-site/{index,guide/overview}.md` at the commit before #155 equals the locale `sourceHash` (prefix-checked), so the diff of the English page between two commits is exactly the drift to translate. `scripts/i18n-hash.mjs` takes a locale page path or an English `docs-site/` path.
+- **Impact**: A refresh brief can quote the English diff and one hash per page. `docs-site/.vitepress/i18n-hashes.json` (written by `docs:i18n-hashes` during `docs:build`) is gitignored and never edits pages.
+- **Confidence**: High

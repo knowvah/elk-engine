@@ -1,6 +1,6 @@
 ---
 title: Ülevaade
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -11,12 +11,11 @@ sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 truu TypeScripti portimine. Javat ega WASM-i pole: paigutusalgoritmid on lihtsas TypeScriptis uuesti realiseeritud
 ja Java realisatsiooni vastu kontrollitud.
 
-::: warning Pre-1.0
-Kõik ELK-i paigutusalgoritmid, mis projekti ulatusse kuuluvad, on portitud ja lähtekoodist ehitatud ELK-iga
-kontrollitud; tulemused leiate [pariteediaruandest](/parity). Avalik ekspordipind on heaks kiidetud, kuid veel mitte
-failis `src/index.ts`, nii et paketi sisendmoodul ei ekspordi veel midagi avalikku. Kuni 1.0-ni võib API veel
-muutuda.
-Mis tuleb järgmisena, leiate [teekaardilt](/guide/roadmap).
+::: tip Versioon 1.0
+`@knowvah/elk-engine@1.0.0` on npm-is. Kõik ELK-i paigutusalgoritmid, mis projekti ulatusse kuuluvad, on portitud ja
+lähtekoodist ehitatud ELK-iga kontrollitud; tulemused leiate [pariteediaruandest](/parity) ja veel avatud erinevusi
+jälgitakse issue'dena. Avalik API, 72 eksporti, on versioonis 1.0.0 külmutatud ja versioonid järgivad semver'it.
+Alustage jaotisest [Alustamine](/guide/getting-started); mis tuleb järgmisena, leiate [teekaardilt](/guide/roadmap).
 :::
 
 ## Java on spetsifikatsioon
@@ -47,11 +46,11 @@ Täielik protseduur on lehel [Vastavus](/et/conformance).
 ## Avalik leping
 
 Avalik API on ekspordipind, mis kiideti heaks ülesandes
-[#90](https://github.com/knowvah/elk-engine/issues/90): ElkGraphi objektimudel ja `ElkGraphUtil`i
-fabrikud, paigutusmootor, iga algoritmi metaandmete pakkuja ja valikud väärtusetüüpidega ning ELK JSON
-ja tekstilised graafivormingud. ELK JSON on I/O adapter, mitte põhimudel.
-[Alustamine](/guide/getting-started) näitab pinda kasutuses. Versioonid jäävad 0.x-iks kuni 1.0-ni;
-1.0 külmutab pinna.
+[#90](https://github.com/knowvah/elk-engine/issues/90), 72 eksporti: ElkGraphi objektimudel ja
+`ElkGraphUtil`i fabrikud, paigutusmootor, iga algoritmi metaandmete pakkuja ja valikute klass, põhivalikute
+väärtusetüübid, ELK JSON-i adapter ja asünkroonne `layout` funktsioon. ELK JSON on I/O adapter, mitte põhimudel.
+[Alustamine](/guide/getting-started) näitab pinda kasutuses. Pind on versioonis 1.0.0 külmutatud ja versioonid
+järgivad semver'it: ekspordi eemaldamine on suur versioon.
 
 ## Käitusaja piirangud
 

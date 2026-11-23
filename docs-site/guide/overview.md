@@ -46,11 +46,11 @@ full procedure is on the [conformance](/conformance) page.
 ## Public contract
 
 The public API is the export surface accepted in
-[#90](https://github.com/knowvah/elk-engine/issues/90): the ElkGraph object model and the
-`ElkGraphUtil` factories, the layout engine, each algorithm's metadata provider and options with
-their value types, and the ELK JSON and textual graph formats. ELK JSON is an I/O adapter, not the
-core model. [Getting started](/guide/getting-started) shows the surface in use. Versions stay 0.x
-until 1.0; 1.0 freezes the surface.
+[#90](https://github.com/knowvah/elk-engine/issues/90), 72 exports: the ElkGraph object model and the
+`ElkGraphUtil` factories, the layout engine, each algorithm's metadata provider and options class,
+the value types of the core options, the ELK JSON adapter, and the async `layout` function. ELK JSON
+is an I/O adapter, not the core model. [Getting started](/guide/getting-started) shows the surface in
+use. The surface is frozen at 1.0.0 and versions follow semver: removing an export is a major version.
 
 ## Runtime constraints
 

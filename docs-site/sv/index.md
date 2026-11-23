@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
+sourceHash: 06b24b3367eb169498f37ff49ece535367d39841a44c96a6599e894ec6caaadf
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, i ren TypeScript
@@ -24,18 +24,18 @@ features:
     details: Utdata jämförs med ELK byggt från källkod. Strukturen stämmer exakt; koordinaterna stämmer inom 1e-6.
   - title: Webbläsarnativ, utan körtidsberoenden
     details: Ingen Java, ingen WASM, inga inbyggda Node-moduler i bibliotekskoden. Bundla och leverera.
-  - title: Pre-1.0
-    details: Alla ingående ELK-layoutalgoritmer är portade och kontrollerade mot ELK byggt från källkod. Fram till 1.0
-      kan API:et fortfarande ändras.
+  - title: Version 1.0
+    details: Alla ingående ELK-layoutalgoritmer är portade och kontrollerade mot ELK byggt från källkod. Det publika
+      API:et är fruset vid 1.0.0.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-1.0
-Alla ELK-layoutalgoritmer som ingår är portade och kontrollerade mot ELK byggt från källkod;
-[paritetsrapporten](/parity) har resultaten. Den publika exportytan är godkänd men ännu inte i
-`src/index.ts`, så paketets ingång exporterar ännu inget publikt. Versionerna förblir 0.x fram till 1.0, och
-till dess kan API:et fortfarande ändras. Se [färdplanen](/guide/roadmap) för vad som kommer härnäst.
+::: tip Version 1.0
+`@knowvah/elk-engine@1.0.0` finns på npm. Alla ELK-layoutalgoritmer som ingår är portade och kontrollerade mot ELK
+byggt från källkod; [paritetsrapporten](/parity) har resultaten, och skillnader som fortfarande är öppna spåras som
+issues. Det publika API:et, 72 exporter, är fruset vid 1.0.0 och versionerna följer semver. Börja med
+[Kom igång](/guide/getting-started) och se [färdplanen](/guide/roadmap) för vad som kommer härnäst.
 :::
 
 ## Välj din väg

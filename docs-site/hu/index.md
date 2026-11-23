@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
+sourceHash: 06b24b3367eb169498f37ff49ece535367d39841a44c96a6599e894ec6caaadf
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, tiszta TypeScriptben
@@ -26,18 +26,19 @@ features:
       tűréshatáron belül egyeznek.
   - title: Böngészőnatív, futásidejű függőségek nélkül
     details: Nincs Java, nincs WASM, és a könyvtárkód nem használ Node beépített modulokat. Csomagolja be, és szállítsa.
-  - title: Pre-1.0
+  - title: 1.0-s verzió
     details: Az ELK összes hatókörbe tartozó elrendezési algoritmusa portolva van, és a forrásból fordított ELK-val
-      szemben ellenőrzött. Az 1.0-s verzióig az API még változhat.
+      szemben ellenőrzött. A nyilvános API az 1.0.0-s verziótól fagyasztott.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-1.0
-Az ELK összes hatókörbe tartozó elrendezési algoritmusa portolva van, és a forrásból fordított ELK-val szemben
-ellenőrzött; az eredményeket a [paritásjelentés](/parity) tartalmazza. A nyilvános exportfelület elfogadott, de még
-nincs a `src/index.ts`-ben, ezért a csomag belépési pontja még nem exportál semmi nyilvánosat. A verziók 1.0-ig
-0.x-ek maradnak, és addig az API még változhat. Hogy mi következik, azt az [ütemtervben](/guide/roadmap) találja.
+::: tip 1.0-s verzió
+A `@knowvah/elk-engine@1.0.0` elérhető az npm-en. Az ELK összes hatókörbe tartozó elrendezési algoritmusa portolva
+van, és a forrásból fordított ELK-val szemben ellenőrzött; az eredményeket a [paritásjelentés](/parity) tartalmazza, a
+még nyitott eltéréseket pedig issue-k követik. A nyilvános API, 72 export, az 1.0.0-s verziótól fagyasztott, és a
+verziók a semvert követik. Kezdje az [Első lépések](/guide/getting-started) oldallal. Hogy mi következik, azt az
+[ütemtervben](/guide/roadmap) találja.
 :::
 
 ## Válassza ki az útját

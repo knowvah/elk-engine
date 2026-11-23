@@ -1,6 +1,6 @@
 ---
 title: Overblik
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,11 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), Java-biblioteket til graflayout. Der
 ingen WASM: Layoutalgoritmerne er genimplementeret i almindelig TypeScript og verificeret mod
 Java-implementeringen.
 
-::: warning Pre-1.0
-Alle de ELK-layoutalgoritmer, der er omfattet, er porteret og kontrolleret mod ELK bygget fra kildekode;
-[paritetsrapporten](/parity) har resultaterne. Den offentlige eksportoverflade er godkendt, men endnu ikke i
-`src/index.ts`, så pakkens indgang eksporterer endnu intet offentligt. Indtil 1.0 kan API'en stadig ændre sig.
-Se [køreplanen](/guide/roadmap) for, hvad der kommer næste gang.
+::: tip Version 1.0
+`@knowvah/elk-engine@1.0.0` er på npm. Alle de ELK-layoutalgoritmer, der er omfattet, er porteret og kontrolleret mod
+ELK bygget fra kildekode; [paritetsrapporten](/parity) har resultaterne, og forskelle, der stadig er åbne, spores som
+issues. Den offentlige API, 72 eksporter, er frosset ved 1.0.0, og versionerne følger semver. Start med
+[Kom i gang](/guide/getting-started), og se [køreplanen](/guide/roadmap) for, hvad der kommer næste gang.
 :::
 
 ## Java er specifikationen
@@ -47,11 +47,11 @@ Den fulde fremgangsmåde står på siden om [overensstemmelse](/da/conformance).
 ## Offentlig kontrakt
 
 Den offentlige API er den eksportoverflade, der er godkendt i
-[#90](https://github.com/knowvah/elk-engine/issues/90): ElkGraph-objektmodellen og
-`ElkGraphUtil`-factories, layoutmotoren, hver algoritmes metadataudbyder og indstillinger med
-deres værdityper samt ELK JSON- og de tekstuelle grafformater. ELK JSON er en I/O-adapter, ikke
-kernemodellen. [Kom i gang](/guide/getting-started) viser overfladen i brug. Versionerne forbliver 0.x
-indtil 1.0; 1.0 fryser overfladen.
+[#90](https://github.com/knowvah/elk-engine/issues/90), 72 eksporter: ElkGraph-objektmodellen og
+`ElkGraphUtil`-factories, layoutmotoren, hver algoritmes metadataudbyder og indstillingsklasse, værdityperne for
+kerneindstillingerne, ELK JSON-adapteren og den asynkrone `layout`-funktion. ELK JSON er en I/O-adapter, ikke
+kernemodellen. [Kom i gang](/guide/getting-started) viser overfladen i brug. Overfladen er frosset ved 1.0.0, og
+versionerne følger semver: at fjerne en eksport er en major-version.
 
 ## Runtime-begrænsninger
 

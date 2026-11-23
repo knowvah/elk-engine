@@ -1,6 +1,6 @@
 ---
 title: Yleiskatsaus
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,12 +12,11 @@ Kernelistä](https://www.eclipse.org/elk) (ELK), Java-pohjaisesta graafien asett
 eikä WASMia: asettelualgoritmit on toteutettu uudelleen tavallisella TypeScriptillä ja varmennettu Java-toteutusta
 vasten.
 
-::: warning Pre-1.0
-Kaikki ELKin tavoitteena olleet asettelualgoritmit on porttattu ja varmennettu lähdekoodista käännettyä ELKiä
-vasten; tulokset ovat [pariteettiraportissa](/parity). Julkinen vientipinta on hyväksytty, mutta sitä ei ole vielä
-tiedostossa `src/index.ts`, joten paketin sisääntulomoduuli ei vie vielä mitään julkista. Ennen versiota 1.0 API voi
-vielä muuttua.
-Seuraavaksi tulevat asiat näet [tiekartasta](/guide/roadmap).
+::: tip Versio 1.0
+`@knowvah/elk-engine@1.0.0` on npm:ssä. Kaikki ELKin tavoitteena olleet asettelualgoritmit on porttattu ja
+varmennettu lähdekoodista käännettyä ELKiä vasten; tulokset ovat [pariteettiraportissa](/parity), ja vielä avoimet
+erot on kirjattu issueiksi. Julkinen API, 72 vientiä, on lukittu versioon 1.0.0 ja versiot noudattavat semveria.
+Aloita [Aloitusoppaasta](/guide/getting-started); seuraavaksi tulevat asiat näet [tiekartasta](/guide/roadmap).
 :::
 
 ## Java on määritelmä
@@ -48,10 +47,11 @@ Koko menettely on [yhdenmukaisuus](/fi/conformance)-sivulla.
 ## Julkinen sopimus
 
 Julkinen API on vientipinta, joka hyväksyttiin tiketissä
-[#90](https://github.com/knowvah/elk-engine/issues/90): ElkGraph-oliomalli ja `ElkGraphUtil`-tehtaat,
-asettelumoottori, kunkin algoritmin metatietojen tarjoaja ja asetukset arvotyyppeineen sekä ELK JSON ja
-tekstimuotoiset graafiformaatit. ELK JSON on I/O-adapteri, ei ydinmalli. [Aloitusopas](/guide/getting-started)
-näyttää pinnan käytössä. Versiot pysyvät 0.x-sarjassa versioon 1.0 asti; 1.0 lukitsee pinnan.
+[#90](https://github.com/knowvah/elk-engine/issues/90), 72 vientiä: ElkGraph-oliomalli ja
+`ElkGraphUtil`-tehtaat, asettelumoottori, kunkin algoritmin metatietojen tarjoaja ja asetusluokka, ydinasetusten
+arvotyypit, ELK JSON -adapteri ja asynkroninen `layout`-funktio. ELK JSON on I/O-adapteri, ei ydinmalli.
+[Aloitusopas](/guide/getting-started) näyttää pinnan käytössä. Pinta on lukittu versioon 1.0.0 ja versiot
+noudattavat semveria: viennin poistaminen on pääversio.
 
 ## Ajonaikaiset rajoitteet
 
