@@ -153,7 +153,7 @@ const EXTENSION_ROWS = stopsRows.filter((row) => {
 });
 
 describe('disco ref: twin of the extension-map iteration order (FD4)', () => {
-  it('iterates the maps in the insertion order the oracle recorded', () => {
+  it('iterates the maps in the insertion order the oracle recorded', HEAVY, () => {
     const orders = new Map(EXTENSION_ROWS.map((row) => [row.id, runStops(row)] as const));
     expect(orders.get('stops/ext/default')?.incomingOrder).toEqual(['xinw', 'xinn']);
     expect(orders.get('stops/ext/default')?.outgoingOrder).toEqual(['xoute', 'xouts']);
