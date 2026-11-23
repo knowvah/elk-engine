@@ -42,7 +42,7 @@ Výstupy portu sa porovnávajú s výstupmi orákula:
 - Numerické súradnice a veľkosti sa musia zhodovať v rámci absolútnej tolerancie `1e-6`.
 
 Vybrané výstupy orákula sú commitnuté ako referenčné goldeny, takže spustenie testov nevyžaduje JVM. Úplný
-postup je na stránke [Zhoda](/sk/conformance).
+postup je na stránke [Zhoda](/conformance).
 
 ## Verejný kontrakt
 

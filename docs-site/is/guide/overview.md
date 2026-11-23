@@ -42,7 +42,7 @@ Véfréttin er ELK úr upprunasafninu, byggt úr frumkóða, í aðskildu git-wo
 - Tölulegt hnit og stærðir verða að standast innan algildra vikmarka upp á `1e-6`.
 
 Valið úttak véfréttarinnar er vistað sem golden-viðmið, svo ekki þarf JVM til að keyra prófin. Fullt
-verklag er á síðunni um [samræmi](/is/conformance).
+verklag er á síðunni um [samræmi](/conformance).
 
 ## Opinber samningur
 

@@ -44,7 +44,7 @@ issues. Det publika API:et, 72 exporter, är fruset vid 1.0.0 och versionerna f�
 | --------------------------------------------- | -------------------------------------------------------------------- |
 | Förstå vad projektet är och inte är           | [Översikt](/sv/guide/overview)                                       |
 | Se hur delarna passar ihop                    | [Arkitektur](/sv/guide/architecture)                                 |
-| Veta vad ”stämmer överens med Java” betyder   | [Överensstämmelse](/sv/conformance)                                  |
+| Veta vad ”stämmer överens med Java” betyder   | [Överensstämmelse](/conformance)                                     |
 | Hitta var ett Java-paket hamnar i porteringen | [Porteringskarta](/guide/port-map) · [Inventarium](/guide/inventory) |
 | Lära mig reglerna från Java till TypeScript   | [Översättningsregler](/guide/translation-rules)                      |
 | Se vilket Java-runtime-beteende som täcks     | [Java-grunder](/sv/guide/java-foundations)                           |

@@ -42,7 +42,7 @@ De uitvoer van de portering wordt vergeleken met de uitvoer van het orakel:
 - Numerieke coördinaten en afmetingen moeten overeenkomen binnen een absolute tolerantie van `1e-6`.
 
 Geselecteerde orakeluitvoer is als golden-referenties ingecheckt, zodat voor het draaien van de tests geen JVM nodig is.
-De volledige procedure staat op de pagina [conformiteit](/nl/conformance).
+De volledige procedure staat op de pagina [conformiteit](/conformance).
 
 ## Publiek contract
 

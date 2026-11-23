@@ -40,7 +40,7 @@ features:
 | -------------------------------- | ------------------------------------------------------------------------ |
 | 了解本專案是什麼、不是什麼       | [概覽](/zh-tw/guide/overview)                                            |
 | 了解各部分如何組合               | [架構](/zh-tw/guide/architecture)                                        |
-| 了解「與 Java 一致」的意義       | [一致性](/zh-tw/conformance)                                             |
+| 了解「與 Java 一致」的意義       | [一致性](/conformance)                                                   |
 | 找出 Java 套件在移植中的位置     | [移植對應表](/guide/port-map)（英文） · [清單](/guide/inventory)（英文） |
 | 學習 Java 到 TypeScript 的規則   | [翻譯規則](/guide/translation-rules)（英文）                             |
 | 了解已涵蓋哪些 Java 執行階段行為 | [Java 基礎](/zh-tw/guide/java-foundations)                               |

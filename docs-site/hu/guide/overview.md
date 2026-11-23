@@ -42,7 +42,7 @@ A portolás kimeneteit az orákulum kimeneteivel vetjük össze:
 - A numerikus koordinátáknak és méreteknek `1e-6` abszolút tűrésen belül kell egyezniük.
 
 A kurált orákulum-kimenetek golden referenciaként vannak commitolva, így a tesztek futtatásához nincs szükség JVM-re.
-A teljes eljárás a [megfelelőség](/hu/conformance) oldalon található.
+A teljes eljárás a [megfelelőség](/conformance) oldalon található.
 
 ## Nyilvános szerződés
 

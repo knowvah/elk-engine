@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Java paketlerinin `src/` modüllerine eşlenmesi                                 |
 | [component-map.md](#bileşen-haritası)               | Kapsamdaki bundle bağımlılıkları; çekirdek çalışma zamanı parçaları            |
 | [../translation-rules.md](/guide/translation-rules) | Java'dan TypeScript'e kurallar                                                 |
-| [../conformance.md](/tr/conformance)                | Oracle karşılaştırma ölçütü ve yöntemi (bu görevin ilerleyen aşamasında gelir) |
+| [../conformance.md](/conformance)                   | Oracle karşılaştırma ölçütü ve yöntemi (bu görevin ilerleyen aşamasında gelir) |
 
 ## elk-engine nedir
 

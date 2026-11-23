@@ -69,4 +69,4 @@ alla radice del repository. Solo `tools/` e `test/` leggono queste variabili; il
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | Il corpus elk-models, fissato nel manifesto del corpus |
 
 La compilazione dell'oracolo richiede Maven 3.9 o successivo e JDK 21 (JDK 17 come alternativa). Per la procedura
-dell'oracolo vedi [Conformità](/it/conformance).
+dell'oracolo vedi [Conformità](/conformance).

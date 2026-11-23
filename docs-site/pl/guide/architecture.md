@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Odwzorowanie pakietów Javy na moduły w `src/`                                  |
 | [component-map.md](#mapa-komponentów)               | Zależności bundli w zakresie; główne elementy środowiska uruchomieniowego      |
 | [../translation-rules.md](/guide/translation-rules) | Reguły przekładu z Javy na TypeScript                                          |
-| [../conformance.md](/pl/conformance)                | Poprzeczka i procedura porównania z wyrocznią (pojawi się później w tej misji) |
+| [../conformance.md](/conformance)                   | Poprzeczka i procedura porównania z wyrocznią (pojawi się później w tej misji) |
 
 ## Czym jest elk-engine
 

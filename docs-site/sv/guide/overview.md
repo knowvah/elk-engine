@@ -41,7 +41,7 @@ Porteringens utdata jämförs med oraklets utdata:
 - Numeriska koordinater och storlekar måste stämma inom en absolut tolerans på `1e-6`.
 
 Utvalda orakelutdata är incheckade som golden-referenser, så att testerna kan köras utan JVM. Hela
-proceduren finns på sidan [överensstämmelse](/sv/conformance).
+proceduren finns på sidan [överensstämmelse](/conformance).
 
 ## Publikt kontrakt
 

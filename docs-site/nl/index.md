@@ -45,7 +45,7 @@ Begin met [Aan de slag](/guide/getting-started). Wat er daarna komt, staat in de
 | -------------------------------------------------------- | ---------------------------------------------------------------- |
 | Begrijpen wat het project wel en niet is                 | [Overzicht](/nl/guide/overview)                                  |
 | Zien hoe de onderdelen in elkaar passen                  | [Architectuur](/nl/guide/architecture)                           |
-| Weten wat "komt overeen met de Java" betekent            | [Conformiteit](/nl/conformance)                                  |
+| Weten wat "komt overeen met de Java" betekent            | [Conformiteit](/conformance)                                     |
 | Vinden waar een Java-package in de portering terechtkomt | [Porteerkaart](/guide/port-map) · [Inventaris](/guide/inventory) |
 | De regels van Java naar TypeScript leren                 | [Vertaalregels](/guide/translation-rules)                        |
 | Zien welk Java-runtimegedrag gedekt is                   | [Java-fundamenten](/nl/guide/java-foundations)                   |

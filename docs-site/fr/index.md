@@ -47,7 +47,7 @@ suivent semver. Commencez par [Prise en main](/guide/getting-started) et consult
 | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | Comprendre ce qu’est le projet et ce qu’il n’est pas | [Vue d’ensemble](/fr/guide/overview)                                                           |
 | Voir comment les éléments s’articulent               | [Architecture](/fr/guide/architecture)                                                         |
-| Savoir ce que signifie « correspond au Java »        | [Conformité](/fr/conformance)                                                                  |
+| Savoir ce que signifie « correspond au Java »        | [Conformité](/conformance)                                                                     |
 | Trouver où atterrit un paquet Java dans le portage   | [Carte de portage](/guide/port-map) (en anglais) · [Inventaire](/guide/inventory) (en anglais) |
 | Apprendre les règles de Java vers TypeScript         | [Règles de traduction](/guide/translation-rules) (en anglais)                                  |
 | Voir quel comportement du runtime Java est couvert   | [Fondations Java](/fr/guide/java-foundations)                                                  |

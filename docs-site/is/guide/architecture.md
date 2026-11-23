@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Varpning Java-pakka á einingar í `src/`                               |
 | [component-map.md](#íhlutakort)                     | Búntaháðindi innan umfangs; kjarnahlutar keyrslutíma                  |
 | [../translation-rules.md](/guide/translation-rules) | Reglur frá Java yfir í TypeScript                                     |
-| [../conformance.md](/is/conformance)                | Viðmið og verklag véfréttarsamanburðar (kemur síðar í þessu verkefni) |
+| [../conformance.md](/conformance)                   | Viðmið og verklag véfréttarsamanburðar (kemur síðar í þessu verkefni) |
 
 ## Hvað elk-engine er
 

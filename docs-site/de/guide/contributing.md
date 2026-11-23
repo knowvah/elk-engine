@@ -69,4 +69,4 @@ Repository-Stamm. Nur `tools/` und `test/` lesen diese Variablen; Code in `src/`
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | Der elk-models-Korpus, im Korpus-Manifest fixiert |
 
 Der Orakel-Build erfordert Maven 3.9 oder neuer und JDK 21 (als Rückfall JDK 17). Das Orakel-Verfahren steht unter
-[Konformität](/de/conformance).
+[Konformität](/conformance).

@@ -46,7 +46,7 @@ features:
 | ------------------------------------------- | --------------------------------------------------------------------- |
 | 프로젝트가 무엇이고 무엇이 아닌지 이해하기  | [개요](/ko/guide/overview)                                            |
 | 구성 요소가 어떻게 맞물리는지 보기          | [아키텍처](/ko/guide/architecture)                                    |
-| "Java와 일치한다"는 말의 의미 알기          | [적합성](/ko/conformance)                                             |
+| "Java와 일치한다"는 말의 의미 알기          | [적합성](/conformance)                                                |
 | Java 패키지가 포팅에서 어디에 놓이는지 찾기 | [포팅 맵](/guide/port-map)(영어) · [인벤토리](/guide/inventory)(영어) |
 | Java에서 TypeScript로의 규칙 익히기         | [번역 규칙](/guide/translation-rules)(영어)                           |
 | 어떤 Java 런타임 동작을 다루는지 보기       | [Java 기반](/ko/guide/java-foundations)                               |

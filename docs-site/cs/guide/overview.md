@@ -42,7 +42,7 @@ Výstupy portování se porovnávají s výstupy orákula:
 - Numerické souřadnice a velikosti se musí shodovat v rámci absolutní tolerance `1e-6`.
 
 Vybrané výstupy orákula jsou zapsány do repozitáře jako referenční goldeny, takže ke spuštění testů není potřeba JVM.
-Úplný postup najdete na stránce [Shoda](/cs/conformance).
+Úplný postup najdete na stránce [Shoda](/conformance).
 
 ## Veřejný kontrakt
 

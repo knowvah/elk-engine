@@ -46,7 +46,7 @@ issues. Verejné API, 72 exportov, je zmrazené vo verzii 1.0.0 a verzie sa riad
 | ----------------------------------------------------------- | ----------------------------------------------------------------- |
 | Pochopiť, čo projekt je a čo nie je                         | [Prehľad](/sk/guide/overview)                                     |
 | Vidieť, ako do seba jednotlivé časti zapadajú               | [Architektúra](/sk/guide/architecture)                            |
-| Vedieť, čo znamená „zhoduje sa s Javou“                     | [Zhoda](/sk/conformance)                                          |
+| Vedieť, čo znamená „zhoduje sa s Javou“                     | [Zhoda](/conformance)                                             |
 | Nájsť, kam sa balík Javy v porte zaradí                     | [Mapa portovania](/guide/port-map) · [Inventár](/guide/inventory) |
 | Naučiť sa pravidlá Java na TypeScript                       | [Pravidlá prekladu](/guide/translation-rules)                     |
 | Vidieť, ktoré správanie behového prostredia Javy je pokryté | [Základy Javy](/sk/guide/java-foundations)                        |

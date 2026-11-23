@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Отображение пакетов Java на модули в `src/`                               |
 | [component-map.md](#карта-компонентов)              | Зависимости бандлов в объёме работ; основные части среды выполнения       |
 | [../translation-rules.md](/guide/translation-rules) | Правила перехода от Java к TypeScript                                     |
-| [../conformance.md](/ru/conformance)                | Планка сравнения с оракулом и процедура (появится позже в этой миссии)    |
+| [../conformance.md](/conformance)                   | Планка сравнения с оракулом и процедура (появится позже в этой миссии)    |
 
 ## Что такое elk-engine
 

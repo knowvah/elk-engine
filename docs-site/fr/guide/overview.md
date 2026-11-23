@@ -43,7 +43,7 @@ Les sorties du portage sont comparées à celles de l’oracle :
 - Les coordonnées et tailles numériques doivent correspondre à une tolérance absolue de `1e-6`.
 
 Les sorties d’oracle sélectionnées sont versionnées comme références golden, si bien que l’exécution des tests ne
-nécessite pas de JVM. La procédure complète se trouve sur la page [Conformité](/fr/conformance).
+nécessite pas de JVM. La procédure complète se trouve sur la page [Conformité](/conformance).
 
 ## Contrat public
 

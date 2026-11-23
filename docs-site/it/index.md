@@ -46,7 +46,7 @@ tracciate come issue. L'API pubblica, 72 export, è congelata alla 1.0.0 e le ve
 | ----------------------------------------------------- | --------------------------------------------------------------------- |
 | Capire che cos'è e che cosa non è il progetto         | [Panoramica](/it/guide/overview)                                      |
 | Vedere come si incastrano i pezzi                     | [Architettura](/it/guide/architecture)                                |
-| Sapere che cosa significa «coincide con il Java»      | [Conformità](/it/conformance)                                         |
+| Sapere che cosa significa «coincide con il Java»      | [Conformità](/conformance)                                            |
 | Trovare dove un pacchetto Java finisce nel porting    | [Mappa del porting](/guide/port-map) · [Inventario](/guide/inventory) |
 | Imparare le regole da Java a TypeScript               | [Regole di traduzione](/guide/translation-rules)                      |
 | Vedere quale comportamento del runtime Java è coperto | [Fondamenti Java](/it/guide/java-foundations)                         |

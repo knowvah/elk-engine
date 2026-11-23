@@ -43,7 +43,7 @@ Die Ausgaben der Portierung werden mit den Ausgaben des Orakels verglichen:
 - Numerische Koordinaten und Größen müssen innerhalb einer absoluten Toleranz von `1e-6` übereinstimmen.
 
 Ausgewählte Orakel-Ausgaben sind als Golden-Referenzen eingecheckt, sodass zum Ausführen der Tests keine JVM nötig ist.
-Das vollständige Verfahren steht auf der Seite [Konformität](/de/conformance).
+Das vollständige Verfahren steht auf der Seite [Konformität](/conformance).
 
 ## Öffentlicher Vertrag
 

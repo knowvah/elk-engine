@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Afbeelding van Java-packages op modules in `src/`                              |
 | [component-map.md](#componentenkaart)               | Bundelafhankelijkheden binnen de scope; kernonderdelen van de runtime          |
 | [../translation-rules.md](/guide/translation-rules) | Regels van Java naar TypeScript                                                |
-| [../conformance.md](/nl/conformance)                | Vergelijkingsmaatstaf en procedure van het orakel (volgt later in deze missie) |
+| [../conformance.md](/conformance)                   | Vergelijkingsmaatstaf en procedure van het orakel (volgt later in deze missie) |
 
 ## Wat elk-engine is
 

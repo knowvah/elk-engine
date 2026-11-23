@@ -70,4 +70,4 @@ niciodată.
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | Corpusul elk-models, fixat în manifestul corpusului |
 
 Compilarea oracolului necesită Maven 3.9 sau mai nou și JDK 21 (JDK 17 ca alternativă). Consultați
-[Conformitate](/ro/conformance) pentru procedura oracolului.
+[Conformitate](/conformance) pentru procedura oracolului.

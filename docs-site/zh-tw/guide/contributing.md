@@ -58,4 +58,4 @@ sourceHash: 5c0bf7925cd221552657db1b1b71e2d110f23e71d27ebfc8eb7c84a9fc2db44c
 | `ELK_ORACLE_DIR` | `../elk-oracle`                | 分離 worktree 與已建置的基準實作        |
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | elk-models 語料庫，固定於語料庫資訊清單 |
 
-建置基準實作需要 Maven 3.9 或更新版本與 JDK 21（以 JDK 17 作為備援）。基準實作的流程請見[一致性](/zh-tw/conformance)。
+建置基準實作需要 Maven 3.9 或更新版本與 JDK 21（以 JDK 17 作為備援）。基準實作的流程請見[一致性](/conformance)。

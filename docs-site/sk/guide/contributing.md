@@ -69,4 +69,4 @@ repozitára. Tieto premenné čítajú iba `tools/` a `test/`; kód v `src/` nik
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | Korpus elk-models, pripnutý v manifeste korpusu      |
 
 Zostavenie orákula vyžaduje Maven 3.9 alebo novší a JDK 21 (JDK 17 ako záloha). Postup pre orákulum nájdete v
-[Zhoda](/sk/conformance).
+[Zhoda](/conformance).

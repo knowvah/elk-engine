@@ -47,7 +47,7 @@ Alustage jaotisest [Alustamine](/guide/getting-started); mis tuleb järgmisena, 
 | ------------------------------------------------ | ---------------------------------------------------------------- |
 | Mõista, mis projekt on ja mis ta ei ole          | [Ülevaade](/et/guide/overview)                                   |
 | Näha, kuidas osad kokku sobivad                  | [Arhitektuur](/et/guide/architecture)                            |
-| Teada, mida tähendab „ühtib Javaga“              | [Vastavus](/et/conformance)                                      |
+| Teada, mida tähendab „ühtib Javaga“              | [Vastavus](/conformance)                                         |
 | Leida, kuhu Java pakett portimisel jõuab         | [Portimiskaart](/guide/port-map) · [Inventuur](/guide/inventory) |
 | Õppida Java ja TypeScripti vahelisi reegleid     | [Tõlkereeglid](/guide/translation-rules)                         |
 | Näha, milline Java käitusaja käitumine on kaetud | [Java alused](/et/guide/java-foundations)                        |

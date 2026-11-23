@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Abbildung der Java-Pakete auf Module in `src/`                               |
 | [component-map.md](#komponentenkarte)               | Bundle-Abhängigkeiten im Umfang; Kernbestandteile der Laufzeit               |
 | [../translation-rules.md](/guide/translation-rules) | Regeln von Java zu TypeScript                                                |
-| [../conformance.md](/de/conformance)                | Vergleichsmaßstab und Verfahren des Orakels (folgt später in dieser Mission) |
+| [../conformance.md](/conformance)                   | Vergleichsmaßstab und Verfahren des Orakels (folgt später in dieser Mission) |
 
 ## Was elk-engine ist
 

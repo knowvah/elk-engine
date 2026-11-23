@@ -67,4 +67,4 @@ repozytorium. Tylko `tools/` i `test/` czytają te zmienne; kod w `src/` nigdy t
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | Korpus elk-models, przypięty w manifeście korpusu       |
 
 Budowa wyroczni wymaga Mavena 3.9 lub nowszego i JDK 21 (awaryjnie JDK 17). Procedurę wyroczni opisuje
-[Zgodność](/pl/conformance).
+[Zgodność](/conformance).

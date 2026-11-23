@@ -45,7 +45,7 @@ issueiksi. Julkinen API, 72 vientiä, on lukittu versioon 1.0.0 ja versiot nouda
 | -------------------------------------------------- | ------------------------------------------------------------------- |
 | Ymmärtää, mitä projekti on ja mitä se ei ole       | [Yleiskatsaus](/fi/guide/overview)                                  |
 | Nähdä, miten osat sopivat yhteen                   | [Arkkitehtuuri](/fi/guide/architecture)                             |
-| Tietää, mitä "täsmää Javaan" tarkoittaa            | [Yhdenmukaisuus](/fi/conformance)                                   |
+| Tietää, mitä "täsmää Javaan" tarkoittaa            | [Yhdenmukaisuus](/conformance)                                      |
 | Löytää, minne Java-paketti päätyy porttauksessa    | [Porttauskartta](/guide/port-map) · [Inventaario](/guide/inventory) |
 | Oppia Javan ja TypeScriptin väliset säännöt        | [Käännössäännöt](/guide/translation-rules)                          |
 | Nähdä, mikä Javan ajonaikainen toiminta on katettu | [Java-perusteet](/fi/guide/java-foundations)                        |

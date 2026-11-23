@@ -122,10 +122,11 @@ export const ALL_LOCALE_PREFIXES: readonly string[] = [
 /**
  * English pages no locale translates (paths relative to `docs-site/`; a
  * trailing `/` names a directory, `*` matches within one path segment).
- * The parity report and the generated reference pages stay English and are
- * linked unprefixed; `showcase/` is generated.
+ * The conformance and parity reports and the generated reference pages stay
+ * English and are linked unprefixed; `showcase/` is generated.
  */
 export const TRANSLATABLE_EXCLUDES: readonly string[] = [
+  'conformance.md',
   'parity.md',
   'guide/translation-rules.md',
   'guide/collections-rules.md',
@@ -317,7 +318,7 @@ export function navFor(prefix: string, ui: NavLabels): NavLink[] {
     english(GETTING_STARTED_LABEL, '/guide/getting-started'),
     english(API_REFERENCE_LABEL, '/reference/'),
     english(ui.reference, '/guide/translation-rules'),
-    page(ui.conformance, '/conformance'),
+    english(ui.conformance, '/conformance'),
     english(ui.parity, '/parity'),
     page(ui.showcase, '/showcase/'),
   ];
@@ -355,7 +356,7 @@ function verificationAndShowcaseGroups(prefix: string, ui: NavLabels): SidebarGr
   return [
     {
       text: ui.verification,
-      items: [page(ui.conformance, '/conformance'), english(ui.parity, '/parity')],
+      items: [english(ui.conformance, '/conformance'), english(ui.parity, '/parity')],
     },
     {
       text: ui.showcase,

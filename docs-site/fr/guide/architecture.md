@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Correspondance des paquets Java avec les modules de `src/`                          |
 | [component-map.md](#carte-des-composants)           | Dépendances des bundles dans le périmètre ; éléments centraux du runtime            |
 | [../translation-rules.md](/guide/translation-rules) | Règles de Java vers TypeScript                                                      |
-| [../conformance.md](/fr/conformance)                | Barre de comparaison et procédure de l’oracle (arrive plus tard dans cette mission) |
+| [../conformance.md](/conformance)                   | Barre de comparaison et procédure de l’oracle (arrive plus tard dans cette mission) |
 
 ## Ce qu’est elk-engine
 

@@ -58,4 +58,4 @@ Node 22 以降が必要です。依存関係は `npm ci` でインストール�
 | `ELK_ORACLE_DIR` | `../elk-oracle`                | デタッチされた worktree とビルド済みのオラクル              |
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | elk-models コーパス。コーパスのマニフェストで固定されている |
 
-オラクルのビルドには Maven 3.9 以降と JDK 21（フォールバックは JDK 17）が必要です。オラクルの手順は[適合性](/ja/conformance)を参照してください。
+オラクルのビルドには Maven 3.9 以降と JDK 21（フォールバックは JDK 17）が必要です。オラクルの手順は[適合性](/conformance)を参照してください。

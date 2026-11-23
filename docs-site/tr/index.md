@@ -45,7 +45,7 @@ issue olarak izlenir. Herkese açık API, 72 dışa aktarım, 1.0.0'da dondurulm
 | ---------------------------------------------------------- | ----------------------------------------------------------------- |
 | Projenin ne olduğunu ve ne olmadığını anlamak              | [Genel bakış](/tr/guide/overview)                                 |
 | Parçaların nasıl bir araya geldiğini görmek                | [Mimari](/tr/guide/architecture)                                  |
-| "Java ile eşleşir"in ne demek olduğunu öğrenmek            | [Uygunluk](/tr/conformance)                                       |
+| "Java ile eşleşir"in ne demek olduğunu öğrenmek            | [Uygunluk](/conformance)                                          |
 | Bir Java paketinin taşımada nereye düştüğünü bulmak        | [Taşıma haritası](/guide/port-map) · [Envanter](/guide/inventory) |
 | Java'dan TypeScript'e kuralları öğrenmek                   | [Çeviri kuralları](/guide/translation-rules)                      |
 | Hangi Java çalışma zamanı davranışının kapsandığını görmek | [Java temelleri](/tr/guide/java-foundations)                      |

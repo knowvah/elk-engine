@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Java 包到 `src/` 模块的映射                    |
 | [component-map.md](#组件图)                         | 范围内的 bundle 依赖；运行时核心组成部分       |
 | [../translation-rules.md](/guide/translation-rules) | Java 到 TypeScript 的规则                      |
-| [../conformance.md](/zh-cn/conformance)             | 基准实现的比较标准与流程（本任务稍后提供）     |
+| [../conformance.md](/conformance)                   | 基准实现的比较标准与流程（本任务稍后提供）     |
 
 ## elk-engine 是什么
 

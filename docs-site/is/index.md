@@ -44,7 +44,7 @@ sem issues. Opinbera API-ið, 72 útflutningar, er fryst við 1.0.0 og útgáfur
 | ---------------------------------------------- | -------------------------------------------------------------------- |
 | Skilja hvað verkefnið er og er ekki            | [Yfirlit](/is/guide/overview)                                        |
 | Sjá hvernig hlutarnir passa saman              | [Arkitektúr](/is/guide/architecture)                                 |
-| Vita hvað „samsvarar Java“ þýðir               | [Samræmi](/is/conformance)                                           |
+| Vita hvað „samsvarar Java“ þýðir               | [Samræmi](/conformance)                                              |
 | Finna hvar Java-pakki lendir í yfirfærslunni   | [Yfirfærslukort](/guide/port-map) · [Yfirlitsskrá](/guide/inventory) |
 | Læra reglurnar frá Java yfir í TypeScript      | [Þýðingarreglur](/guide/translation-rules)                           |
 | Sjá hvaða Java-keyrslutímahegðun er til staðar | [Java-grunnur](/is/guide/java-foundations)                           |

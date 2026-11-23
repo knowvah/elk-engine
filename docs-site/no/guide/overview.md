@@ -42,7 +42,7 @@ Utdataene fra porteringen sammenlignes med utdataene fra oraklet:
 - Numeriske koordinater og størrelser må samsvare innenfor en absolutt toleranse på `1e-6`.
 
 Utvalgte orakelutdata er sjekket inn som golden-referanser, så det trengs ingen JVM for å kjøre testene. Hele
-fremgangsmåten står på siden [Samsvar](/no/conformance).
+fremgangsmåten står på siden [Samsvar](/conformance).
 
 ## Offentlig kontrakt
 

@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Asignación de paquetes de Java a módulos de `src/`                                      |
 | [component-map.md](#mapa-de-componentes)            | Dependencias de los bundles en el alcance; piezas centrales del runtime                 |
 | [../translation-rules.md](/guide/translation-rules) | Reglas de Java a TypeScript                                                             |
-| [../conformance.md](/es/conformance)                | Criterio y procedimiento de comparación del oráculo (llega más adelante en esta misión) |
+| [../conformance.md](/conformance)                   | Criterio y procedimiento de comparación del oráculo (llega más adelante en esta misión) |
 
 ## Qué es elk-engine
 

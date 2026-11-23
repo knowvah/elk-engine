@@ -68,4 +68,4 @@ görelidir. Bu değişkenleri yalnızca `tools/` ve `test/` okur; `src/` içinde
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | Derlem manifestosunda sabitlenmiş elk-models derlemi |
 
 Oracle derlemesi Maven 3.9 veya daha yenisini ve JDK 21'i (yedek olarak JDK 17) gerektirir. Oracle yöntemi için
-[Uygunluk](/tr/conformance) sayfasına bakın.
+[Uygunluk](/conformance) sayfasına bakın.

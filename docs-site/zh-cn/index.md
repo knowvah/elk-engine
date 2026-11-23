@@ -40,7 +40,7 @@ features:
 | ------------------------------ | ------------------------------------------------------ |
 | 了解本项目是什么、不是什么     | [概览](/zh-cn/guide/overview)                          |
 | 了解各部分如何组合             | [架构](/zh-cn/guide/architecture)                      |
-| 了解“与 Java 一致”意味着什么   | [一致性](/zh-cn/conformance)                           |
+| 了解“与 Java 一致”意味着什么   | [一致性](/conformance)                                 |
 | 查找某个 Java 包在移植中的位置 | [移植映射](/guide/port-map) · [清单](/guide/inventory) |
 | 学习 Java 到 TypeScript 的规则 | [翻译规则](/guide/translation-rules)                   |
 | 了解已覆盖哪些 Java 运行时行为 | [Java 基础](/zh-cn/guide/java-foundations)             |

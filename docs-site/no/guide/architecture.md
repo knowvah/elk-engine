@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Avbildning av Java-pakker til moduler i `src/`                                   |
 | [component-map.md](#komponentkart)                  | Bundle-avhengigheter i omfang; kjerneelementer i kjøretiden                      |
 | [../translation-rules.md](/guide/translation-rules) | Regler fra Java til TypeScript                                                   |
-| [../conformance.md](/no/conformance)                | Sammenligningskrav og fremgangsmåte for oraklet (kommer senere i denne misjonen) |
+| [../conformance.md](/conformance)                   | Sammenligningskrav og fremgangsmåte for oraklet (kommer senere i denne misjonen) |
 
 ## Hva elk-engine er
 

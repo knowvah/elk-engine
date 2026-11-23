@@ -47,7 +47,7 @@ las versiones siguen semver. Empieza por [Primeros pasos](/guide/getting-started
 | -------------------------------------------------------- | ------------------------------------------------------------------- |
 | Entender qué es el proyecto y qué no es                  | [Visión general](/es/guide/overview)                                |
 | Ver cómo encajan las piezas                              | [Arquitectura](/es/guide/architecture)                              |
-| Saber qué significa «coincide con el Java»               | [Conformidad](/es/conformance)                                      |
+| Saber qué significa «coincide con el Java»               | [Conformidad](/conformance)                                         |
 | Encontrar dónde acaba un paquete de Java en el portado   | [Mapa de portado](/guide/port-map) · [Inventario](/guide/inventory) |
 | Aprender las reglas de Java a TypeScript                 | [Reglas de traducción](/guide/translation-rules)                    |
 | Ver qué comportamiento del runtime de Java está cubierto | [Fundamentos de Java](/es/guide/java-foundations)                   |

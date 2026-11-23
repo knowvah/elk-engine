@@ -68,4 +68,4 @@ repositorion juureen. Vain `tools/` ja `test/` lukevat näitä muuttujia; `src/`
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | elk-models-korpus, kiinnitetty korpuksen manifestissa  |
 
 Oraakkelin rakentaminen vaatii Maven 3.9:n tai uudemman ja JDK 21:n (varana JDK 17). Oraakkelin menettelyn löydät
-sivulta [Yhdenmukaisuus](/fi/conformance).
+sivulta [Yhdenmukaisuus](/conformance).

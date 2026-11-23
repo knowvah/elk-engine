@@ -231,6 +231,7 @@ describe('helpers', () => {
     expect(['/parity', '/guide/roadmap', '/guide/overview', '/showcase/layered', '/conformance'].filter(only)).toEqual([
       '/parity',
       '/guide/roadmap',
+      '/conformance',
     ]);
   });
 
