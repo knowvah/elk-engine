@@ -1,6 +1,6 @@
 ---
 title: Overzicht
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,11 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), de Java-bibliotheek voor graaflayout
 geen WASM: de layoutalgoritmen zijn opnieuw geïmplementeerd in gewoon TypeScript en geverifieerd
 tegen de Java-implementatie.
 
-::: warning Pre-1.0
-Alle beoogde ELK-layoutalgoritmen zijn geporteerd en gecontroleerd tegen ELK gebouwd vanuit de broncode; de
-[pariteitsrapportage](/parity) bevat de resultaten. Het publieke exportoppervlak is goedgekeurd maar staat nog
-niet in `src/index.ts`, dus de pakketingang exporteert nog niets publieks. Tot 1.0 kan de API nog wijzigen.
-In de [routekaart](/guide/roadmap) staat wat er daarna komt.
+::: tip Versie 1.0
+`@knowvah/elk-engine@1.0.0` staat op npm. Alle beoogde ELK-layoutalgoritmen zijn geporteerd en gecontroleerd tegen
+ELK gebouwd vanuit de broncode; de [pariteitsrapportage](/parity) bevat de resultaten, en nog openstaande
+verschillen worden bijgehouden als issues. De publieke API, 72 exports, ligt vast in 1.0.0 en versies volgen semver.
+Begin met [Aan de slag](/guide/getting-started). In de [routekaart](/guide/roadmap) staat wat er daarna komt.
 :::
 
 ## De Java is de specificatie
@@ -47,11 +47,11 @@ De volledige procedure staat op de pagina [conformiteit](/nl/conformance).
 ## Publiek contract
 
 De publieke API is het exportoppervlak dat is goedgekeurd in
-[#90](https://github.com/knowvah/elk-engine/issues/90): het ElkGraph-objectmodel en de
-`ElkGraphUtil`-factories, de layout-engine, de metadataprovider en opties van elk algoritme met
-hun waardetypen, en de ELK JSON- en tekstuele graafformaten. ELK JSON is een I/O-adapter, niet het
-kernmodel. [Aan de slag](/guide/getting-started) laat het oppervlak in gebruik zien. De versies blijven 0.x
-tot 1.0; 1.0 bevriest het oppervlak.
+[#90](https://github.com/knowvah/elk-engine/issues/90), 72 exports: het ElkGraph-objectmodel en de
+`ElkGraphUtil`-factories, de layout-engine, de metadataprovider en de opties-klasse van elk algoritme,
+de waardetypen van de kernopties, de ELK JSON-adapter en de asynchrone functie `layout`. ELK JSON is een
+I/O-adapter, niet het kernmodel. [Aan de slag](/guide/getting-started) laat het oppervlak in gebruik zien.
+Het oppervlak ligt vast in 1.0.0 en versies volgen semver: het verwijderen van een export is een major-versie.
 
 ## Runtimebeperkingen
 

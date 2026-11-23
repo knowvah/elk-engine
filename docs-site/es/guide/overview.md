@@ -1,6 +1,6 @@
 ---
 title: Visión general
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,11 +12,12 @@ Kernel](https://www.eclipse.org/elk) (ELK), la biblioteca de Java para el layout
 WASM: los algoritmos de layout están reimplementados en TypeScript simple y verificados contra la
 implementación de Java.
 
-::: warning Pre-1.0
-Todos los algoritmos de layout de ELK previstos están portados y verificados contra el ELK compilado desde el código
-fuente; el [informe de paridad](/parity) recoge los resultados. La superficie de exportación pública está aceptada,
-pero aún no está en `src/index.ts`, así que la entrada del paquete todavía no exporta nada público. Hasta la 1.0 la
-API aún puede cambiar. Consulta la [hoja de ruta](/guide/roadmap) para saber qué viene después.
+::: tip Versión 1.0
+`@knowvah/elk-engine@1.0.0` está en npm. Todos los algoritmos de layout de ELK previstos están portados y verificados
+contra el ELK compilado desde el código fuente; el [informe de paridad](/parity) recoge los resultados, y las
+diferencias que siguen abiertas se siguen como issues. La API pública, 72 exportaciones, queda congelada en 1.0.0 y
+las versiones siguen semver. Empieza por [Primeros pasos](/guide/getting-started). Consulta la
+[hoja de ruta](/guide/roadmap) para saber qué viene después.
 :::
 
 ## El Java es la especificación
@@ -47,11 +48,11 @@ una JVM. El procedimiento completo está en la página de [conformidad](/es/conf
 ## Contrato público
 
 La API pública es la superficie de exportación aceptada en
-[#90](https://github.com/knowvah/elk-engine/issues/90): el modelo de objetos ElkGraph y las factorías de
-`ElkGraphUtil`, el motor de layout, el proveedor de metadatos y las opciones de cada algoritmo con sus tipos de valor,
-y los formatos ELK JSON y de grafo textual. ELK JSON es un adaptador de E/S, no el modelo central.
-[Primeros pasos](/guide/getting-started) muestra la superficie en uso. Las versiones se mantienen en 0.x hasta la
-1.0; la 1.0 congela la superficie.
+[#90](https://github.com/knowvah/elk-engine/issues/90), 72 exportaciones: el modelo de objetos ElkGraph y las
+factorías de `ElkGraphUtil`, el motor de layout, el proveedor de metadatos y la clase de opciones de cada algoritmo,
+los tipos de valor de las opciones centrales, el adaptador ELK JSON y la función asíncrona `layout`. ELK JSON es un
+adaptador de E/S, no el modelo central. [Primeros pasos](/guide/getting-started) muestra la superficie en uso. La
+superficie queda congelada en 1.0.0 y las versiones siguen semver: eliminar una exportación es una versión mayor.
 
 ## Restricciones de ejecución
 

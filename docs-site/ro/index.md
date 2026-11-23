@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
+sourceHash: 06b24b3367eb169498f37ff49ece535367d39841a44c96a6599e894ec6caaadf
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, în TypeScript pur
@@ -26,18 +26,18 @@ features:
   - title: Nativ în browser, fără dependențe de runtime
     details: Fără Java, fără WASM, fără module încorporate Node în codul bibliotecii. Îl includeți în bundle și îl
       livrați.
-  - title: Pre-1.0
-    details: Toți algoritmii de layout ELK prevăzuți sunt portați și verificați față de ELK compilat din surse. Până la
-      1.0, API-ul se mai poate schimba.
+  - title: Versiunea 1.0
+    details: Toți algoritmii de layout ELK prevăzuți sunt portați și verificați față de ELK compilat din surse. API-ul
+      public este înghețat la 1.0.0.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-1.0
-Toți algoritmii de layout ELK prevăzuți sunt portați și verificați față de ELK compilat din surse; [raportul de
-paritate](/parity) conține rezultatele. Suprafața de export publică este acceptată, dar nu se află încă în
-`src/index.ts`, astfel că punctul de intrare al pachetului nu exportă încă nimic public. Versiunile rămân 0.x până la
-1.0, iar până atunci API-ul se mai poate schimba. Consultați [foaia de parcurs](/guide/roadmap) pentru ce urmează.
+::: tip Versiunea 1.0
+`@knowvah/elk-engine@1.0.0` este pe npm. Toți algoritmii de layout ELK prevăzuți sunt portați și verificați față de
+ELK compilat din surse; [raportul de paritate](/parity) conține rezultatele, iar diferențele încă deschise sunt
+urmărite ca issue-uri. API-ul public, cu 72 de exporturi, este înghețat la 1.0.0, iar versiunile urmează semver.
+Începeți cu [Primii pași](/guide/getting-started) și consultați [foaia de parcurs](/guide/roadmap) pentru ce urmează.
 :::
 
 ## Alegeți drumul dumneavoastră

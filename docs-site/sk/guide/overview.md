@@ -1,6 +1,6 @@
 ---
 title: Prehľad
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,11 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), javovej knižnice na rozloženie gra
 ani WASM: algoritmy rozloženia sú znovu implementované v obyčajnom TypeScripte a overené voči implementácii
 v Jave.
 
-::: warning Pre-1.0
-Všetky algoritmy rozloženia ELK v rozsahu projektu sú portované a overené voči ELK zostavenému zo zdrojov;
-výsledky nájdete v [správe o zhode](/parity). Verejný exportný povrch je schválený, no zatiaľ nie je v `src/index.ts`,
-takže vstupný bod balíka zatiaľ neexportuje nič verejné. Do verzie 1.0 sa API ešte môže zmeniť.
-Čo príde ďalej, nájdete v [pláne vývoja](/guide/roadmap).
+::: tip Verzia 1.0
+`@knowvah/elk-engine@1.0.0` je na npm. Všetky algoritmy rozloženia ELK v rozsahu projektu sú portované a overené voči
+ELK zostavenému zo zdrojov; výsledky nájdete v [správe o zhode](/parity) a stále otvorené rozdiely sa sledujú ako
+issues. Verejné API, 72 exportov, je zmrazené vo verzii 1.0.0 a verzie sa riadia semver. Začnite stránkou
+[Začíname](/guide/getting-started); čo príde ďalej, nájdete v [pláne vývoja](/guide/roadmap).
 :::
 
 ## Java je špecifikácia
@@ -47,10 +47,11 @@ postup je na stránke [Zhoda](/sk/conformance).
 ## Verejný kontrakt
 
 Verejné API je exportný povrch schválený v
-[#90](https://github.com/knowvah/elk-engine/issues/90): objektový model ElkGraph a továrne `ElkGraphUtil`, engine
-rozloženia, poskytovateľ metadát každého algoritmu a jeho voľby s typmi hodnôt a tiež formáty ELK JSON a textové
-formáty grafov. ELK JSON je I/O adaptér, nie jadro modelu. [Začíname](/guide/getting-started) ukazuje povrch
-v praxi. Verzie zostávajú 0.x do verzie 1.0; verzia 1.0 povrch zmrazí.
+[#90](https://github.com/knowvah/elk-engine/issues/90), 72 exportov: objektový model ElkGraph a továrne
+`ElkGraphUtil`, engine rozloženia, poskytovateľ metadát a trieda volieb každého algoritmu, typy hodnôt základných
+volieb, adaptér ELK JSON a asynchrónna funkcia `layout`. ELK JSON je I/O adaptér, nie jadro modelu.
+[Začíname](/guide/getting-started) ukazuje povrch v praxi. Povrch je zmrazený vo verzii 1.0.0 a verzie sa riadia
+semver: odstránenie exportu znamená hlavnú verziu.
 
 ## Obmedzenia behového prostredia
 

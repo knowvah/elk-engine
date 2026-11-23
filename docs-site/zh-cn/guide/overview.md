@@ -1,6 +1,6 @@
 ---
 title: 概览
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -10,8 +10,8 @@ sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 `@knowvah/elk-engine` 是 [Eclipse Layout Kernel](https://www.eclipse.org/elk)（ELK，Java 图布局库）的忠实 TypeScript
 移植。它没有 Java，也没有 WASM：布局算法以纯 TypeScript 重新实现，并已对照 Java 实现进行验证。
 
-::: warning Pre-1.0
-范围内的所有 ELK 布局算法均已移植，并已对照从源码构建的 ELK 进行验证；结果见[一致性报告](/parity)。公共导出接口面已获批准，但尚未写入 `src/index.ts`，因此包入口目前没有导出任何公共内容。在 1.0 之前，API 仍可能变化。后续计划请参阅[路线图](/guide/roadmap)。
+::: tip 1.0 版本
+`@knowvah/elk-engine@1.0.0` 已发布到 npm。范围内的所有 ELK 布局算法均已移植，并已对照从源码构建的 ELK 进行验证；结果见[一致性报告](/parity)，仍未解决的差异以 issue 跟踪。公共 API 共 72 个导出，自 1.0.0 起冻结，版本号遵循 semver。请从[快速开始](/guide/getting-started)入手；后续计划请参阅[路线图](/guide/roadmap)。
 :::
 
 ## Java 即是规范
@@ -36,7 +36,7 @@ sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 
 ## 公共契约
 
-公共 API 是 [#90](https://github.com/knowvah/elk-engine/issues/90) 中获批的导出接口面：ElkGraph 对象模型和 `ElkGraphUtil` 工厂、布局引擎、每个算法的元数据提供者及其选项（含选项值的类型），以及 ELK JSON 和文本图格式。ELK JSON 是 I/O 适配器，而非核心模型。[快速开始](/guide/getting-started)展示了该接口面的用法。在 1.0 之前版本号保持 0.x；1.0 将冻结这一接口面。
+公共 API 是 [#90](https://github.com/knowvah/elk-engine/issues/90) 中获批的导出接口面，共 72 个导出：ElkGraph 对象模型和 `ElkGraphUtil` 工厂、布局引擎、每个算法的元数据提供者及其选项类、核心选项值的类型、ELK JSON 适配器，以及异步的 `layout` 函数。ELK JSON 是 I/O 适配器，而非核心模型。[快速开始](/guide/getting-started)展示了该接口面的用法。该接口面自 1.0.0 起冻结，版本号遵循 semver：移除一个导出即为主版本变更。
 
 ## 运行时约束
 

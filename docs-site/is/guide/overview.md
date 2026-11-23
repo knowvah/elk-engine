@@ -1,6 +1,6 @@
 ---
 title: Yfirlit
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -12,11 +12,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), Java-safnsins fyrir uppröðun grafa
 né WASM: uppröðunaralgrímin eru endurútfærð í venjulegu TypeScript og sannprófuð gegn
 Java-útfærslunni.
 
-::: warning Pre-1.0
-Öll uppröðunaralgrím ELK innan umfangs hafa verið yfirfærð og sannprófuð gegn ELK byggðu úr frumkóða;
-[jafngildisskýrslan](/parity) geymir niðurstöðurnar. Opinbera útflutningsyfirborðið er samþykkt en er ekki enn í
-`src/index.ts`, svo aðalinngangur pakkans flytur ekkert opinbert út enn. Fram að 1.0 getur API enn breyst.
-Sjá [vegvísinn](/guide/roadmap) fyrir það sem kemur næst.
+::: tip Útgáfa 1.0
+`@knowvah/elk-engine@1.0.0` er á npm. Öll uppröðunaralgrím ELK innan umfangs hafa verið yfirfærð og sannprófuð gegn
+ELK byggðu úr frumkóða; [jafngildisskýrslan](/parity) geymir niðurstöðurnar, og munur sem enn er óleystur er rakinn
+sem issues. Opinbera API-ið, 72 útflutningar, er fryst við 1.0.0 og útgáfur fylgja semver. Byrjaðu á
+[Fyrstu skrefum](/guide/getting-started) og sjá [vegvísinn](/guide/roadmap) fyrir það sem kemur næst.
 :::
 
 ## Java er skilgreiningin
@@ -47,11 +47,11 @@ verklag er á síðunni um [samræmi](/is/conformance).
 ## Opinber samningur
 
 Opinbera API er útflutningsyfirborðið sem var samþykkt í
-[#90](https://github.com/knowvah/elk-engine/issues/90): ElkGraph-hlutalíkanið og
-`ElkGraphUtil`-smiðjurnar, uppröðunarvélin, lýsigagnaveita hvers algríms og valkostir þess með
-gildistegundum sínum, auk ELK JSON og textasniða grafa. ELK JSON er I/O-millistykki, ekki
-kjarnalíkanið. [Fyrstu skref](/guide/getting-started) sýna yfirborðið í notkun. Útgáfur haldast 0.x
-fram að 1.0; 1.0 festir yfirborðið.
+[#90](https://github.com/knowvah/elk-engine/issues/90), 72 útflutningar: ElkGraph-hlutalíkanið og
+`ElkGraphUtil`-smiðjurnar, uppröðunarvélin, lýsigagnaveita og valkostaflokkur hvers algríms,
+gildistegundir kjarnavalkostanna, ELK JSON-millistykkið og ósamstillta `layout`-fallið. ELK JSON er
+I/O-millistykki, ekki kjarnalíkanið. [Fyrstu skref](/guide/getting-started) sýna yfirborðið í notkun.
+Yfirborðið er fryst við 1.0.0 og útgáfur fylgja semver: að fjarlægja útflutning er stór útgáfa (major).
 
 ## Takmarkanir á keyrslutíma
 

@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
+sourceHash: 06b24b3367eb169498f37ff49ece535367d39841a44c96a6599e894ec6caaadf
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, saf TypeScript ile
@@ -25,18 +25,18 @@ features:
       eşleşir.
   - title: Tarayıcıya özgü, sıfır çalışma zamanı bağımlılığı
     details: Kütüphane kodunda Java yok, WASM yok, Node yerleşikleri yok. Paketleyin ve yayımlayın.
-  - title: Pre-1.0
-    details: Kapsamdaki tüm ELK yerleşim algoritmaları taşındı ve kaynaktan derlenmiş ELK'ya karşı denetlendi. 1.0'a
-      kadar API değişebilir.
+  - title: Sürüm 1.0
+    details: Kapsamdaki tüm ELK yerleşim algoritmaları taşındı ve kaynaktan derlenmiş ELK'ya karşı denetlendi. Herkese
+      açık API 1.0.0'da dondurulmuştur.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-1.0
-Kapsamdaki tüm ELK yerleşim algoritmaları taşındı ve kaynaktan derlenmiş ELK'ya karşı denetlendi; sonuçlar
-[eşdeğerlik raporunda](/parity) yer alır. Herkese açık dışa aktarım yüzeyi kabul edildi ancak henüz
-`src/index.ts` içinde değil; bu yüzden paket girişi henüz herkese açık hiçbir şey dışa aktarmıyor. Sürümler 1.0'a
-kadar 0.x kalır ve o zamana kadar API değişebilir. Sıradakiler için [yol haritasına](/guide/roadmap) bakın.
+::: tip Sürüm 1.0
+`@knowvah/elk-engine@1.0.0` npm'de yayımlandı. Kapsamdaki tüm ELK yerleşim algoritmaları taşındı ve kaynaktan
+derlenmiş ELK'ya karşı denetlendi; sonuçlar [eşdeğerlik raporunda](/parity) yer alır, hâlâ açık olan farklar ise
+issue olarak izlenir. Herkese açık API, 72 dışa aktarım, 1.0.0'da dondurulmuştur ve sürümler semver'i izler.
+[Başlangıç](/guide/getting-started) ile başlayın; sıradakiler için [yol haritasına](/guide/roadmap) bakın.
 :::
 
 ## Yolunuzu seçin

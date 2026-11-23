@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
+sourceHash: 06b24b3367eb169498f37ff49ece535367d39841a44c96a6599e894ec6caaadf
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, í hreinu TypeScript
@@ -24,18 +24,18 @@ features:
     details: Úttak er borið saman við ELK byggt úr frumkóða. Uppbygging stenst nákvæmlega; hnit standast innan 1e-6.
   - title: Innfætt í vafra, engin keyrsluháðindi
     details: Ekkert Java, ekkert WASM, engin innbyggð Node-söfn í safnkóðanum. Pakkaðu og gefðu út.
-  - title: Pre-1.0
-    details: Öll uppröðunaralgrím ELK innan umfangs eru yfirfærð og sannprófuð gegn ELK byggðu úr frumkóða. Fram að 1.0
-      getur API enn breyst.
+  - title: Útgáfa 1.0
+    details: Öll uppröðunaralgrím ELK innan umfangs eru yfirfærð og sannprófuð gegn ELK byggðu úr frumkóða. Opinbera
+      API-ið er fryst við 1.0.0.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-1.0
-Öll uppröðunaralgrím ELK innan umfangs hafa verið yfirfærð og sannprófuð gegn ELK byggðu úr frumkóða;
-[jafngildisskýrslan](/parity) geymir niðurstöðurnar. Opinbera útflutningsyfirborðið er samþykkt en er ekki enn í
-`src/index.ts`, svo aðalinngangur pakkans flytur ekkert opinbert út enn. Útgáfur haldast 0.x fram að 1.0 og þangað
-til getur API enn breyst. Sjá [vegvísinn](/guide/roadmap) fyrir það sem kemur næst.
+::: tip Útgáfa 1.0
+`@knowvah/elk-engine@1.0.0` er á npm. Öll uppröðunaralgrím ELK innan umfangs hafa verið yfirfærð og sannprófuð gegn
+ELK byggðu úr frumkóða; [jafngildisskýrslan](/parity) geymir niðurstöðurnar, og munur sem enn er óleystur er rakinn
+sem issues. Opinbera API-ið, 72 útflutningar, er fryst við 1.0.0 og útgáfur fylgja semver. Byrjaðu á
+[Fyrstu skrefum](/guide/getting-started) og sjá [vegvísinn](/guide/roadmap) fyrir það sem kemur næst.
 :::
 
 ## Veldu leiðina þína

@@ -1,6 +1,6 @@
 ---
 layout: home
-sourceHash: 13520b5cd8cfe1522d01c0b3ec7b47afad3fce1879618a87194b477c8ef962ec
+sourceHash: 06b24b3367eb169498f37ff49ece535367d39841a44c96a6599e894ec6caaadf
 hero:
   name: '@knowvah/elk-engine'
   text: Eclipse ELK, in reinem TypeScript
@@ -26,18 +26,18 @@ features:
       Koordinaten stimmen innerhalb von 1e-6 überein.
   - title: Browser-nativ, ohne Laufzeitabhängigkeiten
     details: Kein Java, kein WASM, keine Node-Built-ins im Bibliothekscode. Bündeln und ausliefern.
-  - title: Pre-1.0
+  - title: Version 1.0
     details: Alle vorgesehenen ELK-Layoutalgorithmen sind portiert und gegen aus den Quellen gebautes ELK geprüft.
-      Bis 1.0 kann sich die API noch ändern.
+      Die öffentliche API ist ab 1.0.0 eingefroren.
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
 
-::: warning Pre-1.0
-Alle vorgesehenen ELK-Layoutalgorithmen sind portiert und gegen aus den Quellen gebautes ELK geprüft; die
-Ergebnisse stehen im [Paritätsbericht](/parity). Die öffentliche Export-Oberfläche ist abgenommen, aber noch
-nicht in `src/index.ts`, daher exportiert der Paketeinstieg noch nichts Öffentliches. Die Versionen bleiben bis
-1.0 bei 0.x, und bis dahin kann sich die API noch ändern. Was als Nächstes kommt, steht in der
+::: tip Version 1.0
+`@knowvah/elk-engine@1.0.0` ist auf npm. Alle vorgesehenen ELK-Layoutalgorithmen sind portiert und gegen aus den
+Quellen gebautes ELK geprüft; die Ergebnisse stehen im [Paritätsbericht](/parity), noch offene Abweichungen werden
+als Issues verfolgt. Die öffentliche API, 72 Exporte, ist ab 1.0.0 eingefroren, und die Versionen folgen semver.
+Beginnen Sie mit [Erste Schritte](/guide/getting-started). Was als Nächstes kommt, steht in der
 [Roadmap](/guide/roadmap).
 :::
 

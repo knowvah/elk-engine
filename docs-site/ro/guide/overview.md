@@ -1,6 +1,6 @@
 ---
 title: Prezentare generală
-sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
+sourceHash: a7927ee742347e04a529a2939dfbcb685d8b1e32ba94b375d45da70747fd90f2
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -11,11 +11,11 @@ sourceHash: ae706ea0c693889bbac9d0298ac9906f2282efda6d617acd987e7c3a37e406eb
 Kernel](https://www.eclipse.org/elk) (ELK), biblioteca Java pentru layout de grafuri. Nu există Java și nu există
 WASM: algoritmii de layout sunt reimplementați în TypeScript simplu și verificați față de implementarea Java.
 
-::: warning Pre-1.0
-Toți algoritmii de layout ELK prevăzuți sunt portați și verificați față de ELK compilat din surse; [raportul de
-paritate](/parity) conține rezultatele. Suprafața de export publică este acceptată, dar nu se află încă în
-`src/index.ts`, astfel că punctul de intrare al pachetului nu exportă încă nimic public. Până la 1.0, API-ul se mai
-poate schimba. Consultați [foaia de parcurs](/guide/roadmap) pentru ce urmează.
+::: tip Versiunea 1.0
+`@knowvah/elk-engine@1.0.0` este pe npm. Toți algoritmii de layout ELK prevăzuți sunt portați și verificați față de
+ELK compilat din surse; [raportul de paritate](/parity) conține rezultatele, iar diferențele încă deschise sunt
+urmărite ca issue-uri. API-ul public, cu 72 de exporturi, este înghețat la 1.0.0, iar versiunile urmează semver.
+Începeți cu [Primii pași](/guide/getting-started) și consultați [foaia de parcurs](/guide/roadmap) pentru ce urmează.
 :::
 
 ## Java este specificația
@@ -49,11 +49,11 @@ Procedura completă se găsește pe pagina [Conformitate](/ro/conformance).
 ## Contract public
 
 API-ul public este suprafața de export acceptată în
-[#90](https://github.com/knowvah/elk-engine/issues/90): modelul de obiecte ElkGraph și fabricile `ElkGraphUtil`,
-motorul de layout, furnizorul de metadate și opțiunile fiecărui algoritm împreună cu tipurile valorilor lor, precum și
-formatele ELK JSON și de graf textual. ELK JSON este un adaptor de I/O, nu modelul de bază.
-[Primii pași](/guide/getting-started) arată suprafața în uz. Versiunile rămân 0.x până la 1.0; 1.0 îngheață
-suprafața.
+[#90](https://github.com/knowvah/elk-engine/issues/90), 72 de exporturi: modelul de obiecte ElkGraph și fabricile
+`ElkGraphUtil`, motorul de layout, furnizorul de metadate și clasa de opțiuni ale fiecărui algoritm, tipurile
+valorilor opțiunilor de bază, adaptorul ELK JSON și funcția asincronă `layout`. ELK JSON este un adaptor de I/O, nu
+modelul de bază. [Primii pași](/guide/getting-started) arată suprafața în uz. Suprafața este înghețată la 1.0.0, iar
+versiunile urmează semver: eliminarea unui export înseamnă o versiune majoră.
 
 ## Restricții de runtime
 
