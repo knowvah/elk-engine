@@ -1,0 +1,179 @@
+<!-- SPDX-License-Identifier: EPL-2.0 -->
+
+# layered-arm-search: mission brief (issue #59)
+
+## Objective
+
+The maintainer ruled on #59 (2026-11-13) that the 25 branch arms 7h handed over need a dedicated search. Each arm ends
+with exactly one outcome: reached through layout, reached by site scenario only, proven dead, or unreached (not proven
+dead). The search is constructive: for each arm, start from its guard and build an input that satisfies it, or prove
+from the Java that none can. Do not rerun the random scans earlier missions ran. Found inputs become curated oracle
+rows (AD-5). The 25 arms and their classes do not change, and there is no production `src/` change.
+
+| Group | Arms | Budget (D4) | Task |
+| ----- | ---- | ----------- | ---- |
+| North/south routing strategies | 6 | 4 h | [T2](batch-2/T2-north-south.md) |
+| Model-order comparators (node and port) | 11 | 4 h | [T3](batch-2/T3-model-order.md) |
+| Barycenter and Forster | 8 | 4 h | [T4](batch-2/T4-barycenter-forster.md) |
+
+The authoritative arm list, with the Java lines and the leads found at planning, is [arms.md](arms.md). It follows
+`plans/layered-compound/unreached.md` § Open.
+
+Exit (#59):
+
+- Each of the 25 arms has exactly one outcome (D3) in a new section of `plans/layered-compound/unreached.md`. That
+  file is appended to; § Open is not rewritten.
+- Every outcome-1 or outcome-2 arm has a recorded oracle row, and the per-row arm check (D6) shows that the row's replay
+  takes the arm.
+- `layered-order.json` and `layered-compound.json` change only by appended rows plus `rowCounts` (D5). Every new row
+  replays at the AD-4 bar.
+- `docs/conformance.md` lists every outcome-3 and outcome-4 arm with its class and reason. Journal rows close the 7c (C3)
+  and 7g hand-offs.
+- The search and generator code is under `tools/arm-search/` (D2): seeded and reproducible, never under `src/`.
+- Queue gates 1-7 are green.
+- There is one squashed commit on the base. `plans/roadmap.md` gains `## Revision <date> (layered-arm-search)`, and
+  `.agent-notes/layered-arm-search.md` is written.
+
+**Not in this mission:**
+
+- any edit to the 25 arms, their classes, or any other production `src/` file (D7);
+- re-recording or editing a landed row, or a new step kind or row kind in a recorder (D1, D5);
+- oracle patches (the scratch instrumentation of D2 is never applied to the oracle), or any write to `~/git/knowvah/elk`
+  or `~/git/knowvah/elk-oracle`;
+- searching for arms outside the 25. An input that happens to reach another unreached arm is noted (D9), not searched for;
+- anything upstream (the ruling rejected option 3);
+- the recorder split of #143.
+
+## Mission start
+
+1. Read `~/.claude/docs/reference/autonomous-execution.md` in full. The queue rules in your system prompt override it.
+2. Read [decisions.md](decisions.md), [stop-conditions.md](stop-conditions.md), [arms.md](arms.md),
+   [decision-journal.md](decision-journal.md), and `.agent-notes/layered-arm-search-planning.md`. Also read
+   `.agent-notes/layered-loops-evidence.md` (filtered recorder runs, `EPSILON` windows, oracle-throw probes) and
+   `.agent-notes/vector-recorder-debts.md` (`jp_run`, helper class names). Then read `plans/layered-compound/unreached.md`
+   §§ Measurement, Crossing minimisation (H8 4) and Open, and run `gh issue view 59`.
+3. `git branch --show-current` prints `chore/issue-queue`. If the brief is not committed, commit it with
+   `git add plans/layered-arm-search .agent-notes/layered-arm-search-planning.md` and
+   `git -c commit.gpgsign=false commit -m "docs(plans): add layered-arm-search mission brief"`. Record the squash base
+   in the journal: the driver's base if the prompt names one, else that commit's parent (`b5f98d63` at planning).
+4. Oracle: `~/git/knowvah/elk-oracle/oracle-build.json` must name `8bca22f4…` and patches 0001-0004 (true at planning,
+   built 2026-11-21T05:47:58Z). Otherwise rebuild with `tools/oracle/build.sh` and journal it. Record the output of
+   `git -C ~/git/knowvah/elk log --oneline 8bca22f4..HEAD -- plugins/org.eclipse.elk.alg.layered plugins/org.eclipse.elk.core`.
+   It was empty at planning; a change is journaled, not a stop.
+5. Baseline: see the journal's `plan` rows. Rerun it only if the base sha differs from `b5f98d63`.
+6. Find the first batch below marked `[ ]`, read its `overview.md`, and resume at its first incomplete task.
+
+## Blast radius
+
+No data model, API contract or service dependency changes. Files (each owned by one task):
+
+| File | Action | Task |
+| ---- | ------ | ---- |
+| `tools/arm-search/README.md`, `tools/arm-search/instrument.sh`, `tools/arm-search/coverage.sh` | Create | T1 |
+| `tools/arm-search/north-south/**` | Create | T2 |
+| `tools/arm-search/model-order/**` | Create | T3 |
+| `tools/arm-search/barycenter/**` | Create | T4 |
+| `tools/vectors/LayeredOrderVectors.java` (append to `SCENARIOS` only) | Modify | T5 |
+| `test/golden/refs/java/layered-order.json` (regenerated by script, append-only) | Modify | T5 |
+| `tools/vectors/LayeredCompoundVectors.java` (append to `SITE_ROWS` and its `SITE_n` constants only) | Modify | T6 |
+| `test/golden/refs/java/layered-compound.json` (regenerated by script, append-only) | Modify | T6 |
+| `test/helpers/layered-compound-site-arms.json` (append entries) | Modify | T6 |
+| `tools/vectors/compound-site-arms.mjs` (optional `--table`/`--test`/`--title` flags, D6) | Modify | T7 |
+| `test/helpers/layered-order-search-arms.json` | Create | T7 |
+| `src/alg/layered/LayeredOrderVectors.test.ts` (one added structural test for the new table, no assertion changed) | Modify | T7 |
+| `plans/layered-compound/unreached.md` (new section appended), `plans/layered-compound/decision-journal.md`, `plans/layered-crossing-min-tests/` and `plans/layered-loops-wrapping-compaction/` journals (one closing row each, D8) | Modify | T8 |
+| `docs/conformance.md`, `docs/architecture/alg-layered-compound.md` (only if it states the arm count) | Modify | T8 |
+| [arms.md](arms.md) (outcome column) | Modify | T2-T4 report, orchestrator writes |
+| `plans/roadmap.md`, `.agent-notes/layered-arm-search.md`, this README, the journal | Modify / Create | T9 (journal: every task) |
+
+No new package, env var or database change. All search output that is not committed goes under
+`$TMPDIR/layered-arm-search/<group>/`.
+
+## Quality gates
+
+After each task: its own tests (`npx vitest run <files>`), `npm run typecheck`, `npx prettier --check <changed files>`.
+After T5 and T6: the D5 diff. After T7: the D6 arm check. T9 runs queue gates 1-7 and journals each
+([T9](batch-4/T9-close-out.md)).
+
+JVM runs: check `uptime` (wait above 12) and run under `nice -n 10`, detached, with `echo "exit $?"` as the log's last
+line. Poll in foreground waits of at most 9 minutes. A cold order recorder run takes about a minute. Read its timing
+in the T1 baseline row, and journal any slower run. Probes are single-file `java` programs under `$TMPDIR` on the
+oracle classpath, or that classpath with D2's instrumented classes prepended. Never commit a probe. Quote its output
+in the journal.
+
+## Stop conditions and push-forward
+
+See [stop-conditions.md](stop-conditions.md). The most likely to fire are 7 (a group's budget runs out: its open arms
+become outcome 4, which is push-forward, not a stop) and 2 (a TS mismatch on a new row: a partial).
+
+## Batch progress
+
+| Batch | Name | Tasks | Depends on | Status |
+| ----- | ---- | ----- | ---------- | ------ |
+| [1](batch-1/overview.md) | Baseline measurement and the search harness | T1 | — | [x] |
+| [2](batch-2/overview.md) | Three constructive searches (parallel, scratch plus own `tools/` dirs) | T2, T3, T4 | 1 | [x] |
+| [3](batch-3/overview.md) | Record the rows; per-row arm proof | T5, T6, T7 | 2 | [x], withheld (#156) |
+| [4](batch-4/overview.md) | Outcomes and docs; close-out and squash | T8, T9 | 3 | [x] |
+
+## Execution model
+
+Recommended executor: `fable`.
+
+- The orchestrator owns T1, every recorder run, every ref regeneration, every commit, every `gh` call, `plans/` and
+  `.agent-notes/`.
+- Batch 2's three searches are independent. Run them as three parallel background subagents (`debugger`, opus, with
+  the Opus scope compensation of `~/.claude/rules/model-routing.md`). Each prompt is its task file, plus D1-D4, D7 and
+  D9, [arms.md](arms.md), and the planning notes. Each subagent writes only its own `tools/arm-search/<group>/` directory
+  and `$TMPDIR/layered-arm-search/<group>/`. It may run JVM probes and instrumented corpus sweeps under the D2 rules
+  (scratch output directories, `nice -n 10`, `uptime` check). It never runs a recorder against the repository, the
+  full test suite, or `git`. Its final report gives, per arm, the outcome, the candidate input (inline ELK JSON) or the
+  proof, and the probe output that backs it.
+- Track each group's wall-clock budget from its spawn time in the journal. Check in at least every 9 minutes, as the
+  queue rules require.
+- One commit per task before the squash.
+
+## Landing
+
+- Subject: [D10](decisions.md#d10).
+- Body: per group, how many arms got each outcome. For every arm that is reached, its row id; for outcome 3, a
+  one-line proof; for outcome 4, the closest approach. Then the D5 diff results (rows and bytes per ref), the D6 check,
+  and any `needs-ruling` or `follow-up` issue.
+- Footer `Refs: #59`, no attribution lines (queue rule).
+- Tag `layered-arm-search/pre-squash`, run `git reset --soft <base>`, and make one commit with
+  `git -c commit.gpgsign=false commit -F <file>`. Never push.
+
+## Documents
+
+[decisions.md](decisions.md) · [stop-conditions.md](stop-conditions.md) · [arms.md](arms.md) ·
+[decision-journal.md](decision-journal.md) · [diagrams/data-flow.md](diagrams/data-flow.md) ·
+[diagrams/component-map.md](diagrams/component-map.md)
+
+## Mission summary
+
+Completed 2026-11-23: 9 of 9 tasks carried out; T5, T6 and T7 were then taken back out of the tree (stop 4, a partial).
+No halt.
+
+- **Result.** Each of the 25 arms has one outcome in `plans/layered-compound/unreached.md` § "Search outcomes (issue #59,
+  layered-arm-search)": reached through layout 8 (arms 1-6, 15, 24), reached by a site scenario only 9 (arms 7-11, 13,
+  14, 16, 17), proven dead 8 (arms 12, 18-23, 25), unreached and not proven dead 0. The searches took 8, 49 and 35
+  minutes of the 4 h per group.
+- **Exit criteria not met: the rows.** The 17 reached arms were recorded as ten oracle rows that replay at the AD-4 bar
+  and take their arms row by row (journal, T5 to T7). They are not in the refs. Three existing tests pin exact lists of
+  row ids, every new row joins one of them, and extending a pinned list is the maintainer's decision (AD-13): issue #156
+  (`needs-ruling`). The recorder entries, the arm tables, the tool flags, the structural test and the list extensions are
+  in [`withheld/record-rows.patch`](withheld/record-rows.patch); the T5, T6 and T7 commits are under the tag
+  `layered-arm-search/pre-squash`. Both refs, both recorders and every file under `src/` and `test/` equal the base.
+- **Landed.** `tools/arm-search/` (the harness, three generators with their candidates, instrumentation patches and
+  proofs), the outcome section, `docs/conformance.md` with every dead arm and its reason, the three hand-off rows, the
+  roadmap revision and `.agent-notes/layered-arm-search.md`.
+- **Decisions.** D1-D10 as planned, except where the stop changed them: D5 and D6 were carried out and then withheld.
+  Journaled push-forwards: the harness files beyond the blast radius (T1), two arm lines of the planning table corrected
+  (T1), the row ids `sites/HierarchicalPortOrthogonalEdgeRouter/…` (T2), the Java lines of arms 8-16 corrected (batch 2),
+  the compound rows' place at the end of `SITE_ROWS` (T6), one sentence in `docs/architecture/alg-layered-loops.md`
+  (T8).
+- **Gates.** Queue gates 1-7 green on the final tree (journal, T9): coverage 1,193 files, 49,557 tests, 98.81 / 97.01 /
+  98.56 / 98.86, as at the base; refs unchanged against the base.
+- **Issues.** #156 (`needs-ruling`, the ten rows). Follow-ups: #157 (six stale entries of the compound arm table), #158
+  (the full-dump comparison lacks the `Map`/`HashMap` twin).
+- **Planning lesson.** D1's "their replay tests replay every row with no per-row code" was true of the two replay tests
+  and missed the per-class tests and the twins test, which pin id lists (`.agent-notes/layered-arm-search.md`).

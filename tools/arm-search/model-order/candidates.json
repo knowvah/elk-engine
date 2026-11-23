@@ -1,0 +1,261 @@
+[
+  {
+    "id": "scenarios/ModelOrderPortComparator/noModelOrderPorts",
+    "kind": "order",
+    "elk": {
+      "id": "root",
+      "layoutOptions": { "considerModelOrder.strategy": "NODES_AND_EDGES" },
+      "children": [
+        {
+          "id": "a",
+          "width": 30,
+          "height": 30,
+          "layoutOptions": { "portConstraints": "FIXED_SIDE", "considerModelOrder.noModelOrder": "true" },
+          "ports": [
+            { "id": "a.p0", "width": 4, "height": 4, "layoutOptions": { "port.side": "EAST" } },
+            { "id": "a.p1", "width": 4, "height": 4, "layoutOptions": { "port.side": "EAST" } }
+          ]
+        },
+        { "id": "b", "width": 30, "height": 30 },
+        { "id": "c", "width": 30, "height": 30 }
+      ],
+      "edges": [{ "id": "e0", "sources": ["b"], "targets": ["c"] }]
+    },
+    "target": null,
+    "steps": [
+      ["importGraph", null],
+      ["normalise"],
+      ["runProcessor", "EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER"],
+      ["runPhase", "P1_CYCLE_BREAKING", "GREEDY"],
+      ["runProcessor", "LAYER_CONSTRAINT_PREPROCESSOR"],
+      ["runPhase", "P2_LAYERING", "NETWORK_SIMPLEX"],
+      ["runProcessor", "LAYER_CONSTRAINT_POSTPROCESSOR"],
+      ["runProcessor", "LONG_EDGE_SPLITTER"],
+      ["runProcessor", "PORT_SIDE_PROCESSOR"],
+      ["runProcessor", "INVERTED_PORT_PROCESSOR"],
+      ["runProcessor", "PORT_LIST_SORTER"],
+      ["runProcessor", "SORT_BY_INPUT_ORDER_OF_MODEL"],
+      ["dump"]
+    ]
+  },
+  {
+    "id": "sites/ModelOrderNodeComparator/sourceThenTargetFeedback",
+    "kind": "order",
+    "elk": {
+      "id": "root",
+      "layoutOptions": { "considerModelOrder.strategy": "NODES_AND_EDGES" },
+      "children": [
+        { "id": "s", "width": 30, "height": 30 },
+        {
+          "id": "x",
+          "width": 30,
+          "height": 30,
+          "layoutOptions": { "portConstraints": "FIXED_SIDE" },
+          "ports": [
+            { "id": "x.p0", "width": 4, "height": 4, "layoutOptions": { "port.side": "EAST" } },
+            { "id": "x.p1", "width": 4, "height": 4, "layoutOptions": { "port.side": "WEST" } },
+            { "id": "x.p2", "width": 4, "height": 4, "layoutOptions": { "port.side": "WEST" } },
+            { "id": "x.p3", "width": 4, "height": 4, "layoutOptions": { "port.side": "EAST" } }
+          ]
+        },
+        { "id": "y", "width": 30, "height": 30 },
+        { "id": "z", "width": 30, "height": 30 },
+        { "id": "u", "width": 30, "height": 30 },
+        { "id": "f0", "width": 30, "height": 30 },
+        { "id": "f1", "width": 30, "height": 30 },
+        { "id": "f2", "width": 30, "height": 30 },
+        { "id": "f3", "width": 30, "height": 30 },
+        { "id": "f4", "width": 30, "height": 30 }
+      ],
+      "edges": [
+        { "id": "e0", "sources": ["s"], "targets": ["x.p0"] },
+        { "id": "e1", "sources": ["x.p1"], "targets": ["y"] },
+        { "id": "e2", "sources": ["x.p2"], "targets": ["z"] },
+        { "id": "e3", "sources": ["x.p3"], "targets": ["u"] }
+      ]
+    },
+    "target": null,
+    "steps": [
+      ["importGraph", null],
+      ["normalise"],
+      ["runProcessor", "EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER"],
+      ["runPhase", "P1_CYCLE_BREAKING", "GREEDY"],
+      ["runProcessor", "LAYER_CONSTRAINT_PREPROCESSOR"],
+      ["runPhase", "P2_LAYERING", "NETWORK_SIMPLEX"],
+      ["runProcessor", "LAYER_CONSTRAINT_POSTPROCESSOR"],
+      ["runProcessor", "LONG_EDGE_SPLITTER"],
+      ["runProcessor", "PORT_SIDE_PROCESSOR"],
+      ["runProcessor", "INVERTED_PORT_PROCESSOR"],
+      ["runProcessor", "PORT_LIST_SORTER"],
+      ["runProcessor", "SORT_BY_INPUT_ORDER_OF_MODEL"],
+      ["runProcessor", "SORT_BY_INPUT_ORDER_OF_MODEL"],
+      ["dump"]
+    ]
+  },
+  {
+    "id": "sites/ModelOrderNodeComparator/targetFeedbackPair",
+    "kind": "order",
+    "elk": {
+      "id": "root",
+      "layoutOptions": { "considerModelOrder.strategy": "NODES_AND_EDGES" },
+      "children": [
+        { "id": "a", "width": 30, "height": 30 },
+        { "id": "b", "width": 30, "height": 30 },
+        {
+          "id": "x",
+          "width": 30,
+          "height": 30,
+          "layoutOptions": { "portConstraints": "FIXED_SIDE" },
+          "ports": [
+            { "id": "x.p0", "width": 4, "height": 4, "layoutOptions": { "port.side": "EAST" } },
+            { "id": "x.p1", "width": 4, "height": 4, "layoutOptions": { "port.side": "EAST" } }
+          ]
+        },
+        { "id": "s1", "width": 30, "height": 30 },
+        { "id": "s2", "width": 30, "height": 30 },
+        { "id": "f0", "width": 30, "height": 30 },
+        { "id": "f1", "width": 30, "height": 30 },
+        { "id": "f2", "width": 30, "height": 30 },
+        { "id": "f3", "width": 30, "height": 30 },
+        { "id": "f4", "width": 30, "height": 30 }
+      ],
+      "edges": [
+        { "id": "e0", "sources": ["a"], "targets": ["b"] },
+        { "id": "e1", "sources": ["b"], "targets": ["x"] },
+        { "id": "e2", "sources": ["s1"], "targets": ["x.p0"] },
+        { "id": "e3", "sources": ["s2"], "targets": ["x.p1"] }
+      ]
+    },
+    "target": null,
+    "steps": [
+      ["importGraph", null],
+      ["normalise"],
+      ["layers", [["g0/n0"], ["g0/n1"], ["g0/n2"], ["g0/n3", "g0/n4"]]],
+      ["runProcessor", "LONG_EDGE_SPLITTER"],
+      ["runProcessor", "PORT_SIDE_PROCESSOR"],
+      ["runProcessor", "INVERTED_PORT_PROCESSOR"],
+      ["runProcessor", "PORT_LIST_SORTER"],
+      ["runProcessor", "SORT_BY_INPUT_ORDER_OF_MODEL"],
+      ["dump"]
+    ]
+  },
+  {
+    "id": "sites/ModelOrderPortComparator/westLongEdgeSources",
+    "kind": "order",
+    "elk": {
+      "id": "root",
+      "layoutOptions": { "considerModelOrder.strategy": "NODES_AND_EDGES" },
+      "children": [
+        {
+          "id": "t",
+          "width": 30,
+          "height": 30,
+          "layoutOptions": { "portConstraints": "FIXED_SIDE" },
+          "ports": [
+            { "id": "t.p0", "width": 4, "height": 4, "layoutOptions": { "port.side": "WEST" } },
+            { "id": "t.p1", "width": 4, "height": 4, "layoutOptions": { "port.side": "WEST" } }
+          ]
+        },
+        {
+          "id": "w",
+          "width": 30,
+          "height": 30,
+          "layoutOptions": { "portConstraints": "FIXED_SIDE" },
+          "ports": [
+            { "id": "w.p0", "width": 4, "height": 4, "layoutOptions": { "port.side": "WEST" } },
+            { "id": "w.p1", "width": 4, "height": 4, "layoutOptions": { "port.side": "WEST" } }
+          ]
+        },
+        { "id": "f0", "width": 30, "height": 30 },
+        { "id": "f1", "width": 30, "height": 30 },
+        { "id": "f2", "width": 30, "height": 30 },
+        { "id": "f3", "width": 30, "height": 30 },
+        { "id": "f4", "width": 30, "height": 30 },
+        { "id": "f5", "width": 30, "height": 30 },
+        { "id": "f6", "width": 30, "height": 30 },
+        { "id": "f7", "width": 30, "height": 30 }
+      ],
+      "edges": [
+        { "id": "e0", "sources": ["w.p0"], "targets": ["t.p0"] },
+        { "id": "e1", "sources": ["w.p1"], "targets": ["t.p1"] }
+      ]
+    },
+    "target": null,
+    "steps": [
+      ["importGraph", null],
+      ["normalise"],
+      ["layers", [["g0/n0"], ["g0/n1"]]],
+      ["runProcessor", "LONG_EDGE_SPLITTER"],
+      ["runProcessor", "PORT_SIDE_PROCESSOR"],
+      ["runProcessor", "INVERTED_PORT_PROCESSOR"],
+      ["runProcessor", "PORT_LIST_SORTER"],
+      ["runProcessor", "SORT_BY_INPUT_ORDER_OF_MODEL"],
+      ["dump"]
+    ]
+  },
+  {
+    "id": "sites/ModelOrderPortComparator/edgesWithoutModelOrder",
+    "kind": "order",
+    "elk": {
+      "id": "root",
+      "children": [
+        {
+          "id": "T",
+          "width": 300,
+          "height": 200,
+          "layoutOptions": { "portConstraints": "FIXED_SIDE" },
+          "ports": [
+            { "id": "T.p0", "width": 4, "height": 4, "layoutOptions": { "port.side": "EAST" } },
+            { "id": "T.p1", "width": 4, "height": 4, "layoutOptions": { "port.side": "EAST" } }
+          ],
+          "children": [
+            {
+              "id": "c",
+              "width": 30,
+              "height": 30,
+              "layoutOptions": { "portConstraints": "FIXED_SIDE" },
+              "ports": [
+                { "id": "c.p0", "width": 4, "height": 4, "layoutOptions": { "port.side": "EAST" } },
+                { "id": "c.p1", "width": 4, "height": 4, "layoutOptions": { "port.side": "EAST" } }
+              ]
+            },
+            { "id": "f0", "width": 30, "height": 30 },
+            { "id": "f1", "width": 30, "height": 30 },
+            { "id": "f2", "width": 30, "height": 30 },
+            { "id": "f3", "width": 30, "height": 30 },
+            { "id": "f4", "width": 30, "height": 30 },
+            { "id": "f5", "width": 30, "height": 30 },
+            { "id": "f6", "width": 30, "height": 30 }
+          ],
+          "edges": [
+            { "id": "e0", "sources": ["c.p0"], "targets": ["T.p0"] },
+            { "id": "e1", "sources": ["c.p1"], "targets": ["T.p1"] }
+          ]
+        }
+      ]
+    },
+    "target": "T",
+    "steps": [
+      ["importGraph", "T"],
+      [
+        "setProperty",
+        "g0",
+        "org.eclipse.elk.layered.considerModelOrder.strategy",
+        { "c": "OrderingStrategy", "n": "NODES_AND_EDGES", "t": "enum" }
+      ],
+      ["normalise"],
+      ["runProcessor", "EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER"],
+      ["runPhase", "P1_CYCLE_BREAKING", "GREEDY"],
+      ["runProcessor", "LAYER_CONSTRAINT_PREPROCESSOR"],
+      ["runPhase", "P2_LAYERING", "NETWORK_SIMPLEX"],
+      ["runProcessor", "LAYER_CONSTRAINT_POSTPROCESSOR"],
+      ["runProcessor", "HIERARCHICAL_PORT_CONSTRAINT_PROCESSOR"],
+      ["runProcessor", "LONG_EDGE_SPLITTER"],
+      ["runProcessor", "PORT_SIDE_PROCESSOR"],
+      ["runProcessor", "INVERTED_PORT_PROCESSOR"],
+      ["runProcessor", "PORT_LIST_SORTER"],
+      ["runProcessor", "SORT_BY_INPUT_ORDER_OF_MODEL"],
+      ["dump"]
+    ]
+  }
+]

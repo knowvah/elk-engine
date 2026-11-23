@@ -3277,3 +3277,79 @@ functions, no violation line). Coverage, full suite, one run: 1,193 files, 49,55
 base. `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry.
 Gate 7: the metrics recorder rerun reproduces the committed ref byte for byte, and
 `git diff --stat 32ca890e -- test/golden/refs/` shows `layered-label-metrics.json` only.
+
+## Revision 2026-11-23 (layered-arm-search)
+
+Queue mission for issue #59, on `chore/issue-queue` (plan and journal in `plans/layered-arm-search/`). It carries out
+the maintainer's ruling of 2026-11-13: a constructive search for the 25 branch arms that 7h could neither reach nor prove
+dead (six of the north/south routing strategies, handed over by 7g; 19 of crossing minimisation, handed over by 7c as
+C3). No file under `src/` or `test/` changed, no recorder and no ref changed, and no oracle patch or pin changed. Oracle:
+`8bca22f4` + patches 0001-0004 (built 2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over
+alg.layered and core is empty.
+
+**1. Every arm has one outcome.** `plans/layered-compound/unreached.md` § "Search outcomes (issue #59,
+layered-arm-search)" (appended; § Open is as it was): reached through layout 8, reached by a site scenario only 9,
+proven dead 8, unreached and not proven dead 0.
+
+| Group | Arms | Through layout | Site scenario only | Proven dead |
+| ----- | ---: | -------------: | -----------------: | ----------: |
+| North/south routing strategies | 6 | 6 | 0 | 0 |
+| Model-order comparators (node and port) | 11 | 1 | 9 | 1 |
+| Barycenter and Forster | 8 | 1 | 0 | 7 |
+
+- North/south: a hierarchical north or south port connected in several layers. Two such ports whose segments conflict
+  both ways give a split segment (`:38 if[0]`, `:78 if[0]` of both strategies); one port 5e-4 from a layer dummy gives
+  the straight edge (`:58 if[1]`).
+- Model order: a node with `considerModelOrder.noModelOrder` reaches `ModelOrderPortComparator.ts:148 if[1]` in a normal
+  layout. Nine arms need constructed state (a hand-placed layering against the edges, the strategy set after the import,
+  the sort run twice); each carries the reason no real layout produces it.
+  `ModelOrderNodeComparatorHelperDummies.ts:178 if[1]` is dead.
+- Barycenter and Forster: `ForsterConstraintResolver.ts:323 if[0]` is reached by a graph in which a filled-in barycenter
+  and a merged group's mean are the same double. `AbstractBarycenterPortDistributor.ts:272 if[1]`, the five
+  transitive-order arms of `ModelOrderBarycenterHeuristic.ts` and `ForsterConstraintResolverConstraintGroup.ts:115 if[0]`
+  are dead, each by an invariant of the Java that holds in the port as well.
+
+The search took 8, 49 and 35 minutes of the 4 h each group had. Every hit was re-run by the orchestrator on an
+instrumented scratch copy of the oracle and in the port, and every proof was read against the Java lines it cites.
+
+**2. The rows are withheld (issue #156, `needs-ruling`).** The 17 reached arms were recorded as ten oracle rows: six in
+`layered-order.json` (`scenarios/ModelOrderPortComparator/noModelOrderPorts`,
+`sites/ModelOrderNodeComparator/{sourceThenTargetFeedback,targetFeedbackPair}`,
+`sites/ModelOrderPortComparator/{westLongEdgeSources,edgesWithoutModelOrder}`,
+`scenarios/ForsterConstraintResolver/equalFloatBarycenter`) and four in `layered-compound.json`
+(`sites/HierarchicalPortOrthogonalEdgeRouter/{splitSegment,straightEdge}/{north,south}`). Every row replayed at the AD-4
+bar, the id-keyed diff showed every base row byte-identical (27,961 and 95,477 bytes of new rows), and the per-row arm
+check found every one of the 17 arms taken by its row. The full suite then had three failures, none a replay: three
+existing tests pin exact lists of row ids (`SortByInputModelProcessor.test.ts:81`,
+`LayerSweepCrossingMinimizer.test.ts:152`, `LayeredCompoundTwins.test.ts:285`), and each new row joins one of them.
+Extending a pinned list is an AD-13 decision, so the recorders, the refs, the arm tables, the tool flags and the new
+structural test went back to the base, and the mission finished the rest. The work is kept in
+`plans/layered-arm-search/withheld/record-rows.patch` (with the list extensions, 13 lines, which a scratch copy of the
+tree shows to be sufficient: the three test files pass) and in the per-task history under the tag
+`layered-arm-search/pre-squash`. Until #156 is ruled, the 17 arms have a candidate and no oracle row.
+
+**3. Tools.** `tools/arm-search/`: the 25 arms as data, a coverage count of them over the landed evidence, a TypeScript
+screen that replays candidate inputs with coverage, and `instrument.sh`, which copies Java sources out of the oracle
+worktree, compiles the copies with logging lines and puts them in front of the oracle jars (the oracle is only read; the
+patches kept there are not oracle patches). Per group: a deterministic generator, its candidates, the instrumentation
+patch and the proofs.
+
+**Docs.** `docs/conformance.md` (part i: the paragraph on the 25 arms with every dead arm, its class and its reason; one
+sentence each in the coverage-map bullet and in 7c's unreached-arms bullet), `docs/architecture/alg-layered-compound.md`
+§ 9, one sentence in `docs/architecture/alg-layered-loops.md`, and one closing row in each of
+`plans/layered-crossing-min-tests/decision-journal.md` (C3), `plans/layered-loops-wrapping-compaction/decision-journal.md`
+(the 7g hand-off) and `plans/layered-compound/decision-journal.md` (stop 8). Notes: `.agent-notes/layered-arm-search.md`.
+
+**Issues filed.** #156 (`needs-ruling`): may the three pinned row-id lists be extended so that the ten rows land.
+#157 (`follow-up`): six entries of `test/helpers/layered-compound-site-arms.json` name lines without a branch since
+`553aaf72` moved `CompoundGraphPreprocessorSegments.ts` by one line, so `compound-site-arms.mjs` exits 1 over the whole
+table. #158 (`follow-up`): `compareOrderFullDump` lacks the `Map`/`HashMap` class twin that `compareOrder` has, which is
+why the constructed candidates carry filler nodes up to ten.
+
+**Gates (queue gates 1-7, 2026-11-23, on the final tree).** `format:check`, `typecheck`, `complexity` exit 0 (1,377
+files, 10,729 functions under `src`, no violation line; `tools/arm-search` checked separately, 45 functions, none over a
+limit). Coverage, full suite, one run: 1,193 files, 49,557 tests passed, 83 skipped, 0 failed; statements 98.81 %,
+branches 97.01 %, functions 98.56 %, lines 98.86 %, all as at the base (no test changed). `docs:build` exit 0 with 200
+typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry. Gate 7:
+`git diff --exit-code b5f98d63 -- test/golden/refs/` is clean, and cold reruns of the order and compound recorders
+reproduce the committed refs byte for byte.

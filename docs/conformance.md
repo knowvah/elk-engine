@@ -1261,7 +1261,9 @@ by the user). Two replay-helper gaps, not port defects: the 7c order dump omitte
 - **Randomness scope (C4):** INTERACTIVE and semi-interactive rows replay the seeded positions of the Java test
   configurators; sweep cases use the positions the models carry on disk.
 - **Unreached arms with a named mechanism:** 20 arms no recorded graph reaches (`plans/layered-crossing-min/unreached.md`
-  § T11 corrections, with the scans that failed), kept as U.
+  § T11 corrections, with the scans that failed), kept as U. The 19 of them that went to issue #59 by way of 7h are
+  settled since mission layered-arm-search: 2 reached through layout, 9 by a site scenario only, 8 proven dead (part i,
+  "The 25 handed-over arms").
 - **`Integer` cache assumption:** as in part b (`ModelOrderBarycenterHeuristic.java:90-91`).
 - **Prose typos corrected:** none found in this mission.
 
@@ -1733,7 +1735,9 @@ a dated note; this section states the state after 7h: the enum tally is **59 por
   site has at most 6 keys. The order a treeified bucket would use is not established.
 - Coverage map `plans/layered-compound/unreached.md`: in-scope untaken items S 43, J 31, U 187, open 26 (E 721 not listed);
   7h classes from the whole compound evidence 99.6 % statements, 98.0 % branches, 100 % functions, 99.6 % lines (the five
-  untaken arms are dead by the Java). 16 site scenarios (`Sc1`-`Sc16`) plus 17 H8 closure rows. 42 anchored cases.
+  untaken arms are dead by the Java). 16 site scenarios (`Sc1`-`Sc16`) plus 17 H8 closure rows. 42 anchored cases. Of the
+  26 open items, `CrossHierarchyEdge.toString` was closed in 7h and the 25 arms were settled by mission layered-arm-search
+  (issue #59; the paragraph on the 25 handed-over arms below).
 - Mutation checks (T15): 206 mutants in scratch copies of the worktree; the replay stage killed 168, class tests and twins 17
   more, 21 survived. The survivors are equivalent mutants, or reached but not observed by any recorded field; the latter are
   follow-up issue #60 with probe-verified oracle graphs. The anchored files alone kill 129 of the 206.
@@ -1761,8 +1765,47 @@ U3: `FIXED_RATIO` with a hierarchical port throws `NullPointerException` at `LGr
 [#1210](https://github.com/eclipse-elk/elk/pull/1210), followed since the `e7eaea57` pin, #99) and U5 (`moveExternalPorts`, `HierarchicalNodeResizingProcessor.java:207-220`,
 is overwritten for every nested graph) are oddities the port keeps. Nothing is filed upstream.
 
-**Open arms (issue #59, `needs-ruling`).** 25 arms handed over by earlier missions are neither reached nor proven dead: six of
-`NorthToSouthRoutingStrategy`/`SouthToNorthRoutingStrategy` and 19 of 7c's list. They stay as they are.
+**The 25 handed-over arms (issue #59), settled by mission layered-arm-search (2026-11-23).** The six arms of
+`NorthToSouthRoutingStrategy`/`SouthToNorthRoutingStrategy` and the 19 arms of 7c's list were searched constructively: each
+guard was written out from the Java, and then an input was built backward from it or an invariant was found that excludes
+it. Each arm has one outcome in `plans/layered-compound/unreached.md` § "Search outcomes (issue #59, layered-arm-search)":
+reached through layout 8, reached by a site scenario only 9, proven dead 8, unreached and not proven dead 0. The arms stay
+ported verbatim; no production file changed.
+
+- **Reached (17 arms), rows withheld.** Every reached arm has a candidate input under `tools/arm-search/`, built by a
+  deterministic generator, that takes the arm on an instrumented copy of the oracle and in the port. The candidates were
+  recorded once as ten oracle rows (six in `layered-order.json`, four in `layered-compound.json`), and each row replayed at
+  the AD-4 bar. The rows are not in the refs: three existing tests pin exact lists of row ids that the new rows join, and
+  extending those lists waits for a ruling (issue #156, `needs-ruling`; the recorder entries are kept in
+  `plans/layered-arm-search/withheld/record-rows.patch`). Until then these 17 arms have no oracle row.
+  - North/south routing, through layout: `NorthToSouthRoutingStrategy.ts` and `SouthToNorthRoutingStrategy.ts` `:38 if[0]`
+    and `:78 if[0]` (candidates `sites/HierarchicalPortOrthogonalEdgeRouter/splitSegment/{north,south}`: two ports whose
+    segments conflict both ways, so one is split) and `:58 if[1]` (`…/straightEdge/{north,south}`: a port 5e-4 from one of
+    its layer dummies).
+  - Model-order comparators: `ModelOrderPortComparator.ts:148 if[1]` through layout
+    (`scenarios/ModelOrderPortComparator/noModelOrderPorts`: a node with `considerModelOrder.noModelOrder`). By a site
+    scenario only, each with the reason no real layout produces its state: `ModelOrderNodeComparatorHelperDummies.ts`
+    `:120 if[1]`, `:172 if[0]` and `binary-expr[1]`, `:175 if[1]`, `:178 if[0]` and `binary-expr[0,1]`
+    (`sites/ModelOrderNodeComparator/{sourceThenTargetFeedback,targetFeedbackPair}`),
+    `ModelOrderPortComparatorIncoming.ts:157 if[1]` (`sites/ModelOrderPortComparator/westLongEdgeSources`) and
+    `ModelOrderPortComparatorOutgoing.ts:107 if[1]` (`…/edgesWithoutModelOrder`).
+  - Forster: `ForsterConstraintResolver.ts:323 if[0]` through layout
+    (`scenarios/ForsterConstraintResolver/equalFloatBarycenter`: a filled-in barycenter and a merged group's mean are the
+    same double).
+- **Proven dead (8 arms), each from the Java text, none resting on JVM sort order, hash order or float rounding:**
+  - `ModelOrderNodeComparatorHelperDummies.ts:178 if[1]` (class `ModelOrderNodeComparator`, `:456` false): a long-edge
+    dummy that is neither a source nor a target feedback dummy cannot share a reference node with another dummy, because
+    every dummy before the sort has exactly one incoming and one outgoing edge (`LongEdgeSplitter.java:116`,
+    `InvertedPortProcessor.java:183,253`).
+  - `AbstractBarycenterPortDistributor.ts:272 if[1]` (`AbstractBarycenterPortDistributor.java:270`): `inLayerPorts` only
+    ever holds `EAST` or `WEST` ports (`:89`, `:155`, `:189-216`), for any graph state.
+  - `ModelOrderBarycenterHeuristic.ts` `:77`, `:179`, `:184`, `:189`, `:194 if[0]` (`ModelOrderBarycenterHeuristic.java:76`,
+    `:152-167`): the comparator runs only inside the class's insertion sort, which starts with empty maps, and no recorded
+    relation ever holds between a pivot and the prefix element it is compared with.
+  - `ForsterConstraintResolverConstraintGroup.ts:115 if[0]` (class `ForsterConstraintResolver`, `:427`): a merged pair
+    `(P, G)` has `P` processed before `G`, and `G → P` would need the reverse; a group is processed once per round and only
+    after every predecessor (the incoming-count invariant of `:197-213`, `:332-340`, `:422-435`).
+- **Unreached, not proven dead:** none.
 
 **Upstream typos (CLAUDE.md carve-out).** None: the journal records no prose typo in the 7h sources.
 

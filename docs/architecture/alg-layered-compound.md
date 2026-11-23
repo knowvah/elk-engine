@@ -361,10 +361,14 @@ resizer stop differs (EAST (288,18) against (132,18)), the export does not. The 
 ## 9. Unreached, unobserved, copied oddities {#part-i-gaps}
 
 **Unreached.** `plans/layered-compound/unreached.md` partitions the untaken items of the 7h classes, the driver files and the
-C3 files (S, J, U, open, E; the classes are defined at its head). The 25 handed-over arms that are neither reached nor proven
-dead are issue #59 (`needs-ruling`): six arms of `NorthToSouthRoutingStrategy`/`SouthToNorthRoutingStrategy` (`:38 if[0]`,
-`:58 if[1]`, `:78 if[0]`; H8 (3)) and 19 arms of 7c's list (H8 (4)). They stay as they are. `CrossHierarchyEdge.toString`, the
-26th open item, is closed: the logged site row calls it 216 times and the text equals the oracle's.
+C3 files (S, J, U, open, E; the classes are defined at its head). At the end of 7h, 25 handed-over arms were neither reached
+nor proven dead (issue #59): six arms of `NorthToSouthRoutingStrategy`/`SouthToNorthRoutingStrategy` (`:38 if[0]`,
+`:58 if[1]`, `:78 if[0]`; H8 (3)) and 19 arms of 7c's list (H8 (4)). Mission layered-arm-search settled them
+(`unreached.md` § "Search outcomes"): 8 are reached through layout (the six routing arms among them), 9 by a site scenario
+only, 8 are proven dead, none stays open. The inputs are under `tools/arm-search/`; their ten oracle rows are recorded but
+withheld until issue #156 is ruled, because three tests pin lists of row ids ([conformance.md](../conformance.md#alg-layered-compound)).
+The arms stay ported verbatim. `CrossHierarchyEdge.toString`, the 26th open item, is closed: the logged site row calls it
+216 times and the text equals the oracle's.
 
 **Oracle throws the port reproduces (issue #61).** The port throws where the oracle throws, in the same method:
 (U1) `edgeRouting=SPLINES` in direction `DOWN` or `UP` under `INCLUDE_CHILDREN` throws `NullPointerException` at

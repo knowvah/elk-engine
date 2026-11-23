@@ -1,0 +1,66 @@
+--- a/LayeredOrderVectors.java
++++ b/LayeredOrderVectors.java
+@@ -2529,8 +2529,63 @@
+         SCENARIOS = out;
+         orderScenarios();
+         siteScenarios();
++        moCandidates();
+     }
+ 
++    /** Scratch (T3 arm search): appends the order candidates of the JSON file named by MO_CANDIDATES. */
++    static void moCandidates() {
++        String file = System.getenv("MO_CANDIDATES");
++        if (file == null) {
++            return;
++        }
++        try {
++            JsonArray arr = JsonParser.parseString(Files.readString(Path.of(file))).getAsJsonArray();
++            for (JsonElement e : arr) {
++                JsonObject c = e.getAsJsonObject();
++                if (!"order".equals(c.get("kind").getAsString())) {
++                    continue;
++                }
++                String id = c.get("id").getAsString();
++                String elk = c.get("elk").toString();
++                String target = c.has("target") && !c.get("target").isJsonNull() ? c.get("target").getAsString() : null;
++                List<Object> st = new ArrayList<>();
++                for (JsonElement step : c.get("steps").getAsJsonArray()) {
++                    st.add(moValue(step));
++                }
++                String group = id.startsWith("sites/") ? "sites" : "scenarios";
++                SCENARIOS.add(new Spec(id, group, null, () -> ElkGraphJson.forGraph(elk).toElk(), target, new TreeMap<>(), null, st));
++            }
++        } catch (IOException ex) {
++            throw new RuntimeException(ex);
++        }
++    }
++
++    static Object moValue(JsonElement e) {
++        if (e.isJsonNull()) {
++            return null;
++        } else if (e.isJsonArray()) {
++            List<Object> l = new ArrayList<>();
++            for (JsonElement x : e.getAsJsonArray()) {
++                l.add(moValue(x));
++            }
++            return l;
++        } else if (e.isJsonObject()) {
++            Map<String, Object> m = new LinkedHashMap<>();
++            for (Map.Entry<String, JsonElement> en : e.getAsJsonObject().entrySet()) {
++                m.put(en.getKey(), moValue(en.getValue()));
++            }
++            return m;
++        }
++        JsonPrimitive p = e.getAsJsonPrimitive();
++        if (p.isBoolean()) {
++            return p.getAsBoolean();
++        } else if (p.isNumber()) {
++            double d = p.getAsDouble();
++            return d == Math.rint(d) && Math.abs(d) < 1e9 ? (Object) (int) d : (Object) d;
++        }
++        return p.getAsString();
++    }
++
+     // ------------------------------------------------------------------------------------------------------------
+     // Sweep and dump modes (mission 7c, T10, B6): the breadth of the Java tests over every ptolemy model, hashed. The
+     // recording path above and below is untouched; main branches here only when the first argument starts with "--".

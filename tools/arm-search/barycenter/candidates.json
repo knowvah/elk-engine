@@ -1,0 +1,44 @@
+[
+  {
+    "id": "scenarios/ForsterConstraintResolver/equalFloatBarycenter",
+    "kind": "order",
+    "elk": {
+      "id": "root",
+      "layoutOptions": {
+        "org.eclipse.elk.layered.crossingMinimization.semiInteractive": "true",
+        "org.eclipse.elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+        "org.eclipse.elk.separateConnectedComponents": "false",
+        "org.eclipse.elk.randomSeed": "1"
+      },
+      "children": [
+        { "id": "u2", "width": 30, "height": 30 },
+        { "id": "u1", "width": 30, "height": 30 },
+        { "id": "p", "width": 30, "height": 30, "layoutOptions": { "org.eclipse.elk.position": "(0.0,0.0)" } },
+        { "id": "x", "width": 30, "height": 30, "layoutOptions": { "org.eclipse.elk.position": "(0.0,20.0)" } },
+        { "id": "g", "width": 30, "height": 30, "layoutOptions": { "org.eclipse.elk.position": "(0.0,10.0)" } },
+        { "id": "w", "width": 30, "height": 30 }
+      ],
+      "edges": [
+        { "id": "e0", "sources": ["u2"], "targets": ["g"] },
+        { "id": "e1", "sources": ["u1"], "targets": ["p"] },
+        { "id": "e2", "sources": ["x"], "targets": ["w"] },
+        { "id": "e3", "sources": ["p"], "targets": ["w"] },
+        { "id": "e4", "sources": ["g"], "targets": ["w"] }
+      ]
+    },
+    "target": null,
+    "steps": [
+      ["importGraph", null],
+      ["normalise"],
+      ["runPhase", "P1_CYCLE_BREAKING", "GREEDY"],
+      ["runPhase", "P2_LAYERING", "NETWORK_SIMPLEX"],
+      ["runProcessor", "SEMI_INTERACTIVE_CROSSMIN_PROCESSOR"],
+      ["runProcessor", "LONG_EDGE_SPLITTER"],
+      ["runProcessor", "PORT_SIDE_PROCESSOR"],
+      ["runProcessor", "PORT_LIST_SORTER"],
+      ["runProcessor", "SORT_BY_INPUT_ORDER_OF_MODEL"],
+      ["runPhase", "P3_NODE_ORDERING", "LAYER_SWEEP"],
+      ["dump"]
+    ]
+  }
+]

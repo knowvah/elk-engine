@@ -282,7 +282,8 @@ settled: `EndLabelPreprocessor.ts:145` is reached by `sites/EndLabelPreprocessor
 settled too: `NorthSouthPortPostprocessor.processSelfLoop` is reached by `scenarios/DummySelfLoopProcessor/NORTH-NORTH/RIGHT/end`,
 the orthogonal router's self loop arm by `…/EAST-EAST/RIGHT/end`, and the far arms of `segmentAllowsSloppyRouting` are
 reached. The `NorthToSouth`/`SouthToNorth` routing strategy arms run only from the hierarchical port router; mission 7h's rows do not
-reach `:38 if[0]`, `:58 if[1]` and `:78 if[0]` either, and they are open in issue #59.
+reach `:38 if[0]`, `:58 if[1]` and `:78 if[0]` either; they went to issue #59, where mission layered-arm-search reached all
+six through layout (a split segment and a straight edge on a north or south hierarchical port; the rows wait for issue #156).
 `NubsSelfLoop` has no caller in ELK: U.
 Mission layered-loops-evidence (issue #55) reclassified `Sc28` and `SplineEdgeRouterSegments.ts:137 if[1]`: the hull arms
 are unreachable for the hulls `RectilinearConvexHull.of` builds (proofs and a measured comparator call order; one of them
