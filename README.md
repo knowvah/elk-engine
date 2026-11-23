@@ -68,8 +68,7 @@ Defaults are relative to the repository root.
 
 The site is published at <https://elk-engine.knowvah.com>.
 
-Two pages document a **proposed** export surface that is not published yet (see
-[`docs/architecture/public-api.md`](docs/architecture/public-api.md)):
+Two pages document the export surface ([`docs/architecture/public-api.md`](docs/architecture/public-api.md)):
 [Getting started](https://elk-engine.knowvah.com/guide/getting-started), whose examples CI runs against the oracle, and
 the generated [API reference](https://elk-engine.knowvah.com/reference/).
 

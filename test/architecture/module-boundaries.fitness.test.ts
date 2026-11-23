@@ -24,6 +24,10 @@ const EQUINOX_DIR = `${TS_ROOT}/equinox`;
 const GSON_DIR = `${TS_ROOT}/gson`;
 const XTEXT_DIR = `${TS_ROOT}/xtext`;
 const INDEX_FILE = `${TS_ROOT}/index.ts`;
+/** The async entry point (npm-1-0-release N3): wires every algorithm bundle and the ELK JSON adapter, like the index. */
+const LAYOUT_FILE = `${TS_ROOT}/layout.ts`;
+/** Composition roots: sources that may import any bundle, and that belong to none. */
+const COMPOSITION_ROOTS: readonly string[] = [INDEX_FILE, LAYOUT_FILE];
 const TEST_SUFFIX = '.test.ts';
 const TS_SUFFIX = '.ts';
 const JS_SUFFIX = '.js';
@@ -38,7 +42,7 @@ const JS_SUFFIX = '.js';
  * - org.eclipse.equinox.common -> src/equinox (only OperationCanceledException, thrown by Xtext's
  *   OperationCanceledManager; text-follow-ups D7)
  * - org.antlr.runtime -> no directory (G6: lexer/parser are hand-written)
- * Only the graph.text, graph.json.text and core.debug.grandom bundles require Xtext; src/index.ts stays exempt.
+ * Only the graph.text, graph.json.text and core.debug.grandom bundles require Xtext; src/index.ts and src/layout.ts stay exempt.
  */
 const XTEXT_CLIENT_BUNDLES: readonly string[] = ['src/graph/text', 'src/graph/json/text', 'src/core/debug/grandom'];
 
@@ -134,7 +138,7 @@ function violationFor(file: string, target: string, deps: BundleDeps): string | 
 
 /** Boundary violations for one file's source text (repo-relative `file`). */
 export function checkFile(file: string, source: string, deps: BundleDeps): string[] {
-  if (file === INDEX_FILE) {
+  if (COMPOSITION_ROOTS.includes(file)) {
     return [];
   }
   return extractRelativeSpecifiers(source)
@@ -154,7 +158,7 @@ function listSourceFiles(dir: string): string[] {
 
 function unmappedFile(file: string, deps: BundleDeps): string | undefined {
   const exempt =
-    file === INDEX_FILE ||
+    COMPOSITION_ROOTS.includes(file) ||
     isUnder(file, JAVA_DIR) ||
     isUnder(file, GUAVA_DIR) ||
     isUnder(file, EMF_DIR) ||
@@ -302,6 +306,12 @@ describe('boundary self-checks', () => {
 
   it('exempts src/index.ts as a source', () => {
     expect(checkFile('src/index.ts', "export * from './mystery/B.js';", committed)).toEqual([]);
+  });
+
+  it('exempts src/layout.ts as a source, and no other root file', () => {
+    expect(checkFile('src/layout.ts', "import { A } from './alg/layered/A.js';", committed)).toEqual([]);
+    expect(unmappedFile('src/layout.ts', committed)).toBeUndefined();
+    expect(unmappedFile('src/other.ts', committed)).toBe('src/other.ts: unmapped directory');
   });
 
   it('flags files in directories that belong to no bundle', () => {

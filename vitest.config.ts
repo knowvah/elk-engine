@@ -2,9 +2,9 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
-// The package name resolves to the proposed entry module until the maintainer accepts the export surface
-// (docs/architecture/public-api.md, "On acceptance"); tsconfig.json `paths` holds the same mapping.
-const PACKAGE_ENTRY = fileURLToPath(new URL('./test/public-api/candidate-index.ts', import.meta.url));
+// The package name resolves to the entry module, as tsconfig.json `paths` does, so tests and examples import it the
+// way a consumer does.
+const PACKAGE_ENTRY = fileURLToPath(new URL('./src/index.ts', import.meta.url));
 
 export default defineConfig({
   resolve: {

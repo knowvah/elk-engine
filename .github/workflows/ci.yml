@@ -64,12 +64,6 @@ jobs:
       # tests, plans or docs), installs it offline into a clean project and
       # imports it by package name.
       - run: npm run pack:smoke
-      # The same with the proposed entry module bundled as `build:js` would
-      # bundle it: the clean project lays out a documentation example and the
-      # result must equal its oracle ref. Guards the entry's import order
-      # inside a bundle. Drop this step once src/index.ts holds the accepted
-      # surface (docs/architecture/public-api.md, "On acceptance").
-      - run: npm run pack:smoke -- --entry test/public-api/candidate-index.ts
       # PR gate for the docs site: locale completeness, dead links, and the
       # generated showcase and parity pages all fail the build. `docs:build`
       # runs `docs:api` first: it installs tools/typedoc (TypeScript 6, for

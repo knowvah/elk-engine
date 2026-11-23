@@ -1,7 +1,7 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "name": "@knowvah/elk-engine",
-  "entryPoints": ["../../test/public-api/candidate-index.ts"],
+  "entryPoints": ["../../src/index.ts"],
   "tsconfig": "tsconfig.json",
   "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
   "out": "../../docs-site/reference",

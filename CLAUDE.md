@@ -132,7 +132,7 @@ vectors (`tools/vectors/JavaVectors.java`).
 - **YAGNI, strictly**: add no APIs, options, or patterns the Java does not
   have. The public contract is the ElkGraph object model plus `ElkGraphUtil`
   factories; ELK JSON is an I/O adapter; idiomatic wrappers are a separate later
-  layer (AD-14). `src/java/*` is internal; `src/index.ts` exports nothing yet.
+  layer (AD-14). `src/java/*` is internal; `src/index.ts` exports the accepted surface (`docs/architecture/public-api.md`, 72 exports, frozen at 1.0.0): the Java-named model, engine, options and ELK JSON adapter, plus the one port-local async `layout(json, options?)` (N3 of `plans/npm-1-0-release/decisions.md`).
 - Architecture overview: [`docs/architecture/overview.md`](docs/architecture/overview.md).
   Conformance detail: [`docs/conformance.md`](docs/conformance.md).
 

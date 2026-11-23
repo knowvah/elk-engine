@@ -24,6 +24,7 @@ const EN_SIDEBAR: SidebarGroup[] = [
   {
     text: 'Guide',
     items: [
+      { text: 'Getting started', link: '/guide/getting-started' },
       { text: 'Overview', link: '/guide/overview' },
       { text: 'Architecture', link: '/guide/architecture' },
       { text: 'Java foundations', link: '/guide/java-foundations' },
@@ -33,6 +34,7 @@ const EN_SIDEBAR: SidebarGroup[] = [
   {
     text: 'Reference',
     items: [
+      { text: 'API reference', link: '/reference/' },
       { text: 'Translation rules', link: '/guide/translation-rules' },
       { text: 'Collections rules', link: '/guide/collections-rules' },
       { text: 'Port map', link: '/guide/port-map' },
@@ -92,6 +94,8 @@ describe('navFor / sidebarFor', () => {
     const links = sidebarFor('/xx', XX_UI).flatMap((g) => g.items);
     const unprefixed = links.filter((i) => !i.link.startsWith('/xx/'));
     expect(unprefixed.map((i) => i.link)).toEqual([
+      '/guide/getting-started',
+      '/reference/',
       '/guide/translation-rules',
       '/guide/collections-rules',
       '/guide/port-map',
@@ -99,7 +103,7 @@ describe('navFor / sidebarFor', () => {
       '/guide/roadmap',
       '/parity',
     ]);
-    expect(unprefixed.map((i) => i.text.endsWith('(Inglish)'))).toEqual([true, true, true, true, true, true]);
+    expect(unprefixed.map((i) => i.text.endsWith('(Inglish)'))).toEqual(unprefixed.map(() => true));
     expect(links.filter((i) => i.link.startsWith('/xx/')).every((i) => !i.text.endsWith('(Inglish)'))).toBe(true);
     expect(links.find((i) => i.link === '/xx/conformance')?.text).toBe('Conformance');
   });
@@ -107,6 +111,8 @@ describe('navFor / sidebarFor', () => {
   it('reproduces the English nav exactly for the root', () => {
     expect(navFor('', EN)).toEqual([
       { text: 'Guide', link: '/guide/overview' },
+      { text: 'Getting started', link: '/guide/getting-started' },
+      { text: 'API reference', link: '/reference/' },
       { text: 'Reference', link: '/guide/translation-rules' },
       { text: 'Conformance', link: '/conformance' },
       { text: 'Parity', link: '/parity' },

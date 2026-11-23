@@ -2,11 +2,12 @@
 // Pack-and-install rehearsal (docs-publish-prep DP8). Publishes nothing and contacts no registry.
 //
 //   tsx tools/release/pack-smoke.ts
-//       build, `npm pack`, check the file list, install the tarball offline into a clean project, import it.
-//   tsx tools/release/pack-smoke.ts --entry test/public-api/candidate-index.ts
+//       build, `npm pack`, check the file list, install the tarball offline into a clean project, import it, then
+//       `layout` the first documentation example's input there and compare the output with its oracle ref at 1e-6
+//       (AD-4).
+//   tsx tools/release/pack-smoke.ts --entry <file>
 //       the same, with the tarball's dist/index.js replaced by an esbuild bundle of <entry> built with the flags of
-//       the `build:js` script; then, in the clean project, lay out the first documentation example's input and
-//       compare the output with its oracle ref at 1e-6 (AD-4).
+//       the `build:js` script, before the same checks.
 //
 // Everything is written under os.tmpdir(), apart from dist/ by the build. The scratch directory is removed on success
 // and kept, with its path printed, on failure.
@@ -151,7 +152,7 @@ function rehearse(entry: string | undefined, scratch: string): void {
   const consumerDir = path.join(scratch, 'consumer');
   installInCleanProject(tarball, consumerDir);
   importInCleanProcess(consumerDir);
-  if (entry !== undefined) layoutInCleanProcess(consumerDir);
+  layoutInCleanProcess(consumerDir);
 }
 
 function main(): void {
