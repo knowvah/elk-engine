@@ -2,13 +2,13 @@
 
 # Publishing @knowvah/elk-engine
 
-**Nothing has been published yet.** The release tooling is in place and has never been run: no `npm publish`, no
-`npm login`, no semantic-release run, no tag. Everything on this page is the **maintainer's** to do, in the order given
-([#91](https://github.com/knowvah/elk-engine/issues/91)).
+**`1.0.0` was published by hand on 2026-11-23** from commit `304ef29f` (the `gitHead` npm recorded), with the export
+surface of `docs/architecture/public-api.md` (72 exports). Steps 1 to 3 of the bootstrap below are done. Steps 4 to 7
+remain, and they are the **maintainer's**, in the order given ([#91](https://github.com/knowvah/elk-engine/issues/91)):
+tag the published commit, configure the trusted publisher, switch the trigger. No semantic-release run has happened yet.
 
-> **The first publish freezes the ElkGraph API (AD-14) and cannot be undone.** A published version can be deprecated
-> but not changed, and after 72 hours not removed. Do not publish before the export surface is accepted
-> (`docs/architecture/public-api.md`).
+> **The first publish froze the ElkGraph API (AD-14) and cannot be undone.** A published version can be deprecated but
+> not changed, and after 72 hours not removed. Removing an export from the surface is a major version.
 
 Once the bootstrap below is done, releases are automated with **semantic-release and npm Trusted Publishing (OIDC)**, as
 in [`@knowvah/dot-engine`](https://github.com/knowvah/dot-engine): no long-lived token, and nobody runs `npm publish` by
@@ -127,8 +127,8 @@ there). Nothing is committed back to `main`.
 ## What gets published
 
 `package.json` `files`: `dist/` (the esbuild ESM bundle `dist/index.js`, its source map, and the `.d.ts` tree),
-`src/` without tests, and `NOTICE.md`. npm always adds `package.json`, `README.md` and `LICENSE` (EPL-2.0). At the time
-of writing the dry run lists 4,212 files, 2.2 MB packed, 11.5 MB unpacked.
+`src/` without tests, and `NOTICE.md`. npm always adds `package.json`, `README.md` and `LICENSE` (EPL-2.0). The 1.0.0
+tarball holds 4,221 files, 4.5 MB packed, 23.4 MB unpacked (the source map is 7.6 MB of that).
 
 | import                | bundle          | types             |
 | --------------------- | --------------- | ----------------- |
