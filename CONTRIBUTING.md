@@ -17,8 +17,7 @@ npm run docs:build     # docs site: API reference, locale completeness, dead lin
 npm run docs:linkcheck # internal links and fragments of the built site
 ```
 
-CI also runs `npm run complexity` (needs `lizard`) and
-`npm run pack:smoke -- --entry test/public-api/candidate-index.ts`.
+CI also runs `npm run complexity` (needs `lizard`).
 
 The golden suite runs inside `npm test` (and therefore `npm run coverage`). Its expected values come
 from the oracle (ELK built from source), JVM vectors, or the Java source, and they are written

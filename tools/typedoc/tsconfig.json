@@ -9,6 +9,6 @@
     "declaration": false,
     "declarationMap": false
   },
-  "include": ["../../test/public-api/candidate-index.ts", "../../src/**/*"],
+  "include": ["../../src/**/*"],
   "exclude": ["../../src/**/*.test.ts"]
 }

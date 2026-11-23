@@ -6,18 +6,12 @@ title: Getting started
 
 # Getting started
 
-::: warning Proposed surface, not published
-`@knowvah/elk-engine` is not on npm yet, and the names imported below are a **proposed** export surface that the
-maintainer has not accepted yet ([#90](https://github.com/knowvah/elk-engine/issues/90)):
-[docs/architecture/public-api.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/public-api.md).
 The examples on this page are real files in the repository. CI runs them and compares their output with Eclipse ELK
-itself, so they work as shown against the current source; the import specifier becomes installable with the first release.
-:::
+itself, so they work as shown.
 
 ## Install
 
 ```sh
-# After the first release (not available yet):
 npm install @knowvah/elk-engine
 ```
 
@@ -40,7 +34,32 @@ Three things to notice:
 - **The result is in the graph.** After `layout`, read `node.getX()`, `node.getY()` and each edge's
   `getSections()` for the route.
 
-## ELK JSON in, ELK JSON out
+## The short way: `layout`
+
+If you have [ELK JSON](https://eclipse.dev/elk/documentation/tooldevelopers/graphdatastructure/jsonformat.html) and want
+it laid out, `layout` is one call. It takes the graph as an object or as JSON text, registers every algorithm itself, and
+returns a promise of the laid-out graph. The graph you pass is not changed.
+
+```ts
+import { layout } from '@knowvah/elk-engine';
+
+const laidOut = await layout({
+  id: 'root',
+  layoutOptions: { 'elk.algorithm': 'layered' },
+  children: [
+    { id: 'a', width: 40, height: 20 },
+    { id: 'b', width: 40, height: 20 },
+  ],
+  edges: [{ id: 'e', sources: ['a'], targets: ['b'] }],
+});
+// laidOut.children[0].x, .y; laidOut.edges[0].sections[0].startPoint, .endPoint
+```
+
+A second argument, `{ layoutOptions: { 'elk.direction': 'DOWN' } }`, is merged over the root's `layoutOptions`. The work
+runs inside the call; the promise is the stable contract. `layout` is the only function this package adds to ELK's own
+API; everything else keeps its Java name. The test `src/layout.test.ts` checks it against the Eclipse ELK result.
+
+## ELK JSON in, ELK JSON out, with the object model
 
 If your graph is already [ELK JSON](https://eclipse.dev/elk/documentation/tooldevelopers/graphdatastructure/jsonformat.html),
 `ElkGraphJson` reads and writes it. Layout options are plain strings there, so no enum needs importing.

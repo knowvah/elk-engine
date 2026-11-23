@@ -278,6 +278,13 @@ export const EN: NavLabels = {
   englishOnly: '(English)',
 };
 
+/**
+ * Labels of the two English-only pages of the public surface (getting started, generated TypeDoc). They are not
+ * `NavLabels` keys: the pages are English-only, so the locales carry no translation of them.
+ */
+const GETTING_STARTED_LABEL = 'Getting started';
+const API_REFERENCE_LABEL = 'API reference';
+
 /** Algorithms that have goldens, hence a `/showcase/<id>` page. */
 const SHOWCASE_ALGORITHMS: readonly string[] = ['layered'];
 
@@ -307,6 +314,8 @@ export function navFor(prefix: string, ui: NavLabels): NavLink[] {
   const { page, english } = linker(prefix, ui);
   return [
     page(ui.guide, '/guide/overview'),
+    english(GETTING_STARTED_LABEL, '/guide/getting-started'),
+    english(API_REFERENCE_LABEL, '/reference/'),
     english(ui.reference, '/guide/translation-rules'),
     page(ui.conformance, '/conformance'),
     english(ui.parity, '/parity'),
@@ -320,6 +329,7 @@ function guideAndReferenceGroups(prefix: string, ui: NavLabels): SidebarGroup[] 
     {
       text: ui.guide,
       items: [
+        english(GETTING_STARTED_LABEL, '/guide/getting-started'),
         page(ui.overview, '/guide/overview'),
         page(ui.architecture, '/guide/architecture'),
         page(ui.javaFoundations, '/guide/java-foundations'),
@@ -329,6 +339,7 @@ function guideAndReferenceGroups(prefix: string, ui: NavLabels): SidebarGroup[] 
     {
       text: ui.reference,
       items: [
+        english(API_REFERENCE_LABEL, '/reference/'),
         english(ui.translationRules, '/guide/translation-rules'),
         english(ui.collectionsRules, '/guide/collections-rules'),
         english(ui.portMap, '/guide/port-map'),

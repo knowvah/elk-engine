@@ -18,21 +18,16 @@ and the root is untouched: `npx tsc --version` at the root still prints 7.0.2. D
 2. `tools/typedoc/node_modules/.bin/typedoc --options tools/typedoc/typedoc.json`: writes Markdown into
    `docs-site/reference/`, which is generated, gitignored and never committed. VitePress then builds it as `/reference/`.
 
-| File                 | Role                                                                                               |
-| -------------------- | -------------------------------------------------------------------------------------------------- |
-| `typedoc.json`       | Options. `entryPoints` is the proposed entry module until the export surface is accepted           |
-| `tsconfig.json`      | TypeScript 6's view of the sources: extends the root build config, adds the entry module           |
-| `reference-index.md` | The top of the generated index page (`readme` + `mergeReadme`), with the "proposed surface" notice |
-| `package-lock.json`  | The exact toolchain. Change it only by `npm install` in this directory, and commit it              |
+| File                 | Role                                                                                         |
+| -------------------- | -------------------------------------------------------------------------------------------- |
+| `typedoc.json`       | Options. `entryPoints` is `src/index.ts`, the accepted export surface                        |
+| `tsconfig.json`      | TypeScript 6's view of the sources: extends the root build config                            |
+| `reference-index.md` | The top of the generated index page (`readme` + `mergeReadme`), with the frozen-surface note |
+| `package-lock.json`  | The exact toolchain. Change it only by `npm install` in this directory, and commit it        |
 
 TypeDoc **errors** fail the build. Warnings are printed and tolerated: most come from `{@link}` targets in comments
 ported from Java that name symbols outside the exported surface, and from internal types that exported signatures
 mention. No source comment is edited to silence one.
-
-## On acceptance of the export surface
-
-Change `entryPoints` to `["../../src/index.ts"]`, drop the candidate from `tsconfig.json`'s `include`, and remove the
-notice from `reference-index.md` (see `docs/architecture/public-api.md`, "On acceptance").
 
 ## Bumping, and when this goes away
 

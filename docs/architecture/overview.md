@@ -127,7 +127,7 @@ Added by roadmap row 12; decisions DP1 to DP9 in
 
 | Piece          | What it is                                                                                                                                                                          |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Export surface | A proposal, [public-api.md](public-api.md), and the same surface as code in `test/public-api/candidate-index.ts`; `src/index.ts` exports nothing until it is accepted (AD-14)       |
+| Export surface | Accepted (2026-11-23), listed in [public-api.md](public-api.md) and held equal to `src/index.ts` by `src/index.test.ts`; frozen by the first npm publish (AD-14)                    |
 | API reference  | `npm run docs:api`: typedoc in the private package `tools/typedoc/` with TypeScript 6 of its own (typedoc has no TypeScript 7 release, AD-6), into the generated `/reference/`      |
 | Examples       | `test/docs/examples/*.ts`, shown on the site's getting-started page as snippets and compared with oracle refs (`test/golden/refs/elk-examples/`, `regen-goldens.sh --set examples`) |
 | Link check     | `npm run docs:linkcheck`: linkinator over the built site, internal links and fragments, in CI; external links weekly (`links.yml`)                                                  |
