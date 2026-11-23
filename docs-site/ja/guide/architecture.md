@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Java パッケージから `src/` モジュールへの対応                    |
 | [component-map.md](#コンポーネントマップ)           | スコープ内のバンドル依存関係、ランタイムの中核部分               |
 | [../translation-rules.md](/guide/translation-rules) | Java から TypeScript へのルール                                  |
-| [../conformance.md](/ja/conformance)                | オラクルとの比較基準と手順（このミッションの後半で追加されます） |
+| [../conformance.md](/conformance)                   | オラクルとの比較基準と手順（このミッションの後半で追加されます） |
 
 ## elk-engine とは
 

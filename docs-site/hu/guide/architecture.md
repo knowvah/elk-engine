@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | A Java-csomagok leképezése a `src/` moduljaira                                         |
 | [component-map.md](#komponenstérkép)                | A hatókörbe tartozó bundle-függőségek; a futtatókörnyezet magelemei                    |
 | [../translation-rules.md](/guide/translation-rules) | Java–TypeScript szabályok                                                              |
-| [../conformance.md](/hu/conformance)                | Az orákulumos összehasonlítás mércéje és eljárása (később érkezik ebben a küldetésben) |
+| [../conformance.md](/conformance)                   | Az orákulumos összehasonlítás mércéje és eljárása (később érkezik ebben a küldetésben) |
 
 ## Mi az elk-engine
 

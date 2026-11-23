@@ -69,4 +69,4 @@ rót hugbúnaðarsafnsins. Aðeins `tools/` og `test/` lesa þessar breytur; kó
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | elk-models-safnið, fest í skrá safnsins (corpus manifest) |
 
 Bygging véfréttarinnar krefst Maven 3.9 eða nýrra og JDK 21 (JDK 17 til vara). Sjá
-[Samræmi](/is/conformance) fyrir verklag véfréttarinnar.
+[Samræmi](/conformance) fyrir verklag véfréttarinnar.

@@ -47,7 +47,7 @@ v [Začínáme](/guide/getting-started). Co přijde dál, najdete v [plánu výv
 | ------------------------------------------------------- | ---------------------------------------------------------------- |
 | Pochopit, čím projekt je a čím není                     | [Přehled](/cs/guide/overview)                                    |
 | Vidět, jak do sebe díly zapadají                        | [Architektura](/cs/guide/architecture)                           |
-| Vědět, co znamená „shoduje se s Javou“                  | [Shoda](/cs/conformance)                                         |
+| Vědět, co znamená „shoduje se s Javou“                  | [Shoda](/conformance)                                            |
 | Zjistit, kam v portování zapadne balíček Javy           | [Mapa portování](/guide/port-map) · [Inventář](/guide/inventory) |
 | Naučit se pravidla překladu z Javy do TypeScriptu       | [Pravidla překladu](/guide/translation-rules)                    |
 | Vidět, které chování běhového prostředí Javy je pokryto | [Základy Javy](/cs/guide/java-foundations)                       |

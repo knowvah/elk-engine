@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Java 패키지와 `src/` 모듈의 대응                       |
 | [component-map.md](#컴포넌트-맵)                    | 범위 내 번들 의존성, 핵심 런타임 구성 요소             |
 | [../translation-rules.md](/guide/translation-rules) | Java에서 TypeScript로의 규칙                           |
-| [../conformance.md](/ko/conformance)                | 오라클 비교 기준과 절차(이 미션의 후반부에 추가됩니다) |
+| [../conformance.md](/conformance)                   | 오라클 비교 기준과 절차(이 미션의 후반부에 추가됩니다) |
 
 ## elk-engine이란
 

@@ -44,7 +44,7 @@ portării sunt comparate cu ieșirile oracolului:
 - Coordonatele și dimensiunile numerice trebuie să corespundă în limita unei toleranțe absolute de `1e-6`.
 
 Ieșirile oracolului alese cu grijă sunt comise ca referințe golden, astfel că rularea testelor nu necesită JVM.
-Procedura completă se găsește pe pagina [Conformitate](/ro/conformance).
+Procedura completă se găsește pe pagina [Conformitate](/conformance).
 
 ## Contract public
 

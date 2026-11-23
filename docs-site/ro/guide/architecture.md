@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Asocierea pachetelor Java cu modulele din `src/`                                        |
 | [component-map.md](#harta-componentelor)            | Dependențele bundle-urilor din domeniu; piesele de bază ale runtime-ului                |
 | [../translation-rules.md](/guide/translation-rules) | Reguli de la Java la TypeScript                                                         |
-| [../conformance.md](/ro/conformance)                | Criteriul și procedura de comparare cu oracolul (sosește mai târziu în această misiune) |
+| [../conformance.md](/conformance)                   | Criteriul și procedura de comparare cu oracolul (sosește mai târziu în această misiune) |
 
 ## Ce este elk-engine
 

@@ -46,7 +46,7 @@ urmărite ca issue-uri. API-ul public, cu 72 de exporturi, este înghețat la 1.
 | --------------------------------------------------- | ---------------------------------------------------------------- |
 | Înțeleg ce este și ce nu este proiectul             | [Prezentare generală](/ro/guide/overview)                        |
 | Văd cum se îmbină componentele                      | [Arhitectură](/ro/guide/architecture)                            |
-| Știu ce înseamnă „corespunde cu Java”               | [Conformitate](/ro/conformance)                                  |
+| Știu ce înseamnă „corespunde cu Java”               | [Conformitate](/conformance)                                     |
 | Găsesc unde ajunge un pachet Java în portare        | [Harta portării](/guide/port-map) · [Inventar](/guide/inventory) |
 | Învăț regulile de la Java la TypeScript             | [Reguli de traducere](/guide/translation-rules)                  |
 | Văd ce comportament al runtime-ului Java e acoperit | [Fundamente Java](/ro/guide/java-foundations)                    |

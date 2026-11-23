@@ -43,7 +43,7 @@ As saídas do port são comparadas com as saídas do oráculo:
 - Coordenadas e tamanhos numéricos devem coincidir dentro de uma tolerância absoluta de `1e-6`.
 
 As saídas curadas do oráculo são versionadas como referências golden, então executar os testes não exige JVM. O
-procedimento completo está na página de [conformidade](/pt-br/conformance).
+procedimento completo está na página de [conformidade](/conformance).
 
 ## Contrato público
 

@@ -106,8 +106,8 @@ describe('showcase rendering', () => {
     expect(md).toContain('# Shoecase - the gulden corpus');
     expect(md).toContain('- [**layered**](/xx/showcase/layered) — Layerd layout. _(2 goldens)_');
     expect(md).toContain('- [**force**](/xx/showcase/force) — Forse layout. _(1 goldens)_');
-    expect(md).toContain('(see [Conformens](/xx/conformance)).');
-    expect(md).not.toContain('](/conformance)');
+    expect(md).toContain('(see [Conformens](/conformance)).');
+    expect(md).not.toContain('](/xx/conformance)');
     expect(md).not.toContain('](/showcase/');
   });
 

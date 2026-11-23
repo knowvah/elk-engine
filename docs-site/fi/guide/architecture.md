@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Java-pakettien kuvaus `src/`-moduuleihin                                     |
 | [component-map.md](#komponenttikartta)              | Laajuuteen kuuluvien bundlejen riippuvuudet; ajonaikaisen ytimen osat        |
 | [../translation-rules.md](/guide/translation-rules) | Säännöt Javasta TypeScriptiin                                                |
-| [../conformance.md](/fi/conformance)                | Oraakkelivertailun mittapuu ja menettely (saapuu myöhemmin tässä tehtävässä) |
+| [../conformance.md](/conformance)                   | Oraakkelivertailun mittapuu ja menettely (saapuu myöhemmin tässä tehtävässä) |
 
 ## Mikä elk-engine on
 

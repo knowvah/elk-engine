@@ -25,12 +25,11 @@ stripping.
 
 ## Adding a language
 
-The translated set per language (the full spec is `plans/docs-site/translation-spec.md`):
+The translated set per language (`conformance.md` and `parity.md` stay English, #133) (the full spec is `plans/docs-site/translation-spec.md`):
 
 | Page                        | Source                                                                        |
 | --------------------------- | ----------------------------------------------------------------------------- |
 | `index.md`                  | `docs-site/index.md`                                                          |
-| `conformance.md`            | a full translation of `docs/conformance.md`, not an `@include` wrapper        |
 | `guide/overview.md`         | `docs-site/guide/overview.md`                                                 |
 | `guide/architecture.md`     | a full translation of `docs/architecture/overview.md` plus `component-map.md` |
 | `guide/java-foundations.md` | `docs-site/guide/java-foundations.md`                                         |
@@ -72,7 +71,7 @@ Every locale links to the English-only pages unprefixed, and the nav marks them 
 ## Keeping translations current
 
 Each translated page carries front matter `sourceHash: <sha256 of its English source>`. For
-`conformance.md` and `guide/architecture.md` the source is the file(s) under `docs/`. Compute the
+`guide/architecture.md` the source is the file(s) under `docs/`. Compute the
 hash with:
 
 ```bash

@@ -43,7 +43,7 @@ Las salidas del portado se comparan con las salidas del oráculo:
 - Las coordenadas y los tamaños numéricos deben coincidir dentro de una tolerancia absoluta de `1e-6`.
 
 Las salidas del oráculo seleccionadas se versionan como referencias golden, de modo que ejecutar las pruebas no requiere
-una JVM. El procedimiento completo está en la página de [conformidad](/es/conformance).
+una JVM. El procedimiento completo está en la página de [conformidad](/conformance).
 
 ## Contrato público
 

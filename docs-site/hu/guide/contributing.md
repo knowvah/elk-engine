@@ -70,4 +70,4 @@ kódja soha.
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | Az elk-models korpusz, a korpusz-manifestben rögzítve |
 
 Az orákulum felépítéséhez Maven 3.9 vagy újabb és JDK 21 szükséges (tartalékként JDK 17). Az orákulum eljárását
-lásd a [Megfelelőség](/hu/conformance) oldalon.
+lásd a [Megfelelőség](/conformance) oldalon.

@@ -69,4 +69,4 @@ opzichte van de root van de repository. Alleen `tools/` en `test/` lezen deze va
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | Het elk-models-corpus, vastgepind in het corpusmanifest |
 
 De orakelbuild vereist Maven 3.9 of nieuwer en JDK 21 (JDK 17 als terugval). De orakelprocedure staat onder
-[Conformiteit](/nl/conformance).
+[Conformiteit](/conformance).

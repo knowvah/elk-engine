@@ -41,7 +41,7 @@ Taşımanın çıktıları, oracle'ın çıktılarıyla karşılaştırılır:
 - Sayısal koordinatlar ve boyutlar `1e-6` mutlak toleransı içinde eşleşmelidir.
 
 Seçilmiş oracle çıktıları golden referansları olarak depoya eklenmiştir; bu yüzden testleri çalıştırmak için JVM
-gerekmez. Tam yöntem [uygunluk](/tr/conformance) sayfasındadır.
+gerekmez. Tam yöntem [uygunluk](/conformance) sayfasındadır.
 
 ## Herkese açık sözleşme
 

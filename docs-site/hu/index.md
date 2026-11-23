@@ -47,7 +47,7 @@ verziók a semvert követik. Kezdje az [Első lépések](/guide/getting-started)
 | ----------------------------------------------------------- | ---------------------------------------------------------------- |
 | Megérteni, mi a projekt, és mi nem                          | [Áttekintés](/hu/guide/overview)                                 |
 | Látni, hogyan illeszkednek össze az elemek                  | [Architektúra](/hu/guide/architecture)                           |
-| Tudni, mit jelent az, hogy „megegyezik a Javával”           | [Megfelelőség](/hu/conformance)                                  |
+| Tudni, mit jelent az, hogy „megegyezik a Javával”           | [Megfelelőség](/conformance)                                     |
 | Megtalálni, hova kerül egy Java-csomag a portolásban        | [Portolási térkép](/guide/port-map) · [Leltár](/guide/inventory) |
 | Megismerni a Java–TypeScript szabályokat                    | [Fordítási szabályok](/guide/translation-rules)                  |
 | Látni, a Java futtatókörnyezet mely viselkedése van lefedve | [Java-alapok](/hu/guide/java-foundations)                        |

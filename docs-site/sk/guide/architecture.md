@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Mapovanie balíkov Javy na moduly v `src/`                           |
 | [component-map.md](#mapa-komponentov)               | Závislosti bundlov v rozsahu; základné časti behového prostredia    |
 | [../translation-rules.md](/guide/translation-rules) | Pravidlá Java na TypeScript                                         |
-| [../conformance.md](/sk/conformance)                | Hranica porovnania s orákulom a postup (príde neskôr v tejto misii) |
+| [../conformance.md](/conformance)                   | Hranica porovnania s orákulom a postup (príde neskôr v tejto misii) |
 
 ## Čo je elk-engine
 

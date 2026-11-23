@@ -130,7 +130,7 @@ export function renderShowcaseIndex(prefix, order, counts, strings) {
       return `- [**${alg}**](${base}/showcase/${alg}) — ${s.blurbs[alg] ?? ''} _(${count})_`;
     })
     .join('\n');
-  const conformance = `[${s.conformanceLabel}](${base}/conformance)`;
+  const conformance = `[${s.conformanceLabel}](/conformance)`;
   return `---
 title: ${yamlScalar(s.indexTitle)}
 ---

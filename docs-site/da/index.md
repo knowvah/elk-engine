@@ -46,7 +46,7 @@ issues. Den offentlige API, 72 eksporter, er frosset ved 1.0.0, og versionerne f
 | ---------------------------------------------------- | ---------------------------------------------------------------- |
 | Forstå, hvad projektet er, og hvad det ikke er       | [Overblik](/da/guide/overview)                                   |
 | Se, hvordan delene hænger sammen                     | [Arkitektur](/da/guide/architecture)                             |
-| Vide, hvad „stemmer overens med Java“ betyder        | [Overensstemmelse](/da/conformance)                              |
+| Vide, hvad „stemmer overens med Java“ betyder        | [Overensstemmelse](/conformance)                                 |
 | Finde ud af, hvor en Java-pakke havner i porteringen | [Porteringskort](/guide/port-map) · [Inventar](/guide/inventory) |
 | Lære reglerne fra Java til TypeScript                | [Oversættelsesregler](/guide/translation-rules)                  |
 | Se, hvilken Java-runtime-adfærd der er dækket        | [Java-grundlag](/da/guide/java-foundations)                      |

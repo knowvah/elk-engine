@@ -47,7 +47,7 @@ saber o que vem a seguir.
 | ------------------------------------------------ | ---------------------------------------------------------------- |
 | Entender o que o projeto é e o que não é         | [Visão geral](/pt-br/guide/overview)                             |
 | Ver como as peças se encaixam                    | [Arquitetura](/pt-br/guide/architecture)                         |
-| Saber o que significa "coincide com o Java"      | [Conformidade](/pt-br/conformance)                               |
+| Saber o que significa "coincide com o Java"      | [Conformidade](/conformance)                                     |
 | Descobrir onde um pacote Java cai no port        | [Mapa do port](/guide/port-map) · [Inventário](/guide/inventory) |
 | Aprender as regras de Java para TypeScript       | [Regras de tradução](/guide/translation-rules)                   |
 | Ver qual comportamento do runtime Java é coberto | [Fundamentos de Java](/pt-br/guide/java-foundations)             |

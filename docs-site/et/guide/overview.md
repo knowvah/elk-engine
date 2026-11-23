@@ -41,7 +41,7 @@ Portimise väljundeid võrreldakse oraakli väljunditega:
 - Numbrilised koordinaadid ja suurused peavad ühtima absoluutse tolerantsi `1e-6` piires.
 
 Valitud oraakli väljundid on sisse commit'itud golden-viidetena, nii et testide käitamiseks pole JVM-i vaja.
-Täielik protseduur on lehel [Vastavus](/et/conformance).
+Täielik protseduur on lehel [Vastavus](/conformance).
 
 ## Avalik leping
 

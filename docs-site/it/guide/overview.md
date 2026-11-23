@@ -42,7 +42,7 @@ Gli output del porting vengono confrontati con gli output dell'oracolo:
 - Le coordinate e le dimensioni numeriche devono coincidere entro una tolleranza assoluta di `1e-6`.
 
 Gli output selezionati dell'oracolo sono committati come riferimenti golden, quindi per eseguire i test non serve una JVM.
-La procedura completa è nella pagina [Conformità](/it/conformance).
+La procedura completa è nella pagina [Conformità](/conformance).
 
 ## Contratto pubblico
 

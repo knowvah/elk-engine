@@ -42,7 +42,7 @@ Porttauksen tulosteita verrataan oraakkelin tulosteisiin:
 - Numeeristen koordinaattien ja kokojen täytyy täsmätä absoluuttisella toleranssilla `1e-6`.
 
 Valitut oraakkelin tulosteet on tallennettu repositorioon golden-viitteinä, joten testien ajamiseen ei tarvita JVM:ää.
-Koko menettely on [yhdenmukaisuus](/fi/conformance)-sivulla.
+Koko menettely on [yhdenmukaisuus](/conformance)-sivulla.
 
 ## Julkinen sopimus
 

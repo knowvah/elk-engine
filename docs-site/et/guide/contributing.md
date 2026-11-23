@@ -68,4 +68,4 @@ juurkataloogi suhtes. Neid muutujaid loevad ainult `tools/` ja `test/`; `src/` k
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | elk-models korpus, fikseeritud korpuse manifestis |
 
 Oraakli ehitus vajab Maven 3.9 või uuemat ja JDK 21 (varuvariandina JDK 17). Oraakli protseduuri leiate lehelt
-[Vastavus](/et/conformance).
+[Vastavus](/conformance).

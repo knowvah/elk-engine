@@ -67,4 +67,4 @@ Node 22 이상이 필요합니다. 의존성은 `npm ci`로 설치하십시오.
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | 코퍼스 매니페스트에 고정된 elk-models 코퍼스 |
 
 오라클 빌드에는 Maven 3.9 이상과 JDK 21(대체로 JDK 17)이 필요합니다. 오라클 절차는
-[적합성](/ko/conformance)을 참고하십시오.
+[적합성](/conformance)을 참고하십시오.

@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Java pakettide vastendus `src/` moodulitele                              |
 | [component-map.md](#komponendikaart)                | Ulatusse kuuluvate bundle'ite sõltuvused; käitusaja tuumosad             |
 | [../translation-rules.md](/guide/translation-rules) | Java ja TypeScripti vahelised reeglid                                    |
-| [../conformance.md](/et/conformance)                | Oraakliga võrdlemise lävi ja protseduur (ilmub hiljem selles missioonis) |
+| [../conformance.md](/conformance)                   | Oraakliga võrdlemise lävi ja protseduur (ilmub hiljem selles missioonis) |
 
 ## Mis on elk-engine
 

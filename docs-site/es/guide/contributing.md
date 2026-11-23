@@ -70,4 +70,4 @@ nunca lo hace.
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | El corpus elk-models, fijado en el manifiesto del corpus |
 
 La compilación del oráculo requiere Maven 3.9 o posterior y JDK 21 (JDK 17 como alternativa). Consulta
-[Conformidad](/es/conformance) para el procedimiento del oráculo.
+[Conformidad](/conformance) para el procedimiento del oráculo.

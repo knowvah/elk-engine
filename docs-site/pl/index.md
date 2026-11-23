@@ -47,7 +47,7 @@ semver. Zacznij od [Pierwszych kroków](/guide/getting-started). Co nastąpi dal
 | ----------------------------------------------------- | ------------------------------------------------------------------ |
 | Zrozumieć, czym projekt jest, a czym nie jest         | [Przegląd](/pl/guide/overview)                                     |
 | Zobaczyć, jak części do siebie pasują                 | [Architektura](/pl/guide/architecture)                             |
-| Wiedzieć, co znaczy „zgadza się z Javą”               | [Zgodność](/pl/conformance)                                        |
+| Wiedzieć, co znaczy „zgadza się z Javą”               | [Zgodność](/conformance)                                           |
 | Znaleźć, gdzie pakiet Javy ląduje w porcie            | [Mapa portowania](/guide/port-map) · [Inwentarz](/guide/inventory) |
 | Poznać reguły przekładu z Javy na TypeScript          | [Reguły tłumaczenia](/guide/translation-rules)                     |
 | Zobaczyć, jakie zachowania środowiska Javy są pokryte | [Podstawy Javy](/pl/guide/java-foundations)                        |

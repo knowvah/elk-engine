@@ -101,11 +101,12 @@ describe('navFor / sidebarFor', () => {
       '/guide/port-map',
       '/guide/inventory',
       '/guide/roadmap',
+      '/conformance',
       '/parity',
     ]);
     expect(unprefixed.map((i) => i.text.endsWith('(Inglish)'))).toEqual(unprefixed.map(() => true));
     expect(links.filter((i) => i.link.startsWith('/xx/')).every((i) => !i.text.endsWith('(Inglish)'))).toBe(true);
-    expect(links.find((i) => i.link === '/xx/conformance')?.text).toBe('Conformance');
+    expect(links.find((i) => i.link === '/conformance')?.text).toBe('Conformance (Inglish)');
   });
 
   it('reproduces the English nav exactly for the root', () => {

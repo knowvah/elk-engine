@@ -42,7 +42,7 @@ Wyniki portu są porównywane z wynikami wyroczni:
 - Współrzędne i rozmiary liczbowe muszą zgadzać się z bezwzględną tolerancją `1e-6`.
 
 Wyselekcjonowane wyniki wyroczni są zatwierdzone jako referencje golden, więc uruchamianie testów nie wymaga JVM.
-Pełna procedura znajduje się na stronie [Zgodność](/pl/conformance).
+Pełna procedura znajduje się na stronie [Zgodność](/conformance).
 
 ## Publiczny kontrakt
 

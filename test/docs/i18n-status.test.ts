@@ -45,7 +45,6 @@ const sha = (s: string): string => createHash('sha256').update(s).digest('hex');
 const LOCALES = ['xx', 'yy'];
 const ARCH_SOURCES = ['docs/architecture/overview.md', 'docs/architecture/component-map.md'];
 const ENGLISH_PAGES = [
-  'conformance.md',
   'guide/architecture.md',
   'guide/contributing.md',
   'guide/java-foundations.md',

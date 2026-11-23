@@ -45,7 +45,7 @@ Begynn med [Kom i gang](/guide/getting-started). Se [veikartet](/guide/roadmap) 
 | ------------------------------------------------ | ---------------------------------------------------------------- |
 | Forstå hva prosjektet er og ikke er              | [Oversikt](/no/guide/overview)                                   |
 | Se hvordan delene henger sammen                  | [Arkitektur](/no/guide/architecture)                             |
-| Vite hva «samsvarer med Java» betyr              | [Samsvar](/no/conformance)                                       |
+| Vite hva «samsvarer med Java» betyr              | [Samsvar](/conformance)                                          |
 | Finne ut hvor en Java-pakke havner i porteringen | [Porteringskart](/guide/port-map) · [Inventar](/guide/inventory) |
 | Lære reglene fra Java til TypeScript             | [Oversettelsesregler](/guide/translation-rules)                  |
 | Se hvilken Java-runtime-atferd som er dekket     | [Java-grunnlag](/no/guide/java-foundations)                      |

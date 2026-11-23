@@ -69,4 +69,4 @@ relatives à la racine du dépôt. Seuls `tools/` et `test/` lisent ces variable
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | Le corpus elk-models, épinglé dans le manifeste du corpus |
 
 La compilation de l’oracle nécessite Maven 3.9 ou plus récent et JDK 21 (JDK 17 en repli). Voir
-[Conformité](/fr/conformance) pour la procédure de l’oracle.
+[Conformité](/conformance) pour la procédure de l’oracle.

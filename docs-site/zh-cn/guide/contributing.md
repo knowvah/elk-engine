@@ -58,4 +58,4 @@ sourceHash: 5c0bf7925cd221552657db1b1b71e2d110f23e71d27ebfc8eb7c84a9fc2db44c
 | `ELK_ORACLE_DIR` | `../elk-oracle`                | 独立 worktree 与已构建的基准实现      |
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | elk-models 语料库，固定于语料库清单中 |
 
-构建基准实现需要 Maven 3.9 或更高版本以及 JDK 21（JDK 17 作为后备）。基准实现的流程请参阅[一致性](/zh-cn/conformance)。
+构建基准实现需要 Maven 3.9 或更高版本以及 JDK 21（JDK 17 作为后备）。基准实现的流程请参阅[一致性](/conformance)。

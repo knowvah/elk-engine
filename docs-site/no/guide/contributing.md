@@ -69,4 +69,4 @@ repoets rot. Bare `tools/` og `test/` leser disse variablene; kode i `src/` gjø
 | `ELK_MODELS_DIR` | `../../eclipse-elk/elk-models` | elk-models-korpuset, festet i korpusmanifestet            |
 
 Orakelbygget krever Maven 3.9 eller nyere og JDK 21 (JDK 17 som reserve). Se
-[Samsvar](/no/conformance) for fremgangsmåten for oraklet.
+[Samsvar](/conformance) for fremgangsmåten for oraklet.

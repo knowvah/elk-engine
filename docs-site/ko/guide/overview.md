@@ -39,7 +39,7 @@ Kernel](https://www.eclipse.org/elk)(ELK)을 충실하게 포팅한 TypeScript �
 - 숫자 좌표와 크기는 절대 허용 오차 `1e-6` 이내에서 일치해야 합니다.
 
 선별한 오라클 출력은 골든 참조로 커밋되어 있으므로 테스트를 실행하는 데 JVM이 필요하지 않습니다. 전체 절차는
-[적합성](/ko/conformance) 페이지에 있습니다.
+[적합성](/conformance) 페이지에 있습니다.
 
 ## 공개 계약
 

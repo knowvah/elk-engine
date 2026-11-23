@@ -47,7 +47,7 @@ Beginnen Sie mit [Erste Schritte](/guide/getting-started). Was als Nächstes kom
 | -------------------------------------------------------- | ------------------------------------------------------------------ |
 | Verstehen, was das Projekt ist und was nicht             | [Überblick](/de/guide/overview)                                    |
 | Sehen, wie die Teile zusammenpassen                      | [Architektur](/de/guide/architecture)                              |
-| Wissen, was „stimmt mit dem Java überein“ bedeutet       | [Konformität](/de/conformance)                                     |
+| Wissen, was „stimmt mit dem Java überein“ bedeutet       | [Konformität](/conformance)                                        |
 | Herausfinden, wo ein Java-Paket in der Portierung landet | [Portierungskarte](/guide/port-map) · [Inventar](/guide/inventory) |
 | Die Regeln von Java zu TypeScript lernen                 | [Übersetzungsregeln](/guide/translation-rules)                     |
 | Sehen, welches Java-Laufzeitverhalten abgedeckt ist      | [Java-Grundlagen](/de/guide/java-foundations)                      |

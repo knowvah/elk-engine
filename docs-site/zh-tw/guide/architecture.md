@@ -13,7 +13,7 @@ sourceHash: 1cec2d8ec875e99d0f3569836b83ae0639eb68e0219f99b1193d90a8c503b9a0
 | [port-map.md](/guide/port-map)                      | Java 套件到 `src/` 模組的對應                  |
 | [component-map.md](#元件對應圖)                     | 範圍內的 bundle 相依關係；執行階段核心組成     |
 | [../translation-rules.md](/guide/translation-rules) | Java 到 TypeScript 的規則                      |
-| [../conformance.md](/zh-tw/conformance)             | 基準實作的比較標準與流程（本任務稍後提供）     |
+| [../conformance.md](/conformance)                   | 基準實作的比較標準與流程（本任務稍後提供）     |
 
 ## elk-engine 是什麼
 

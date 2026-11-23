@@ -38,7 +38,7 @@ features:
 | ------------------------------------------------- | -------------------------------------------------------------------------------- |
 | プロジェクトの内容と対象外を理解したい            | [概要](/ja/guide/overview)                                                       |
 | 各部分がどう組み合わさるかを見たい                | [アーキテクチャ](/ja/guide/architecture)                                         |
-| 「Java と一致する」とは何かを知りたい             | [適合性](/ja/conformance)                                                        |
+| 「Java と一致する」とは何かを知りたい             | [適合性](/conformance)                                                           |
 | Java パッケージが移植先のどこに対応するか調べたい | [移植マップ](/guide/port-map)（英語） · [インベントリ](/guide/inventory)（英語） |
 | Java から TypeScript へのルールを学びたい         | [翻訳ルール](/guide/translation-rules)（英語）                                   |
 | どの Java ランタイムの挙動が対象かを見たい        | [Java の基盤](/ja/guide/java-foundations)                                        |

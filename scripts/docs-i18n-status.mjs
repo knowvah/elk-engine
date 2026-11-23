@@ -29,6 +29,7 @@ import {
 import { localizeGoldens, listLocalePrefixes } from '../docs-site/copy-goldens.mjs';
 
 export const TRANSLATABLE_EXCLUDES = [
+  'conformance.md',
   'parity.md',
   'guide/translation-rules.md',
   'guide/collections-rules.md',
