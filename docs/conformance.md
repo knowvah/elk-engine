@@ -1826,15 +1826,22 @@ staged provider classes, not `PENDING_TYPES`, because of the tripwire `test/melk
 - Vector refs under `test/golden/refs/java/` (oracle `8aaa3c14`, `-XX:hashCode=2`, two cold JVMs byte-identical; the mission-end
   cold re-records are `cmp`-identical):
 
-  | Ref                 | Rows | full | stops | throws | Recorder                              |
-  | ------------------- | ---: | ---: | ----: | -----: | ------------------------------------- |
-  | `mrtree.json`       |  188 |  122 |    54 |     12 | `tools/vectors/MrTreeVectors.java`    |
-  | `mrtree-extra.json` |  213 |  140 |    68 |      5 | the same launcher, second output      |
-  | `radial.json`       |  309 |  148 |   150 |     11 | `tools/vectors/RadialVectors.java`    |
-  | `vertiflex.json`    |  471 |  247 |   216 |      8 | `tools/vectors/VertiFlexVectors.java` |
+  | Ref                    | Rows | full | stops | throws | Recorder                              |
+  | ---------------------- | ---: | ---: | ----: | -----: | ------------------------------------- |
+  | `mrtree.json`          |  188 |  122 |    54 |     12 | `tools/vectors/MrTreeVectors.java`    |
+  | `mrtree-extra.json`    |  213 |  140 |    68 |      5 | the same launcher, second output      |
+  | `mrtree-extra2.json`   |    3 |    0 |     3 |      0 | the same launcher, third output       |
+  | `radial.json`          |  309 |  148 |   150 |     11 | `tools/vectors/RadialVectors.java`    |
+  | `radial-extra.json`    |    7 |    5 |     2 |      0 | the same launcher, second output      |
+  | `vertiflex.json`       |  471 |  247 |   216 |      8 | `tools/vectors/VertiFlexVectors.java` |
+  | `vertiflex-extra.json` |    4 |    3 |     1 |      0 | the same launcher, second output      |
 
   `mrtree-units.json` (`tools/vectors/MrTreeUnitVectors.java`): 2,656 rows: `edgeRouter` 422, `cyrusBeck` 46, `orderBalance` 18,
   `average` 2,170. The two files beyond the three refs the brief names were added during the run (journaled; queue gate 6).
+  `radial-extra.json`, `vertiflex-extra.json` and `mrtree-extra2.json` were added later by issue #66 (oracle `8bca22f4`): rows
+  for two radial arms no earlier row took, stops rows for four mrtree gap arms only full rows took, and rows that kill eight
+  mutants the earlier rows let survive. They are separate files because committed tests pin the row counts of the first refs.
+  `RadialExtraVectors.test.ts`, `VertiFlexExtraVectors.test.ts` and `MrTreeVectors.test.ts` replay every row: 0 mismatches.
   The recorded throws of `mrtree.json` are 9 `IllegalArgumentException` at `ElkUtil.java:938`, 2
   `StringIndexOutOfBoundsException` at `FanProcessor.java:128` and 1 `NullPointerException` at `NodePlacer.java:219`.
 

@@ -3353,3 +3353,83 @@ branches 97.01 %, functions 98.56 %, lines 98.86 %, all as at the base (no test 
 typedoc warnings, as at the base. `codeql`: every finding accepted, no new entry. Gate 7:
 `git diff --exit-code b5f98d63 -- test/golden/refs/` is clean, and cold reruns of the order and compound recorders
 reproduce the committed refs byte for byte.
+
+## Revision 2026-11-23 (tree-recorder-gaps)
+
+Queue mission for issue #66, on `chore/issue-queue` (plan and journal in `plans/tree-recorder-gaps/`). #66 lists the
+follow-ups of mission 8a's mutation spot check and coverage closure for `alg.radial`, `alg.vertiflex` and `alg.mrtree`:
+arms no recorded row took and mutants no recorded field observed. The mission added recorder scenarios for them. No file
+of production `src/` changed, no landed ref changed, and no oracle patch or pin changed. Oracle: `8bca22f4` + patches
+0001-0004 (built 2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over alg.mrtree, alg.radial,
+alg.vertiflex and core is empty.
+
+**1. Three new refs, the five landed ones byte-identical.** Committed tests pin the row counts of `radial.json`,
+`vertiflex.json` and `mrtree.json`, and `mrtree-extra.json` is at its 8 MiB cap, so each recorder gained one more plan
+that writes one more file after the earlier ones:
+
+| Ref | Rows | full | stops | throws | Recorder | Replay |
+| --- | ---: | ---: | ----: | -----: | -------- | ------ |
+| `radial-extra.json` | 7 | 5 | 2 | 0 | `RadialVectors.java`, second plan (seed 8601) | `src/alg/radial/RadialExtraVectors.test.ts` |
+| `vertiflex-extra.json` | 4 | 3 | 1 | 0 | `VertiFlexVectors.java`, second plan (seed 8111) | `src/alg/vertiflex/VertiFlexExtraVectors.test.ts` |
+| `mrtree-extra2.json` | 3 | 0 | 3 | 0 | `MrTreeVectors.java`, third plan (`MRTREE_FILE=extra2`) | `src/alg/mrtree/MrTreeVectors.test.ts` (`REF_FILES`) |
+
+Every row replays at the AD-4 bar; no row diverged from the port. Cold reruns of the three scripts reproduce
+`radial.json`, `vertiflex.json`, `mrtree.json` and `mrtree-extra.json` byte for byte, and the new files are identical
+between cold runs and from the cache.
+
+**2. Every item has one outcome** (`plans/alg-trees/unreached.md` § "tree-recorder-gaps (#66)", appended; the scheme:
+1 recorded, 2 reached but the port diverges, 3 proven unreachable or equivalent, 4 unreached).
+
+| Bundle | Items | Recorded (1) | Diverges (2) | Proven (3) | Unreached (4) |
+| ------ | ----: | -----------: | -----------: | ---------: | ------------: |
+| radial | 4 | 4 | 0 | 0 | 0 |
+| vertiflex | 2 | 2 | 0 | 0 | 0 |
+| mrtree | 4 | 3 | 0 | 1 | 0 |
+
+- Radial: RADIUS -1 takes the `tau` arm of `EadesRadial` (`EadesRadial.java:108-113`); RADIAL_COMPACTION with sorter ID
+  takes the `sorter != null` arms (`RadialCompaction.java:50, 73`); a first-level node at exactly angle 0 kills the
+  `arc < 0` → `<= 0` mutants of the polar comparator; two rows with exactly touching boxes and exactly equal tops kill the
+  three `<` → `<=` mutants of `overlap`'s first branch that `radial.json` let survive.
+- Vertiflex: a tie of two outline points at `spacing.nodeNode` 0 kills the `>` → `>=` mutant of `firstRun`
+  (`RelativeXPlacer.java:95`); bend heights 0.25 and 0.00005 away from the router's reference kill `> 0.5` and pin the
+  `1e-4` epsilon of `BendEdgeRouter.java:73-74`.
+- Mrtree: two stops rows give the four gap arms that only full rows took a stops row each (after the last node under UP,
+  before the first node under DOWN, the vertical side counter, the vertical skip-level-side test with an empty bend
+  list); a compaction under `spacing.nodeNode` -20 lands a node in level index 0 and kills `newIndex > 0` → `>= 0`
+  (`CompactionProcessor.java:165-166`). `EdgeRouter.java:368` with an empty bend list was recorded all along: three
+  `cycle/cycPar` rows of `mrtree-extra.json` take it, in the port and on the oracle (`jdb`), so 8a's "no row reaches it"
+  was a mis-attribution. The `compareInts` mutant (M9) is equivalent under V8, whose sort treats a tie's `+1` like its
+  `-0` (300,000 seeded arrays, 0 differ; not claimed for other engines), and tied out-of-bound constraints were recorded
+  all along by `orderer/starRangeEdge`.
+
+The evidence per item is a scoped coverage run of the new test alone (arms) or a scratch mutation run that the new test
+kills and the landed tests survive (mutants), each rerun by the orchestrator, with `jdb` breakpoints on the oracle jars
+for the mrtree items.
+
+**3. The dump extension is `needs-ruling` (issue #161).** The fourth bullet of #66 (the mrtree stop dump lacks in-edge
+order and the graph's `DIRECTION` after `NodePlacer`) would re-record `mrtree.json` and `mrtree-extra.json` and lower
+the frozen `UNRESTORABLE_GRAPHS = 27` of `test/helpers/mrtree-replay-dump.test.ts:62`. It was not worked.
+
+**Docs.** The ref tables of `docs/conformance.md` and `docs/architecture/alg-trees.md`, the regen comments of the
+alg-trees runbook, the § 7 outputs of `docs/architecture/elk-upgrade.md`, the appended section of
+`plans/alg-trees/unreached.md` and one closing row in `plans/alg-trees/decision-journal.md`. Notes:
+`.agent-notes/tree-recorder-gaps.md`.
+
+**Issues filed.** #161 (`needs-ruling`): may the mrtree stop dump carry in-edge order and `DIRECTION`. #163
+(`follow-up`): `sideOneEdges++` of the mrtree `EdgeRouter` is taken by no recorded row, and the LEFT end-point arm has
+no stops row. #164 (`follow-up`): the FD4 twin test of `DiscoVectors.test.ts` has no timeout and timed out at 5 s in a
+coverage run under load. A comment on #65 adds one upstream radial defect the port copies:
+`AbstractRadiusExtensionCompaction.overlap` reports no overlap for boxes with exactly equal tops or left edges, with a
+six-line `.elkt` repro on the oracle and a draft for an upstream report.
+
+**Gates (queue gates 1-7, 2026-11-23, on the final tree).** `format:check`, `typecheck`, `complexity` exit 0 (1,377
+files, 10,729 functions under `src`, no violation line). Coverage, full suite: 1,195 files, 49,568 tests passed, 83
+skipped, 0 failed; statements 98.81 %, branches 97.01 %, functions 98.56 %, lines 98.86 %, the base's percentages (2
+test files and 11 tests more than the base). `docs:build` exit 0 with 200 typedoc warnings, as at the base. `codeql`:
+one new finding (`java/index-out-of-bounds` in the new `sized` helper of `MrTreeVectors.java`) was fixed at its origin,
+not accepted; after it every finding is accepted, with no new entry. Gate 7: cold reruns of `radial-vectors.sh`,
+`vertiflex-vectors.sh` and `mrtree-vectors.sh` into `test/golden/refs/java/` leave the tree clean, and
+`git diff 70d9abed -- test/golden/refs/` shows the three added files only. One coverage run between the two green ones
+lost two tests to timeouts while another queue session held the load above 40 (no assertion failed; journal, T6
+`divergence`).
+

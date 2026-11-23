@@ -113,6 +113,10 @@ export const isThrowsRow = (row: RadialRow): row is RadialThrowsRow => row.group
 
 export const radialRefPath = (): string => path.join(repoRoot(), 'test', 'golden', 'refs', 'java', 'radial.json');
 
+/** The second ref of the same contract (issue #66, the recorder's second plan). */
+export const radialExtraRefPath = (): string =>
+  path.join(repoRoot(), 'test', 'golden', 'refs', 'java', 'radial-extra.json');
+
 type Obj = Record<string, unknown>;
 const isObject = (value: unknown): value is Obj => value !== null && typeof value === 'object' && !Array.isArray(value);
 

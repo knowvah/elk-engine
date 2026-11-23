@@ -8,14 +8,17 @@
 // runnable Java tests, so the oracle is its behavioural spec. This program only CALLS ELK APIs (and reads the private
 // RadialLayoutProvider.assembleAlgorithm by reflection to learn the processor names) and records results; it embeds no ELK algorithm.
 // Run: tools/vectors/radial-vectors.sh <outDir>   (java -cp ... RadialVectors.java <outDir> <tools/vectors dir>, JVM flags
-//      -XX:+UnlockExperimentalVMOptions -XX:hashCode=2). Landed copy: test/golden/refs/java/radial.json.
-//      Re-record: run the script into a scratch dir (ELK_VECTORS_CACHE=off for a cold run), then copy radial.json over the ref and
-//      journal the regeneration. Environment: RADIAL_UNPINNED=1 (set by `radial-vectors.sh --unpinned`) skips the identity-hash
+//      -XX:+UnlockExperimentalVMOptions -XX:hashCode=2). Writes two files, radial.json (the first plan) and then radial-extra.json
+//      (the second plan, issue #66: the gaps66 scenarios below); landed copies: test/golden/refs/java/radial.json and
+//      test/golden/refs/java/radial-extra.json. Re-record: run the script into a scratch dir (ELK_VECTORS_CACHE=off for a cold
+//      run), then copy the file(s) over the ref(s) and journal the regeneration. Environment: RADIAL_UNPINNED=1 (set by `radial-vectors.sh --unpinned`) skips the identity-hash
 //      check and every self-check: the TR3 evidence run, never committed.
 //
 // FILE: 2-space top level, one compact JSON row per line, trailing newline, strict JSON (Gson JsonReader), under 16 MiB:
 //   { jdk, oracle, seed, rowCounts: { full, stops, throws }, i30: [ { id, treeified, levels: [ { size, parents } ] } ], rows: [row...] }
 //   seed = 8301 (java.util.Random seeds of the scenario generator are 8301 + a constant per scenario, all nonzero).
+//   radial-extra.json has the same header, row and dump contract with seed = 8601 (its seeds are 8601 + a constant) and the rows of
+//   the gaps66 family only; it skips the option coverage check of radial.json (every other self-check applies).
 //   i30 lists the rows whose next-level node set (RadialUtil.getNextLevelNodeSet, the identity-hashed HashSet of
 //   RadiusExtensionOverlapRemoval.extend, I30) holds nodes of several parents; levels = one entry per recursion level >= 2 with the
 //   set size and the number of distinct tree parents of its members; treeified = some set has >= 11 nodes (under hashCode=2 all
@@ -119,10 +122,15 @@
 //              computeAdditionalWedgeSpace on a root without edges: index out of bounds in AngleRotation), ports-without-side
 //              (NodeMicroLayout rejects ports without a side), hier-root-edge-angles (EdgeAngleCalculator reads the section of a
 //              hierarchical edge).
+//   gaps66/*   radial-extra.json only (issue #66), each row reaching what radial.json does not: ra-radius-neg1 (RADIUS -1: the tau arm
+//              of EadesRadial), rb-radial-compaction-id (RADIAL_COMPACTION with sorter ID, orderIds seed 8603), both full + stops;
+//              rc-polar-angle0 (a node at exactly angle 0 in the polar comparator), rd-axis-x and rd-axis-y (exactly touching boxes
+//              in AbstractRadiusExtensionCompaction.overlap during RadialCompaction), full only.
 //
 // Hazards for a replay: Math.atan2/sin/cos/acos/sqrt feed discrete decisions (fuzzyCompare in the sorter, the overlap loops), so a
 //   last-ulp JVM-vs-V8 difference can flip a row; the -sym rows are the likeliest. EadesRadial computes tau = 2 * Math.acos(r / r + radius)
-//   (a precedence quirk): acos of a value above 1 is NaN, so `tau < maxAlpha - minAlpha` is always false (no NaN is recorded).
+//   (a precedence quirk): acos of a value above 1 is NaN, so `tau < maxAlpha - minAlpha` is false in every row of radial.json (no
+//   NaN is recorded); a RADIUS in [-2, 0) makes it a number (gaps66/ra-radius-neg1).
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -178,6 +186,8 @@ public class RadialVectors {
     static final String UNPINNED_ENV = "RADIAL_UNPINNED";
     static final String RADIAL_ALGORITHM = "org.eclipse.elk.radial";
     static final long SEED = 8301L;
+    static final String OUTPUT_EXTRA = "radial-extra.json";
+    static final long SEED_EXTRA = 8601L;
     static final long MAX_BYTES = 16L * 1024 * 1024;
     static final int FULL = 1, STOPS = 2, THROWS = 4;
     static final String G_FULL = "full", G_STOPS = "stops", G_THROWS = "throws";
@@ -1170,6 +1180,50 @@ public class RadialVectors {
     }
 
     // ------------------------------------------------------------------------------------------------------------
+    // Second plan (issue #66, mission tree-recorder-gaps D2): radial-extra.json, written after radial.json from its own
+    // scenario list; nothing here is read by the first plan.
+
+    /** `s` with the given node sizes {width, height}, in node order. */
+    static Shape sized(Shape s, double[]... sizes) {
+        for (int i = 0; i < sizes.length; i++) {
+            s.size.set(i, sizes[i]);
+        }
+        return s;
+    }
+
+    static void gaps66Family() {
+        // R-a: RADIUS in [-2, 0) makes tau = 2 * acos(1 + RADIUS) a number for every non-root call, so the
+        // `tau < maxAlpha - minAlpha` arm of EadesRadial.positionNodes runs (n1); n2 is placed in the wedge it computes.
+        add("gaps66/ra-radius-neg1", () -> path(3), opts(RadialOptions.RADIUS, -1.0), BOTH);
+        // R-b: the `sorter != null` arms of RadialCompaction.compact and contract (first level and next levels sorted by ID).
+        add("gaps66/rb-radial-compaction-id", () -> tree(-1, 0, 0, 1, 1, 2).orderIds(SEED_EXTRA + 2), opts(RadialOptions.COMPACTOR,
+                CompactionStrategy.RADIAL_COMPACTION, RadialOptions.SORTER, SortingStrategy.ID, RadialOptions.RADIUS, 100.0), BOTH)
+                .expect(S_COMPACT);
+        // R-c: the polar comparator with radialOffset 0 (PolarCoordinateSorter.initialize, first level) sees n2 at exactly
+        // angle 0 (position (10, 0)), so `arc < 0` is false and n2 sorts first. The list order n1 (angle PI), n2, n3 (PI / 2)
+        // makes the sort pass n2 as either argument of the comparator.
+        add("gaps66/rc-polar-angle0", () -> {
+            Shape s = star(3);
+            double[][] at = {{0, 0}, {-10, 0}, {10, 0}, {0, 10}};
+            for (int i = 0; i < at.length; i++) {
+                s.position.put(i, at[i]);
+            }
+            return s;
+        }, opts(RadialOptions.SORTER, SortingStrategy.POLAR_COORDINATE), FULL);
+        // R-d: RadialCompaction contracts a node along one axis through the root with integer sizes, spacing and step, so the
+        // spacing-inflated boxes of AbstractRadiusExtensionCompaction.overlap meet exactly. Axis x (RADIUS -50, one leaf per
+        // wedge): n1 has the root's height, so both tops are equal (the sin(PI) offset rounds away at 64) and no branch of
+        // overlap fires; the radius check stops n1. n2 is shorter than n1 and touches its box at center distance 71.
+        add("gaps66/rd-axis-x", () -> sized(path(3), new double[] {30, 128}, new double[] {30, 128}, new double[] {30, 64}),
+                opts(RadialOptions.RADIUS, -50.0, RadialOptions.WEDGE_CRITERIA, AnnulusWedgeCriteria.LEAF_NUMBER, RadialOptions.COMPACTOR,
+                        CompactionStrategy.RADIAL_COMPACTION), FULL).expect(S_COMPACT);
+        // Axis y (RADIUS 100): n1 straight below the root (cos(PI / 2) leaves it a few ulps right) touches the root's box at
+        // center distance 50.
+        add("gaps66/rd-axis-y", () -> star(2), opts(RadialOptions.RADIUS, 100.0, RadialOptions.COMPACTOR,
+                CompactionStrategy.RADIAL_COMPACTION), FULL).expect(S_COMPACT);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------
     // Recording
 
     static final class Row {
@@ -1345,19 +1399,30 @@ public class RadialVectors {
     }
 
     static String buildAll() {
+        return buildFile(SEED, true, () -> {
+            shapeFamily();
+            corpusFamily();
+            matrixFamily();
+            i30Family();
+            labelFamily();
+            hierFamily();
+            throwsFamily();
+        });
+    }
+
+    /** The second plan's file: the gaps66 rows only, no option coverage check (that is the first file's contract). */
+    static String buildExtra() {
+        return buildFile(SEED_EXTRA, false, RadialVectors::gaps66Family);
+    }
+
+    static String buildFile(long seed, boolean coverage, Runnable families) {
         SPECS.clear();
         CHANGES.clear();
         OPTION_ROWS.clear();
         I30_ROWS.clear();
         I30_JSON.clear();
         GROUP_COUNT.clear();
-        shapeFamily();
-        corpusFamily();
-        matrixFamily();
-        i30Family();
-        labelFamily();
-        hierFamily();
-        throwsFamily();
+        families.run();
         List<Row> rows = new ArrayList<>();
         Set<String> ids = new HashSet<>();
         for (Spec s : SPECS) {
@@ -1366,9 +1431,11 @@ public class RadialVectors {
                 rows.add(r);
             }
         }
-        checkCoverage();
+        if (coverage) {
+            checkCoverage();
+        }
         StringBuilder out = new StringBuilder("{\n  \"jdk\": ").append(str(System.getProperty("java.version")));
-        out.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"seed\": ").append(SEED);
+        out.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"seed\": ").append(seed);
         out.append(",\n  \"rowCounts\": {");
         int k = 0;
         for (String g : List.of(G_FULL, G_STOPS, G_THROWS)) {
@@ -1437,21 +1504,27 @@ public class RadialVectors {
         System.setProperty("org.eclipse.elk.graph.util.identifierSeed", "1");
         REPO = Path.of(args[1]).toAbsolutePath().normalize().getParent().getParent();
         verifyTable();
-        String file = buildAll();
+        write(args[0], OUTPUT, RadialVectors::buildAll);
+        write(args[0], OUTPUT_EXTRA, RadialVectors::buildExtra);
+    }
+
+    /** Builds one file (twice when pinned, byte-identical), reports it, checks the cap, writes it and parses it strictly. */
+    static void write(String dir, String output, Supplier<String> build) throws IOException {
+        String file = build.get();
         if (!unpinned) {
-            String again = buildAll();
+            String again = build.get();
             if (!file.equals(again)) {
-                throw new IllegalStateException("two builds differ");
+                throw new IllegalStateException("two builds differ" + (output.equals(OUTPUT) ? "" : " (" + output + ")"));
             }
         }
         report(file);
         long bytes = file.getBytes(StandardCharsets.UTF_8).length;
         if (bytes > MAX_BYTES) {
-            throw new IllegalStateException(OUTPUT + " is " + bytes + " bytes, over the 16 MiB cap");
+            throw new IllegalStateException(output + " is " + bytes + " bytes, over the 16 MiB cap");
         }
-        Files.createDirectories(Path.of(args[0]));
-        Files.writeString(Path.of(args[0], OUTPUT), file, StandardCharsets.UTF_8);
-        strictParse(Path.of(args[0], OUTPUT));
-        System.err.println("strict JSON parse ok, " + OUTPUT + " bytes " + bytes);
+        Files.createDirectories(Path.of(dir));
+        Files.writeString(Path.of(dir, output), file, StandardCharsets.UTF_8);
+        strictParse(Path.of(dir, output));
+        System.err.println("strict JSON parse ok, " + output + " bytes " + bytes);
     }
 }

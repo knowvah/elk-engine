@@ -115,8 +115,11 @@ step), `throws` (class, message, first ELK frame).
 | ------------------------------------ | ------------------------------------- | ---: | ---: | ----: | -----: |
 | `mrtree.json`                        | `tools/vectors/MrTreeVectors.java`    |  188 |  122 |    54 |     12 |
 | `mrtree-extra.json`                  | the same launcher, second output      |  213 |  140 |    68 |      5 |
+| `mrtree-extra2.json`                 | the same launcher, third output       |    3 |    0 |     3 |      0 |
 | `radial.json`                        | `tools/vectors/RadialVectors.java`    |  309 |  148 |   150 |     11 |
+| `radial-extra.json`                  | the same launcher, second output      |    7 |    5 |     2 |      0 |
 | `vertiflex.json`                     | `tools/vectors/VertiFlexVectors.java` |  471 |  247 |   216 |      8 |
+| `vertiflex-extra.json`               | the same launcher, second output      |    4 |    3 |     1 |      0 |
 
 `mrtree-units.json` (recorder `tools/vectors/MrTreeUnitVectors.java`, `mrtree-unit-vectors.sh`) holds 2,656 rows of code the
 pipeline rows cannot reach or isolate: `edgeRouter` 422 (hand-built `TGraph`s through the oracle's `EdgeRouter`,
@@ -126,7 +129,14 @@ committed rows are JSON-identical and in place (`fix(T3)`, T1 `fix`), and `mrtre
 pin its counts. `mrtree-extra.json` holds the scenarios the first ref did not reach: compaction x five directions x two routing
 modes, MIDDLE_TO_MIDDLE x four directions, multi-level gaps, cycle-inducing edges, node-order constraints with priorities 2-4,
 fans of 11, 12 and 100, BFS two-parent shapes (4 complete and 4 throwing), `deepLevel` (a same-level edge at level 130), debug
-logs, `omitNodeMicroLayout`.
+logs, `omitNodeMicroLayout`. `radial-extra.json`, `vertiflex-extra.json` and `mrtree-extra2.json` (issue #66) are separate
+files because committed tests pin the row counts of `radial.json`, `vertiflex.json` and `mrtree.json`, and `mrtree-extra.json`
+is at its 8 MiB cap. Each recorder writes its new file after the earlier ones from a plan of its own, so the earlier files stay
+byte-identical. Their rows take the `tau` arm of `EadesRadial` and the `sorter != null` arms of `RadialCompaction`, give stops
+rows to four multi-level gap arms of the mrtree `EdgeRouter`, and kill eight mutants the earlier rows let survive (a node at
+exactly angle 0 in the polar sorter, exactly touching boxes in the radial compaction, an outline tie in `RelativeXPlacer`, the
+`BendEdgeRouter` epsilon, a compaction into level 0). `RadialExtraVectors.test.ts` and `VertiFlexExtraVectors.test.ts` replay
+the first two; `MrTreeVectors.test.ts` replays all three mrtree files.
 
 **Replays (TR1 exit).** `src/alg/mrtree/MrTreeVectors.test.ts`, `src/alg/radial/RadialVectors.test.ts` and
 `src/alg/vertiflex/VertiFlexVectors.test.ts` replay every row through the real provider (a `full` row through
@@ -306,9 +316,9 @@ oracle built by `tools/oracle/build.sh` at the stamp in `oracle-build.json`.
 
 ```bash
 # re-record each ref; ELK_VECTORS_CACHE=off forces a cold run; the output must be cmp-identical to the committed ref
-ELK_VECTORS_CACHE=off bash tools/vectors/mrtree-vectors.sh      "$TMPDIR/mrtree"      # mrtree.json and mrtree-extra.json
-ELK_VECTORS_CACHE=off bash tools/vectors/radial-vectors.sh      "$TMPDIR/radial"      # radial.json
-ELK_VECTORS_CACHE=off bash tools/vectors/vertiflex-vectors.sh   "$TMPDIR/vertiflex"   # vertiflex.json
+ELK_VECTORS_CACHE=off bash tools/vectors/mrtree-vectors.sh      "$TMPDIR/mrtree"      # mrtree.json, mrtree-extra.json, mrtree-extra2.json
+ELK_VECTORS_CACHE=off bash tools/vectors/radial-vectors.sh      "$TMPDIR/radial"      # radial.json, radial-extra.json
+ELK_VECTORS_CACHE=off bash tools/vectors/vertiflex-vectors.sh   "$TMPDIR/vertiflex"   # vertiflex.json, vertiflex-extra.json
 ELK_VECTORS_CACHE=off bash tools/vectors/mrtree-unit-vectors.sh "$TMPDIR/mrtree-units" # mrtree-units.json
 
 # regenerate the goldens; the refs must not change

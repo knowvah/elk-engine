@@ -101,3 +101,37 @@ Reached by tests, by no recorded row (replay-alone gap):
 | `CompactionProcessor.getRightElement` throw | `CompactionProcessor.java:290-292` | `CompactionProcessor.ts:386-` | D | its callers guard `s.tailSet(r).size() > 1` (`:250-262`); asserted by a hand case |
 | `EdgeRouter.java:368` guard `!getBendPoints().isEmpty()` (cycle-inducing edge, empty bend list) | `EdgeRouter.java:368-371` | `EdgeRouterSpecialEdges.ts:453-455` | R | the T1 note says no pipeline row reaches the false arm; scoped coverage of the recorded evidence alone (rows plus `mrtree-units.json` vectors) takes both arms, so the unit vectors do. A later recorder scenario could add a pipeline row |
 | `EdgeRouter` empty-graph `NoSuchElementException` (`:169`), `DoubleStreamAverage` empty throw | `EdgeRouter.java:169`, `:313-315` | `EdgeRouterSpecialEdges.ts:154-155`, `DoubleStreamAverage.ts:17-18` | P | `EdgeRouter.process` reaches `TreeUtil.getRoot` first (`:141`) and throws there for an empty graph; unit-tested |
+
+## tree-recorder-gaps (#66), 2026-11-23
+
+Mission `tree-recorder-gaps` added recorder scenarios for the `R` rows and the surviving mutants that T19 handed to #66. The rows
+are in three new refs (`radial-extra.json`, `vertiflex-extra.json`, `mrtree-extra2.json`; the five refs above are byte-identical).
+Evidence: `plans/tree-recorder-gaps/decision-journal.md` (the T1 `baseline` and `finding` rows, the T2 to T4 `evidence` rows) and
+`plans/tree-recorder-gaps/items.md`. Outcomes: 1 recorded, 2 reached but the port diverges, 3 proven unreachable or equivalent,
+4 unreached.
+
+This section supersedes four earlier rows, which stay as written above:
+
+- radial, `EadesRadial.wedgeStart` (`R`) and `RadialCompaction`, `sorter != null` (`R`): both arms are recorded now.
+- mrtree, `EdgeRouter.java:368` (`R`): the false arm was recorded all along. Three `cycle/cycPar` rows of `mrtree-extra.json`
+  under DOWN take it, in the port and on the oracle (`jdb`: `EdgeRouter:372` reached once with an empty bend list). The 8a T1
+  note "not reached by any row", and the inference above that only the unit vectors take it, were a mis-attribution.
+- mrtree, `NodeOrderer` priority 3 comparator (`R`): ties were recorded all along (`orderer/starRangeEdge` of
+  `mrtree-extra.json`: two out-of-bound constraints of 7 in a level of 6), and mutant M9 is equivalent under V8.
+
+| Item | Java | TS | Outcome | Rows or proof | Evidence |
+| ---- | ---- | -- | ------- | ------------- | -------- |
+| R-a `tau < maxAlpha - minAlpha` true arm | `EadesRadial.java:108-113` | `EadesRadial.ts:111-112` | 1 | `radial-extra.json`: `full/gaps66/ra-radius-neg1`, `stops/gaps66/ra-radius-neg1` (RADIUS -1) | new test alone: `:112` hits 2 (T2 `evidence`) |
+| R-b `sorter != null` true arms | `RadialCompaction.java:50, 73` | `RadialCompaction.ts:33-34, 59-60` | 1 | `radial-extra.json`: `full/gaps66/rb-radial-compaction-id`, `stops/gaps66/rb-radial-compaction-id` (RADIAL_COMPACTION, sorter ID) | new test alone: `:34` hits 2, `:60` hits 4 (T2 `evidence`) |
+| R-c mutant R1, `arc1 < 0` → `<= 0` and its `arc2` twin | `RadialUtil.java:149-178` | `RadialUtil.ts:139, 152` | 1 | `radial-extra.json`: `full/gaps66/rc-polar-angle0` (sorter POLAR_COORDINATE, a first-level node at exactly angle 0) | both killed by `RadialExtraVectors.test.ts`, both survive `RadialVectors.test.ts` (T2 `evidence`) |
+| R-d mutant R5, `<` → `<=` in `overlap`'s first branch: `x1 < x2 + width2`, `y1 < y2 + height2`, `y2 < y1` | `AbstractRadiusExtensionCompaction.java:140-152` | `AbstractRadiusExtensionCompaction.ts:18` | 1 (all three) | `radial-extra.json`: `full/gaps66/rd-axis-x` (the first and the third), `full/gaps66/rd-axis-y` (the second): boxes exactly touching, or with exactly equal tops, during RadialCompaction | each killed by the new test, survives the landed one (T2 `evidence`). The fourth `<` of the line (`x2 < x1`) was killed by `radial.json` already |
+| V-a mutant V5, `>` → `>=` in `firstRun` | `RelativeXPlacer.java:95` | `RelativeXPlacerOutlines.ts:31` | 1 | `vertiflex-extra.json`: `full/gaps66EqualY/bendSpacing0`, `stops/gaps66EqualY/bendSpacing0` (BEND, `spacing.nodeNode` 0, a child at `verticalConstraint` = its sibling's bottom) | killed by `VertiFlexExtraVectors.test.ts`, survives `VertiFlexVectors.test.ts` and `RelativeXPlacerReplay.test.ts` (T3 `evidence`) |
+| V-b BEND epsilon, mutant `> 0.5` | `BendEdgeRouter.java:73-74` | `BendEdgeRouter.ts:56-59` | 1 | `vertiflex-extra.json`: `full/gaps66BendEpsilon/marginTop0.25` (a bend point), `full/gaps66BendEpsilon/marginTop0.00005` (none) | `> 0.5` killed by the first row, an epsilon of `0.00001` by the second; both survive the landed tests (T3 `evidence`) |
+| M-a stops rows for the gap arms only full rows reached: after the last node under UP, before the first node under DOWN, the vertical side counter, the vertical skip-level-side test with an empty bend list | `MultiLevelEdgeNodeNodeGap.java:137-141, 197-202`; `EdgeRouter.java:270-274, 232-233` | `MultiLevelEdgeNodeNodeGap.ts:163-165, 225-227`; `EdgeRouterSpecialEdges.ts:329, 260` | 1 (each arm) | `mrtree-extra2.json`: `stops/gaps66/gapUp7/direction=UP+compaction=true+edgeRoutingMode=AVOID_OVERLAP`, `stops/gaps66/gapDown4/direction=DOWN+edgeRoutingMode=AVOID_OVERLAP` | stops-only coverage, the side-counter throw probe, `jdb` hits (T4 `evidence`). "After the last node under DOWN" had a stops row already. Not added: `EdgeRouterEndPoints.ts:89` false arm (LEFT), still reached by one full row only |
+| M-b cycle-inducing DOWN edge with an empty bend list | `EdgeRouter.java:368-371` | `EdgeRouterSpecialEdges.ts:453-455` | 1 (existing rows) | `mrtree-extra.json`: `full/cycle/cycPar/direction=DOWN+edgeRoutingMode=AVOID_OVERLAP+edgeEndTextureLength=0.0`, `…=15.0`, `stops/cycle/cycPar/direction=DOWN+…=15.0` | scoped coverage of the landed replay (full 2, stops 1) and the oracle `jdb` check (T1 `finding`) |
+| M-c mutant M9, `a < b ? -1` → `<=` | `NodeOrderer.java:250-254` | `NodeOrderer.ts:30` | 3 (equivalent under V8) | the mutant turns a tie's `-0` into `+1`; V8's sort decides alike for both (300,000 seeded arrays, 0 differ). Not claimed for other engines: ECMAScript leaves an inconsistent comparator's order unspecified. No row | T4 `decision`; ties are recorded by `orderer/starRangeEdge`, which kills a tie-reversing mutant |
+| M-d mutant M12, `newIndex > 0` → `>= 0` | `CompactionProcessor.java:165-166` | `CompactionProcessor.ts:203` | 1 | `mrtree-extra2.json`: `stops/compact66/levelZero2/direction=DOWN+compaction=true+spacingNodeNode=-20.0+edgeRoutingMode=AVOID_OVERLAP` (`RecursiveGraphLayoutEngine` does not validate the negative spacing) | killed by the extra2 rows, survives the first two refs; oracle `jdb`: `newIndex = 0`, `TREE_LEVEL` stays 1 (T4 `evidence`) |
+| M-e the stop dump carries in-edge order and `DIRECTION` | `MrTreeVectors.java` dump | `test/helpers/mrtree-replay-dump.test.ts:62` | n/a | `needs-ruling` #161 (it would re-record two refs and lower the frozen 27) | T1 `issue` |
+
+Met on the way, outside the 11 items, not searched for: `sideOneEdges++` (`EdgeRouterSpecialEdges.ts:323`, `EdgeRouter.java:266-269`
+and `:276-279`) is taken by no recorded row, full or stops.

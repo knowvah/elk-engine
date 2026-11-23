@@ -150,6 +150,10 @@ export const isThrowsRow = (row: VertiFlexRow): row is ThrowsRow => row.group ==
 /** The path of the vertiflex ref. */
 export const vertiflexRefPath = (): string => path.join(repoRoot(), 'test', 'golden', 'refs', 'java', 'vertiflex.json');
 
+/** The path of the second vertiflex ref (tree-recorder-gaps #66): same contract, written after vertiflex.json. */
+export const vertiflexExtraRefPath = (): string =>
+  path.join(repoRoot(), 'test', 'golden', 'refs', 'java', 'vertiflex-extra.json');
+
 export const vertiflexRefExists = (file: string = vertiflexRefPath()): boolean => existsSync(file);
 
 type Obj = Record<string, unknown>;
