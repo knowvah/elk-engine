@@ -8,11 +8,11 @@ name: Release
 # changelog or version back to main (main requires signed commits); the
 # changelog lives in the GitHub Release.
 #
-# MANUAL TRIGGER ONLY, on purpose. Nothing has been published yet: the first
-# publish freezes the ElkGraph API (AD-14), the npm package does not exist, and
-# no trusted publisher is configured. Both are the maintainer's steps
-# (PUBLISHING.md). After the first manual publish and the trusted-publisher
-# setup, the maintainer changes the trigger below to
+# MANUAL TRIGGER ONLY, on purpose. 1.0.0 was published by hand (2026-11-23,
+# PUBLISHING.md), but the `v1.0.0` tag and the trusted publisher are the
+# maintainer's steps, and without the tag semantic-release would publish 1.0.0
+# again. After the tag and the trusted-publisher setup, the maintainer changes
+# the trigger below to
 #
 #   on:
 #     push:

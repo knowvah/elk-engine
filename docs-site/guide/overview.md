@@ -11,11 +11,11 @@ Kernel](https://www.eclipse.org/elk) (ELK), the Java graph-layout library. There
 WASM: the layout algorithms are re-implemented in plain TypeScript and verified against the Java
 implementation.
 
-::: warning Pre-1.0
-All in-scope ELK layout algorithms are ported and checked against ELK built from source; the
-[parity report](/parity) has the results. The public export surface is accepted but not yet in
-`src/index.ts`, so the package entry exports nothing public yet. Until 1.0 the API may still change.
-See the [roadmap](/guide/roadmap) for what comes next.
+::: tip Version 1.0
+`@knowvah/elk-engine@1.0.0` is on npm. All in-scope ELK layout algorithms are ported and checked against
+ELK built from source; the [parity report](/parity) has the results, and differences still open are tracked
+as issues. The public API, 72 exports, is frozen at 1.0.0 and versions follow semver. Start with
+[Getting started](/guide/getting-started), and see the [roadmap](/guide/roadmap) for what comes next.
 :::
 
 ## The Java is the specification

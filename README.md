@@ -8,10 +8,14 @@ TypeScript and verified against the Java implementation.
 
 ## Status
 
-**Pre-1.0.** All in-scope ELK layout algorithms are ported and checked against ELK built from
-source; [`docs/parity-report.md`](docs/parity-report.md) has the results. The public export surface
-is accepted but not yet in `src/index.ts`, so the package entry exports nothing public yet. Until
-1.0 the API may still change. See [`plans/roadmap.md`](plans/roadmap.md) for what comes next.
+**1.0.** `@knowvah/elk-engine@1.0.0` is on npm (`npm install @knowvah/elk-engine`). All in-scope ELK
+layout algorithms are ported and checked against ELK built from source;
+[`docs/parity-report.md`](docs/parity-report.md) has the results, and differences still open are
+tracked as issues. The public API is 72 exports: the ElkGraph model, the engine, one options class
+per algorithm, the ELK JSON adapter, and the async `layout`. It is frozen at 1.0.0
+([`docs/architecture/public-api.md`](docs/architecture/public-api.md)); versions follow semver. See
+[Getting started](https://elk-engine.knowvah.com/guide/getting-started), and
+[`plans/roadmap.md`](plans/roadmap.md) for what comes next.
 
 ## Goals
 
