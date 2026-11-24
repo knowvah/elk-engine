@@ -24,7 +24,7 @@
 //   A scenario whose outcome decides its group (auto: the random rows, the edge rows and the corpus rows) is recorded under the group the
 //     JVM produced: a run that throws is a throws row named "throws/<shape>" (no factor suffix) and gets no stops row.
 //
-// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToRawLongBits(d)) zero-padded; a NaN anywhere fails the
+// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToLongBits(d)) zero-padded; a NaN anywhere fails the
 //   recording (+Infinity is 7ff0000000000000). Integers are JSON numbers. Ids are strings as exported. Points are [hexX, hexY].
 //
 // ELK DUMP (the state of one layout node's subtree; group full "expected" body and the "final" of a stops row):
@@ -715,11 +715,12 @@ public class RectPackingVectors {
                 + hex(d.getNextYcoordinate()) + "}";
     }
 
+    /** The x and y of every rectangle as Double.doubleToLongBits: a NaN equals a NaN whichever its sign bit (issue #72). */
     static long[] positions(List<ElkNode> rects) {
         long[] r = new long[rects.size() * 2];
         for (int i = 0; i < rects.size(); i++) {
-            r[2 * i] = Double.doubleToRawLongBits(rects.get(i).getX());
-            r[2 * i + 1] = Double.doubleToRawLongBits(rects.get(i).getY());
+            r[2 * i] = Double.doubleToLongBits(rects.get(i).getX());
+            r[2 * i + 1] = Double.doubleToLongBits(rects.get(i).getY());
         }
         return r;
     }
@@ -1777,11 +1778,12 @@ public class RectPackingVectors {
         return sb.toString();
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new IllegalStateException("NaN in a recorded value");
         }
-        return "\"" + String.format("%016x", Double.doubleToRawLongBits(d)) + "\"";
+        return "\"" + String.format("%016x", Double.doubleToLongBits(d)) + "\"";
     }
 
     static String q(String s) {

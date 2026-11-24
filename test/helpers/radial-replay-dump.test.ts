@@ -7,6 +7,7 @@ import { RadialOptions } from '../../src/alg/radial/options/RadialOptions.js';
 import { CoreOptions } from '../../src/core/options/CoreOptions.js';
 import { ElkGraphUtil } from '../../src/graph/util/ElkGraphUtil.js';
 import { KVector } from '../../src/core/math/KVector.js';
+import { CANONICAL_NAN_HEX, NEGATIVE_NAN } from './double-hex.js';
 import {
   applyRadialStop,
   assertSameStop,
@@ -55,6 +56,11 @@ describe('hex helpers', () => {
     }
     expect(encodeHex(1)).toBe('3ff0000000000000');
     expect(encodeHex(-0)).toBe('8000000000000000');
+  });
+
+  it('encodes both NaN signs as the one canonical NaN (issue #72)', () => {
+    expect(encodeHex(NEGATIVE_NAN)).toBe(CANONICAL_NAN_HEX);
+    expect(encodeHex(NaN)).toBe(CANONICAL_NAN_HEX);
   });
 });
 

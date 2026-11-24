@@ -44,7 +44,7 @@
 //   nodes, FULL_DUMP_BELOW) plus
 //   geometry: { nodes: { "<node path>": { pos: [x, y], size: [w, h], margin: [top, right, bottom, left] } },
 //               layers: [[w, h]], ports?: { "<port path>": { pos: [x, y] } }, labels?: { "<label path>": { pos: [x, y] } } }
-//   all doubles as 16 hex digits of the raw bits. nodes = every node of the traversal (layered or layerless, hidden
+//   all doubles as 16 hex digits of Double.doubleToLongBits. nodes = every node of the traversal (layered or layerless, hidden
 //   baseline nodes last); layers = Layer.getSize() of the root LGraph's layers in layer order. ports and labels (N3
 //   presence rule) are PRESENT only when the stop is LABEL_AND_NODE_SIZE_PROCESSOR or
 //   HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR, or the imported graph holds a node with NodeFlexibility.getNodeFlexibility(n)
@@ -367,11 +367,12 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
         }
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new Bug("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static void str(StringBuilder sb, String s) {
@@ -2526,7 +2527,7 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
     //   {"id":..,"model":..,"target":<id|null>,"prefix":[...],"options":{...},"sha256":"<hex>"[,"geometryExtras":true]}
     //   sha256 = SHA-256 (UTF-8) of canonical(placementCanonical(expected)): "edges" and "changed" sorted by "path"
     //   (layers/layerless/hidden keep their order; "ports" and "geometry" are maps: their keys are sorted); every C4
-    //   value rewritten (recursively): {t:int|double} -> {t:"number", v:<16 hex digits of the raw bits as a double>},
+    //   value rewritten (recursively): {t:int|double} -> {t:"number", v:<16 hex digits of Double.doubleToLongBits as a double>},
     //   {t:enum} -> c cut to the segment after the last '.' or '$', {t:set} -> likewise (an empty set: c null); the
     //   geometry's hex doubles are already canonical; then JSON with object keys sorted recursively, no whitespace,
     //   strings as JSON.stringify writes them. The TS twin is test/helpers/layered-placement-sweep.ts.
@@ -2699,7 +2700,7 @@ ddf662ba728c4e9aa0017bb2aae4cdba2046a84b68802cc00eeb17b0ed4fcea5  repo:test/gold
                 Object x = m.get("v");
                 double d = x instanceof Number n ? n.doubleValue() : parseDoubleArg("value", (String) x);
                 out.put("t", "number");
-                out.put("v", String.format("%016x", Double.doubleToRawLongBits(d)));
+                out.put("v", String.format("%016x", Double.doubleToLongBits(d)));
                 return out;
             }
             m.forEach((k, x) -> out.put(k, c4Free(x)));

@@ -3688,3 +3688,60 @@ with no failed assertion, and passed unchanged once it ran without `nice`. Nothi
 
 **Open.** #167 (`needs-ruling`): the depth check, now with the two visited-mark loops of #70 named. #170 (`follow-up`):
 heap and time at depth. #76 (spore) is the last issue under the same ruling.
+
+## Revision 2026-11-24 (canonical-nan)
+
+Queue mission for issue #72, on `chore/issue-queue` (plan and journal in `plans/canonical-nan/`). The maintainer's ruling of
+2026-11-13 on #53 gave the port one canonical NaN, `Double.doubleToLongBits` (`7ff8000000000000`), for every layout
+comparison: the JVM gives a computed NaN either sign bit, by interpreted or compiled code, so the oracle does not reproduce
+a NaN's raw bits against itself. The loops sweep (7g), `LayeredCompoundVectors` (7h) and `ForceVectors` (8b) already hashed
+NaN that way; this mission moved every other layout recorder, sweep hasher and port-side helper. No landed ref, vector,
+golden or assertion changed, no `src/` production file changed, and no oracle patch or pin changed. Oracle: `8bca22f4` +
+patches 0001-0004 (built 2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` is empty.
+
+**1. The audit.** 32 JVM sites in 24 recorder files and 16 TS sites turn a layout double into bits.
+
+| Side | Class | Sites | Action |
+| ---- | ----- | ----- | ------ |
+| JVM | guarded (`hex` throws "NaN in a recorded value" first) | 20 | moved behind the guard; the guard stays |
+| JVM | raw (pipeline sweep `hx`, `MrTreeUnitVectors.hex`, `RectPackingVectors.positions`, `SporeLayoutVectors.jitterCount`) | 4 | moved |
+| JVM | by-construction (the C4 number of the phase, order, placement and routing sweep hashes, parsed from `Double.toString` text) | 4 | moved |
+| JVM | canonical already | 4 | kept; the raw call inside `ForceVectors.hex`'s ternary moved |
+| TS | raw or by-construction (`DataView` or `doubleToRawLongBits` encoders) | 12 | call `canonicalHex` |
+| TS | canonical already (`force-replay-rows`, `layered-loops-sweep`) | 2 | kept; they reuse the shared constant |
+| TS | not a double (`hexOfLong` of a `Random.nextLong`) | 1 | none |
+| TS | NaN as text, JDK vector (`AggregatedMatchDecider.test.ts`, stream-sum.json) | 1 | allowlisted |
+
+`JavaVectors.java` and `CoreJdkVectors.java` (JDK shim vectors) stay raw: there the raw bits are the behaviour under test.
+
+**2. The canonical form on both sides.** JVM: 31 calls in 23 files went from `doubleToRawLongBits` to `doubleToLongBits`,
+and the headers name the call. TS: `test/helpers/double-hex.ts` holds the one encoder, `canonicalHex`, over the
+vector-proven `doubleToLongBits` shim, with `CANONICAL_NAN_HEX` and the sign fixture `NEGATIVE_NAN`. V8 keeps a NaN's sign
+bit and `-NaN` has it set, so the raw TS encoders could emit `fff8…` too. Each changed helper has a test that both NaN signs
+encode or hash alike and that `-0.0`, the infinities and finite values keep their raw bits.
+
+**3. Nothing recorded changed.** At the base all 22 layout recorders reproduced their 29 ref files byte for byte (21 cold,
+one cache hit). After the move all 22 ran cold and reproduced them again, so no ref was regenerated. All eight oracle
+sweeps (pipeline, labels, loops, compound, order, placement, routing, phase) were rerun: every one of 67,111 result lines
+is identical to the copy taken before the change, the phase sweep's 595 timeouts included. The TS sweep tests pass at the
+default strides, and the four that hash layout output pass at stride 1 with 0 mismatches (pipeline 6,646, labels 935,
+loops 2,997, compound 1,164 hash-equal cases). The layout refs with NaN rows are `force.json` (6,440), `spore-layout.json`
+(56) and `mrtree-units.json` (72), all `7ff8…`.
+
+**4. The guard and the docs.** `test/architecture/canonical-nan.fitness.test.ts` fails when `doubleToRawLongBits` appears
+in any Java under `tools/`, or `doubleToRawLongBits` or `setFloat64(` in a TS test or helper outside `src/java/`, apart
+from five allowlisted files with reasons; put back by hand, a raw call in `DiscoVectors.java` failed it. `docs/conformance.md`
+section 2 states the rule, the reason and the JDK shim exception.
+
+**5. Decisions.** The recorders' NaN guards stay (D3): the mission swaps the encoder behind them and removes none, as the
+ruling on #123 (2026-11-20) also has it. D2 against D5: `ForceVectors.hex`'s ternary would have needed an allowlist entry,
+so its raw call moved instead (same output, proven by the rerun). The fitness test scans all of `test/` and every
+`src/**/*.test.ts` outside the shim, wider than the brief's `test/helpers/` and `src/alg/`.
+
+**Gates.** Queue gates 1-7 green on the final tree: coverage 1,219 files, 50,645 tests passed and 83 skipped, 98.81 / 97.01
+/ 98.57 / 98.86. The planning baseline (50,718 tests) described the tree before the queue branch was rebased onto main;
+the suite on an exact copy of the base tree gives 1,214 files and 50,611 passed, so this mission adds 5 files and 34
+tests and loses none.
+
+**Open.** Nothing from this mission: no `needs-ruling` issue, no partial, no follow-up. #135 and #143 touch the same
+recorders and are unchanged by it.

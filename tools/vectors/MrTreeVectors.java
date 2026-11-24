@@ -24,7 +24,7 @@
 //   ElkGraphJson.forGraph(String).toElk() and runs the row on the re-imported graph (the recorded `expected`); it also runs a freshly
 //   built original graph and a second re-import and FAILS the recording unless all three serialised results are byte-identical
 //   (a throws row: same class, message and frame). A TS replay re-imports `input` with the ported importer.
-// Doubles are 16 lowercase hex digits, Long.toHexString(Double.doubleToRawLongBits(d)) zero-padded (a NaN fails the recording);
+// Doubles are 16 lowercase hex digits, Long.toHexString(Double.doubleToLongBits(d)) zero-padded (a NaN fails the recording);
 //   written below as H. Ints are JSON numbers, booleans JSON booleans.
 //
 // ---- group full ----------------------------------------------------------------------------------------------------------
@@ -323,11 +323,12 @@ d002e5a2eac3086de326c108f6582caa66356ffcc2e707ad7faf59778d92df49  repo:test/corp
         sb.append('"');
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new Bug("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     /** CHILD_AREA_* has no default: JSON null when the layout never set it (the engine skips a graph without children). */

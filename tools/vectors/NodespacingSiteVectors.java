@@ -43,7 +43,7 @@
 //              the six rows that have FIXED_RATIO ports; in the recorder's hand-built scenario the ratio is set on the
 //              ElkPort before adaptation (as the TS fixture does), in the replay by the step.
 //   expected = site-specific (below). Every double is 16 lowercase hex digits, String.format("%016x",
-//              Double.doubleToRawLongBits(d)) (JavaVectors.hex convention; -0.0 is kept as 8000000000000000); a NaN
+//              Double.doubleToLongBits(d)) (raw bits, issue #72; -0.0 is kept as 8000000000000000); a NaN
 //              fails the recording.
 //
 // Harness per site. "node" = root.getChildren().get(0), "graph" = ElkGraphAdapters.adapt(root), "nodeAdapter" = the first
@@ -947,11 +947,12 @@ public class NodespacingSiteVectors {
     // ------------------------------------------------------------------------------------------------------------
     // JSON helpers
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new IllegalStateException("NaN in a recorded value");
         }
-        return "\"" + String.format("%016x", Double.doubleToRawLongBits(d)) + "\"";
+        return "\"" + String.format("%016x", Double.doubleToLongBits(d)) + "\"";
     }
 
     static String hexes(double... ds) {

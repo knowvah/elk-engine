@@ -11,7 +11,7 @@
 // File: 2-space top level, one compact JSON row per line, trailing newline, strict JSON (parsed back with Gson's non-lenient reader):
 //   { jdk, oracle, seeds: {edgeRouter, orderBalance, average}, rowCounts: {edgeRouter, cyrusBeck, orderBalance, average}, rows: [row...] }
 // row = { id, group, input, expected }; ids are unique, "<group>/<family>/<name>". Doubles that are RESULTS are 16 lowercase hex digits
-// (Long.toHexString(Double.doubleToRawLongBits(d)) zero padded, written H below); scenario inputs of the graph groups are integers
+// (Long.toHexString(Double.doubleToLongBits(d)) zero padded: NaN canonical, #72; written H below); scenario inputs of the graph groups are integers
 // written as JSON numbers.
 //
 // ---- groups edgeRouter and cyrusBeck ------------------------------------------------------------------------------------
@@ -122,8 +122,10 @@ public class MrTreeUnitVectors {
         return xs[randInt(0, xs.length - 1)];
     }
 
+    /** H: Double.doubleToLongBits as 16 hex digits: raw bits, every NaN the canonical 7ff8000000000000 (issue #72; no guard,
+     * NaN results are rows of this recorder). */
     static String hex(double d) {
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static double unhex(String s) {

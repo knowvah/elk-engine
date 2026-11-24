@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { CANONICAL_NAN_HEX, NEGATIVE_NAN } from './double-hex.js';
 import {
   accumulate,
   decodeHex,
@@ -25,6 +26,11 @@ describe('hex doubles', () => {
     expect(decodeHex(HEX_ONE)).toBe(1);
     expect(encodeHex(-0)).toBe(HEX_NEGATIVE_ZERO);
     expect(Object.is(decodeHex(HEX_NEGATIVE_ZERO), -0)).toBe(true);
+  });
+
+  it('encodes both NaN signs as the one canonical NaN (issue #72)', () => {
+    expect(encodeHex(NEGATIVE_NAN)).toBe(CANONICAL_NAN_HEX);
+    expect(encodeHex(NaN)).toBe(CANONICAL_NAN_HEX);
   });
 });
 

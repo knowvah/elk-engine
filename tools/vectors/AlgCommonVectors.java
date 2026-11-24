@@ -6,8 +6,8 @@
 // JSON, so the TypeScript replay never needs a Java Random.
 // Run: tools/vectors/alg-common-vectors.sh <outDir>  (java -cp ... AlgCommonVectors.java <outDir> <tools/vectors dir>)
 //
-// Encoding: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToRawLongBits(d)) zero-padded
-// (JavaVectors.hex convention). A NaN anywhere fails the recording. Ints, booleans and names are plain JSON.
+// Encoding: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToLongBits(d)) zero-padded
+// (JavaVectors.hex convention for every non-NaN value; issue #72). A NaN anywhere fails the recording. Ints, booleans and names are plain JSON.
 //
 // Stability (stop 8): each scenario is run twice on freshly built objects (the second time through the other overloads
 // where one exists); the two serialised rows must be identical or the recording fails.
@@ -194,11 +194,12 @@ public class AlgCommonVectors {
         return m;
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     private static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new IllegalStateException("NaN in a recorded value");
         }
-        String s = Long.toHexString(Double.doubleToRawLongBits(d));
+        String s = Long.toHexString(Double.doubleToLongBits(d));
         return "0".repeat(HEX_DIGITS - s.length()) + s;
     }
 

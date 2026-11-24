@@ -128,8 +128,8 @@
 //               incoming: [edge path], outgoing: [edge path] }.
 //     edge  = { path, source: <port path or null>, target: <port path or null>, bendPoints: [[x, y]], labels, properties }; a null end is a
 //               port outside the tree.   label = { path, text, pos, size, properties }.
-//     Numbers (pos, size, margin, padding, offset, bend points): each double is its raw IEEE bits as 16 lower-case hex digits
-//       (Double.doubleToRawLongBits); a NaN in a recorded value stops the recording.
+//     Numbers (pos, size, margin, padding, offset, bend points): each double is its IEEE bits as 16 lower-case hex digits
+//       (Double.doubleToLongBits); a NaN in a recorded value stops the recording.
 //     properties = { "<option or internal id>": C4 }, sorted by id, all properties of the element EXCEPT the ids processors, random,
 //       spacings, splines.route.start, the SelfLoopHolder, org.eclipse.elk.resolvedAlgorithm (a reflected provider pool) and
 //       crossHierarchyMap (listed apart). C4 for a reference: { ref: <path> } for an LGraph element that is in the tree, { class: <Java class
@@ -513,11 +513,12 @@ ce3418acfa52e7afca791ec96756021d02268d6996185bc588e974e00c702f70  repo:test/gold
         }
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new Bug("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static void str(StringBuilder sb, String s) {

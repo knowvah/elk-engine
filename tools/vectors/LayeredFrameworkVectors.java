@@ -14,7 +14,7 @@
 //   NodeMicroLayoutVectors) under system property org.eclipse.elk.graph.json.exportSeed=1, embedded as JSON; null for
 //   metadata. options = { <sweep factor>: <level> } for sweep rows (already present in input; for readability), else {}.
 //   exception.class is the simple class name. Every double of a row is 16 lowercase hex digits,
-//   Long.toHexString(Double.doubleToRawLongBits(d)) zero-padded (JavaVectors.hex convention); enums and ids are strings.
+//   Long.toHexString(Double.doubleToLongBits(d)) zero-padded (raw bits, NaN canonical: issue #72); enums and ids are strings.
 //   A throwing import, transfer or adapter call is a row, never a failure; nothing partial is kept.
 //
 // Groups, in this order (the row ids are "<group>/<model id>" or "<group>/sweep-<NNN>"):
@@ -1188,11 +1188,12 @@ f30fac5ebbe51ef8aef7f4624e9a64e7018df5ae89d75c88e2a32961e2a5fa77  repo:test/gold
         }
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new IllegalStateException("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static void str(StringBuilder sb, String s) {

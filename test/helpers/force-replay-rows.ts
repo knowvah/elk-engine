@@ -11,6 +11,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { repoRoot } from '../corpus/corpus.js';
+import { CANONICAL_NAN_HEX } from './double-hex.js';
 import { decodeHex, encodeHex, isHex, type Hex } from './vertiflex-replay-rows.js';
 
 export { decodeHex, encodeHex, isHex, type Hex };
@@ -22,10 +23,10 @@ export type ForceRef = (typeof FORCE_REFS)[number];
 export const FORCE_ROW_GROUPS = ['full', 'stops', 'throws', 'log'] as const;
 export type ForceRowGroup = (typeof FORCE_ROW_GROUPS)[number];
 
-/** The canonical NaN of the recorder (`JavaVectors.hex`). */
-export const NAN_HEX: Hex = '7ff8000000000000';
+/** The canonical NaN of the recorder (`Double.doubleToLongBits`, issue #72). */
+export const NAN_HEX: Hex = CANONICAL_NAN_HEX;
 
-/** A double to its hex raw bits, NaN canonicalised as the recorder does (a JS NaN payload is platform text). */
+/** A double to its hex raw bits, NaN canonicalised as the recorder does (a JS NaN payload is platform text; `encodeHex` does it too). */
 export const hexOf = (value: number): Hex => (Number.isNaN(value) ? NAN_HEX : encodeHex(value));
 
 export type HexVec = readonly [Hex, Hex];

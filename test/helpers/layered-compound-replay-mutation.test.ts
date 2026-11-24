@@ -5,6 +5,8 @@
 // recorder's property encoding and the TS dump's (`actualLeaf` / `expectedLeaf`) hide no kind of difference below. The marker for an
 // element outside the dumped tree names its LGraph class, so an outside edge and an outside node differ.
 import { describe, expect, it } from 'vitest';
+import { longBitsToDouble } from '../../src/java/lang/JavaDouble.js';
+import { canonicalHex } from './double-hex.js';
 import {
   isCompoundModelsRow,
   loadCompoundRowsIfPresent,
@@ -48,12 +50,7 @@ function withValue(tree: Json, path: Path, replacement: Json): Json {
 }
 
 /** The IEEE bits of the recorder's hex form shifted by one whole unit: a change far beyond the 1e-6 tolerance. */
-const flipHex = (hex: unknown): string => {
-  const view = new DataView(new ArrayBuffer(8));
-  view.setBigUint64(0, BigInt(`0x${String(hex)}`));
-  view.setFloat64(0, view.getFloat64(0) + 1);
-  return view.getBigUint64(0).toString(16).padStart(16, '0');
-};
+const flipHex = (hex: unknown): string => canonicalHex(longBitsToDouble(BigInt(`0x${String(hex)}`)) + 1);
 
 /** The kinds the audit perturbs: how to find a site and what to put there. */
 const KINDS: Record<string, { pick: (value: Json, path: Path) => boolean; perturb: (value: Json) => Json }> = {

@@ -24,7 +24,7 @@
 //   How a row is run (a replay does the same): ElkGraphJson.forGraph(input).toElk(), then new RecursiveGraphLayoutEngine()
 //     .layout(root, monitor) with the force and stress providers registered (ForceMetaDataProvider, StressMetaDataProvider).
 //
-// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToRawLongBits(d)) zero-padded (JavaVectors.hex),
+// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToLongBits(d)) zero-padded (raw bits, issue #72),
 //   except NaN, which is always the canonical 7ff8000000000000 (a NaN payload is platform text; NaN rows exist on purpose: the
 //   spacing.nodeNode = 0 factors blow the layout up to Infinity and NaN). Infinity is 7ff0000000000000, -Infinity fff0000000000000.
 //   Integers are JSON numbers. Ids are strings as exported. Booleans are JSON booleans.
@@ -1782,7 +1782,7 @@ public class ForceVectors {
 
     /** 16 raw hex digits in quotes; NaN is the canonical 7ff8000000000000. */
     static String hex(double d) {
-        return "\"" + (Double.isNaN(d) ? NAN_HEX : String.format("%016x", Double.doubleToRawLongBits(d))) + "\"";
+        return "\"" + (Double.isNaN(d) ? NAN_HEX : String.format("%016x", Double.doubleToLongBits(d))) + "\"";
     }
 
     static String q(String s) {

@@ -22,7 +22,7 @@
 //     monitor) with SporeMetaDataProvider + SporeCompactionOptions + SporeOverlapRemovalOptions, ForceMetaDataProvider + ForceOptions and
 //     LayeredMetaDataProvider + LayeredOptions registered (underlyingLayoutAlgorithm names force, layered or an unknown id).
 //
-// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToRawLongBits(d)) zero-padded; a NaN anywhere fails the
+// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToLongBits(d)) zero-padded; a NaN anywhere fails the
 //   recording. Integers are JSON numbers. Points are [hexX, hexY]; boxes [x, y, w, h] in hex. Node indices i refer to Graph.vertices
 //   (the children of the root in child order; the import stop lists their ids). A tree is nested [i, child, child, ...] in
 //   Tree.children order; a leaf is [i].
@@ -97,7 +97,7 @@
 // group jitter (PK4): ElkGraphImporter.java:178 (shiftUntilUnique, :263-268) shifts a node centre by (random.nextDouble() - 0.5) * 0.001
 //   while it equals a key already in the value-hashed nodeMap; random is seeded from randomSeed (default 1) since eclipse-elk/elk#1242
 //   (it was an unseeded Math.random() before, and runsAgree false). Every planned row is first run through the importer alone (after any underlying layout) and the jitter
-//   guard counts the vertices whose Node.originalVertex differs (raw bits) from the child's x + width / 2, y + height / 2; full,
+//   guard counts the vertices whose Node.originalVertex differs (Double.doubleToLongBits) from the child's x + width / 2, y + height / 2; full,
 //   stops and minst rows must count 0 (a planned full row that counts more becomes a jitter row; a planned minst/throws row fails the
 //   recording). expected = { algorithm, invariants: { nodeCount, jitterNodes, overlapFree, maxDisplacementBound, runs, runsAgree } }
 //   over JITTER_RUNS engine runs (half on the re-imported input, half on the original): nodeCount = children; jitterNodes = vertices
@@ -963,15 +963,16 @@ public class SporeLayoutVectors {
                 + (applied ? ", " + dumpBody(layout) : "") + "}");
     }
 
-    /** Vertices whose originalVertex is not the child's centre: the shiftUntilUnique loop of the import shifted them. */
+    /** Vertices whose originalVertex is not the child's centre: the shiftUntilUnique loop of the import shifted them. Compared by
+     * Double.doubleToLongBits, so a NaN equals a NaN whichever its sign bit (issue #72). */
     static int jitterCount(ElkNode layout, Graph graph) {
         int count = 0;
         for (int i = 0; i < graph.vertices.size(); i++) {
             ElkNode c = layout.getChildren().get(i);
             double cx = c.getX() + c.getWidth() / 2, cy = c.getY() + c.getHeight() / 2;
             KVector v = graph.vertices.get(i).originalVertex;
-            if (Double.doubleToRawLongBits(cx) != Double.doubleToRawLongBits(v.x)
-                    || Double.doubleToRawLongBits(cy) != Double.doubleToRawLongBits(v.y)) {
+            if (Double.doubleToLongBits(cx) != Double.doubleToLongBits(v.x)
+                    || Double.doubleToLongBits(cy) != Double.doubleToLongBits(v.y)) {
                 count++;
             }
         }
@@ -1994,11 +1995,12 @@ public class SporeLayoutVectors {
         return sb.toString();
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new IllegalStateException("NaN in a recorded value");
         }
-        return "\"" + String.format("%016x", Double.doubleToRawLongBits(d)) + "\"";
+        return "\"" + String.format("%016x", Double.doubleToLongBits(d)) + "\"";
     }
 
     static String q(String s) {

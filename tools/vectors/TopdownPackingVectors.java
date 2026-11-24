@@ -27,7 +27,7 @@
 //     monitor) with TopdownpackingMetaDataProvider + TopdownpackingOptions and LayeredMetaDataProvider + LayeredOptions registered
 //     (the engine applies the LayoutAlgorithmResolver itself).
 //
-// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToRawLongBits(d)) zero-padded; a NaN anywhere fails
+// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToLongBits(d)) zero-padded; a NaN anywhere fails
 //   the recording (Infinity is recorded as its bits). Integers are JSON numbers. Ids are strings as exported. Boxes are
 //   { id, x, y, w, h }, points [hexX, hexY].
 //
@@ -990,11 +990,12 @@ public class TopdownPackingVectors {
         return sb.toString();
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new IllegalStateException("NaN in a recorded value (row " + "see TOPDOWNPACKING_TRACE" + ")");
         }
-        return "\"" + String.format("%016x", Double.doubleToRawLongBits(d)) + "\"";
+        return "\"" + String.format("%016x", Double.doubleToLongBits(d)) + "\"";
     }
 
     static String q(String s) {

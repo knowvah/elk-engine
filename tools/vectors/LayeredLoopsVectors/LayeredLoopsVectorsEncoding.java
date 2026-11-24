@@ -126,11 +126,12 @@ abstract class LayeredLoopsVectorsEncoding {
         }
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new LayeredLoopsVectors.Bug("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static void str(StringBuilder sb, String s) {

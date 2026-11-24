@@ -179,6 +179,21 @@ Consequences: element ids, element counts, edge-section topology, and
 bend-point counts are exact because ids and array lengths are exact;
 coordinates and sizes get `1e-6`. `formatDiffs` prints at most 20 diffs.
 
+**One canonical NaN (issues #53 and #72).** The comparator above reads numbers, so one NaN equals another. The JVM
+vector refs and the sweep hashes compare a double by its bits instead, written as 16 hex digits, and there the JVM has two
+encodings of a computed NaN that differ only in the top (sign) bit: `7ff8000000000000` and `fff8000000000000`. Which one
+a computation gives depends on whether the interpreter or compiled code ran it, so the oracle does not reproduce it
+against itself: in the loops sweep (7g, T19) the raw bits of one case changed from run to run while no other value did
+(issue #53). Every layout comparison therefore encodes NaN in one canonical form, `Double.doubleToLongBits`
+(`7ff8000000000000`), on both sides: the recorders and sweep hashers in `tools/vectors/` call it, and the port's helpers
+call `canonicalHex` (`test/helpers/double-hex.ts`), which is built on the vector-proven `doubleToLongBits` shim. Every
+non-NaN value keeps its raw IEEE bits, so `-0.0`, the infinities and the subnormals still compare bit for bit. Most
+recorders also still reject a NaN ("NaN in a recorded value"), so their refs hold none; the layout refs with NaN rows are
+`force.json`, `spore-layout.json` and `mrtree-units.json`. The JDK shim vectors (`JavaVectors.java`,
+`CoreJdkVectors.java`: `hash.json`, `numeric.json`, `lang.json`, `text.json`) stay raw, because there the raw bits are
+the behaviour under test. `test/architecture/canonical-nan.fitness.test.ts` fails when a raw encoder
+(`doubleToRawLongBits`, or a `DataView.setFloat64` encoder on the port side) appears outside its allowlist.
+
 **Known-divergences policy.** A divergence is never absorbed by raising `tol`
 or editing a golden (AD-13). Each one is recorded here with its cause and the
 test or fixture it affects. Accepted classes:
@@ -1635,9 +1650,9 @@ section states the state after 7g.
   under `inputs/loops/` and their manifest rows, and appends keys to `layered-label-metrics.json`.
 
 **Known divergences.** None numeric beyond the maintainer's rulings: issue #53 (the NaN-canonical sweep hash amends W5's
-raw IEEE hex for NaN only; the landed sweeps are untouched) and issue #54 (the port keeps insertion order for the spline
-segment's representative edge, as the flagged oracle does). The ELK oddities the port copies are drafted in the journal's
-T22 row (issue #56).
+raw IEEE hex for NaN only; the landed sweeps were untouched in 7g and moved to the same form under issue #72, section 2)
+and issue #54 (the port keeps insertion order for the spline segment's representative edge, as the flagged oracle does).
+The ELK oddities the port copies are drafted in the journal's T22 row (issue #56).
 
 **Upstream typos (CLAUDE.md carve-out).** None: the journal records no prose typo in the 7g sources.
 

@@ -85,7 +85,7 @@
 //
 // C4 values (7a): {t:"bool",v}, {t:"int",v}, {t:"string",v}, {t:"double",v:"<Double.toString>"}, {t:"enum",c,n},
 //   {t:"set",c,items}, {t:"list",c,items}, {t:"obj",c,fields}, {ref:"<path>"} an LGraph element, {elk:"<id>"} an
-//   ElkGraphElement, null. Doubles elsewhere (the full dump) are 16 lowercase hex digits of the raw bits.
+//   ElkGraphElement, null. Doubles elsewhere (the full dump) are 16 lowercase hex digits of Double.doubleToLongBits (issue #72).
 //
 // Checks: every row runs twice from scratch (input re-loaded, or exported and re-imported for elk inputs) and must
 //   agree; the whole file is built twice and must be byte-identical; the output is strict-parsed and stays under 16 MiB (raised from 5 MB on 2026-11-03);
@@ -269,11 +269,12 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
         }
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new Bug("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static void str(StringBuilder sb, String s) {
@@ -2277,7 +2278,7 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
     //   {"id":"<model>/<root|target>/<P1|P2>/<STRATEGY>","model":"<model>","target":<id|null>,"prefix":[...],
     //    "options":{...},"sha256":"<hex>"}   sha256 = SHA-256 (UTF-8) of phaseCanonical(expected), see below
     //   canonical form of expected: "edges" and "changed" sorted by "path" (layers/layerless/hidden keep their order);
-    //   every C4 value rewritten (recursively): {t:int|double} -> {t:"number", v:<16 hex digits of the raw bits of the
+    //   every C4 value rewritten (recursively): {t:int|double} -> {t:"number", v:<16 hex digits of Double.doubleToLongBits of the
     //   value as a double>}, {t:enum} -> c cut to the segment after the last '.' or '$', {t:set} -> likewise (an empty
     //   set has no class: c null); then JSON with object keys sorted recursively, no whitespace, strings escaped as
     //   JSON.stringify does. The TS twin is test/helpers/layered-phase-sweep.ts (the TS number type cannot tell
@@ -2438,8 +2439,9 @@ ee4ec399f7ce5e214a35267e7712c4ed8cd0f9e60a52774a3925181cdfe8445e  repo:test/gold
             return name.substring(Math.max(name.lastIndexOf('.'), name.lastIndexOf('$')) + 1);
         }
 
+        /** Double.doubleToLongBits as 16 hex digits: raw bits, every NaN the canonical 7ff8000000000000 (issue #72). */
         static String bitsOf(double d) {
-            return String.format("%016x", Double.doubleToRawLongBits(d));
+            return String.format("%016x", Double.doubleToLongBits(d));
         }
 
         @SuppressWarnings("unchecked")

@@ -5,6 +5,7 @@ import { ElkRectangle } from '../../src/core/math/ElkRectangle.js';
 import { KVector } from '../../src/core/math/KVector.js';
 import { Tree } from '../../src/alg/common/Tree.js';
 import { Node } from '../../src/alg/common/spore/Node.js';
+import { canonicalHex } from './double-hex.js';
 
 /** Test-local seeded generator (mulberry32). */
 export function seededRandom(seed: number): () => number {
@@ -97,12 +98,9 @@ export function pathSpec(length: number, spacing: number): TreeSpec {
   return { shape: 'path', rects, parents };
 }
 
-const view = new DataView(new ArrayBuffer(8));
-
-/** The raw bits of a double as 16 hex digits. */
+/** The bits of a double as 16 hex digits: raw, every NaN canonical (issue #72), so a NaN's sign bit never separates the port from its twin. */
 export function doubleBits(value: number): string {
-  view.setFloat64(0, value);
-  return view.getBigUint64(0).toString(16).padStart(16, '0');
+  return canonicalHex(value);
 }
 
 /** Raw bits of every node's vertex, original vertex and rectangle, in creation order. */

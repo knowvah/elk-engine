@@ -7,6 +7,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { repoRoot } from '../corpus/corpus.js';
+import { canonicalHex } from './double-hex.js';
 import { Direction } from '../../src/core/options/Direction.js';
 import { TEdge } from '../../src/alg/mrtree/graph/TEdge.js';
 import { TGraph } from '../../src/alg/mrtree/graph/TGraph.js';
@@ -26,10 +27,8 @@ export const UNIT_ROW_GROUPS = [EDGE_ROUTER_GROUP, CYRUS_BECK_GROUP, ORDER_BALAN
 export type UnitRowGroup = (typeof UNIT_ROW_GROUPS)[number];
 
 const REF_PATH = ['test', 'golden', 'refs', 'java', 'mrtree-units.json'] as const;
-const HEX_DIGITS = 16;
-const RADIX_HEX = 16;
 
-/** 16 lowercase hex digits of `Double.doubleToRawLongBits`. */
+/** 16 lowercase hex digits of `Double.doubleToLongBits` (NaN canonical, issue #72). */
 export type Hex = string;
 
 export interface GraphNodeSpec {
@@ -131,11 +130,9 @@ export function unhex(hex: Hex): number {
   return view.getFloat64(0);
 }
 
-/** The 16 lowercase hex digits of the raw bits of `value` (`Double.doubleToRawLongBits`; the NaN bits are JS's canonical NaN). */
+/** The 16 lowercase hex digits of `value` as the recorder's `hex` writes them: raw bits, every NaN canonical (`Double.doubleToLongBits`, issue #72). */
 export function hexOf(value: number): Hex {
-  const view = new DataView(new ArrayBuffer(8));
-  view.setFloat64(0, value);
-  return view.getBigUint64(0).toString(RADIX_HEX).padStart(HEX_DIGITS, '0');
+  return canonicalHex(value);
 }
 
 /** Builds the TGraph of a graph row exactly as the recorder does (recorder header: groups edgeRouter and cyrusBeck). */

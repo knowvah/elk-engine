@@ -7,6 +7,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { canonicalHex } from './double-hex.js';
 import type { Expected } from './layered-phase-replay-dump.js';
 import type { PhaseRow } from './layered-phase-replay-rows.js';
 
@@ -75,16 +76,7 @@ export function canonicalHash(value: unknown): string {
   return createHash('sha256').update(canonical(value), TEXT_ENCODING).digest('hex');
 }
 
-const HEX_DIGITS = 16;
-const FLOAT64_BYTES = 8;
 const NUMBER_TAG = 'number';
-
-/** The 16 lowercase hex digits of the raw IEEE-754 bits of a double. */
-function doubleBits(value: number): string {
-  const view = new DataView(new ArrayBuffer(FLOAT64_BYTES));
-  view.setFloat64(0, value);
-  return view.getBigUint64(0).toString(HEX_DIGITS).padStart(HEX_DIGITS, '0');
-}
 
 const lastSegment = (name: string): string => name.slice(Math.max(name.lastIndexOf('.'), name.lastIndexOf('$')) + 1);
 
@@ -99,7 +91,7 @@ export function c4Free(value: unknown): unknown {
   const record = value as Record<string, unknown>;
   const tag = record['t'];
   if (tag === 'int' || tag === 'double' || tag === NUMBER_TAG) {
-    return { t: NUMBER_TAG, v: doubleBits(Number(record['v'])) };
+    return { t: NUMBER_TAG, v: canonicalHex(Number(record['v'])) };
   }
   const out = Object.fromEntries(Object.entries(record).map(([key, member]) => [key, c4Free(member)]));
   if (tag === 'enum') {

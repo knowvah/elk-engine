@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { canonicalHex } from '../../../../test/helpers/double-hex.js';
 import { ElkRectangle } from '../../../core/math/ElkRectangle.js';
 import { KVector } from '../../../core/math/KVector.js';
 import { Tree } from '../Tree.js';
@@ -35,7 +36,6 @@ const spore = (JSON.parse(readFileSync(VECTORS_URL, 'utf8')) as { spore: (Scanli
 const scanlineRows = spore.filter((r): r is ScanlineRow => r.kind === 'scanline');
 const dfcRows = spore.filter((r): r is DfcRow => r.kind === 'dfc');
 
-const HEX_DIGITS = 16;
 const view = new DataView(new ArrayBuffer(8));
 
 /** Decodes the 16-hex-digit raw IEEE-754 bits the recorder wrote. */
@@ -44,10 +44,9 @@ function hexToDouble(hex: Hex): number {
   return view.getFloat64(0);
 }
 
-/** Encodes a double as the recorder's 16-hex-digit raw bits. */
+/** Encodes a double as the recorder's 16 hex digits: raw bits, every NaN canonical (issue #72). */
 function doubleToHex(d: number): Hex {
-  view.setFloat64(0, d);
-  return view.getBigUint64(0).toString(HEX_DIGITS).padStart(HEX_DIGITS, '0');
+  return canonicalHex(d);
 }
 
 function buildNodes(input: { rects: Hex[][]; vertices: Hex[][] }): Node[] {

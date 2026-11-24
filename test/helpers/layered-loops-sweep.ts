@@ -17,6 +17,7 @@ import { LayoutOptionProxy } from '../../src/core/util/internal/LayoutOptionProx
 import type { ElkGraphElement } from '../../src/graph/ElkGraphElement.js';
 import type { ElkNode } from '../../src/graph/ElkNode.js';
 import { ElkGraphText } from '../../src/graph/text/ElkGraphText.js';
+import { CANONICAL_NAN_HEX } from './double-hex.js';
 import { registerLayered } from './layered-framework-replay.js';
 import { replayCase as replayLabels } from './layered-labels-sweep.js';
 import { applyOptions, loadInput } from './layered-phase-replay-rows.js';
@@ -24,7 +25,7 @@ import { elkDump, pipelineHash, replayCase as replayPipeline } from './layered-p
 
 export { isOk, isThrows, readSweep, STATUS_REFUSED, STATUS_TIMEOUT, type SweepLine } from './layered-phase-sweep.js';
 
-const CANONICAL_NAN = '7ff8000000000000';
+const CANONICAL_NAN = CANONICAL_NAN_HEX;
 /** 16 hex digits whose exponent bits are all ones: an infinity when the 52 mantissa bits are zero, a NaN otherwise. */
 const NON_FINITE_BITS = /^[7f]ff[0-9a-f]{13}$/;
 const INFINITY_BITS: ReadonlySet<string> = new Set(['7ff0000000000000', 'fff0000000000000']);

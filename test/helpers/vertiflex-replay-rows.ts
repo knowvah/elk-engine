@@ -10,8 +10,9 @@
 // The file is validated once per path (`loadVertiFlexRows`).
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import { doubleToRawLongBits, longBitsToDouble } from '../../src/java/lang/JavaDouble.js';
+import { longBitsToDouble } from '../../src/java/lang/JavaDouble.js';
 import { repoRoot } from '../corpus/corpus.js';
+import { canonicalHex } from './double-hex.js';
 
 /** The steps of a stops row in execution order; the router step is `StraightEdgeRouter` or `BendEdgeRouter` per row. */
 export const STEP_IMPORT = 'Import';
@@ -31,8 +32,6 @@ export type Hex = string;
 export type HexQuad = readonly [Hex, Hex, Hex, Hex];
 export type HexPoint = readonly [Hex, Hex];
 
-const HEX_RADIX = 16;
-const HEX_DIGITS = 16;
 const BITS = 64;
 
 /** 16 hex digits of raw double bits to a double. */
@@ -40,9 +39,9 @@ export function decodeHex(hex: Hex): number {
   return longBitsToDouble(BigInt.asIntN(BITS, BigInt(`0x${hex}`)));
 }
 
-/** A double to its 16 lowercase hex digits of raw bits. */
+/** A double to its 16 lowercase hex digits: raw bits, every NaN canonical (`Double.doubleToLongBits`, issue #72). */
 export function encodeHex(value: number): Hex {
-  return BigInt.asUintN(BITS, doubleToRawLongBits(value)).toString(HEX_RADIX).padStart(HEX_DIGITS, '0');
+  return canonicalHex(value);
 }
 
 /** Whether a string has the form of an encoded double. */

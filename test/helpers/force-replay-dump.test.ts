@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { InternalProperties } from '../../src/alg/force/options/InternalProperties.js';
+import { CANONICAL_NAN_HEX, NEGATIVE_NAN } from './double-hex.js';
 import {
   classify,
   compareJson,
@@ -72,6 +73,8 @@ describe('force replay rows', () => {
 
   it('hexOf writes NaN as the recorder does and decodeHex reads it back', () => {
     expect(hexOf(Number.NaN)).toBe(NAN_HEX);
+    expect(hexOf(NEGATIVE_NAN)).toBe(NAN_HEX);
+    expect(NAN_HEX).toBe(CANONICAL_NAN_HEX);
     expect(Number.isNaN(decodeHex(NAN_HEX))).toBe(true);
     expect(hexOf(Number.POSITIVE_INFINITY)).toBe('7ff0000000000000');
     expect(hexOf(1)).toBe('3ff0000000000000');

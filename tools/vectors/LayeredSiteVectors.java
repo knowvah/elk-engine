@@ -20,7 +20,7 @@
 //   expected = { <as label>: value } in step order. A step that throws (an ELK or JDK exception, not an interpreter
 //   error) records { "exception": { "class": "<simple name>", "message": "<message>" } } as its label's value and the
 //   run continues; a message has its object hashes ("@" + 3 or more hex digits) masked as "@<hash>". Such a step has a
-//   label. Doubles are 16 lowercase hex digits, String.format("%016x", Double.doubleToRawLongBits(d)) (-0.0 kept); a
+//   label. Doubles are 16 lowercase hex digits, String.format("%016x", Double.doubleToLongBits(d)) (-0.0 kept); a
 //   NaN fails the recording. Enums, ids, names and class names are strings. A JVM-worded message (the "Cannot invoke
 //   ..." helpful NullPointerException text, the "Index n out of bounds for length m" texts) is the JDK 21 text.
 //
@@ -375,11 +375,12 @@ fdf40c543b7543ce9711e3b62dfb87ac198ea223eb3a381b047e83491a6b02dd  repo:test/corp
         }
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new Bug("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static void str(StringBuilder sb, String s) {

@@ -4,8 +4,9 @@ import { KVector } from '../../src/core/math/KVector.js';
 import { KVectorChain } from '../../src/core/math/KVectorChain.js';
 import { LGraph } from '../../src/alg/layered/graph/LGraph.js';
 import { InternalProperties } from '../../src/alg/layered/options/InternalProperties.js';
+import { CANONICAL_NAN_HEX, NEGATIVE_NAN } from './double-hex.js';
 import { addNode } from './lgraph-builders.js';
-import { dumpLGraph } from './layered-framework-replay.js';
+import { dumpLGraph, encodeHex } from './layered-framework-replay.js';
 
 const CHAIN_PROPERTY_ID = InternalProperties.ORIGINAL_BENDPOINTS.getId();
 
@@ -32,5 +33,12 @@ describe('dumpLGraph: KVectorChain property values', () => {
 
   it('encodes an empty chain with no items', () => {
     expect(nodeProperties(new KVectorChain())[CHAIN_PROPERTY_ID]).toEqual({ t: 'list', c: 'KVectorChain', items: [] });
+  });
+});
+
+describe('NaN sign (issue #72)', () => {
+  it('encodes both NaN signs as the one canonical NaN', () => {
+    expect(encodeHex(NEGATIVE_NAN)).toBe(CANONICAL_NAN_HEX);
+    expect(encodeHex(NaN)).toBe(CANONICAL_NAN_HEX);
   });
 });
