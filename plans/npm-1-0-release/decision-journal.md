@@ -34,3 +34,29 @@ Makes #109 and #131 moot.
 failed: `goldens-i18n` (the showcase link is unprefixed), `locale-complete` (the Conformance link is English-only),
 `translation-lint` (`/conformance` is an English-only URL), `i18n-status` (the fixture's English page set no longer
 lists `conformance.md`). No tolerance, vector or golden changed. Flagged to the maintainer in the PR.
+
+## 2026-11-23 — refresh of the architecture translations (#133)
+
+The built English page `/guide/architecture` was broken: `docs-site/guide/architecture.md` included line ranges of
+`docs/architecture/overview.md` and `component-map.md` that had gone stale as both grew, so the page lacked "What
+elk-engine is" and "Key flows" and cut the document table mid-row. Ranges fixed (overview `{3,43}`, `{62,70}`, `{85,}`;
+component map `{3,20}`, `{71,100}`, `{125,}`). The maintainer chose to show everything, so the translations carry the whole
+overview (22-row document table, the mission-by-mission status paragraph, the three adapter paragraphs, the toolchain
+section) and the component map's new paragraph. Stale English fixed first: "Nothing is published yet" (now `1.0.0` was
+published on 2026-11-23), the release row (runs on every push to `main`), the `--entry` mention of `pack:smoke`.
+
+All 23 `docs-site/<locale>/guide/architecture.md` pages refreshed by six Sonnet agents (3-4 locales each, Edit only), new
+`sourceHash` `b28f7adf145c6e3ab8efc737a9e5e9bb883714a2c79e0811ade88704241f3c21`. Verified: every page carries the 43
+GitHub links the English sections contain and no bare relative `.md` link; every number in the English sections appears in
+every page (Estonian writes four-digit numbers unseparated); prettier clean; `test/docs` 782 passed; `docs:i18n-status`
+reports no stale or missing page; `docs:build` ok. Repo-only docs link to `github.com/.../blob/main/docs/architecture/`,
+as `rewriteIncludedHref` does on the English page.
+
+## 2026-11-24 — carry #171's overview edit into the architecture translations
+
+#171 (merged while this refresh was open) changed one line of `docs/architecture/overview.md`: mission 7g's oracle rows
+1,627 → 1,642 (`sites` 64 → 79), and issue #58's three `elk.stress` cases "wait (mission 8b)" → "waited for mission 8b
+and run since its ruling was carried out (mission layered-stress-cases)". Both facts updated in all 23
+`docs-site/<locale>/guide/architecture.md` pages (number separators kept per locale). The edit keeps the overview at 135
+lines, so the include ranges stay valid. New `sourceHash`
+`bd9497d352debbb8c889e45fc334c90f3e318451e38381e96d0a09fdce150fe5` (merged overview + component map).

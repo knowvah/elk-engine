@@ -123,13 +123,13 @@ allowlist.
 ## Docs and release toolchain
 
 Added by roadmap row 12; decisions DP1 to DP9 in
-[`plans/docs-publish-prep/decisions.md`](../../plans/docs-publish-prep/decisions.md). Nothing is published yet.
+[`plans/docs-publish-prep/decisions.md`](../../plans/docs-publish-prep/decisions.md). `1.0.0` was published on 2026-11-23.
 
 | Piece          | What it is                                                                                                                                                                          |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Export surface | Accepted (2026-11-23), listed in [public-api.md](public-api.md) and held equal to `src/index.ts` by `src/index.test.ts`; frozen by the first npm publish (AD-14)                    |
+| Export surface | Accepted (2026-11-23), listed in [public-api.md](public-api.md) and held equal to `src/index.ts` by `src/index.test.ts`; frozen at `1.0.0`, the first npm publish (AD-14)           |
 | API reference  | `npm run docs:api`: typedoc in the private package `tools/typedoc/` with TypeScript 6 of its own (typedoc has no TypeScript 7 release, AD-6), into the generated `/reference/`      |
 | Examples       | `test/docs/examples/*.ts`, shown on the site's getting-started page as snippets and compared with oracle refs (`test/golden/refs/elk-examples/`, `regen-goldens.sh --set examples`) |
 | Link check     | `npm run docs:linkcheck`: linkinator over the built site, internal links and fragments, in CI; external links weekly (`links.yml`)                                                  |
-| Pack rehearsal | `npm run pack:smoke`: pack, check the file list, install offline into a clean project, import; with `--entry`, lay out an example there and compare with its oracle ref             |
-| Release        | semantic-release configuration and `release.yml`, manual trigger only until the maintainer's first publish; runbook in [`PUBLISHING.md`](../../PUBLISHING.md)                       |
+| Pack rehearsal | `npm run pack:smoke`: pack, check the file list, install offline into a clean project, import, lay out an example there and compare it with its oracle ref                          |
+| Release        | semantic-release configuration and `release.yml`, run on every push to `main`; runbook in [`PUBLISHING.md`](../../PUBLISHING.md)                                                    |

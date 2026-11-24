@@ -25,3 +25,13 @@
 - **Finding**: `shasum -a 256` of `docs-site/{index,guide/overview}.md` at the commit before #155 equals the locale `sourceHash` (prefix-checked), so the diff of the English page between two commits is exactly the drift to translate. `scripts/i18n-hash.mjs` takes a locale page path or an English `docs-site/` path.
 - **Impact**: A refresh brief can quote the English diff and one hash per page. `docs-site/.vitepress/i18n-hashes.json` (written by `docs:i18n-hashes` during `docs:build`) is gitignored and never edits pages.
 - **Confidence**: High
+
+## Observation: include line ranges of a wrapper page go stale silently
+
+- **Context**: Refreshing the architecture translations (#133).
+- **Finding**: `docs-site/guide/architecture.md` includes `docs/architecture/overview.md` by line ranges. The overview grew
+  (status paragraph, 22-row table), the ranges did not, and the built English page lost two sections with no test or
+  build error. Found only by reading the built headings.
+- **Impact**: any edit that adds or removes lines in an included file shifts the ranges; check the built page headings
+  (`docs-site/.vitepress/dist/guide/architecture.html`) after such an edit. A region marker would remove the fragility.
+- **Confidence**: High
