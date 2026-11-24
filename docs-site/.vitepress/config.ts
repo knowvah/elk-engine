@@ -104,16 +104,24 @@ export function rewriteIncludedHref(href: string, sourceDir: string): string {
 }
 
 /**
- * Heading ids exactly as GitHub computes them (github-slugger): lowercase, drop
- * every character that is not a letter, number, mark, space or hyphen, then
- * turn spaces into hyphens. Diacritics stay. The canonical docs under `docs/`
- * are written for GitHub, where `## 1. Oracle` is `#1-oracle` and `## 2.0 How …`
- * is `#20-how-…`; VitePress's default (`_1-oracle`, `2-0-how-…`) makes every
- * such in-page link silently miss on the site. The client scrolls by
- * `getElementById`, so a leading digit is safe. Translated pages follow the
- * same rule, so their anchors keep umlauts (`#1a-konformitätseinheit`).
+ * Heading ids by github-slugger's rule for letters, numbers, marks and
+ * connector punctuation: lowercase, drop every character that is not one of
+ * those, whitespace or a hyphen, then turn each whitespace character into a
+ * hyphen. Connector punctuation (Unicode Pc: `_`, `‿`, `＿`, …) is kept, so a
+ * heading that names a Java identifier keeps its underscores (`PARALLEL_NODE`
+ * is `#parallel_node`; issue #94). Diacritics stay. One ruled difference from
+ * GitHub (issue #94): every whitespace character becomes a hyphen, where
+ * GitHub does that for the ASCII space only and drops the rest (U+00A0,
+ * U+2003, …). Other characters can still differ: github-slugger works from a
+ * fixed character list, this rule from the runtime's Unicode classes. The
+ * canonical docs under `docs/` are written for GitHub, where
+ * `## 1. Oracle` is `#1-oracle` and `## 2.0 How …` is `#20-how-…`; VitePress's
+ * default (`_1-oracle`, `2-0-how-…`) makes every such in-page link silently
+ * miss on the site. The client scrolls by `getElementById`, so a leading digit
+ * is safe. Translated pages follow the same rule, so their anchors keep
+ * umlauts (`#1a-konformitätseinheit`).
  */
-const NOT_SLUG_CHARS = /[^\p{L}\p{N}\p{M}\s-]/gu;
+const NOT_SLUG_CHARS = /[^\p{L}\p{N}\p{M}\p{Pc}\s-]/gu;
 export function headingSlug(text: string): string {
   return text.trim().toLowerCase().replace(NOT_SLUG_CHARS, '').replace(/\s/g, '-');
 }
@@ -132,7 +140,7 @@ const SEPARATOR_RUNS = new RegExp(
 /**
  * Heading ids for the generated API reference. typedoc-vitepress-theme writes every link anchor with VitePress's
  * default slug rule (its `slugifyAnchor`), not GitHub's: `PARALLEL_NODE` is linked as `#parallel-node`, where
- * `headingSlug` would give the heading the id `parallelnode` and the link would miss. So the reference pages get their
+ * `headingSlug` would give the heading the id `parallel_node` and the link would miss. So the reference pages get their
  * ids by the rule their links were written with: strip accents and control characters, turn each run of whitespace
  * or punctuation into one hyphen, trim hyphens, guard a leading digit with `_`, lowercase.
  */
@@ -148,7 +156,7 @@ export function referenceHeadingSlug(text: string): string {
     .toLowerCase();
 }
 
-/** The heading id for a page: the reference rule under `reference/`, GitHub's rule everywhere else. */
+/** The heading id for a page: the reference rule under `reference/`, `headingSlug` everywhere else. */
 export function pageHeadingSlug(text: string, relativePath: string): string {
   return relativePath.startsWith(REFERENCE_DIR) ? referenceHeadingSlug(text) : headingSlug(text);
 }

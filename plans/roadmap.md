@@ -3968,3 +3968,58 @@ which is new API and waits for the maintainer, with module-level mutable state r
 pinning Graphviz in the oracle build and the end-to-end suite with its `docs/conformance.md` entry. Comments:
 https://github.com/knowvah/elk-engine/issues/88#issuecomment-7147101143 and
 https://github.com/knowvah/elk-engine/issues/95#issuecomment-7147102268. No `needs-ruling` or `follow-up` issue was filed, no label was changed and no row is a partial.
+
+## Revision 2026-11-24 (heading-slug-underscore)
+
+Queue mission for issue #94, part 2, on `chore/issue-queue` (plan and journal in `plans/heading-slug-underscore/`). The docs
+site's heading ids outside the API reference come from `headingSlug` (`docs-site/.vitepress/config.ts`). It dropped
+connector punctuation, so a heading naming a Java identifier lost its underscores: `## PARALLEL_NODE` got the id
+`parallelnode`, where GitHub gives `parallel_node`. The maintainer ruled on 2026-11-20: keep `_` and the rest of Unicode
+category Pc, as GitHub does; keep `-` for non-ASCII whitespace, unlike GitHub; the one pinned row may change. No `src/`
+file, ref, vector or golden changed. Oracle: not used (no JVM run); `oracle-build.json` names the pin `8bca22f4` and
+patches `0001`-`0004`, and `git -C ~/git/knowvah/elk log 8bca22f4..HEAD -- plugins/` is empty.
+
+**1. The rule.** `NOT_SLUG_CHARS` gained `\p{Pc}`: `/[^\p{L}\p{N}\p{M}\p{Pc}\s-]/gu`. Nothing else in `headingSlug` changed.
+Pc is ten code points at Node 26.3.1's Unicode 17.0 (U+005F, U+203F, U+2040, U+2054, U+FE33, U+FE34, U+FE4D, U+FE4E,
+U+FE4F, U+FF3F); github-slugger 2.0.0 keeps all ten, and after the change the site agrees with it on all ten. The mechanism
+was the missing class: `_` is in none of L, N, M, whitespace or `-`, so the replace removed it. The reference pages are
+untouched: `pageHeadingSlug` sends `reference/…` to `referenceHeadingSlug` (`PARALLEL_NODE` → `parallel-node`, as its links
+are written).
+
+**2. One ruled expected-value change (AD-13).** `test/docs/site-config.test.ts:74`,
+`pageHeadingSlug('PARALLEL_NODE', 'guide/getting-started.md')`: `'parallelnode'` → `'parallel_node'`. No other existing
+assertion or title changed.
+
+**3. New rows**, written and seen red before the regex changed (5 failed of 26: the changed row and the four Pc rows):
+
+| Heading | Id | Expected value from |
+| ------- | -- | ------------------- |
+| `snake_case heading` | `snake_case-heading` | github-slugger |
+| `PARALLEL_NODE` | `parallel_node` | github-slugger |
+| `a‿b` | `a‿b` | github-slugger |
+| `a＿b` | `a＿b` | github-slugger |
+| `1. Oracle` | `1-oracle` | github-slugger and the site |
+| `A — B` | `a--b` | github-slugger and the site |
+| `a b` | `a-b` | the site (ruling: keep `-`) |
+| `foo bar` | `foo-bar` | the site (ruling: keep `-`) |
+
+**4. No published id changed.** The heading ids of the built site were listed before and after the rule change: 871 ids on
+177 pages outside `reference/`, and 6,038 ids on all 252 pages; both lists are identical. No landed heading holds a Pc
+character. `npm run docs:linkcheck`: 515 links, 0 broken. The comments that called the rule "exactly as GitHub" (the
+`headingSlug` and `pageHeadingSlug` doc comments, `docs-site/.vitepress/README.md`, the test header) now state the ruled
+rule and its two known differences from GitHub.
+
+**5. Part 1 of #94** (the size of the search index with the API reference in it) was closed by ruling on 2026-11-20: leave
+it; `reference/` stays in local search (DP6). No change here.
+
+**6. Gates.** Queue gates 1-7 green: format, typecheck, complexity (no violation; 1,379 files, 10,760 functions); coverage
+1,222 files (1,213 passed, 9 skipped), 50,711 tests passed and 92 skipped with the nine sweep directories off, 98.82 / 97.01
+/ 98.57 / 98.86 (statements / branches / functions / lines); docs build with 201 typedoc warnings, as at the base; CodeQL
+with no new accepted entry; `test/golden/refs/` against the base untouched.
+
+**Open.** #176 (`follow-up`, not queued): outside whitespace and Pc, `headingSlug` and github-slugger 2.0.0 still differ on
+7,355 code points of U+0020-U+2FFFF (15,845 of all Unicode). Three causes, measured: github-slugger keeps no `No`
+(`²`, `½`: 915, a class difference); it keeps the 130 circled and squared Latin letters (`So` with the `Alphabetic`
+property), which the site drops; and its fixed list is built from Unicode 13.0 data, which fits the letters, marks and
+digits it drops and Node's Unicode 17.0 classes keep. On all 871 landed headings the two rules agree. No `needs-ruling` issue was filed,
+no stop condition fired and no row is a partial.
