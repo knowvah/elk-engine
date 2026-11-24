@@ -259,5 +259,202 @@
       "line": 37,
       "arm": "fn"
     }
+  ],
+  "sites/CompoundGraphPreprocessor/mergeInDeep": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorSegments.ts",
+      "line": 298,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 163,
+      "arm": "if[1]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/mergeOffOut": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 163,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 163,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/outThenParent": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 156,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 163,
+      "arm": "binary-expr[2]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/parentThenOut": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 156,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 163,
+      "arm": "binary-expr[2]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/inThenParent": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 154,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 163,
+      "arm": "binary-expr[2]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/parentThenIn": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 154,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 163,
+      "arm": "binary-expr[2]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/flowInside": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 311,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 332,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/flowPlain": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 313,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 334,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/flowYoInactive": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 308,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 313,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 329,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 334,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/flowInsideRev": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 311,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 332,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/flowPlainRev": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 313,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 334,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/HierarchicalNodeResizingProcessor/nonSquarePort": [
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 59,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/CompoundGraphPreprocessor/mergedThickness": [
+    {
+      "file": "src/alg/layered/compound/CompoundGraphPreprocessorDummies.ts",
+      "line": 163,
+      "arm": "if[1]"
+    }
+  ],
+  "sites/HierarchicalNodeResizingProcessor/resizerTopLevelChild": [
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 44,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 183,
+      "arm": "if[0]"
+    },
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 185,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/HierarchicalNodeResizingProcessor/resizerTopLevelWidth": [
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 44,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 183,
+      "arm": "if[0]"
+    }
+  ],
+  "sites/HierarchicalNodeResizingProcessor/resizerTopLevelHeight": [
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 44,
+      "arm": "if[1]"
+    },
+    {
+      "file": "src/alg/layered/intermediate/HierarchicalNodeResizingProcessor.ts",
+      "line": 185,
+      "arm": "if[0]"
+    }
   ]
 }

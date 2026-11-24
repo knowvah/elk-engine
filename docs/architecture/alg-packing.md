@@ -465,7 +465,8 @@ modules passes except for that one.
 |  #107 | `follow-up`    | the `rows.size() > nextRowIndex` false arm of `placeBelow` and `placeBeside` (`Compaction.java:325`, `:416`), unreached since eclipse-elk/elk#1239: an input or a proof                                                                                                                                                                                                                      |
 |  #108 | `follow-up`    | 27 sporeOverlap corpus cases throw "Invalid hitboxes" through `NaN` rectangles (a zero-size compound node, `ElkUtil.resizeNode`): whether to draft an upstream issue                                                                                                                                                                                                                         |
 
-Issues #58 and #68 stay with the maintainer (evidence comments only); #71 was closed with its ruling.
+Issue #68 stays with the maintainer (evidence comments only); #58 was ruled on 2026-11-13 and carried out by mission
+layered-stress-cases; #71 was closed with its ruling.
 
 ## 6. Runbook {#alg-packing-runbook}
 

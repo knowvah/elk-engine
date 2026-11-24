@@ -8,7 +8,7 @@
 // identity-hash guard and the 16 MiB guard from tools/vectors/LayeredCompoundVectors.java (B7: single-file launchers share no code).
 //
 // ===== OUTPUT CONTRACT (everything a TypeScript replay needs; no need to read the recorder body) =====
-// File <outDir>/vertiflex.json (2-space top level, ONE compact JSON row per line, trailing newline, strict JSON, under 16 MiB):
+// File <outDir>/vertiflex.json, then <outDir>/vertiflex-extra.json (SECOND FILE below) (2-space top level, ONE compact JSON row per line, trailing newline, strict JSON, under 16 MiB):
 //   { jdk, oracle, seed, rowCounts: { full, stops, throws }, optionCoverage, rows: [row...] }
 //   row = { id, group, input, expected }, ids unique and stable: "<group>/<shape>/<factor>" (throws: "throws/<name>").
 //   group in full | stops | throws. A scenario planned as full or stops whose run throws would be recorded as throws; none does.
@@ -112,6 +112,19 @@
 //   child is deep and whose right children are higher) and vcArm7/11/18/21 add the strategyBend factor to reach the left-pass branch
 //   at RelativeXPlacer.java:355-356. Where each row reaches which arm is listed in the hand-back report of mission 8a T3 (traced
 //   with a scratch copy of RelativeXPlacer printing the branch taken; the traced copy is never part of the recording).
+//
+// SECOND FILE <outDir>/vertiflex-extra.json (tree-recorder-gaps, issue #66, D1/D2): written AFTER vertiflex.json, which stays byte for
+//   byte as it was. Same contract as vertiflex.json (header shape with its own "seed": GAPS_SEED = 8111 and its own rowCounts and
+//   optionCoverage, row shapes, dump, groups, steps, delta encoding, strict parse, round trip, build-twice and 16 MiB checks); the
+//   per-file statistics (option coverage, step change counts) are reset before it, and the mandatory-step check applies to the first
+//   file only. Its rows come from a separate plan (gapsShapes(), Random(GAPS_SEED) draws only the initial positions; sizes 40 x 20),
+//   ids "<group>/<shape>/<factor>":
+//     gaps66EqualY / bendSpacing0 (full + stops): root n0 with children n1, n2 (verticalConstraint 90 = n1's bottom), layoutStrategy
+//       BEND, spacing.nodeNode 0: RelativeXPlacer.java:95 meets o2.next.absoluteY == o1.absoluteY where the branch decides the
+//       distance (item V-a).
+//     gaps66BendEpsilon / marginTop0.25, marginTop0.00005 (full): n0 -> n1, BEND, omitNodeMicroLayout (the micro layout would
+//       recompute the margins), margins.top on n1: the bend height differs from endY - spacing / 2 by 0.25 (a bend point) and by
+//       0.00005 (below the BendEdgeRouter.java:74 epsilon 1e-4, no bend point) (item V-b).
 //
 // Round trip (NS1): for each row the recorder (1) prepares the graph, (2) exports it to `input`, (3) re-imports `input` and runs it, which
 //   is the recorded `expected`, and (4) also runs a freshly prepared original and fails the row if the two outputs differ. Stability: the
@@ -225,7 +238,22 @@ public class VertiFlexVectors {
         setup();
         Path out = Path.of(args[0]);
         List<Row> rows = buildRows(true);
-        List<Row> again = buildRows(false);
+        sameBuilds(rows, buildRows(false));
+        checkMandatory();
+        writeOutput(out, OUTPUT, SEED, rows);
+        // the second plan (tree-recorder-gaps, issue #66, D2): written after vertiflex.json, with its own seed and counters
+        COVERAGE.clear();
+        STEP_ROWS.clear();
+        STEP_CHANGED.clear();
+        NOTES.clear();
+        List<Row> gaps = buildGapsRows(true);
+        sameBuilds(gaps, buildGapsRows(false));
+        writeOutput(out, GAPS_OUTPUT, GAPS_SEED, gaps);
+        pool.shutdownNow();
+    }
+
+    /** The whole build runs twice from scratch; the two row lists must be byte-identical. */
+    static void sameBuilds(List<Row> rows, List<Row> again) {
         if (rows.size() != again.size()) {
             throw new Bug("row count differs between the two builds");
         }
@@ -234,14 +262,17 @@ public class VertiFlexVectors {
                 throw new Bug("row " + rows.get(i).id + " differs between the two builds");
             }
         }
-        checkMandatory();
+    }
+
+    /** Writes one output file (header, rows, strict parse, size guard) and prints its statistics. */
+    static void writeOutput(Path out, String name, long seed, List<Row> rows) throws Exception {
         Map<String, Integer> counts = new LinkedHashMap<>();
         for (String g : List.of(FULL, STOPS, THROWS)) {
             counts.put(g, (int) rows.stream().filter(r -> r.group.equals(g)).count());
         }
         StringBuilder sb = new StringBuilder("{\n  \"jdk\": ");
         str(sb, System.getProperty("java.version"));
-        sb.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"seed\": ").append(SEED);
+        sb.append(",\n  \"oracle\": \"").append(elkCommit()).append("\",\n  \"seed\": ").append(seed);
         sb.append(",\n  \"rowCounts\": {");
         int k = 0;
         for (Map.Entry<String, Integer> e : counts.entrySet()) {
@@ -262,8 +293,8 @@ public class VertiFlexVectors {
         }
         strictParse(sb.toString());
         Files.createDirectories(out);
-        Files.write(out.resolve(OUTPUT), bytes);
-        System.err.println("rows " + rows.size() + " " + counts + " bytes " + bytes.length);
+        Files.write(out.resolve(name), bytes);
+        System.err.println(name + ": rows " + rows.size() + " " + counts + " bytes " + bytes.length);
         for (String note : NOTES) {
             System.err.println(note);
         }
@@ -271,7 +302,6 @@ public class VertiFlexVectors {
             System.err.println("step " + s + ": changes the state in " + STEP_CHANGED.getOrDefault(s, 0) + " of " + STEP_ROWS.get(s)
                     + " stops rows");
         }
-        pool.shutdownNow();
     }
 
     static void setup() throws Exception {
@@ -1258,6 +1288,63 @@ public class VertiFlexVectors {
             "starShuf6");
     static final Set<Integer> ARM_KEEP = Set.of(0, 2, 5, 7, 10, 11, 17, 18, 20, 21, 23);
     static final Set<Integer> BEND_LEFT_HITS = Set.of(7, 11, 18, 21);
+
+    // ------------------------------------------------------------------------------------------------------------
+    // Second plan: vertiflex-extra.json (tree-recorder-gaps, issue #66, D2; the first plan above is untouched)
+
+    static final String GAPS_OUTPUT = "vertiflex-extra.json";
+    static final long GAPS_SEED = 8111L;
+    static final double GAPS_W = 40, GAPS_H = 20;
+
+    /** A scenario of the second plan; stops = also a stops row (the site sits inside a step the stops replay isolates). */
+    record GapsShape(String id, Supplier<ElkNode> make, List<Factor> factors, boolean stops) { }
+
+    static List<Row> buildGapsRows(boolean record) throws Exception {
+        List<Row> rows = new ArrayList<>();
+        for (GapsShape s : gapsShapes(new Random(GAPS_SEED))) {
+            for (Factor f : s.factors) {
+                Supplier<ElkNode> prep = prepare(s.make, f);
+                rows.add(row(FULL + "/" + s.id + "/" + f.id, FULL, prep, record));
+                if (s.stops) {
+                    rows.add(row(STOPS + "/" + s.id + "/" + f.id, STOPS, prep, record));
+                }
+            }
+        }
+        return rows;
+    }
+
+    static List<GapsShape> gapsShapes(Random rnd) {
+        List<GapsShape> out = new ArrayList<>();
+        // V-a: RelativeXPlacer.java:95 at a tie. spacing.nodeNode 0 makes the bottom of n1's right outline (right corner, centre) and
+        // the top of n2's left outline (centre, left corner) horizontal runs at y 90 (n1 bottom = n2 top via verticalConstraint 90):
+        // the first run then picks the left corner of n2 (b.x = a.x + 40); taking the tie into the compare branch picks its centre.
+        Tree eq = tree(rnd, star(2), constant(3, GAPS_W), constant(3, GAPS_H));
+        eq.vc[2] = 90;
+        out.add(new GapsShape("gaps66EqualY", maker(eq), List.of(new Factor("bendSpacing0", g -> {
+            g.setProperty(VertiFlexOptions.LAYOUT_STRATEGY, EdgeRoutingStrategy.BEND);
+            g.setProperty(CoreOptions.SPACING_NODE_NODE, 0.0);
+        })), true));
+        // V-b: BendEdgeRouter.java:73-74 epsilon 1e-4. EDGE_BEND_HEIGHT of the single child = its y - margins.top - spacing / 2, so the
+        // difference to endY - spacing / 2 is margins.top: 0.25 (a bend point) and 0.00005 (none). The micro layout would recompute
+        // the margins, so it is omitted.
+        Tree bend = tree(rnd, path(2), constant(2, GAPS_W), constant(2, GAPS_H));
+        out.add(new GapsShape("gaps66BendEpsilon", maker(bend), List.of(marginTop("marginTop0.25", 0.25),
+                marginTop("marginTop0.00005", 0.00005)), false));
+        return out;
+    }
+
+    /** BEND, no micro layout, margins.top on node n1 (the edge target whose bend height the router reads). */
+    static Factor marginTop(String id, double top) {
+        return new Factor(id, g -> {
+            g.setProperty(VertiFlexOptions.LAYOUT_STRATEGY, EdgeRoutingStrategy.BEND);
+            g.setProperty(CoreOptions.OMIT_NODE_MICRO_LAYOUT, true);
+            for (ElkNode n : g.getChildren()) {
+                if (n.getIdentifier().equals("n1")) {
+                    n.setProperty(CoreOptions.MARGINS, new ElkMargin(top, 0, 0, 0));
+                }
+            }
+        });
+    }
 
     // ------------------------------------------------------------------------------------------------------------
     // Throws scenarios: { name, Supplier<ElkNode> }

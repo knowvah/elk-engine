@@ -4,12 +4,41 @@ import { compare as doubleCompare } from '../../java/lang/DoubleCompare.js';
 import * as Float32 from '../../java/lang/Float32.js';
 import * as Int32 from '../../java/lang/Int32.js';
 import * as JavaInteger from '../../java/lang/JavaInteger.js';
+import { checkStackDepth } from '../../java/lang/StackDepth.js';
 import { LinkedList } from '../../java/util/LinkedList.js';
 import type { FEdge } from './graph/FEdge.js';
 import { FGraph } from './graph/FGraph.js';
 import type { FNode } from './graph/FNode.js';
 import { ForceOptions } from './options/ForceOptions.js';
 import { InternalProperties } from './options/InternalProperties.js';
+
+/** The point a suspended `dfs` activation has reached in its loop body (ComponentsProcessor.java:140-153). */
+const DfsStep = {
+  /** before the next edge, its `last` test and its source-side test (`:140-145`) */
+  SOURCE: 0,
+  /** after the source-side call (`:146`), before the target-side test (`:148`) */
+  TARGET: 1,
+  /** after the target-side call (`:149`), before the edge and its labels are added (`:151-152`) */
+  ADD: 2,
+} as const;
+type DfsStep = (typeof DfsStep)[keyof typeof DfsStep];
+
+/** One suspended `dfs` activation (ComponentsProcessor.java:130-157). */
+interface DfsFrame {
+  readonly node: FNode;
+  readonly last: FNode | null;
+  readonly component: FGraph;
+  readonly edges: Iterator<FEdge>;
+  edge: FEdge | null;
+  step: DfsStep;
+}
+
+/** The arguments every `dfs` activation shares, and the explicit stack of suspended activations. */
+interface DfsSearch {
+  readonly visited: boolean[];
+  readonly incidence: LinkedList<FEdge>[];
+  readonly stack: DfsFrame[];
+}
 
 /**
  * Splits an input graph into connected components and recombines those components after layout.
@@ -21,10 +50,10 @@ import { InternalProperties } from './options/InternalProperties.js';
  * Precondition: a list of graphs with complete layout and layer assignment. Postcondition: a single graph.
  *
  * `recombine` is split at the statement-group boundaries of the Java (`:176-192`, `:194-208`, `:213-222`,
- * `:226-241`) to stay inside the complexity limits; statement order is unchanged. In `dfs`, for the same limit, the
- * `if (component == null)` assignment is `graph ?? new FGraph()` and `addAll` is a spread `push`. The Java `LinkedList` of
- * components and the `ArrayList`s of the graph are arrays (AD-10: insertion order, no hashing); the per-node
- * incidence lists stay `LinkedList`s.
+ * `:226-241`) to stay inside the complexity limits; statement order is unchanged. `dfs` runs on an explicit stack
+ * (AC6, #70), its activation entry in `openDfs` and its loop body in `nextDfsCall`; `addAll` is a spread `push`. The
+ * Java `LinkedList` of components and the `ArrayList`s of the graph are arrays (AD-10: insertion order, no hashing); the
+ * per-node incidence lists stay `LinkedList`s.
  *
  * @author msp
  * @see org.eclipse.elk.alg.force/src/org/eclipse/elk/alg/force/ComponentsProcessor.java
@@ -96,7 +125,13 @@ export class ComponentsProcessor {
 
   /**
    * Perform a DFS starting on the given node and collect all nodes that are found in the corresponding connected
-   * component. Recursive on the input depth, as in Java.
+   * component.
+   *
+   * The two recursive calls of ComponentsProcessor.java:146 (source side) and :149 (target side) are separate frame
+   * pushes in that order. AC6 (#70): explicit stack, same visit and side-effect order. A frame is one suspended Java
+   * activation with an unvisited node: the node, `last`, the component, the live iterator over its incidence list and
+   * the current edge with the step reached in the loop body; a child's `last` is its parent frame's node. An activation
+   * on a visited node returns at entry without a frame, as the Java's `if` does.
    *
    * @param node a node.
    * @param last the last node, i.e. the node from which the dfs arrived at {@code node}, or {@code null} if the dfs
@@ -113,31 +148,73 @@ export class ComponentsProcessor {
     visited: boolean[],
     incidence: LinkedList<FEdge>[],
   ): FGraph | null {
-    if (!visited[node.id]) {
-      visited[node.id] = true;
-      const component = graph ?? new FGraph();
-      component.getNodes().push(node);
-
-      for (const edge of incidence[node.id]!) {
-        if (edge.getTarget() === last || edge.getSource() === last) {
-          // Do not handle again the edge we just arrived from
-          continue;
-        }
-
-        if (edge.getSource() !== node) {
-          this.dfs(edge.getSource()!, node, component, visited, incidence);
-        }
-        if (edge.getTarget() !== node) {
-          this.dfs(edge.getTarget()!, node, component, visited, incidence);
-        }
-
-        component.getEdges().push(edge);
-        component.getLabels().push(...edge.getLabels());
+    const search: DfsSearch = { visited, incidence, stack: [] };
+    const component = this.openDfs(search, node, last, graph);
+    while (search.stack.length > 0) {
+      const frame = search.stack[search.stack.length - 1]!;
+      const next = this.nextDfsCall(frame);
+      if (next === null) {
+        search.stack.pop();
+      } else {
+        this.openDfs(search, next, frame.node, frame.component);
       }
+    }
+    return component;
+  }
 
+  /**
+   * Entry of one `dfs` activation (ComponentsProcessor.java:133-140): an unvisited node is marked, the component
+   * created if necessary, the node added and a frame pushed; a visited node yields `null` and no frame.
+   */
+  private openDfs(search: DfsSearch, node: FNode, last: FNode | null, graph: FGraph | null): FGraph | null {
+    if (!search.visited[node.id]) {
+      search.visited[node.id] = true;
+      let component = graph;
+      if (component === null) {
+        component = new FGraph();
+      }
+      component.getNodes().push(node);
+      // the incidence lists are not modified while the DFS runs; the iterator stays live as the Java's does
+      const edges = search.incidence[node.id]!.iterator();
+      search.stack.push({ node, last, component, edges, edge: null, step: DfsStep.SOURCE });
+      checkStackDepth(search.stack.length);
       return component;
     }
     return null;
+  }
+
+  /**
+   * Runs a frame's loop body (ComponentsProcessor.java:140-153) up to its next recursive call and returns the node of
+   * that call, or `null` when the loop ends and the activation returns.
+   */
+  private nextDfsCall(frame: DfsFrame): FNode | null {
+    for (;;) {
+      if (frame.step === DfsStep.SOURCE) {
+        const next = frame.edges.next();
+        if (next.done === true) {
+          return null;
+        }
+        const edge = next.value;
+        if (edge.getTarget() === frame.last || edge.getSource() === frame.last) {
+          // Do not handle again the edge we just arrived from
+          continue;
+        }
+        frame.edge = edge;
+        frame.step = DfsStep.TARGET;
+        if (edge.getSource() !== frame.node) {
+          return edge.getSource()!;
+        }
+      }
+      if (frame.step === DfsStep.TARGET) {
+        frame.step = DfsStep.ADD;
+        if (frame.edge!.getTarget() !== frame.node) {
+          return frame.edge!.getTarget()!;
+        }
+      }
+      frame.component.getEdges().push(frame.edge!);
+      frame.component.getLabels().push(...frame.edge!.getLabels());
+      frame.step = DfsStep.SOURCE;
+    }
   }
 
   // ///////////////////////////////////////////////////////////////////////////////////////////

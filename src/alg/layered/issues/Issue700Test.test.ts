@@ -3,9 +3,10 @@
  * Port of Issue700Test: every edge of a hierarchical layout is routed. Java: `@DefaultConfiguration()` (no `@Algorithm`),
  * one `@GraphResourceProvider` over the `665` and `700` tickets and `examples/hierarchy/**`, one `@Test` (4 oracle runs).
  *
- * H13: `665_includeChildrenDoesntStop.elkt` and `hierarchicalLayoutMixing.elkt` lay a child out with `elk.stress`, which has
- * no TypeScript port (issue #58); `STRESS_PENDING` drops them, so 2 of the 4 cases run (`700_brokenHierarchyHandling.elkt`,
- * `hierarchicalEdges.elkt`). The models are vendored under `compound/` (mission 7h, T1).
+ * `665_includeChildrenDoesntStop.elkt` and `hierarchicalLayoutMixing.elkt` lay a child out with `elk.stress`. Mission 7h
+ * held them back (H13) until stress was ported; the maintainer's ruling on issue #58 removed the hold-back, so all 4 cases
+ * run: the runner registers `elk.stress` as `PlainJavaInitialization` does. The four models are vendored under
+ * `compound/` (mission 7h, T1, and issue #58).
  *
  * @see org.eclipse.elk.alg.layered.test/src/org/eclipse/elk/alg/layered/issues/Issue700Test.java
  */
@@ -16,11 +17,18 @@ import {
   defineLayoutTest,
   type LayoutTestSpec,
 } from '../../../../test/helpers/layout-test-runner.js';
-import { ISSUE700_GRAPHS, vendored, withoutStressPending } from '../../../../test/helpers/stress-pending.js';
 import type { ElkEdge } from '../../../graph/ElkEdge.js';
 import type { ElkNode } from '../../../graph/ElkNode.js';
 
-const GRAPHS = withoutStressPending([...ISSUE700_GRAPHS, ...ISSUE700_GRAPHS.map(vendored)]);
+const GRAPHS = [
+  // each Java source after its twin under `compound/`, where the models are vendored
+  { path: 'compound/tickets/layered/**', filter: /665.+\.elkt/ },
+  { path: 'tickets/layered/**', filter: /665.+\.elkt/ },
+  { path: 'compound/tickets/layered/**', filter: /700.+\.elkt/ },
+  { path: 'tickets/layered/**', filter: /700.+\.elkt/ },
+  { path: 'compound/examples/hierarchy/**' },
+  { path: 'examples/hierarchy/**' },
+] as const;
 
 function testEdgeRouted(edge: ElkEdge): void {
   expect(edge.getSections().size(), 'Edge has no sections.').toBe(1);
@@ -51,8 +59,8 @@ const SPEC: LayoutTestSpec = {
 defineLayoutTest(SPEC);
 
 describe('Issue700Test (non-vacuity)', () => {
-  it('runs 2 cases (the oracle runs minus the H13 cases)', () => {
-    expect(buildLayoutTests(SPEC).length).toBe(2);
+  it('runs 4 cases (the oracle runs)', () => {
+    expect(buildLayoutTests(SPEC).length).toBe(4);
   });
 
   it('(non-vacuity) the cases route edges in more than one level of the hierarchy', () => {
@@ -72,8 +80,8 @@ describe('Issue700Test (non-vacuity)', () => {
     for (const testCase of cases) {
       testCase.run();
     }
-    expect(cases.length).toBe(2);
-    expect(seen.runs).toBe(2);
+    expect(cases.length).toBe(4);
+    expect(seen.runs).toBe(4);
     expect(seen.edges).toBeGreaterThan(seen.runs);
     expect(seen.nestedEdges).toBeGreaterThan(0);
   });

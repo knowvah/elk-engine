@@ -81,7 +81,7 @@ Check the machine is quiet first (`uptime`, 1-minute load at most 12) and run th
    `org.eclipse.elk.alg.common.test`.
 2. **A suite in fixed mode, TS.** `PIPELINE_SUITES_FULL=1 ELK_MODELS_DIR=<pinned elk-models> ELK_TEST_TEXT_MEASURER=fixed
 npx vitest run <suite files>`. Compare per class with step 1: `runs` and `failures`. `Issue665Test` and `Issue700Test`
-   differ in every mode (issue #58).
+   differed in every mode while issue #58 was open; since mission layered-stress-cases they agree (1 and 4).
 3. **Re-record `label-sizing.json`.** `tools/vectors/label-sizing-vectors.sh test/golden/refs/java`, on the reference platform
    only, with the oracle built with patch `0003`. Never edit the ref by hand; journal the re-recording with the patch id. Two
    runs are byte-equal. The mode `--remeasure-awt <outDir>` runs with the property unset and re-measures every text of
@@ -90,7 +90,8 @@ npx vitest run <suite files>`. Compare per class with step 1: `runs` and `failur
    writes `label-sizing-corpus.json` (never committed, AD-5). The output goes under `sweep/` because a new untracked directory
    at the oracle root makes `build.sh` call the worktree stale (issue #85). Then
    `npx vitest run test/corpus/label-sizing-sweep.test.ts`; `LABEL_SIZING_SWEEP_DIR` overrides the directory.
-5. **The snapshot lacks a text.** The runner throws naming the text (issue #58's four texts are the known case). The FX8
+5. **The snapshot lacks a text.** The runner throws naming the text (issue #58's four texts were the known case, until mission
+   layered-stress-cases appended them by this procedure). The FX8
    procedure is unchanged and runs on the reference platform only: add the text to `tools/vectors/layered-label-metrics-texts.txt`
    and run `tools/vectors/layered-label-metrics-vectors.sh test/golden/refs/java`, which rewrites the file from the texts
    list; no existing value may change (the append-only test checks it, as in earlier missions). An added row is a ref change

@@ -5,8 +5,9 @@
 # throw path an input reaches. Runs tools/vectors/VertiFlexVectors.java as a single-file source program against the source-built oracle
 # jars (AD-3) plus the third-party bundles graph.text needs. ORIGIN: tools/vectors/layered-compound-vectors.sh. Invoked as
 #   java -cp <classpath> VertiFlexVectors.java <outDir> <tools/vectors dir>
-# and writes <outDir>/vertiflex.json itself (the repository copy lives in test/golden/refs/java/vertiflex.json). The row format, the
-# scenarios and the seeds are documented in the program header. After the run the output is parsed again by node's strict JSON.parse.
+# and writes <outDir>/vertiflex.json, then <outDir>/vertiflex-extra.json (the second plan, tree-recorder-gaps #66) itself (the
+# repository copies live in test/golden/refs/java/). The row format, the scenarios and the seeds are documented in the program header.
+# After the run vertiflex.json is parsed again by node's strict JSON.parse (the program strict-parses both files before writing them).
 # Usage: vertiflex-vectors.sh <outDir>
 # Honours ELK_ORACLE_DIR (default <repo>/../elk-oracle), P2_BUNDLES. The SHA-256 of the vendored corpus input in the program's table is
 # checked before every run (the cache salt does not cover it). Results are cached by salted input hash under

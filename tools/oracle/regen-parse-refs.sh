@@ -5,11 +5,13 @@
 # Output is byte-stable: no timestamps.
 #
 # ELK cannot re-import its own layout export (it writes `resolvedAlgorithm`,
-# which LayoutOptionData rejects), and the port registers CoreOptions only, so
-# it drops the layered-only `layering.layerId` / `crossingMinimization.positionId`
-# (J7 amendments 1 and 2). The oracle parses STRIPPED copies of the goldens.
+# which LayoutOptionData rejects), so the oracle parses STRIPPED copies of the
+# goldens (J7 amendment 1). The layered-only `layering.layerId` and
+# `crossingMinimization.positionId` were stripped too (J7 amendment 2) while the
+# port registered CoreOptions only; issue #63 retired that amendment, and the
+# round trip test now registers layered next to CoreOptions.
 # Transform (the T18 test must reproduce it byte for byte):
-#   STRIP_KEYS = resolvedAlgorithm, layering.layerId, crossingMinimization.positionId
+#   STRIP_KEYS = resolvedAlgorithm
 #   obj = JSON.parse(raw golden text)
 #   walk obj recursively (objects and arrays); in every object that has a
 #   `layoutOptions` member which is an object, delete each key of that member
@@ -28,7 +30,7 @@ ELK_ORACLE_DIR="${ELK_ORACLE_DIR:-$ROOT/../elk-oracle}"
 P2_BUNDLES="${P2_BUNDLES:-$HOME/.m2/repository/p2/osgi/bundle}"
 GSON_BSN="com.google.gson"
 EXPORT_SEED=1 # keep in sync with run.sh
-STRIP_KEYS="resolvedAlgorithm layering.layerId crossingMinimization.positionId"
+STRIP_KEYS="resolvedAlgorithm"
 TRANSFORM="delete layoutOptions keys {$STRIP_KEYS} and *.<key> recursively; JSON.stringify(obj, null, 2) + newline"
 GENERATED_BY="tools/oracle/regen-parse-refs.sh"
 META_FILE="_meta.json"

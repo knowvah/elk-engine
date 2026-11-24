@@ -3,8 +3,9 @@
 //         tools/vectors/LayeredCompoundVectors.java (step stops, first-ELK-frame throws shape, strict-JSON sanitiser, 16 MiB guard).
 // Generates frozen JVM reference vectors (AD-13, TR1-TR3, mission 8a T1) for org.eclipse.elk.alg.mrtree at the pinned ELK commit.
 // This program only CALLS ELK APIs and records results; it embeds no ELK implementation. It is the ONLY source of expectations for
-// the TypeScript port of alg.mrtree. Run: tools/vectors/mrtree-vectors.sh <outDir>  (writes <outDir>/mrtree.json and <outDir>/mrtree-extra.json;
-// the landed copies are test/golden/refs/java/mrtree.json and mrtree-extra.json). The program itself is run as `java -cp <oracle jars + third party> MrTreeVectors.java <outDir>
+// the TypeScript port of alg.mrtree. Run: tools/vectors/mrtree-vectors.sh <outDir>  (writes <outDir>/mrtree.json, <outDir>/mrtree-extra.json and
+// <outDir>/mrtree-extra2.json; the landed copies are test/golden/refs/java/mrtree.json, mrtree-extra.json and mrtree-extra2.json). The program
+// itself is run as `java -cp <oracle jars + third party> MrTreeVectors.java <outDir>
 // <tools/vectors dir>` under -XX:+UnlockExperimentalVMOptions -XX:hashCode=2 (it refuses to run without the pin unless
 // MRTREE_UNPINNED=1, a diagnosis aid used for the TR3 evidence run; never for the ref).
 //
@@ -140,6 +141,18 @@
 //   NodePositionProcessor empty-graph arms; LevelProcessor.java:51; RootProcessor assert; ComponentsProcessor.java:90 (separate is
 //   never null).
 //
+// ======================================================= mrtree-extra2.json ======================================================
+// A third file written by the same run after the other two (same header fields, same row and dump contract as above; own seeds 8601
+// (shapes) and 8602 (random), both reserved: the extra2 shapes are explicit lists and the file has no `rand` batch; cap 1 MiB). It
+// records stops rows for arms only full rows of the other files reach and a row that observes a mutant their fields do not (mission
+// tree-recorder-gaps, issue #66). The shapes were found by a TS screen and are recorded from the oracle like every other row.
+// Families: gaps66 (stops rows, AVOID_OVERLAP: gapUp7 under UP with compaction, a multi-level edge after the last node of a level
+//   (MultiLevelEdgeNodeNodeGap.java:123, the UP arm), the vertical end-of-level side counter (EdgeRouter.java:270-274) and the vertical
+//   skip-level-side test with an empty bend list (EdgeRouter.java:230); gapDown4 under DOWN, a multi-level edge before the first node
+//   of a level (MultiLevelEdgeNodeNodeGap.java:180, the final else) and the vertical side counter), compact66 (a stops row with
+//   compaction under DOWN and spacing.nodeNode=-20, which RecursiveGraphLayoutEngine does not validate: the child fits inside the
+//   root's level, so CompactionProcessor.java:165 finds index 0 and the `newIndex > 0` guard of :166 keeps its TREE_LEVEL).
+//
 // =================================================== SCENARIO GENERATOR ===================================================
 // Seeds: shapes use java.util.Random(8101) consumed in the fixed order of buildShapes(); the `rand` batch uses Random(8102) consumed
 // in the fixed order of randomRows(). Both seeds are non-zero and recorded in the file header. Option values per family:
@@ -171,8 +184,8 @@
 //
 // Re-record: tools/vectors/mrtree-vectors.sh <outDir>; ELK_VECTORS_CACHE=off runs cold. The cache salt covers this source, the script
 //   and the oracle build; the generated corpus input read from test/corpus/generated is pinned in INPUT_TABLE (the script checks it).
-//   MRTREE_ONLY=<row id substring> records only those rows, MRTREE_FILE=main|extra writes one file, MRTREE_CAP_MB raises the extra
-//   cap, MRTREE_HITS=<file> appends per row the branch-coverage agent's hits (never for a ref); MRTREE_TRACE=<substring> prints each stop's node
+//   MRTREE_ONLY=<row id substring> records only those rows, MRTREE_FILE=main|extra|extra2 writes one file (unset: all three),
+//   MRTREE_CAP_MB raises the extra cap (not the extra2 cap), MRTREE_HITS=<file> appends per row the branch-coverage agent's hits (never for a ref); MRTREE_TRACE=<substring> prints each stop's node
 //   children on stderr. MRTREE_STATS=1 prints on stderr, per step name, how often a stop differs from the preceding stop of the same component.
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -227,11 +240,12 @@ public class MrTreeVectors {
         return commit;
     }
 
-    static final String OUTPUT = "mrtree.json", EXTRA_OUTPUT = "mrtree-extra.json";
+    static final String OUTPUT = "mrtree.json", EXTRA_OUTPUT = "mrtree-extra.json", EXTRA2_OUTPUT = "mrtree-extra2.json";
     static final String SEED_PROPERTY = "org.eclipse.elk.graph.json.exportSeed";
     static final String CORPUS_INPUT = "test/corpus/generated/mrtree-tree-small.json";
     static final long SHAPE_SEED = 8101L, RANDOM_SEED = 8102L, EXTRA_SHAPE_SEED = 8201L, EXTRA_RANDOM_SEED = 8202L;
     static final long MAX_BYTES = 16L * 1024 * 1024, EXTRA_MAX_BYTES = (System.getenv("MRTREE_CAP_MB") == null ? 8L : parseLongArg("MRTREE_CAP_MB", System.getenv("MRTREE_CAP_MB"))) * 1024 * 1024;
+    static final long EXTRA2_SHAPE_SEED = 8601L, EXTRA2_RANDOM_SEED = 8602L, EXTRA2_MAX_BYTES = 1L * 1024 * 1024;
     static final String FULL = "full", STOPS = "stops", THROWS = "throws";
     static final double LABEL_CHAR_WIDTH = 6.5, LABEL_HEIGHT = 13.0;
     static final String ELK_PACKAGE = "org.eclipse.elk.";
@@ -985,6 +999,31 @@ d002e5a2eac3086de326c108f6582caa66356ffcc2e707ad7faf59778d92df49  repo:test/corp
         p.both("deepLevel", false, deepSpine("deepLow", 135, 20, 129), o("edgeRoutingMode", AVOID));
     }
 
+    // ------------------------------------------------------------------------------------------ extra2 file plan
+
+    /** Nodes n0..n(k-1) with the given sizes (w, h pairs); no seeded draw (EXTRA2_SHAPE_SEED is reserved). */
+    static List<N> sized(int... wh) {
+        List<N> l = new ArrayList<>();
+        for (int i = 0; i + 1 < wh.length; i += 2) {
+            l.add(new N("n" + (i / 2), wh[i], wh[i + 1]));
+        }
+        return l;
+    }
+
+    /** Stops rows only: the arms sit inside the EdgeRouter and CompactionProcessor steps (issue #66). */
+    static Plan extra2Plan() {
+        Plan p = new Plan(new LinkedHashMap<>());
+        Shape up7 = shape("gapUp7", sized(108, 23, 32, 64, 30, 57, 12, 68, 116, 21, 46, 16, 73, 44), new int[][] {{0, 1}, {0, 2},
+            {2, 3}, {3, 4}, {4, 5}, {5, 6}, {1, 2}, {1, 5}, {2, 4}, {1, 3}});
+        p.add("gaps66", STOPS, up7, o("direction", "UP", "compaction", true, "edgeRoutingMode", AVOID));
+        Shape down4 = shape("gapDown4", sized(48, 33, 109, 54, 33, 39, 51, 25), new int[][] {{0, 1}, {1, 2}, {2, 3}, {1, 3}, {0, 3}});
+        p.add("gaps66", STOPS, down4, o("direction", "DOWN", "edgeRoutingMode", AVOID));
+        Shape level0 = shape("levelZero2", sized(40, 40, 20, 10), new int[][] {{0, 1}});
+        p.add("compact66", STOPS, level0, o("direction", "DOWN", "compaction", true, "spacingNodeNode", -20.0,
+                "edgeRoutingMode", AVOID));
+        return p;
+    }
+
     // ----------------------------------------------------------------------------- extra file: seeded shapes
 
     static List<N> xsizes(int n, Random r) {
@@ -1707,6 +1746,9 @@ d002e5a2eac3086de326c108f6582caa66356ffcc2e707ad7faf59778d92df49  repo:test/corp
         }
         if (which == null || which.equals("extra")) {
             writeFile(out, EXTRA_OUTPUT, extraPlan(), EXTRA_SHAPE_SEED, EXTRA_RANDOM_SEED, EXTRA_MAX_BYTES);
+        }
+        if (which == null || which.equals("extra2")) {
+            writeFile(out, EXTRA2_OUTPUT, extra2Plan(), EXTRA2_SHAPE_SEED, EXTRA2_RANDOM_SEED, EXTRA2_MAX_BYTES);
         }
         if (System.getenv("MRTREE_STATS") != null) {
             for (Map.Entry<String, int[]> e : STATS.entrySet()) {

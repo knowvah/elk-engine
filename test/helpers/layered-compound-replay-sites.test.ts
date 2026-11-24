@@ -2,17 +2,26 @@
 // The correspondence rule of a throw row (layered-compound-replay-sites.ts header) on hand-made errors: a TS run that completes, throws
 // another class, another message of an ELK exception, or throws from another file or function is a mismatch. Stacks are strings in
 // V8's format, so each case names the one property it changes.
+// The `worked` arm (issue #60): the monitor that records the work of every `begin`, the comparison of two work lists, and the replay of
+// the recorded row with one entry changed by hand.
 import { describe, expect, it } from 'vitest';
-import { compoundRefExists, loadCompoundRowsIfPresent } from './layered-compound-replay-rows.js';
+import { compoundRefExists, loadCompoundRowsIfPresent, type CompoundSiteRow } from './layered-compound-replay-rows.js';
 import { UnsupportedGraphException } from '../../src/core/UnsupportedGraphException.js';
 import {
   NPE_CLASS,
+  WorkRecorder,
+  isSiteRunRow,
+  isSiteWorkedRow,
   parseFrame,
+  recordedWork,
+  replaySiteRow,
   replayThrow,
   portedNamedTop,
   portedTop,
   throwDiffs,
+  workDiffs,
   type JavaThrow,
+  type WorkEntry,
 } from './layered-compound-replay-sites.js';
 
 const SRC = '/work/elk-engine/src/alg/layered';
@@ -116,5 +125,100 @@ describe.skipIf(!compoundRefExists())('replayThrow', () => {
     expect(replayThrow(asThrow)).toEqual([
       `throw: the run completed, the oracle threw ${NPE_CLASS} at SplineSegment.java:247`,
     ]);
+  });
+});
+
+describe('WorkRecorder / recordedWork', () => {
+  it('keeps the task and the total work of every begin, depth first, sub-monitors in creation order', () => {
+    const root = new WorkRecorder();
+    const first = root.subTask(1)!;
+    const second = root.subTask(2)!;
+    const never = root.subTask(3)!;
+    // the order of the begins is not the order of the list: the tree is
+    second.begin('second', 2);
+    root.begin('root', 5);
+    const leaf = second.subTask(1)!;
+    leaf.begin('leaf', 7);
+    first.begin('first', 1);
+    expect(never.getSubMonitors()).toEqual([]);
+    expect(recordedWork(root)).toEqual([
+      { task: 'root', work: 5 },
+      { task: 'first', work: 1 },
+      { task: 'second', work: 2 },
+      { task: 'leaf', work: 7 },
+    ]);
+  });
+
+  it('makes sub-monitors of its own kind at every depth and keeps the first begin only', () => {
+    const root = new WorkRecorder();
+    const child = root.subTask(1)!;
+    const grandchild = child.subTask(1)!;
+    expect([child, grandchild].map((monitor) => monitor instanceof WorkRecorder)).toEqual([true, true]);
+    expect(root.begin('once', 4)).toBe(true);
+    // BasicProgressMonitor.begin returns false on a second call and does not call doBegin again
+    expect(root.begin('twice', 9)).toBe(false);
+    expect(recordedWork(root)).toEqual([{ task: 'once', work: 4 }]);
+  });
+});
+
+describe('workDiffs', () => {
+  const recorded: WorkEntry[] = [
+    { task: 'a', work: 3 },
+    { task: 'b', work: 1 },
+  ];
+
+  it('is empty for equal lists', () => {
+    expect(workDiffs([...recorded], recorded)).toEqual([]);
+  });
+
+  it('names the entry whose task or work differs', () => {
+    expect(workDiffs([recorded[0]!, { task: 'b', work: 2 }], recorded)).toEqual([
+      'work[1]: {"task":"b","work":2} != {"task":"b","work":1}',
+    ]);
+    expect(workDiffs([{ task: 'x', work: 3 }, recorded[1]!], recorded)).toEqual([
+      'work[0]: {"task":"x","work":3} != {"task":"a","work":3}',
+    ]);
+  });
+
+  it('reports a list of another length once, then the entries both lists hold', () => {
+    expect(workDiffs([{ task: 'a', work: 4 }], recorded)).toEqual([
+      'work: 1 entries, expected 2',
+      'work[0]: {"task":"a","work":4} != {"task":"a","work":3}',
+    ]);
+    expect(workDiffs([...recorded, { task: 'c', work: 1 }], recorded)).toEqual(['work: 3 entries, expected 2']);
+  });
+});
+
+describe.skipIf(!compoundRefExists())('replaySiteRow: the worked row', () => {
+  const WORKED_ROW = 'sites/ElkLayered/recursiveWork';
+  const RECURSIVE_TASK = 'Recursive hierarchical layout';
+  const rows = loadCompoundRowsIfPresent('sites');
+  const worked = rows.find((row) => row.id === WORKED_ROW) as CompoundSiteRow;
+  const workOf = (row: CompoundSiteRow): WorkEntry[] => row.expected.work as WorkEntry[];
+
+  it('is a run row that also holds the work list, with the entry of ElkLayered.hierarchicalLayout', () => {
+    expect(isSiteRunRow(worked)).toBe(true);
+    expect(isSiteWorkedRow(worked)).toBe(true);
+    expect(workOf(worked).filter((entry) => entry.task === RECURSIVE_TASK)).toHaveLength(1);
+  });
+
+  it('reproduces the recorded work', () => {
+    expect(replaySiteRow(worked)).toEqual([]);
+  });
+
+  it('names the entry when the recorded work differs', () => {
+    const index = workOf(worked).findIndex((entry) => entry.task === RECURSIVE_TASK);
+    const recorded = workOf(worked)[index]!;
+    const changed = workOf(worked).map((entry, i) => (i === index ? { ...entry, work: entry.work + 1 } : entry));
+    const row: CompoundSiteRow = { ...worked, expected: { ...worked.expected, work: changed } };
+    expect(replaySiteRow(row)).toEqual([
+      `work[${String(index)}]: ${JSON.stringify(recorded)} != ${JSON.stringify(changed[index])}`,
+    ]);
+  });
+
+  it('replays a run row without a work list as before', () => {
+    const run = rows.find((row) => row.id === 'sites/CompoundGraphPreprocessor/fixedSideOut')!;
+    expect(isSiteWorkedRow(run)).toBe(false);
+    expect(replaySiteRow(run)).toEqual([]);
   });
 });

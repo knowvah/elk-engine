@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 // Replay of the `sites` rows of the compound ref (mission 7h, T14; recorded by tools/vectors/LayeredCompoundVectors.java, "Group sites").
-// A sites row has one of three kinds, told apart by the shape of `expected`:
+// A sites row has one of four kinds, told apart by the shape of `expected`:
 //   run      `{ layout, plans, stops, tree }` as a `scenarios` row: replayed by `replayScenario`;
 //   logged   a run row that also holds `logged = { tags, dot, json }`: the run is made under `new BasicProgressMonitor().withLogging(true)`,
 //            replayed as a run row, and the graphs the monitor tree logged are compared with `compareLogged` (textual, line based,
@@ -22,6 +22,11 @@
 //                null, or an explicit `throw` in it), so no frame of a callee precedes it, and `Error.stackTraceLimit` (10) is far
 //                above the one frame inspected.
 //            A run that completes, or throws from another class, message or file, is a mismatch (one diff string).
+//   worked   (issue #60, sites/ElkLayered/recursiveWork) a run row that also holds `work = [{ task, work }]`: the run is made under a
+//            `WorkRecorder`, the twin of the recorder's class of that name. It overrides the two protected hooks of `BasicProgressMonitor`:
+//            `doBegin` keeps the task name and the total work, `doSubTask` returns a monitor of the same kind. The list holds one entry
+//            per monitor of the tree that began, depth first, sub-monitors in creation order; it is compared exactly (`workDiffs`).
+//            The work of a `begin` is a Java `float`; the recorder writes it as an integer and refuses any other value.
 import { BasicProgressMonitor } from '../../src/core/util/BasicProgressMonitor.js';
 import { UnsupportedGraphException } from '../../src/core/UnsupportedGraphException.js';
 import { capturedLogged } from './layered-labels-replay-ops.js';
@@ -32,6 +37,12 @@ import type { CompoundRow, CompoundScenarioRow, CompoundSiteRow } from './layere
 
 export const SITES_GROUP = 'sites';
 export const NPE_CLASS = 'java.lang.NullPointerException';
+
+/** One monitor of a `worked` row that began: the name and the total work its `begin` was given. */
+export interface WorkEntry {
+  readonly task: string;
+  readonly work: number;
+}
 
 /** What the oracle recorded for a throw row. */
 export interface JavaThrow {
@@ -77,6 +88,9 @@ export const isSiteLoggedRow = (row: CompoundRow): row is CompoundSiteRow & { ex
 
 export const isSiteRunRow = (row: CompoundRow): boolean =>
   row.group === SITES_GROUP && 'layout' in row.expected && 'plans' in row.expected && 'stops' in row.expected;
+
+export const isSiteWorkedRow = (row: CompoundRow): row is CompoundSiteRow & { expected: { work: WorkEntry[] } } =>
+  row.group === SITES_GROUP && Array.isArray(row.expected.work);
 
 // ------------------------------------------------------------------------------------------------------------
 // the stack top
@@ -210,6 +224,53 @@ export function replayLoggedSite(row: CompoundSiteRow & { expected: { logged: Lo
   return [...diffs, ...compareLogged(logged, row.expected.logged), ...crossHierarchyDiffs(logged, row.expected.logged)];
 }
 
+// ------------------------------------------------------------------------------------------------------------
+// worked rows
+
+/** A monitor that keeps what its `begin` was given and makes sub-monitors of its own kind (the recorder's `WorkRecorder`). */
+export class WorkRecorder extends BasicProgressMonitor {
+  /** The task and total work of this monitor's `begin`, or `null` before it. */
+  began: WorkEntry | null = null;
+
+  protected override doBegin(name: string, newTotalWork: number): void {
+    this.began = { task: name, work: newTotalWork };
+  }
+
+  /** As `BasicProgressMonitor.doSubTask`, for a monitor without logging, log persistence or execution times. */
+  protected override doSubTask(_work: number, maxHierarchyLevels: number): BasicProgressMonitor {
+    const newMaxHierarchyLevels = maxHierarchyLevels > 0 ? maxHierarchyLevels - 1 : maxHierarchyLevels;
+    return new WorkRecorder().withMaxHierarchyLevels(newMaxHierarchyLevels);
+  }
+}
+
+/** The work of every monitor of the tree that began: depth first, sub-monitors in creation order. */
+export function recordedWork(monitor: WorkRecorder): WorkEntry[] {
+  const below = monitor.getSubMonitors().flatMap((child) => recordedWork(child as WorkRecorder));
+  return monitor.began === null ? below : [monitor.began, ...below];
+}
+
+/** The diffs between the work a TS run recorded and the oracle's list: the lengths, then every entry both lists hold. */
+export function workDiffs(actual: readonly WorkEntry[], expected: readonly WorkEntry[]): string[] {
+  const length =
+    actual.length === expected.length
+      ? []
+      : [`work: ${String(actual.length)} entries, expected ${String(expected.length)}`];
+  const entries = expected.flatMap((want, i) => {
+    const got = actual[i];
+    return got === undefined || (got.task === want.task && got.work === want.work)
+      ? []
+      : [`work[${String(i)}]: ${JSON.stringify(got)} != ${JSON.stringify(want)}`];
+  });
+  return [...length, ...entries];
+}
+
+/** Replays a worked row: as a run row, run under a `WorkRecorder`, plus the comparison of the work lists. */
+export function replayWorkedSite(row: CompoundSiteRow & { expected: { work: WorkEntry[] } }): string[] {
+  const monitor = new WorkRecorder();
+  const diffs = replayScenario(row as unknown as CompoundScenarioRow, { monitor }).diffs;
+  return [...diffs, ...workDiffs(recordedWork(monitor), row.expected.work)];
+}
+
 /** Replays any sites row by its kind; `site` names the ported function of a throw row. */
 export function replaySiteRow(row: CompoundRow, site: PortedSite | undefined = PORTED_SITES.get(row.id)): string[] {
   if (isSiteThrowRow(row)) {
@@ -219,7 +280,7 @@ export function replaySiteRow(row: CompoundRow, site: PortedSite | undefined = P
     return replayLoggedSite(row);
   }
   if (isSiteRunRow(row)) {
-    return replayRunSite(row as CompoundSiteRow);
+    return isSiteWorkedRow(row) ? replayWorkedSite(row) : replayRunSite(row as CompoundSiteRow);
   }
-  throw new Error(`row ${row.id}: a sites row of no known kind (run, logged or throws)`);
+  throw new Error(`row ${row.id}: a sites row of no known kind (run, logged, worked or throws)`);
 }

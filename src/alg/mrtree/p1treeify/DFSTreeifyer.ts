@@ -2,6 +2,7 @@
 import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
 import { LayoutProcessorConfiguration } from '../../../core/alg/LayoutProcessorConfiguration.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { checkStackDepth } from '../../../java/lang/StackDepth.js';
 import { LinkedList } from '../../../java/util/LinkedList.js';
 import type { TEdge } from '../graph/TEdge.js';
 import type { TGraph } from '../graph/TGraph.js';
@@ -102,14 +103,26 @@ export class DFSTreeifyer implements ILayoutPhase<TreeLayoutPhases, TGraph> {
     tGraph.setProperty(InternalProperties.REMOVABLE_EDGES, this.eliminated);
   }
 
-  /** Perform a DFS on a given graph till all nodes of the graph have been visited. */
+  /**
+   * Perform a DFS on a given graph till all nodes of the graph have been visited.
+   *
+   * The recursive call of DFSTreeifyer.java:156 is a frame push. AC6 (#67): explicit stack, same visit, side-effect and
+   * accumulation order. A frame is one suspended Java activation: the live iterator over its node's outgoing edges (the
+   * node itself is not read after the loop starts). The edge lists are not modified while the DFS runs (`collectEdges`
+   * removes the eliminated edges afterwards), and the iterator stays live as the Java's does.
+   */
   private dfs(tNode: TNode): void {
     const visited = this.visited!;
-    // dfs starts on a node and marks that node as visited
-    visited[tNode.id] = 1;
-
-    // go to all child nodes of start node
-    for (const tEdge of tNode.getOutgoingEdges()) {
+    const stack: Iterator<TEdge>[] = [];
+    this.openDfs(tNode, stack);
+    while (stack.length > 0) {
+      // go to all child nodes of start node
+      const next = stack[stack.length - 1]!.next();
+      if (next.done === true) {
+        stack.pop();
+        continue;
+      }
+      const tEdge = next.value;
       const target = tEdge.getTarget()!;
       // if a child has been visited
       if (visited[target.id] === 1) {
@@ -120,9 +133,18 @@ export class DFSTreeifyer implements ILayoutPhase<TreeLayoutPhases, TGraph> {
         visited[target.id] = 1;
       } else {
         // recurse
-        this.dfs(target);
+        this.openDfs(target, stack);
       }
     }
+  }
+
+  /** Entry of one `dfs` activation (DFSTreeifyer.java:141-144): marks the node visited and pushes its frame. */
+  private openDfs(tNode: TNode, stack: Iterator<TEdge>[]): void {
+    // dfs starts on a node and marks that node as visited
+    this.visited![tNode.id] = 1;
+    stack.push(tNode.getOutgoingEdges().iterator());
+    // Java's StackOverflowError of an endless recursion, raised from this class
+    checkStackDepth(stack.length);
   }
 
   /** Perform a BFS on a given graph till all nodes of the graph have been visited. */

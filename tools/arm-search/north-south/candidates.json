@@ -1,0 +1,162 @@
+[
+  {
+    "id": "sites/HierarchicalPortOrthogonalEdgeRouter/splitSegment/north",
+    "kind": "compound",
+    "elk": {
+      "id": "root",
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "children": [
+        {
+          "id": "c",
+          "x": 0,
+          "y": 0,
+          "width": 30,
+          "height": 30,
+          "children": [
+            { "id": "x0", "x": 0, "y": 0, "width": 30, "height": 30 },
+            { "id": "x1", "x": 0, "y": 0, "width": 30, "height": 30 },
+            { "id": "x2", "x": 0, "y": 0, "width": 30, "height": 30 },
+            { "id": "x3", "x": 0, "y": 0, "width": 30, "height": 30 }
+          ],
+          "layoutOptions": { "portConstraints": "FIXED_SIDE" },
+          "ports": [
+            { "id": "p1", "x": 0, "y": 0, "width": 4, "height": 4, "layoutOptions": { "port.side": "NORTH" } },
+            { "id": "p2", "x": 0, "y": 0, "width": 4, "height": 4, "layoutOptions": { "port.side": "NORTH" } }
+          ],
+          "edges": [
+            { "id": "e1", "sources": ["p1"], "targets": ["x1"] },
+            { "id": "e2", "sources": ["p1"], "targets": ["x3"] },
+            { "id": "e3", "sources": ["x0"], "targets": ["p2"] },
+            { "id": "e4", "sources": ["x2"], "targets": ["p2"] },
+            { "id": "c0", "sources": ["x0"], "targets": ["x1"] },
+            { "id": "c1", "sources": ["x1"], "targets": ["x2"] },
+            { "id": "c2", "sources": ["x2"], "targets": ["x3"] }
+          ]
+        }
+      ],
+      "layoutOptions": { "elk.direction": "RIGHT", "hierarchyHandling": "INCLUDE_CHILDREN" }
+    },
+    "options": {}
+  },
+  {
+    "id": "sites/HierarchicalPortOrthogonalEdgeRouter/splitSegment/south",
+    "kind": "compound",
+    "elk": {
+      "id": "root",
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "children": [
+        {
+          "id": "c",
+          "x": 0,
+          "y": 0,
+          "width": 30,
+          "height": 30,
+          "children": [
+            { "id": "x0", "x": 0, "y": 0, "width": 30, "height": 30 },
+            { "id": "x1", "x": 0, "y": 0, "width": 30, "height": 30 },
+            { "id": "x2", "x": 0, "y": 0, "width": 30, "height": 30 },
+            { "id": "x3", "x": 0, "y": 0, "width": 30, "height": 30 }
+          ],
+          "layoutOptions": { "portConstraints": "FIXED_SIDE" },
+          "ports": [
+            { "id": "p1", "x": 0, "y": 0, "width": 4, "height": 4, "layoutOptions": { "port.side": "SOUTH" } },
+            { "id": "p2", "x": 0, "y": 0, "width": 4, "height": 4, "layoutOptions": { "port.side": "SOUTH" } }
+          ],
+          "edges": [
+            { "id": "e1", "sources": ["p1"], "targets": ["x1"] },
+            { "id": "e2", "sources": ["p1"], "targets": ["x3"] },
+            { "id": "e3", "sources": ["x0"], "targets": ["p2"] },
+            { "id": "e4", "sources": ["x2"], "targets": ["p2"] },
+            { "id": "c0", "sources": ["x0"], "targets": ["x1"] },
+            { "id": "c1", "sources": ["x1"], "targets": ["x2"] },
+            { "id": "c2", "sources": ["x2"], "targets": ["x3"] }
+          ]
+        }
+      ],
+      "layoutOptions": { "elk.direction": "RIGHT", "hierarchyHandling": "INCLUDE_CHILDREN" }
+    },
+    "options": {}
+  },
+  {
+    "id": "sites/HierarchicalPortOrthogonalEdgeRouter/straightEdge/north",
+    "kind": "compound",
+    "elk": {
+      "id": "root",
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "children": [
+        {
+          "id": "c",
+          "x": 0,
+          "y": 0,
+          "width": 30,
+          "height": 30,
+          "children": [
+            { "id": "x0", "x": 0, "y": 0, "width": 30, "height": 30 },
+            { "id": "x1", "x": 0, "y": 0, "width": 30, "height": 30 },
+            { "id": "x2", "x": 0, "y": 0, "width": 30.003, "height": 30 },
+            { "id": "x3", "x": 0, "y": 0, "width": 30, "height": 30 }
+          ],
+          "layoutOptions": { "portConstraints": "FIXED_SIDE" },
+          "ports": [{ "id": "p1", "x": 0, "y": 0, "width": 4, "height": 4, "layoutOptions": { "port.side": "NORTH" } }],
+          "edges": [
+            { "id": "e1", "sources": ["p1"], "targets": ["x1"] },
+            { "id": "e2", "sources": ["p1"], "targets": ["x2"] },
+            { "id": "e3", "sources": ["p1"], "targets": ["x3"] },
+            { "id": "c0", "sources": ["x0"], "targets": ["x1"] },
+            { "id": "c1", "sources": ["x1"], "targets": ["x2"] },
+            { "id": "c2", "sources": ["x2"], "targets": ["x3"] }
+          ]
+        }
+      ],
+      "layoutOptions": { "elk.direction": "RIGHT", "hierarchyHandling": "INCLUDE_CHILDREN" }
+    },
+    "options": {}
+  },
+  {
+    "id": "sites/HierarchicalPortOrthogonalEdgeRouter/straightEdge/south",
+    "kind": "compound",
+    "elk": {
+      "id": "root",
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0,
+      "children": [
+        {
+          "id": "c",
+          "x": 0,
+          "y": 0,
+          "width": 30,
+          "height": 30,
+          "children": [
+            { "id": "x0", "x": 0, "y": 0, "width": 30, "height": 30 },
+            { "id": "x1", "x": 0, "y": 0, "width": 30, "height": 30 },
+            { "id": "x2", "x": 0, "y": 0, "width": 30.003, "height": 30 },
+            { "id": "x3", "x": 0, "y": 0, "width": 30, "height": 30 }
+          ],
+          "layoutOptions": { "portConstraints": "FIXED_SIDE" },
+          "ports": [{ "id": "p1", "x": 0, "y": 0, "width": 4, "height": 4, "layoutOptions": { "port.side": "SOUTH" } }],
+          "edges": [
+            { "id": "e1", "sources": ["p1"], "targets": ["x1"] },
+            { "id": "e2", "sources": ["p1"], "targets": ["x2"] },
+            { "id": "e3", "sources": ["p1"], "targets": ["x3"] },
+            { "id": "c0", "sources": ["x0"], "targets": ["x1"] },
+            { "id": "c1", "sources": ["x1"], "targets": ["x2"] },
+            { "id": "c2", "sources": ["x2"], "targets": ["x3"] }
+          ]
+        }
+      ],
+      "layoutOptions": { "elk.direction": "RIGHT", "hierarchyHandling": "INCLUDE_CHILDREN" }
+    },
+    "options": {}
+  }
+]

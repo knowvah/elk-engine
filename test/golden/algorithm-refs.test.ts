@@ -479,8 +479,9 @@ const LAYERED_LOOPS_INPUTS = [
  * set `hierarchyHandling: INCLUDE_CHILDREN` and are inputs of the nine issue suites (Issue316, 455, 552, 596, 628, 700, 701, 734) or
  * of the compound families (tests/layered, tickets/layered, examples/hierarchy), and eight more ptolemy hierarchical models with
  * hierarchy-crossing edges, byte-identical (the 31 below). The three `elk.stress` inputs (tickets 588 and 665, examples
- * hierarchicalLayoutMixing, H13) are never vendored. They live under `compound/`, never under `realworld/`
- * (`LayeredFrameworkVectors.java` walks that tree).
+ * hierarchicalLayoutMixing, H13) are not inputs of that recorder: its `MODEL_TABLE` is explicit and counts them as out of
+ * scope (algorithm). Two of them are vendored for the runner suites (`STRESS_SUITE_INPUTS`); 588 is never vendored. They
+ * live under `compound/`, never under `realworld/` (`LayeredFrameworkVectors.java` walks that tree).
  */
 const LAYERED_COMPOUND_INPUTS = [
   'compound/examples/hierarchy/hierarchicalEdges.elkt',
@@ -516,6 +517,16 @@ const LAYERED_COMPOUND_INPUTS = [
   'compound/tickets/layered/734_nodeEdgeSpacingHierarchical.elkt',
 ];
 
+/**
+ * The two models with an `elk.stress` child that `Issue665Test` and `Issue700Test` read (issue #58, mission
+ * layered-stress-cases), byte-identical copies next to the compound inputs. No recorder reads them: they are runner-suite
+ * inputs only, so they stay out of `LAYERED_COMPOUND_INPUTS`.
+ */
+const STRESS_SUITE_INPUTS = [
+  'compound/examples/hierarchy/hierarchicalLayoutMixing.elkt',
+  'compound/tickets/layered/665_includeChildrenDoesntStop.elkt',
+];
+
 describe('vendored inputs', () => {
   it('records the pinned models commit', () => {
     const parsed = readJson(INPUTS_MANIFEST) as Obj;
@@ -523,8 +534,8 @@ describe('vendored inputs', () => {
     expect(parsed['commit']).toBe(corpus['commit']);
   });
 
-  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs and the 32 layered routing inputs and the 26 layered pipeline inputs and the 123 layered labels inputs and the 40 layered loops inputs and the 31 layered compound inputs, nothing else', () => {
-    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS, ...LAYERED_ROUTING_INPUTS, ...LAYERED_PIPELINE_INPUTS, ...LAYERED_LABELS_INPUTS, ...LAYERED_LOOPS_INPUTS, ...LAYERED_COMPOUND_INPUTS].sort();
+  it('records every golden input, the four ticket models, the twelve layered phase inputs and the 24 layered order inputs and the 22 layered placement inputs and the 32 layered routing inputs and the 26 layered pipeline inputs and the 123 layered labels inputs and the 40 layered loops inputs and the 31 layered compound inputs and the two stress suite inputs, nothing else', () => {
+    const expected = [...golden.map((g) => g.path), ...TICKET_INPUTS, ...LAYERED_PHASE_INPUTS, ...LAYERED_ORDER_INPUTS, ...LAYERED_PLACEMENT_INPUTS, ...LAYERED_ROUTING_INPUTS, ...LAYERED_PIPELINE_INPUTS, ...LAYERED_LABELS_INPUTS, ...LAYERED_LOOPS_INPUTS, ...LAYERED_COMPOUND_INPUTS, ...STRESS_SUITE_INPUTS].sort();
     expect(Object.keys(hashes).sort()).toEqual(expected);
   });
 

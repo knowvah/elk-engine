@@ -7,7 +7,9 @@ import type { ElkMargin } from '../../core/math/ElkMargin.js';
 import { CoreOptions } from '../../core/options/CoreOptions.js';
 import type { IElkProgressMonitor } from '../../core/util/IElkProgressMonitor.js';
 import { UnsupportedConfigurationException } from '../../core/UnsupportedConfigurationException.js';
+import type { ElkEdge } from '../../graph/ElkEdge.js';
 import type { ElkNode } from '../../graph/ElkNode.js';
+import { checkStackDepth } from '../../java/lang/StackDepth.js';
 import { EdgeRoutingStrategy } from './EdgeRoutingStrategy.js';
 import { InternalProperties } from './InternalProperties.js';
 import { findRoot } from './VertiFlexUtil.js';
@@ -18,6 +20,12 @@ import { castToElkNode } from './p2relative/RelativeXPlacerChildren.js';
 import { RelativeXPlacerStrategy } from './p2relative/RelativeXPlacerStrategy.js';
 import { AbsoluteXPlacerStrategy } from './p3absolute/AbsoluteXPlacerStrategy.js';
 import { EdgerouterStrategy } from './p4edgerouting/EdgerouterStrategy.js';
+
+/** One suspended activation of `checkVerticalConstraintValidity` (VertiFlexLayoutProvider.java:156-159). */
+interface ConstraintFrame {
+  readonly newMinConstraint: number;
+  readonly edges: Iterator<ElkEdge>;
+}
 
 /**
  * Layout provider for the y constraint tree layout algorithms.
@@ -129,9 +137,34 @@ export class VertiFlexLayoutProvider extends AbstractLayoutProvider {
   /**
    * Checks whether a vertical constraint is larger than the constraints set by any ancestor nodes.
    *
+   * The recursive call of VertiFlexLayoutProvider.java:158 is a frame push. AC6 (#67): explicit stack, same visit,
+   * side-effect and accumulation order. A frame is one suspended Java activation: its `newMinConstraint` and the live
+   * iterator of its second for-each loop, created after the check loop as the Java's is. An exception of the check loop
+   * propagates from the same activation, with the same ancestors already checked. The stack is depth-checked after each
+   * push (`checkStackDepth` on its length): Java's `StackOverflowError` on a recursion without end.
+   *
    * @see VertiFlexLayoutProvider.java:134
    */
   private checkVerticalConstraintValidity(root: ElkNode, currentMinConstraint: number): void {
+    const stack: ConstraintFrame[] = [this.enterConstraintFrame(root, currentMinConstraint)];
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      const next = frame.edges.next();
+      if (next.done === true) {
+        stack.pop();
+      } else {
+        const child = castToElkNode(next.value.getTargets().get(0)!);
+        stack.push(this.enterConstraintFrame(child, frame.newMinConstraint));
+        checkStackDepth(stack.length);
+      }
+    }
+  }
+
+  /**
+   * One activation of `checkVerticalConstraintValidity` up to its second loop (VertiFlexLayoutProvider.java:136-156):
+   * computes the new minimum constraint, checks the children's constraints and opens the iterator of the recursion loop.
+   */
+  private enterConstraintFrame(root: ElkNode, currentMinConstraint: number): ConstraintFrame {
     let rootHeight: number;
     if (root.hasProperty(VertiFlexOptions.VERTICAL_CONSTRAINT)) {
       rootHeight = root.getProperty(VertiFlexOptions.VERTICAL_CONSTRAINT);
@@ -155,10 +188,7 @@ export class VertiFlexLayoutProvider extends AbstractLayoutProvider {
         }
       }
     }
-    for (const outgoingEdge of root.getOutgoingEdges()) {
-      const child = castToElkNode(outgoingEdge.getTargets().get(0)!);
-      this.checkVerticalConstraintValidity(child, newMinConstraint);
-    }
+    return { newMinConstraint, edges: root.getOutgoingEdges()[Symbol.iterator]() };
   }
 
   /** Computes the space occupied by the layout and sets the graph size accordingly. @see VertiFlexLayoutProvider.java:167 */

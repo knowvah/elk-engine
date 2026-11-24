@@ -19,9 +19,9 @@ diagrams are [data-flow](../../plans/alg-force-disco/diagrams/data-flow.md) and
 | [2. Evidence](#alg-force-disco-evidence)                           | Recorders and refs, replays, goldens, sweep, JUnit, coverage             |
 | [3. Hashed containers](#alg-force-disco-containers)                | The FD4 table with the twin result                                       |
 | [4. `JavaMath.log`](#alg-force-disco-log)                          | FD3: why, the proof, the platform limit                                  |
-| [5. Recursion](#alg-force-disco-recursion)                         | The FD7 probe and the finding beyond it (issue #70)                      |
+| [5. Recursion](#alg-force-disco-recursion)                         | The FD7 probe and the explicit-stack loops of issue #70                  |
 | [6. The `AbstractForceModel` import cycle](#alg-force-disco-cycle) | The one module that cannot be loaded first                               |
-| [7. Known divergences and open issues](#alg-force-disco-open)      | Issues #69, #70, #71, #58                                                |
+| [7. Known divergences and open issues](#alg-force-disco-open)      | Issues #69, #71, #167, #170; #58 (resolved)                              |
 | [8. Runbook](#alg-force-disco-runbook)                             | Re-recording, goldens, sweeps, the Java baseline                         |
 
 ## 1. Structure {#alg-force-disco-structure}
@@ -265,8 +265,9 @@ holds, FD3). The journal records the platform as issue #52 does for the label me
 
 ## 5. Recursion {#alg-force-disco-recursion}
 
-Recursion is ported verbatim (FD7). The input-depth recursions at the pin are `ComponentsProcessor.dfs` of force (also run by
-stress) and `ElkGraphComponentsProcessor.dfs` of disco.
+Recursion was ported verbatim (FD7). Issue #70 then turned the two input-depth recursions at the pin,
+`ComponentsProcessor.dfs` of force (also run by stress) and `ElkGraphComponentsProcessor.dfs` of disco, into explicit-stack
+loops (AC6), each proven against a verbatim recursive twin.
 
 **Probe (T12).** 2,000-node paths (preset x = 20·i; force `iterations=1`; stress `interactive` with `iterationLimit=1`; disco
 defaults): the oracle (`tools/oracle/run.sh`, default `-Xss`), TS (`npx tsx`) and TS under `node --jitless --import tsx` all
@@ -281,8 +282,51 @@ probed depth (single machine, Node 26.3.1, JDK 21.0.1 arm64):
 | 16,000      | force, stress, disco complete | force, stress, disco `RangeError` | force, disco `RangeError`           |
 | 100,000     | `StackOverflowError`          | not run                           | not run                             |
 
-The port's limit is below the oracle's. Issue #70 (`follow-up`) asks whether to convert the two `dfs` sites to explicit stacks
-proven against a verbatim recursive reference (the AC6 recipe of `plans/alg-common/decisions.md`); it is the maintainer's call.
+The port's limit was below the oracle's (issue #70). The maintainer ruled on 2026-11-23 that such a recursion becomes an
+explicit-stack loop proven against a verbatim recursive reference (the AC6 recipe of `plans/alg-common/decisions.md`), "so long
+as results stay the same".
+
+**Explicit-stack loops (issue #70, AC6).** The oracle's depth was measured again on the same paths. Its limit moves with JIT
+warm-up, as the trees' did ([alg-trees.md § 7](alg-trees.md#alg-trees-recursion)): a cold JVM throws `StackOverflowError` on a
+16,000-node force or stress path, twice out of two; a JVM that first runs shallower paths (a ladder from 2,000) completes
+16,000 and throws from 17,000 up, so the table's 16,000 was a warmed JVM. Disco completes 16,000 to 32,000 cold and 40,000 in
+one ladder, where 32,000 threw between 24,000 and 36,000. The bar is the deepest path the oracle completed in any run: 16,000
+for force and stress, 40,000 for disco. The unconverted port overflowed at 6,000 (force), 4,000 (stress) and 8,000 (disco).
+
+Each site keeps its name, signature, visit order and side-effect order. A frame is one suspended Java activation; the incidence
+lists and sets are not modified while the search runs, so each frame holds a live iterator, as the Java's `for` does.
+
+| Site                                                                           | Frame                                                                                                                                                                                                 | Test file                                                                    |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `ComponentsProcessor.dfs` (`ComponentsProcessor.java:130-157`)                 | node, `last`, component, the iterator over the incidence list, the current edge and its step: the source-side call (`:146`), the target-side call (`:149`), then the edge and its labels (`:151-152`) | `src/alg/force/ComponentsProcessor.explicit-stack.test.ts`                   |
+| `ElkGraphComponentsProcessor.dfs` (`ElkGraphComponentsProcessor.java:207-219`) | node and the iterator over its incidence set; `visited.includes` (the Java's linear `List.contains`) runs when the iterator reaches a neighbour, not when the neighbour is first seen                 | `src/alg/disco/transform/ElkGraphComponentsProcessor.explicit-stack.test.ts` |
+
+Each test file holds a verbatim recursive twin called through `split`, 60 (force) or 80 (disco) seeded graphs compared on
+component order, element order and identity (paths, cycles, forests, parallel edges, self-loops, labels; for disco ports,
+port-to-port and hierarchy-crossing edges and hyperedges that throw on both sides), and a 20,000-node path that was red before
+the change.
+
+Result at the oracle's depth, on Node's default stack (a path, and a caterpillar: a spine with one leaf per node):
+
+| Algorithm | Depth  | Path              | Caterpillar         |
+| --------- | ------ | ----------------- | ------------------- |
+| force     | 16,000 | completes (111 s) | completes (609 s)   |
+| stress    | 16,000 | completes (590 s) | completes (4,671 s) |
+| disco     | 40,000 | completes (5.9 s) | completes (13 s)    |
+
+Every shape equals the oracle at 1e-6 and is byte-identical to the output of the unconverted port run on a raised stack
+(`node --stack-size=7000`). The stress caterpillar (32,000 nodes) takes the oracle 69 minutes on a quiet machine, stress being cubic
+in the node count; a first oracle run on a loaded machine was ended by the probe's 90-minute limit after the search had
+passed, a time result and not a stack one. All 2,710 force, stress and disco cases of the corpus sweep have the same category
+and detail before and after (force 817 `ok` and 89 `both-throw`, stress 809 and 89, disco 819 and 87). The landed replays pass
+unchanged. The stress runs and the force caterpillar need `--max-old-space-size`, a heap setting and not a stack one: the
+adjacency matrix of `FGraph.calcAdjacency` and the two matrices of `StressMajorization` are n x n (issue #170, `follow-up`).
+
+**The depth check.** Both loops call `checkStackDepth` (`src/java/lang/StackDepth.ts`) after each frame push, as the mrtree
+`ComponentsProcessor.dfs` of #67 does: beyond 100,000 suspended activations `split` throws the `RangeError` of V8's own stack
+exhaustion, where the JVM throws `StackOverflowError` (#70 records the oracle throwing on a 100,000-node force path). Both
+searches stop on visited marks, so neither can run without end. Whether a fixed limit is the right model, and whether such
+loops should call it, is issue #167 (`needs-ruling`).
 
 ## 6. The `AbstractForceModel` import cycle {#alg-force-disco-cycle}
 
@@ -307,8 +351,8 @@ for the maintainer in the roadmap revision.
 | last-ulp `Math.sin`/`Math.cos` in `ElkGraphTransformer.getOrthogonalPoints` (`ElkGraphTransformer.java:627-642`), known divergence, inside the bar | 32 numeric fields in `import` stops of `multi6/spacing60`, `multi6/combo2`, `bends/{default,thickness3,thickMixed,junctions}` (edge contours), max 8.5e-14; every later stop is bit-exact. Controlled experiment on the 491 distinct call inputs of the 88 disco runs, replayed in the oracle JVM: `atan2` (171) is bit-identical in V8, `Math` and `StrictMath`; V8 equals `StrictMath` on all 160 `cos` and 160 `sin` inputs; HotSpot's `Math.cos` differs from it on 9 and `Math.sin` on 5, by one ulp. No tolerance loosened; no contour cell flips in any row                                  |
 | upstream defects the ports copy (issue #69, `needs-ruling`)                                                                                        | the `avoidSamePosition` hang (`AbstractForceModel.java:187-208`: `triedForBendPoints` is declared inside the loop, so two coincident `FBendpoint`s of antiparallel edges with `repulsivePower` > 0 never separate and the loop never ends; no row can hold it, the recorder skips `repulsivePower` on any graph with an antiparallel pair, and the port hangs on the same input) and DisCo's no-op polyomino options (`DisCoPolyominoCompactor.java:224` builds a fresh `Polyominoes` holder, so `lowLevelSort`, `highLevelSort` and `traversalStrategy` never reach the packer; 12 goldens pin it) |
 | two classified option-text differences (issue #71, `needs-ruling`)                                                                                 | `layoutOptions.debug.discoGraph` is the JVM's `Object.toString()` of the `DCGraph` (`DisCoLayoutProvider.java:86`; `...DCGraph@1` under `-XX:hashCode=2`, `[object Object]` in the port); option keys that depend on the unported rectpacking provider (golden `force--iterations-50`: `force.iterations` against `iterations`, a `SUFFIX_DIFFERENCES` row with a tripwire that fails once rectpacking is registered; 6 sweep cases)                                                                                                                                                                |
-| recursion depth below the oracle's beyond 2,000 (issue #70, `follow-up`)                                                                           | section 5                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| the three held-back stress cases (issue #58, `needs-ruling`)                                                                                       | the three cases pass with the Java's assertions from temporary copies (`Issue665Test` 1 of 1, `Issue700Test` 4 of 4); `STRESS_PENDING` is untouched. Two further blockers: `layered-label-metrics.json` lacks four label texts and the two models are not vendored. The evidence is a comment on the issue, which stays open                                                                                                                                                                                                                                                                        |
+| heap and time at depth after #70 (issue #170, `follow-up`); the depth check of the two loops (issue #167, `needs-ruling`)                          | section 5: the port needs `--max-old-space-size` from about 16,000 nodes and is up to 8 times slower than the oracle on the force shapes                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| the three held-back stress cases (issue #58), resolved after 8b                                                                                    | 8b's evidence, a comment on the issue: the three cases pass with the Java's assertions from temporary copies (`Issue665Test` 1 of 1, `Issue700Test` 4 of 4), with two further blockers (`layered-label-metrics.json` lacked four label texts and the two models were not vendored). Mission layered-stress-cases carried out the ruling of 2026-11-13: `STRESS_PENDING` is deleted, the layout-test runner registers `elk.force` and `elk.stress`, the four texts are appended and the two models vendored; both suites run every case                                                              |
 
 **Landed-code defects found and fixed at the origin.** `src/alg/common/polyomino/structures/TwoBitGrid.ts` `newWords` built
 its rows with `Array.from({ length })`, which yields `[]` for a negative length where Java's `new long[h][...]` throws

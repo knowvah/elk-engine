@@ -167,6 +167,27 @@
       "algorithm": "org.eclipse.elk.layered",
       "variant": "hierarchy-separate",
       "note": "ptolemy-crossbar-switch x hierarchy-separate: layered, variant hierarchy-separate from test/corpus/variants.json; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "generated-mrtree-tree-small--default",
+      "path": "generated/mrtree-tree-small.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
+      "note": "generated-mrtree-tree-small x default: corpus input test/corpus/generated/mrtree-tree-small.json, vendored byte-identical under test/golden/inputs/pipeline/generated/; it sets no algorithm, so the oracle resolves the default (layered); the entry was 'mrtree-generated' in the trees set until #68; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "generated-radial-tree-small--default",
+      "path": "generated/radial-tree-small.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
+      "note": "generated-radial-tree-small x default: corpus input test/corpus/generated/radial-tree-small.json, vendored byte-identical under test/golden/inputs/pipeline/generated/; it sets no algorithm, so the oracle resolves the default (layered); the entry was 'radial-generated' in the trees set until #68; recorded with -XX:hashCode=2 (H4)."
+    },
+    {
+      "id": "generated-vertiflex-tree-small--default",
+      "path": "generated/vertiflex-tree-small.json",
+      "algorithm": "org.eclipse.elk.layered",
+      "variant": "default",
+      "note": "generated-vertiflex-tree-small x default: corpus input test/corpus/generated/vertiflex-tree-small.json, vendored byte-identical under test/golden/inputs/pipeline/generated/; it sets no algorithm, so the oracle resolves the default (layered); the entry was 'vertiflex-generated' in the trees set until #68; recorded with -XX:hashCode=2 (H4)."
     }
   ]
 }

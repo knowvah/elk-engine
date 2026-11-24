@@ -6,7 +6,8 @@
 # Runs tools/vectors/MrTreeVectors.java as a single-file source program against the source-built oracle jars (AD-3) plus the
 # third-party bundles graph.text needs, invoked as
 #   java -cp <classpath> MrTreeVectors.java <outDir> <tools/vectors dir>
-# and writes <outDir>/mrtree.json and <outDir>/mrtree-extra.json itself (the landed copies live in test/golden/refs/java).
+# and writes <outDir>/mrtree.json, <outDir>/mrtree-extra.json and <outDir>/mrtree-extra2.json itself, in that order (the
+# landed copies live in test/golden/refs/java). MRTREE_FILE=main|extra|extra2 writes one of them.
 # Usage: mrtree-vectors.sh <outDir>
 # Honours ELK_ORACLE_DIR (default <repo>/../elk-oracle) and P2_BUNDLES. Before every run the SHA-256 table embedded in the
 # program (the generated corpus input under test/corpus/generated) is checked against the files on disk. Results are cached by

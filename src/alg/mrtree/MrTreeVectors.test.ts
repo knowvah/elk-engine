@@ -27,8 +27,8 @@ import { registerMrTree } from '../../../test/helpers/mrtree-replay-state.js';
 
 const HEAVY = { timeout: 60_000 } as const;
 
-/** The ref files replayed, relative to test/golden/refs/java (the second one only when it has been recorded). */
-const REF_FILES: readonly string[] = ['mrtree.json', 'mrtree-extra.json'];
+/** The ref files replayed, relative to test/golden/refs/java (the second and third only when they have been recorded). */
+const REF_FILES: readonly string[] = ['mrtree.json', 'mrtree-extra.json', 'mrtree-extra2.json'];
 const refPath = (name: string): string => path.join(path.dirname(mrTreeRefPath()), name);
 
 registerMrTree();

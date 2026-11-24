@@ -13,9 +13,13 @@ import {
   inputsRoot,
   layout,
   listGraphFiles,
+  registerTestAlgorithms,
   type LayoutTestDeps,
   type LayoutTestSpec,
 } from './layout-test-runner.js';
+import { ForceOptions } from '../../src/alg/force/options/ForceOptions.js';
+import { StressOptions } from '../../src/alg/force/options/StressOptions.js';
+import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
 import { LayeredOptions } from '../../src/alg/layered/options/LayeredOptions.js';
 import { SelfLoopPortRestorer } from '../../src/alg/layered/intermediate/SelfLoopPortRestorer.js';
 import { SelfLoopPostProcessor } from '../../src/alg/layered/intermediate/SelfLoopPostProcessor.js';
@@ -32,6 +36,11 @@ class SecondProcessor implements ILayoutProcessor<object> {
 const ALGORITHM = LayeredOptions.ALGORITHM_ID;
 const FAKE_LGRAPH = { fake: 'lgraph' };
 const VENDORED_TICKETS = 'tickets/layered/**';
+const FORCE_CATEGORY = 'org.eclipse.elk.force';
+const FORCE_SUFFIX = 'force';
+const STRESS_SUFFIX = 'stress';
+const STRESS_EDGE_LENGTH = 70;
+const CHILD_SIZE = 20;
 
 function newGraph(): ElkNode {
   return ElkGraphUtil.createGraph();
@@ -66,6 +75,89 @@ function spec(overrides: Partial<LayoutTestSpec>): LayoutTestSpec {
 function newGraphBuilder(): ElkNode {
   return newGraph();
 }
+
+/** The ids the service resolves for force and stress, by id and by suffix; `null` where one does not resolve. */
+function resolvedTestAlgorithms(): (string | null)[] {
+  const service = LayoutMetaDataService.getInstance();
+  return [
+    service.getAlgorithmData(ForceOptions.ALGORITHM_ID),
+    service.getAlgorithmData(StressOptions.ALGORITHM_ID),
+    service.getAlgorithmDataBySuffix(FORCE_SUFFIX),
+    service.getAlgorithmDataBySuffix(STRESS_SUFFIX),
+  ].map((data) => data?.getId() ?? null);
+}
+
+const BOTH_BY_ID_AND_SUFFIX = [
+  ForceOptions.ALGORITHM_ID,
+  StressOptions.ALGORITHM_ID,
+  ForceOptions.ALGORITHM_ID,
+  StressOptions.ALGORITHM_ID,
+];
+
+/** A layered root with one child that names `elk.stress` and holds two connected nodes. */
+function stressChildGraph(): ElkNode {
+  const graph = newGraph();
+  graph.setProperty(CoreOptions.ALGORITHM, ALGORITHM);
+  const child = ElkGraphUtil.createNode(graph);
+  child.setProperty(CoreOptions.ALGORITHM, `elk.${STRESS_SUFFIX}`);
+  child.setProperty(StressOptions.DESIRED_EDGE_LENGTH, STRESS_EDGE_LENGTH);
+  const first = ElkGraphUtil.createNode(child);
+  const second = ElkGraphUtil.createNode(child);
+  first.setDimensions(CHILD_SIZE, CHILD_SIZE);
+  second.setDimensions(CHILD_SIZE, CHILD_SIZE);
+  ElkGraphUtil.createSimpleEdge(first, second);
+  return graph;
+}
+
+describe('layout test runner: the algorithms of PlainJavaInitialization', () => {
+  it('registers elk.force and elk.stress before an experiment provides its graph', () => {
+    const atProvide: (string | null)[][] = [];
+    const cases = buildLayoutTests(
+      {
+        name: 'registration',
+        graphs: [
+          function provided(): ElkNode {
+            atProvide.push(resolvedTestAlgorithms());
+            return newGraph();
+          },
+        ],
+        afterLayout: { check: () => {} },
+      },
+      fakeEngine([]),
+    );
+    cases[0]!.run();
+    expect(atProvide).toEqual([BOTH_BY_ID_AND_SUFFIX]);
+  });
+
+  it('registers each provider once: a second call leaves one force and one stress in the force category', () => {
+    registerTestAlgorithms();
+    registerTestAlgorithms();
+    expect(resolvedTestAlgorithms()).toEqual(BOTH_BY_ID_AND_SUFFIX);
+    const layouters = LayoutMetaDataService.getInstance().getCategoryData(FORCE_CATEGORY)!.getLayouters();
+    expect(layouters.map((data) => data.getId())).toEqual([ForceOptions.ALGORITHM_ID, StressOptions.ALGORITHM_ID]);
+  });
+
+  it('lays a child that names elk.stress out with stress: its two nodes end the desired edge length apart', () => {
+    let laidOut: ElkNode | null = null;
+    const cases = buildLayoutTests({
+      name: 'stress child',
+      graphs: [stressChildGraph],
+      afterLayout: {
+        check: (graph) => {
+          laidOut = graph;
+        },
+      },
+    });
+    cases[0]!.run();
+    const [first, second] = [...laidOut!.getChildren().get(0).getChildren()];
+    // stress majorization of two connected nodes of one size: the distance of their centres is the desired edge length
+    expect(Math.hypot(first!.getX() - second!.getX(), first!.getY() - second!.getY())).toBeCloseTo(
+      STRESS_EDGE_LENGTH,
+      6,
+    );
+    expect([first!.getX(), first!.getY()]).not.toEqual([second!.getX(), second!.getY()]);
+  });
+});
 
 describe('layout test runner', () => {
   it('emits one case per graph x configurator x check, titled by all three', () => {

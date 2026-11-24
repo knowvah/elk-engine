@@ -52,5 +52,11 @@
     "file": "src/alg/radial/p1position/EadesRadial.ts",
     "fingerprint": "afe8b84a7c0a7577:1",
     "reason": "Java-faithful (CLAUDE.md \"The Java Is Sacred\"): EadesRadial.java:108 computes currentRadius / currentRadius + radius (precedence quirk)."
+  },
+  {
+    "rule": "js/redundant-operation",
+    "file": "src/alg/radial/p1position/EadesRadial.explicit-stack.test.ts",
+    "fingerprint": "cb11ad9ca16fd615:1",
+    "reason": "Java-faithful (CLAUDE.md \"The Java Is Sacred\"): the test's verbatim recursive twin of positionNodes transcribes EadesRadial.java:108, currentRadius / currentRadius + radius (precedence quirk), as the port does."
   }
 ]

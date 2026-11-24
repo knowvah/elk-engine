@@ -162,7 +162,7 @@
 // Group sites (T14, H2, H8, H12, F12 shape), id sites/<Class>/<name>[/<variant>]: inline compound graphs (input = { elk }, options = {})
 //   and one vendored file, one row per scenario of plans/layered-compound/unreached.md (Sc1..Sc16, ids as the document names them) plus the
 //   throw rows below. Appended after the scenarios, so no row of the other groups changes. A site row is one whole engine run, recorded as a
-//   scenarios row (the run, the checks and the TestController are those of "Group scenarios"); the row's shape tells the three kinds apart:
+//   scenarios row (the run, the checks and the TestController are those of "Group scenarios"); the row's shape tells the four kinds apart:
 //     run      expected = { layout, plans, stops, tree } exactly as a scenarios row (INCLUDE_CHILDREN in the graph; no hierarchical stop of
 //              its own: the stops are observed, not selected). The TS replay of a scenarios row replays it.
 //     logged   (Sc15, sites/JsonDebugUtil/loggedCompound) as run, with the engine run under new BasicProgressMonitor().withLogging(true);
@@ -176,6 +176,16 @@
 //              dump) with, per value, CrossHierarchyEdge.toString() = "<PortType>:<LEdge.toString()>" (e.g. "OUTPUT:e_root.c.e1
 //              0[n_root.c.d.x] -> 0[n(external_port)_0]"; LEdge.toString is "e_<origin id> " followed by the source and target as
 //              "<port index>[<node toString>]"); a nested graph is written by JsonDebugUtil as the "children" of its node (no separate entry).
+//     worked   (issue #60, sites/ElkLayered/recursiveWork) as run, with the engine run under a WorkRecorder, a BasicProgressMonitor that
+//              overrides its two protected hooks: doBegin(name, newTotalWork, topInstance, maxHierarchyLevels) keeps the task name and
+//              the total work, and doSubTask(work, maxHierarchyLevels) returns a WorkRecorder (configured as the base class configures
+//              its sub-monitor), so the whole monitor tree records. expected additionally holds work = [{ task: string, work: int }]:
+//              one entry per monitor of the tree that began, depth first (a monitor before its sub-monitors, sub-monitors in creation
+//              order; a monitor that never began has no entry). The work of a begin is a Java float; every begin of the run passes a
+//              whole number (a count of processors or of nodes), so it is written as an int, and any other value stops the recording.
+//              A TS replay runs under the same kind of monitor and compares the list exactly. What it observes that no other field
+//              does: the total ElkLayered.hierarchicalLayout announces, the sum of the processor counts of every graph of the
+//              hierarchy (ElkLayered.java:225-235, "Recursive hierarchical layout").
 //     throws   expected = { throws: { class, message, frame } }: the oracle run threw inside ELK (the first frame outside this program is
 //              an org.eclipse.elk frame, as ORACLE THROWS below). class = the exception's fully qualified Java class name; message =
 //              getMessage() or null (a JDK 21 helpful NullPointerException message names the failed access and is JVM text: compare the
@@ -190,6 +200,51 @@
 //   .../hierarchicalPortFIXED_POS runs (a compound node c, port p without an explicit side at (0, 13), edges a -> p outside and p -> x
 //   inside, direction RIGHT, INCLUDE_CHILDREN; the oracle decides which, see the row). A throw outside a row of kind throws is an oracle
 //   throw (the row is not recorded).
+//   Evidence rows (issue #60, EVIDENCE_ROWS, appended after every row above so that none of them changes or moves): graphs on which a
+//   recorded field observes a statement the earlier rows reach without observing it. Each was chosen with a one-token mutant of the port
+//   that survived every earlier row and that the row kills (plans/compound-mutant-rows/items.md). All run rows, direction RIGHT,
+//   INCLUDE_CHILDREN at the root, nodes 30 by 30, ports 4 by 4 unless stated (the last one is of kind worked):
+//     sites/CompoundGraphPreprocessor/mergeInDeep     c{d{x}}, x's WEST port xp, edges a1 -> xp and a2 -> xp from outside c (the mirror of
+//                                                     deepOutMerged): the second edge reuses the external input port one level up, and
+//                                                     the reused port is not added to the created ports again (java:433).
+//     .../mergeOffOut                                 deepOutMerged with mergeHierarchyEdges false on c and d: one external port per edge
+//                                                     (the !mergeExternalPorts operand, java:750).
+//     .../outThenParent, parentThenOut                c{d{x[xp EAST]}} with an EAST port cp on c; xp -> b (outside c) and xp -> cp, in both
+//                                                     JSON orders: the edge that ends at the parent's port gets a port of its own although
+//                                                     an exported one exists (the parentEndPort operand, java:750). The importer puts the
+//                                                     outside edge first whatever the JSON order.
+//     .../inThenParent, parentThenIn                  the mirror: xp WEST, a WEST port cq on c, a -> xp and cq -> xp.
+//     .../flowInside, flowPlain, flowYoInactive,      c{x} with free ports p1, p2 (no side), inside edges p1 -> x, x -> p1, x -> p2, p2 -> x and
+//     flowInsideRev, flowPlainRev                     one self loop of c: p1 -> p2 with insideSelfLoops.yo on the edge and
+//                                                     insideSelfLoops.activate on c (flowInside), without yo (flowPlain), with yo but
+//                                                     without activate (flowYoInactive), and p2 -> p1 with and without yo (the Rev rows).
+//                                                     The loop decides the sign of each port's net flow (calculateNetFlow, java:829),
+//                                                     and the side of a free port's dummy follows the sign.
+//     sites/HierarchicalNodeResizingProcessor/nonSquarePort   a -> c{x} through a WEST port 4 by 10 and a NORTH port 10 by 4 of c
+//                                                     (portConstraints FIXED_SIDE): graphLayoutToNode passes the port's width and height to
+//                                                     getExternalPortPosition in that order (java:86).
+//     sites/CompoundGraphPreprocessor/mergedThickness deepOutMerged with elk.edge.thickness 1 on e1 and 3 on e2, and a second node z in d
+//                                                     behind an edge x -> z. The merged dummy edge takes the larger thickness
+//                                                     (java:792-794); in d it is a long edge past z's layer, and its long edge dummy is as
+//                                                     high as the edge is thick, so the layout shows the value after the postprocessor
+//                                                     has removed the dummy edge itself.
+//     sites/HierarchicalNodeResizingProcessor/resizerTopLevelChild, resizerTopLevelWidth, resizerTopLevelHeight
+//                                                     a root WITHOUT INCLUDE_CHILDREN (direction RIGHT, crossingMinimization.strategy NONE
+//                                                     and greedySwitch.type OFF, so that its own flat layout runs no hierarchy aware
+//                                                     processor and makes no stop) holding one compound node with hierarchyHandling
+//                                                     INCLUDE_CHILDREN, nodeSize.constraints [MINIMUM_SIZE, PORTS], portConstraints
+//                                                     FIXED_SIDE, two children and an edge between them: c (nodeSize.minimum (300, 250),
+//                                                     an EAST port ce and a SOUTH port cs, edges y -> ce, y -> cs), cw (minimum (300, 1),
+//                                                     one EAST port: only the width grows) and ch (minimum (1, 250), one SOUTH port: only
+//                                                     the height grows). The compound node's graph is the top-level graph of its own
+//                                                     compound run and has no parent LNode, so HierarchicalNodeResizingProcessor skips
+//                                                     graphLayoutToNode and the external port dummies keep the coordinate
+//                                                     resizeGraphNoReallyIMeanIt shifted (java:203-220, the guard at :205): the tree at
+//                                                     the last stop, the postprocessor on that node, shows it. In a nested graph
+//                                                     getExternalPortPosition overwrites the same coordinate in the same call, and the
+//                                                     export never shows it. These are the only rows whose engine root is not the
+//                                                     compound graph: levelPath and the plans name the compound node.
+//     sites/ElkLayered/recursiveWork (kind worked)    the graph of fixedSideOut (two levels: root and c) under a WorkRecorder.
 //
 // ORACLE THROWS: a row whose oracle run throws inside ELK (the first frame outside this program is an org.eclipse.elk frame) is not
 //   recorded; the recorder prints "ORACLE THROWS <row id> <exception>: <message> at <first ELK frame>" and "oracle throws: n rows" on stderr
@@ -2905,6 +2960,63 @@ ce3418acfa52e7afca791ec96756021d02268d6996185bc588e974e00c702f70  repo:test/gold
         {"HierarchicalNodeResizingProcessor/fixedGraphSize", "run", SITE_18}
     };
 
+    // Evidence rows (issue #60, compound-mutant-rows): graphs on which a recorded field observes a statement that earlier rows reach without
+    // observing it (one-token mutants of the port survived every row; see the header, "Group sites", for what each graph is for). A separate
+    // array, read LAST by siteSpecs, so that no earlier row changes or moves.
+
+    static final String EVIDENCE_0 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"a1","x":0,"y":0,"width":30,"height":30},{"id":"a2","x":0,"y":0,"width":30,"height":30},{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"d","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30,"ports":[{"id":"xp","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"WEST"}}]}]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"e1","sources":["a1"],"targets":["xp"]},{"id":"e2","sources":["a2"],"targets":["xp"]}]}""";
+    static final String EVIDENCE_1 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"b1","x":0,"y":0,"width":30,"height":30},{"id":"b2","x":0,"y":0,"width":30,"height":30},{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"d","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30,"ports":[{"id":"xp","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}]}],"layoutOptions":{"mergeHierarchyEdges":"false"}}],"layoutOptions":{"mergeHierarchyEdges":"false"}}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"e1","sources":["xp"],"targets":["b1"]},{"id":"e2","sources":["xp"],"targets":["b2"]}]}""";
+    static final String EVIDENCE_2 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"b","x":0,"y":0,"width":30,"height":30},{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"d","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30,"ports":[{"id":"xp","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}]}]}],"ports":[{"id":"cp","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"e1","sources":["xp"],"targets":["b"]},{"id":"e2","sources":["xp"],"targets":["cp"]}]}""";
+    static final String EVIDENCE_3 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"b","x":0,"y":0,"width":30,"height":30},{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"d","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30,"ports":[{"id":"xp","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}]}]}],"ports":[{"id":"cp","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"e1","sources":["xp"],"targets":["cp"]},{"id":"e2","sources":["xp"],"targets":["b"]}]}""";
+    static final String EVIDENCE_4 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"a","x":0,"y":0,"width":30,"height":30},{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"d","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30,"ports":[{"id":"xp","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"WEST"}}]}]}],"ports":[{"id":"cq","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"WEST"}}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"e1","sources":["a"],"targets":["xp"]},{"id":"e2","sources":["cq"],"targets":["xp"]}]}""";
+    static final String EVIDENCE_5 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"a","x":0,"y":0,"width":30,"height":30},{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"d","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30,"ports":[{"id":"xp","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"WEST"}}]}]}],"ports":[{"id":"cq","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"WEST"}}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"e1","sources":["cq"],"targets":["xp"]},{"id":"e2","sources":["a"],"targets":["xp"]}]}""";
+    static final String EVIDENCE_6 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"insideSelfLoops.activate":"true"},"ports":[{"id":"p1","x":0,"y":0,"width":4,"height":4},{"id":"p2","x":0,"y":0,"width":4,"height":4}],"edges":[{"id":"i1","sources":["p1"],"targets":["x"]},{"id":"i2","sources":["x"],"targets":["p1"]},{"id":"i3","sources":["x"],"targets":["p2"]},{"id":"i4","sources":["p2"],"targets":["x"]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"loop","sources":["p1"],"targets":["p2"],"layoutOptions":{"insideSelfLoops.yo":"true"}}]}""";
+    static final String EVIDENCE_7 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"insideSelfLoops.activate":"true"},"ports":[{"id":"p1","x":0,"y":0,"width":4,"height":4},{"id":"p2","x":0,"y":0,"width":4,"height":4}],"edges":[{"id":"i1","sources":["p1"],"targets":["x"]},{"id":"i2","sources":["x"],"targets":["p1"]},{"id":"i3","sources":["x"],"targets":["p2"]},{"id":"i4","sources":["p2"],"targets":["x"]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"loop","sources":["p1"],"targets":["p2"]}]}""";
+    static final String EVIDENCE_8 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30}],"ports":[{"id":"p1","x":0,"y":0,"width":4,"height":4},{"id":"p2","x":0,"y":0,"width":4,"height":4}],"edges":[{"id":"i1","sources":["p1"],"targets":["x"]},{"id":"i2","sources":["x"],"targets":["p1"]},{"id":"i3","sources":["x"],"targets":["p2"]},{"id":"i4","sources":["p2"],"targets":["x"]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"loop","sources":["p1"],"targets":["p2"],"layoutOptions":{"insideSelfLoops.yo":"true"}}]}""";
+    static final String EVIDENCE_9 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"insideSelfLoops.activate":"true"},"ports":[{"id":"p1","x":0,"y":0,"width":4,"height":4},{"id":"p2","x":0,"y":0,"width":4,"height":4}],"edges":[{"id":"i1","sources":["p1"],"targets":["x"]},{"id":"i2","sources":["x"],"targets":["p1"]},{"id":"i3","sources":["x"],"targets":["p2"]},{"id":"i4","sources":["p2"],"targets":["x"]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"loop","sources":["p2"],"targets":["p1"],"layoutOptions":{"insideSelfLoops.yo":"true"}}]}""";
+    static final String EVIDENCE_10 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"insideSelfLoops.activate":"true"},"ports":[{"id":"p1","x":0,"y":0,"width":4,"height":4},{"id":"p2","x":0,"y":0,"width":4,"height":4}],"edges":[{"id":"i1","sources":["p1"],"targets":["x"]},{"id":"i2","sources":["x"],"targets":["p1"]},{"id":"i3","sources":["x"],"targets":["p2"]},{"id":"i4","sources":["p2"],"targets":["x"]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"loop","sources":["p2"],"targets":["p1"]}]}""";
+    static final String EVIDENCE_11 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"a","x":0,"y":0,"width":30,"height":30},{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"pw","x":0,"y":0,"width":4,"height":10,"layoutOptions":{"port.side":"WEST"}},{"id":"pn","x":0,"y":0,"width":10,"height":4,"layoutOptions":{"port.side":"NORTH"}}],"edges":[{"id":"i1","sources":["pw"],"targets":["x"]},{"id":"i2","sources":["pn"],"targets":["x"]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"e1","sources":["a"],"targets":["pw"]},{"id":"e2","sources":["a"],"targets":["pn"]}]}""";
+    static final String EVIDENCE_12 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"b1","x":0,"y":0,"width":30,"height":30},{"id":"b2","x":0,"y":0,"width":30,"height":30},{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"d","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30,"ports":[{"id":"xp","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}]},{"id":"z","x":0,"y":0,"width":30,"height":30}],"edges":[{"id":"i1","sources":["x"],"targets":["z"]}]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"e1","sources":["xp"],"targets":["b1"],"layoutOptions":{"elk.edge.thickness":"1"}},{"id":"e2","sources":["xp"],"targets":["b2"],"layoutOptions":{"elk.edge.thickness":"3"}}]}""";
+    static final String EVIDENCE_13 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30},{"id":"y","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"hierarchyHandling":"INCLUDE_CHILDREN","nodeSize.constraints":"[MINIMUM_SIZE, PORTS]","nodeSize.minimum":"(300, 250)","portConstraints":"FIXED_SIDE"},"ports":[{"id":"ce","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"EAST"}},{"id":"cs","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"SOUTH"}}],"edges":[{"id":"e1","sources":["x"],"targets":["y"]},{"id":"e2","sources":["y"],"targets":["ce"]},{"id":"e3","sources":["y"],"targets":["cs"]}]}],"layoutOptions":{"elk.direction":"RIGHT","crossingMinimization.strategy":"NONE","crossingMinimization.greedySwitch.type":"OFF"},"edges":[]}""";
+    static final String EVIDENCE_14 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"cw","x":0,"y":0,"width":30,"height":30,"children":[{"id":"cwx","x":0,"y":0,"width":30,"height":30},{"id":"cwy","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"hierarchyHandling":"INCLUDE_CHILDREN","nodeSize.constraints":"[MINIMUM_SIZE, PORTS]","nodeSize.minimum":"(300, 1)","portConstraints":"FIXED_SIDE"},"ports":[{"id":"cwe","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}],"edges":[{"id":"cwe1","sources":["cwx"],"targets":["cwy"]},{"id":"cwe2","sources":["cwy"],"targets":["cwe"]}]}],"layoutOptions":{"elk.direction":"RIGHT","crossingMinimization.strategy":"NONE","crossingMinimization.greedySwitch.type":"OFF"},"edges":[]}""";
+    static final String EVIDENCE_15 = """
+{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"ch","x":0,"y":0,"width":30,"height":30,"children":[{"id":"chx","x":0,"y":0,"width":30,"height":30},{"id":"chy","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"hierarchyHandling":"INCLUDE_CHILDREN","nodeSize.constraints":"[MINIMUM_SIZE, PORTS]","nodeSize.minimum":"(1, 250)","portConstraints":"FIXED_SIDE"},"ports":[{"id":"chs","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"SOUTH"}}],"edges":[{"id":"che1","sources":["chx"],"targets":["chy"]},{"id":"che2","sources":["chy"],"targets":["chs"]}]}],"layoutOptions":{"elk.direction":"RIGHT","crossingMinimization.strategy":"NONE","crossingMinimization.greedySwitch.type":"OFF"},"edges":[]}""";
+
+    static final String[][] EVIDENCE_ROWS = {
+        {"CompoundGraphPreprocessor/mergeInDeep", "run", EVIDENCE_0},
+        {"CompoundGraphPreprocessor/mergeOffOut", "run", EVIDENCE_1},
+        {"CompoundGraphPreprocessor/outThenParent", "run", EVIDENCE_2},
+        {"CompoundGraphPreprocessor/parentThenOut", "run", EVIDENCE_3},
+        {"CompoundGraphPreprocessor/inThenParent", "run", EVIDENCE_4},
+        {"CompoundGraphPreprocessor/parentThenIn", "run", EVIDENCE_5},
+        {"CompoundGraphPreprocessor/flowInside", "run", EVIDENCE_6},
+        {"CompoundGraphPreprocessor/flowPlain", "run", EVIDENCE_7},
+        {"CompoundGraphPreprocessor/flowYoInactive", "run", EVIDENCE_8},
+        {"CompoundGraphPreprocessor/flowInsideRev", "run", EVIDENCE_9},
+        {"CompoundGraphPreprocessor/flowPlainRev", "run", EVIDENCE_10},
+        {"HierarchicalNodeResizingProcessor/nonSquarePort", "run", EVIDENCE_11},
+        {"CompoundGraphPreprocessor/mergedThickness", "run", EVIDENCE_12},
+        {"HierarchicalNodeResizingProcessor/resizerTopLevelChild", "run", EVIDENCE_13},
+        {"HierarchicalNodeResizingProcessor/resizerTopLevelWidth", "run", EVIDENCE_14},
+        {"HierarchicalNodeResizingProcessor/resizerTopLevelHeight", "run", EVIDENCE_15},
+        {"ElkLayered/recursiveWork", "worked", SITE_2}
+    };
+
     /** The smallest of the three inputs of the hierarchical SPLINES throw (tickets 040, 160, 701; SplineSegment.java:247, the "ORACLE THROWS" of
      * the T1 recording). A probe of all three, both directions, threw the same exception from the same frame, so one input is recorded. */
     static final List<String> SPLINE_THROW_MODELS = List.of("ticket-040_includeChildrenWithFixedOrder");
@@ -2938,9 +3050,13 @@ ce3418acfa52e7afca791ec96756021d02268d6996185bc588e974e00c702f70  repo:test/gold
         for (String pc : List.of("FIXED_RATIO", "FIXED_POS")) {
             site(out, "CompoundGraphPreprocessor/hierarchicalPort" + pc, "either", null, fixedPortGraph(pc));
         }
+        for (String[] r : EVIDENCE_ROWS) {
+            site(out, r[0], r[1], null, r[2]);
+        }
     }
 
-    /** A sites row: modes "run" (the engine run completes), "logged" (as run, under a monitor with logging on), "throws" (the run throws
+    /** A sites row: modes "run" (the engine run completes), "logged" (as run, under a monitor with logging on), "worked" (as run, under a
+     * monitor that records the work of every begin), "throws" (the run throws
      * inside ELK: expected = { throws }) and "either" (records whichever happens). A throw outside "throws" / "either" is an oracle throw
      * (the row is not recorded, as in the other groups). */
     static Result runSite(Spec s, ElkNode root) {
@@ -2963,12 +3079,13 @@ ce3418acfa52e7afca791ec96756021d02268d6996185bc588e974e00c702f70  repo:test/gold
         }
     }
 
-    /** As runScenario, with a logging monitor in mode "logged" and expected.logged added. */
+    /** As runScenario, with a logging monitor in mode "logged" and expected.logged added, and under a WorkRecorder in mode "worked", with
+     * expected.work added. */
     static Result runSiteLayout(Spec s, ElkNode root) {
         currentRow = s.id;
         s.options.forEach((id, c4) -> setProperty(root, id, c4));
         checkSeeds(root);
-        BasicProgressMonitor monitor = new BasicProgressMonitor();
+        BasicProgressMonitor monitor = s.mode.equals("worked") ? new WorkRecorder() : new BasicProgressMonitor();
         if (s.mode.equals("logged")) {
             monitor.withLogging(true);
         }
@@ -2985,7 +3102,49 @@ ce3418acfa52e7afca791ec96756021d02268d6996185bc588e974e00c702f70  repo:test/gold
         if (s.mode.equals("logged")) {
             expected.put("logged", logged(monitor));
         }
+        if (s.mode.equals("worked")) {
+            List<Object> work = new ArrayList<>();
+            collectWork(monitor, work);
+            expected.put("work", work);
+        }
         return new Result(expected, null);
+    }
+
+    // The monitor work of mode "worked" (issue #60): see the header, "Group sites"
+
+    /** Keeps the task name and the total work its begin was given, and makes sub-monitors of its own kind. */
+    static final class WorkRecorder extends BasicProgressMonitor {
+        String task;
+        float work;
+
+        @Override
+        protected void doBegin(String name, float newTotalWork, boolean topInstance, int maxHierarchyLevels) {
+            task = name;
+            work = newTotalWork;
+        }
+
+        /** As BasicProgressMonitor.doSubTask, for a monitor without logging, log persistence or execution times. */
+        @Override
+        protected BasicProgressMonitor doSubTask(float subWork, int maxHierarchyLevels) {
+            return new WorkRecorder().withMaxHierarchyLevels(maxHierarchyLevels > 0 ? maxHierarchyLevels - 1 : maxHierarchyLevels);
+        }
+    }
+
+    /** expected.work: { task, work } of every monitor of the tree that began, depth first, sub-monitors in creation order. */
+    static void collectWork(IElkProgressMonitor m, List<Object> out) {
+        WorkRecorder w = (WorkRecorder) m;
+        if (w.task != null) {
+            if (w.work != (int) w.work) {
+                throw new Bug("row " + currentRow + ": the work of task " + w.task + " is not an int: " + w.work);
+            }
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("task", w.task);
+            entry.put("work", (int) w.work);
+            out.add(entry);
+        }
+        for (IElkProgressMonitor child : m.getSubMonitors()) {
+            collectWork(child, out);
+        }
     }
 
     // The logged graphs of a monitor tree: copied from tools/vectors/LayeredLabelsVectors.java (7f2, T1: collectLogged, logged)

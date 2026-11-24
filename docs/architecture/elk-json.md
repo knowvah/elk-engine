@@ -153,9 +153,11 @@ Judgement calls the vectors force:
   known divergence by user decision (2026-10-14), listed in `docs/conformance.md`.
 - **Parse inputs (J7 amendments).** ELK cannot re-import its own layout export
   (`resolvedAlgorithm` raises `IDataType class expected for layout option
-org.eclipse.elk.resolvedAlgorithm`), so parse inputs strip it; until mission 7h they also strip
-  the layered-only `layering.layerId` and `crossingMinimization.positionId`. The list is
-  `STRIP_KEYS` in `tools/oracle/regen-parse-refs.sh` and `test/golden/json-roundtrip.test.ts`.
+org.eclipse.elk.resolvedAlgorithm`), so parse inputs strip it, and nothing else. Until issue #63
+  they also stripped the layered-only `layering.layerId` and `crossingMinimization.positionId`,
+  which a CoreOptions-only port dropped; #63 regenerated the refs with the two keys kept, and the
+  round trip test registers layered next to CoreOptions. The list is `STRIP_KEYS` in
+  `tools/oracle/regen-parse-refs.sh` and `test/golden/json-roundtrip.test.ts`.
 
 ## 6. Fixes outside graph.json {#fixes-outside}
 
@@ -164,7 +166,11 @@ Proving the adapter exposed three defects in shared code, fixed here:
 - `EcoreEMap.map()` iterates EMF `BasicEMap` hash buckets (lazy capacity 1, growth `2 * old + 4`,
   index `(hash & 0x7FFFFFFF) % length`), including null keys (hash 0). This fixes the
   `getAllProperties()` order of ElkGraph elements, which decides the exported `layoutOptions`
-  order (see [elkgraph-model.md](elkgraph-model.md)).
+  order (see [elkgraph-model.md](elkgraph-model.md)). More properties on an element can therefore
+  reorder its existing `layoutOptions`: a larger map can reach the next capacity, which moves keys
+  to other buckets. The #63 regeneration showed it. The two layered keys took 9 `layoutOptions`
+  objects across the 4 parse refs from 6 entries to 8 (capacity 6 to 16) and reordered their
+  earlier keys, with every value unchanged, and the port reproduces that order byte for byte.
 - `EnumSet.toString` uses the `AbstractCollection` format.
 - `core.util.Maybe` was ported: `ImportBuilder.rememberImporter(maybe)` hands the importer back so a later `transferLayout` can use it.
 
@@ -191,9 +197,8 @@ Notes:
 - The graph-json vectors are rerun-checked: the recording is run more than once and the outputs
   compared, because the JVM orders some collections by identity hash (section 5) and a single run
   would hide it. Any such list is sorted in the recording.
-- `STRIP_KEYS` shrinks in mission 7h, when layered's `layerId` and `positionId` options are
-  registered; then regenerate the parse refs and remove the keys from both places.
-  Mission 7h's brief did not carry this hand-off, and it changes landed parse refs, so both
-  places still strip the two keys; issue #63 asks for the decision.
+- `STRIP_KEYS` holds `resolvedAlgorithm` only, in both places. The hand-off that mission 7h's brief
+  did not carry is done: issue #63 removed layered's `layering.layerId` and
+  `crossingMinimization.positionId` from the list and regenerated the parse refs by script.
 - Regenerating a ref is journaled with the patch id (`CLAUDE.md`, Verification); never regenerate
   to make a failing test pass.
