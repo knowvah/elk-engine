@@ -957,7 +957,9 @@ Mission 6a ported `alg.common` except `nodespacing/**` and `NodeMicroLayout` (AC
 - **Iterative traversals (AC6).** `NetworkSimplex.tightTreeDFS` and `postorderTraversal` are explicit-stack loops; the
   behaviour is identical and proven against a verbatim recursive reference (`NetworkSimplexTree.test.ts`). The tree
   algorithms' sites are listed under [alg-trees.md § 7](architecture/alg-trees.md#alg-trees-recursion), the component
-  searches of force, stress and disco under [alg-force-disco.md § 5](architecture/alg-force-disco.md#alg-force-disco-recursion).
+  searches of force, stress and disco under [alg-force-disco.md § 5](architecture/alg-force-disco.md#alg-force-disco-recursion),
+  the spore tree walks (`DepthFirstCompaction`, `GrowTreePhase`, `MinSTPhase`) under
+  [alg-packing.md § 3.4](architecture/alg-packing.md#alg-packing-recursion).
 - **Exception class where Java dereferences null.** `SVGImage.addElementStr` after `removeGroup` of the current group:
   `IllegalStateException` (Java NPE; T2). Disconnected input to `NetworkSimplex` (`feasibleTree`): `TypeError` (Java
   NPE; T7). A null quadrant or `xMin` in `RectilinearConvexHull` and a null `lastX` in its event handler:
@@ -2385,8 +2387,14 @@ topdownpacking:
 - **The flag-gated chain row.** `full/compaction/chain2000/default` (a 2,000-node path, `DepthFirstCompaction` cubic) runs only with
   `SPORE_CHAIN_FULL=1`; with the flag it equals the oracle row (8,004 doubles), measured at 321 s under vitest. The explicit-stack
   conversions of `DepthFirstCompaction.compactTree` and `GrowTreePhase.growAt` (PK6) are proven against verbatim recursive copies
-  (`*.explicit-stack.test.ts`); beyond 2,000 nodes the port's stack limit is below the oracle's at the unconverted sites (issue #76,
-  `follow-up`).
+  (`*.explicit-stack.test.ts`).
+- **Recursion beyond 2,000 nodes (issue #76).** The six remaining spore tree walks (`DepthFirstCompaction.getMinUnderlap`,
+  `minUnderlapWithSubtree`, `translateSubtree` and `drawTree`, `GrowTreePhase.drawTree`, `MinSTPhase.addNode`) are explicit-stack
+  loops (AC6), each proven against a verbatim recursive twin. On the recorder's chain a warmed oracle completes sporeOverlap at
+  9,750 nodes and sporeCompaction at 4,000; the port completes both on Node's default stack, byte-identical to the unconverted
+  port on a raised stack and to the oracle. `ShrinkTreeCompactionPhase.draw` (debug mode only) stays verbatim. The loop form of
+  `minUnderlapWithSubtree` costs 20 to 30 % of time on the compaction chain (issue #175, `follow-up`). See
+  [alg-packing.md § 3.4](architecture/alg-packing.md#alg-packing-recursion).
 - **Upstream defects the ports copy.** Issue #73 (the `absorbBlocks` hang; fixed upstream by eclipse-elk/elk#1239 and in the
   port since the `8bca22f4` pin), issue #80
   (`needs-ruling`, seven further defects: the `AreaApproximation.java:98` NPE, the unused visitor and its reversed `endsWith`,

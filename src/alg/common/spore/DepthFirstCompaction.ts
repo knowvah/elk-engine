@@ -2,14 +2,28 @@
 import type { ElkRectangle } from '../../../core/math/ElkRectangle.js';
 import type { KVector } from '../../../core/math/KVector.js';
 import { fuzzyCompare } from '../../../guava/DoubleMath.js';
+import { checkStackDepth } from '../../../java/lang/StackDepth.js';
 import type { Tree } from '../Tree.js';
 import { SVGImage } from '../utils/SVGImage.js';
 import { InternalProperties } from './InternalProperties.js';
 import type { Node } from './Node.js';
 
-/** One level of the explicit stack of {@link DepthFirstCompaction.compactTree}: the tree and its next child to enter. */
+/**
+ * One level of the explicit stack of {@link DepthFirstCompaction.compactTree}, `translateSubtree` and `drawTree`: the
+ * tree and its next child to enter.
+ */
 interface CompactFrame {
   readonly tree: Tree<Node>;
+  next: number;
+}
+
+/**
+ * One suspended activation of `getMinUnderlap` or `minUnderlapWithSubtree`: the tree, the activation's running
+ * `minUnderlap` and its next child to enter.
+ */
+interface UnderlapFrame {
+  readonly tree: Tree<Node>;
+  minUnderlap: number;
   next: number;
 }
 
@@ -131,6 +145,13 @@ export class DepthFirstCompaction {
    * @param currentMinUnderlap an initial value
    * @param compactionVector a KVector that determines the direction to calculate distances in
    * @returns the minimum distance or underlap
+   *
+   * The recursive call of DepthFirstCompaction.java:131 is a frame push. AC6 (#76): explicit stack, same visit and
+   * side-effect order, same `Math.min` argument order. A frame is one suspended Java activation: its tree, its running
+   * `minUnderlap` and the next child to enter. A frame opens with the Java's first statement, the
+   * `minUnderlapWithSubtree` call; a child other than `child` opens with the parent's running value as
+   * `currentMinUnderlap`, and when it returns the parent applies `Math.min(minUnderlap, result)`. The trees are not
+   * modified during the walk, so the children are read by index.
    */
   private static getMinUnderlap(
     tree: Tree<Node>,
@@ -138,50 +159,97 @@ export class DepthFirstCompaction {
     currentMinUnderlap: number,
     compactionVector: KVector,
   ): number {
-    let minUnderlap = Math.min(
+    const stack: UnderlapFrame[] = [];
+    DepthFirstCompaction.enterGetMinUnderlap(tree, child, currentMinUnderlap, compactionVector, stack);
+    for (;;) {
+      const frame = stack[stack.length - 1]!;
+      if (frame.next < frame.tree.children.length) {
+        const c = frame.tree.children[frame.next++]!;
+        if (c !== child) {
+          DepthFirstCompaction.enterGetMinUnderlap(c, child, frame.minUnderlap, compactionVector, stack);
+        }
+      } else {
+        stack.pop();
+        if (stack.length === 0) {
+          return frame.minUnderlap;
+        }
+        const parent = stack[stack.length - 1]!;
+        parent.minUnderlap = Math.min(parent.minUnderlap, frame.minUnderlap);
+      }
+    }
+  }
+
+  /** The first statement of one {@link getMinUnderlap} activation (DepthFirstCompaction.java:126-127), then its frame. */
+  private static enterGetMinUnderlap(
+    tree: Tree<Node>,
+    child: Tree<Node>,
+    currentMinUnderlap: number,
+    compactionVector: KVector,
+    stack: UnderlapFrame[],
+  ): void {
+    const minUnderlap = Math.min(
       currentMinUnderlap,
       DepthFirstCompaction.minUnderlapWithSubtree(tree.node, child, currentMinUnderlap, compactionVector),
     );
-
-    for (const c of tree.children) {
-      if (c !== child) {
-        minUnderlap = Math.min(
-          minUnderlap,
-          DepthFirstCompaction.getMinUnderlap(c, child, minUnderlap, compactionVector),
-        );
-      }
-    }
-
-    return minUnderlap;
+    stack.push({ tree, minUnderlap, next: 0 });
+    // Java's StackOverflowError, checked as by every AC6 loop (D7); the acyclic spore trees bound the walk
+    checkStackDepth(stack.length);
   }
 
+  /**
+   * The minimum underlap between `r` and the nodes below `tree`. The recursive call of DepthFirstCompaction.java:166 is a
+   * frame push. AC6 (#76): explicit stack, same visit and side-effect order, same `Math.min` argument order. A frame is
+   * one suspended Java activation: its tree, its running `minUnderlap` and the next child to enter. A child's frame starts
+   * from the parent's running value (the Java's `currentMinUnderlap` argument); when it returns, the parent applies
+   * `Math.min(minUnderlap, result)`. The `break` of a touching child that would move into `r` ends the frame's loop and
+   * skips that child's call. The trees are not modified during the walk, so the children are read by index.
+   */
   private static minUnderlapWithSubtree(
     r: Node,
     tree: Tree<Node>,
     currentMinUnderlap: number,
     compactionVector: KVector,
   ): number {
-    let minUnderlap = currentMinUnderlap;
-    for (const child of tree.children) {
-      const c = child.node;
-      if (r.touches(c)) {
-        // if they already touch, find out if they would be moved into each other
-        if (DepthFirstCompaction.wouldMoveIntoEachOther(r, c, compactionVector)) {
-          minUnderlap = 0;
-          break;
+    const stack: UnderlapFrame[] = [{ tree, minUnderlap: currentMinUnderlap, next: 0 }];
+    checkStackDepth(stack.length);
+    for (;;) {
+      const frame = stack[stack.length - 1]!;
+      if (frame.next < frame.tree.children.length) {
+        const child = frame.tree.children[frame.next++]!;
+        if (DepthFirstCompaction.underlapWithChild(r, child.node, frame, compactionVector)) {
+          stack.push({ tree: child, minUnderlap: frame.minUnderlap, next: 0 });
+          // Java's StackOverflowError, checked as by every AC6 loop (D7); the acyclic spore trees bound the walk
+          checkStackDepth(stack.length);
         }
       } else {
-        // update minUnderlap
-        minUnderlap = Math.min(minUnderlap, r.distance(c, compactionVector));
+        stack.pop();
+        if (stack.length === 0) {
+          return frame.minUnderlap;
+        }
+        const parent = stack[stack.length - 1]!;
+        parent.minUnderlap = Math.min(parent.minUnderlap, frame.minUnderlap);
       }
-
-      minUnderlap = Math.min(
-        minUnderlap,
-        DepthFirstCompaction.minUnderlapWithSubtree(r, child, minUnderlap, compactionVector),
-      );
     }
+  }
 
-    return minUnderlap;
+  /**
+   * The statements of {@link minUnderlapWithSubtree}'s loop before its recursive call (DepthFirstCompaction.java:143-164),
+   * on the frame of the suspended activation. Returns false at the `break`: the frame's loop ends there.
+   */
+  private static underlapWithChild(r: Node, c: Node, frame: UnderlapFrame, compactionVector: KVector): boolean {
+    if (r.touches(c)) {
+      // if they already touch, find out if they would be moved into each other
+      if (DepthFirstCompaction.wouldMoveIntoEachOther(r, c, compactionVector)) {
+        frame.minUnderlap = 0;
+        // break
+        frame.next = frame.tree.children.length;
+        return false;
+      }
+    } else {
+      // update minUnderlap
+      frame.minUnderlap = Math.min(frame.minUnderlap, r.distance(c, compactionVector));
+    }
+    return true;
   }
 
   /** The touching test of {@link minUnderlapWithSubtree}: split out at the Java `if` condition. */
@@ -195,40 +263,80 @@ export class DepthFirstCompaction {
     );
   }
 
+  /**
+   * Translates every node of a subtree, pre-order. The recursive call of DepthFirstCompaction.java:175 is a frame push.
+   * AC6 (#76): explicit stack, same visit and side-effect order. A frame is one suspended Java activation: its tree and
+   * the next child to enter; a child's node is translated when its parent advances to it, then its frame opens. The
+   * trees are not modified during the walk (only nodes move), so the children are read by index.
+   */
   private static translateSubtree(tree: Tree<Node>, compactionVector: KVector): void {
     tree.node.translate(compactionVector);
-    tree.children.forEach((c) => DepthFirstCompaction.translateSubtree(c, compactionVector));
+    const stack: CompactFrame[] = [{ tree, next: 0 }];
+    checkStackDepth(stack.length);
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      if (frame.next < frame.tree.children.length) {
+        const c = frame.tree.children[frame.next++]!;
+        c.node.translate(compactionVector);
+        stack.push({ tree: c, next: 0 });
+        // Java's StackOverflowError, checked as by every AC6 loop (D7); the acyclic spore trees bound the walk
+        checkStackDepth(stack.length);
+      } else {
+        stack.pop();
+      }
+    }
   }
 
   //--- debug utils --------------------------------------
 
+  /**
+   * Draws a subtree, pre-order. The recursive call of DepthFirstCompaction.java:193 is a frame push. AC6 (#76): explicit
+   * stack, same visit and side-effect order. A frame is one suspended Java activation: its tree and the next child to
+   * enter. The rectangle and centre of a tree are drawn when its frame opens; the edge to a child is drawn when the parent
+   * advances to it, then the child's frame opens. The trees are not modified during the walk, so the children are read by
+   * index.
+   */
   private static drawTree(t: Tree<Node>, svgImage: SVGImage, mark: Tree<Node> | null): void {
+    const stack: CompactFrame[] = [];
+    DepthFirstCompaction.enterDrawTree(t, svgImage, stack);
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      if (frame.next < frame.tree.children.length) {
+        const c = frame.tree.children[frame.next++]!;
+        DepthFirstCompaction.drawEdge(frame.tree, c, svgImage, mark);
+        DepthFirstCompaction.enterDrawTree(c, svgImage, stack);
+      } else {
+        stack.pop();
+      }
+    }
+  }
+
+  /** The entry of one {@link drawTree} activation (DepthFirstCompaction.java:182-184), then its frame opens. */
+  private static enterDrawTree(t: Tree<Node>, svgImage: SVGImage, stack: CompactFrame[]): void {
     svgImage.g('rects').addRect(t.node.rect, 'fill="none" stroke="black"');
     svgImage.g('centers').addCircle(t.node.vertex.x, t.node.vertex.y, 6, 'fill="black"');
-    t.children.forEach((c) => {
-      if (c === mark) {
-        svgImage
-          .g('edges')
-          .addLine(
-            t.node.vertex.x,
-            t.node.vertex.y,
-            c.node.vertex.x,
-            c.node.vertex.y,
-            'stroke="red" stroke-width="5" stroke-dasharray="8,8"',
-          );
-      } else {
-        svgImage
-          .g('edges')
-          .addLine(
-            t.node.vertex.x,
-            t.node.vertex.y,
-            c.node.vertex.x,
-            c.node.vertex.y,
-            'stroke="blue" stroke-width="2"',
-          );
-      }
-      DepthFirstCompaction.drawTree(c, svgImage, mark);
-    });
+    stack.push({ tree: t, next: 0 });
+    // Java's StackOverflowError, checked as by every AC6 loop (D7); the acyclic spore trees bound the walk
+    checkStackDepth(stack.length);
+  }
+
+  /** The edge of {@link drawTree}'s child lambda (DepthFirstCompaction.java:186-192): red and dashed to `mark`. */
+  private static drawEdge(t: Tree<Node>, c: Tree<Node>, svgImage: SVGImage, mark: Tree<Node> | null): void {
+    if (c === mark) {
+      svgImage
+        .g('edges')
+        .addLine(
+          t.node.vertex.x,
+          t.node.vertex.y,
+          c.node.vertex.x,
+          c.node.vertex.y,
+          'stroke="red" stroke-width="5" stroke-dasharray="8,8"',
+        );
+    } else {
+      svgImage
+        .g('edges')
+        .addLine(t.node.vertex.x, t.node.vertex.y, c.node.vertex.x, c.node.vertex.y, 'stroke="blue" stroke-width="2"');
+    }
   }
 
   private static debugOut(_tree: Tree<Node>, mark: Tree<Node> | null): void {

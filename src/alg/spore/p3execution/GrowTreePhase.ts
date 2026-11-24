@@ -3,6 +3,7 @@ import { LayoutProcessorConfiguration } from '../../../core/alg/LayoutProcessorC
 import type { ILayoutPhase } from '../../../core/alg/ILayoutPhase.js';
 import { ElkUtil } from '../../../core/util/ElkUtil.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { checkStackDepth } from '../../../java/lang/StackDepth.js';
 import type { Tree } from '../../common/Tree.js';
 import { InternalProperties } from '../../common/spore/InternalProperties.js';
 import type { Node } from '../../common/spore/Node.js';
@@ -13,6 +14,12 @@ import type { SPOrEPhases } from '../SPOrEPhases.js';
 
 /** One level of the explicit stack of {@link GrowTreePhase.growAt}: the tree and its next child to enter. */
 interface GrowFrame {
+  readonly tree: Tree<Node>;
+  next: number;
+}
+
+/** One suspended activation of {@link GrowTreePhase.drawTree}: the tree and its next child to draw. */
+interface DrawFrame {
   readonly tree: Tree<Node>;
   next: number;
 }
@@ -112,12 +119,37 @@ export class GrowTreePhase implements ILayoutPhase<SPOrEPhases, Graph> {
     this.svg.isave();
   }
 
-  /** @see org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/p3execution/GrowTreePhase.java:108 */
+  /**
+   * Draws the tree. The Java recurses (`drawTree(c, img)` at GrowTreePhase.java:112, inside the `forEach` of :110-113).
+   * AC6 (#76): explicit stack, same visit and side-effect order. A frame is one suspended Java activation: the tree and
+   * its next child. The child's edge is drawn when its parent's frame advances to it, then the child's frame opens and
+   * draws its rectangle, as the Java's activation does on entry; children in list order. The trees are not modified
+   * while they are drawn, so iterating `children` by index is safe (as in {@link growAt}). The stack is depth-checked
+   * after each push (`checkStackDepth` on its length): Java's `StackOverflowError`. The verbatim recursive form is the
+   * reference of `GrowTreePhase.explicit-stack.test.ts`.
+   *
+   * @see org.eclipse.elk.alg.spore/src/org/eclipse/elk/alg/spore/p3execution/GrowTreePhase.java:108
+   */
   private drawTree(t: Tree<Node>, img: SVGImage): void {
+    const stack: DrawFrame[] = [];
+    this.openDrawTree(stack, t, img);
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      if (frame.next < frame.tree.children.length) {
+        const c = frame.tree.children[frame.next++]!;
+        const tn = frame.tree.node;
+        img.g('e').addLine(tn.vertex.x, tn.vertex.y, c.node.vertex.x, c.node.vertex.y, 'stroke="blue"');
+        this.openDrawTree(stack, c, img);
+      } else {
+        stack.pop();
+      }
+    }
+  }
+
+  /** Entry of one {@link drawTree} activation (GrowTreePhase.java:109): frame, depth check, rectangle. */
+  private openDrawTree(stack: DrawFrame[], t: Tree<Node>, img: SVGImage): void {
+    stack.push({ tree: t, next: 0 });
+    checkStackDepth(stack.length);
     img.g('n').addRect(t.node.rect, 'fill="none" stroke="black"');
-    t.children.forEach((c) => {
-      img.g('e').addLine(t.node.vertex.x, t.node.vertex.y, c.node.vertex.x, c.node.vertex.y, 'stroke="blue"');
-      this.drawTree(c, img);
-    });
   }
 }

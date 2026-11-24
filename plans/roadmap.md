@@ -3801,3 +3801,57 @@ loses none); CodeQL with no new accepted entry; `test/golden/refs/` against the 
 #174 (`follow-up`): 12 stale TS lines in the math-call-sites table, and "within 1e-13" in `tools/corpus/ts-findings.json`
 and `docs/parity-report.md` (measured 4.55e-13). A wording note on point 2 of the rule is in the report on #74: E1 has no
 number beyond 1e-6; it is reported because an option string compares exactly.
+
+## Revision 2026-11-24 (spore-recursion-depth)
+
+Queue mission for issue #76, on `chore/issue-queue` (plan and journal in `plans/spore-recursion-depth/`). Mission 8c (PK6)
+converted two spore recursions and kept six verbatim; beyond about 2,000 levels those six overflowed V8's stack on chains
+the oracle lays out. The maintainer ruled on #76: "We should make these explicit stack loops if we get the same
+output/results", the ruling #67 and #70 carried out before; #76 was the last issue under it. No landed ref, vector, golden
+or assertion changed, and no oracle patch or pin changed. Oracle: `8bca22f4` + patches 0001-0004 (built
+2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over core, alg.common and alg.spore is empty.
+
+**1. The oracle's depth, measured again.** The input is the recorder's chain (`SporeLayoutVectors.java:1870-1877`), whose
+spanning tree is a path. A cold JVM throws `StackOverflowError` on the 2,000-node sporeCompaction chain; a JVM that first
+runs shallower chains completes it, so the ladders start at 250 or 500 (the brief's started at 2,000). sporeOverlap: 9,750
+completes and 10,000 throws, in three ladders. sporeCompaction: 4,000 completes in two ladders (806 s and 903 s); 5,000
+throws in one and ran into the probe's one-hour case limit in the other. The unconverted port overflowed at 2,500 for both.
+
+**2. Six recursions are explicit-stack loops (AC6)**, each proven against a verbatim recursive twin on 120 to 200 seeded
+trees over five shapes, with a 20,000-node path that was red before the change:
+
+| Bundle | Site | Frame |
+| ------ | ---- | ----- |
+| alg.common | `DepthFirstCompaction.getMinUnderlap`, `minUnderlapWithSubtree` | tree, running `minUnderlap`, next child; the child starts from the parent's running value and returns through `Math.min(minUnderlap, result)`; the `break` ends the frame's loop |
+| alg.common | `DepthFirstCompaction.translateSubtree`, `drawTree` | tree and next child, pre-order |
+| spore | `GrowTreePhase.drawTree` | tree and next child, pre-order |
+| spore | `MinSTPhase.addNode` (also through `MaxSTPhase`) | node tree, vector tree, next child |
+
+All six call `checkStackDepth` after each frame push, as every #67 and #70 loop does; none can run without end (the trees
+are acyclic). `compactTree` and `growAt`, the PK6 loops, are unchanged; a comment on #167 names the new call sites for its
+question 3. `ShrinkTreeCompactionPhase.draw` stays verbatim: it runs only in debug mode, where the JVM writes an SVG file
+per step.
+
+**3. Results are the same.** On Node's default stack the port completes sporeOverlap at 9,750 (35 s) and sporeCompaction
+at 3,000 (591 s) and 4,000 (107 min), each byte-identical to the unconverted port on a raised stack
+(`node --stack-size=7000`) and to the oracle's output. All 1,812 spore cases of the corpus sweep have the same category
+and detail before and after. The landed replays pass unchanged, and the flag-gated `full/compaction/chain2000/default`
+still equals its row.
+
+**4. Time.** The compaction chain is cubic to about 3,200 nodes and far steeper beyond, where its far ends stop touching
+and the walk takes the `r.distance` arm; a port run at 4,000 takes 105 minutes, above the mission's 90-minute cap, so
+nothing between 4,000 and 5,000 was run and the oracle's limit there is not narrowed. The loop form of
+`minUnderlapWithSubtree`, which runs about n³/6 activations on a path, costs 20 to 30 % more time than the recursion on
+that chain, whatever the frame layout; the corpus sweep does not show it. Both are #175 (`follow-up`).
+
+**5. Docs.** `docs/architecture/alg-packing.md` § 3.4 keeps the PK6 probe as history and adds the sites, the ladders, the
+results, the time cost and the depth check; § 5 lists #175 in place of #76. `docs/conformance.md`: the AC6 bullet points at
+§ 3.4, and a new bullet states the result. `plans/alg-packing/decision-journal.md` has one closing row.
+
+**6. Gates.** Queue gates 1-7 green on the final tree: coverage 1,222 files, 50,706 tests, 98.82 / 97.01 / 98.57 / 98.86
+(a first run, started beside the mission's own long runs at `nice` 10, failed on the layered phase sweep's 900 s timeout
+with 0 mismatches; the second, without `nice`, passed unchanged); CodeQL with no new accepted entry; `test/golden/refs/`
+against the base untouched.
+
+**Open.** #175 (`follow-up`): time at depth. #167 (`needs-ruling`): the depth check's model, and whether `compactTree` and
+`growAt` gain it. No `needs-ruling` issue was filed and no row is a partial.
