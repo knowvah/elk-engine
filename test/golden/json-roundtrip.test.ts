@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: EPL-2.0
 // J7: the 4 committed layout goldens (refs/elk) are parsed and re-exported by the port; the text must be
 // byte-identical to the oracle's own import->export (refs/elk-parse). ELK cannot re-import its own layout
-// export (it writes `resolvedAlgorithm`) and the port registers CoreOptions only (it drops the layered-only
-// `layering.layerId`, `crossingMinimization.positionId`), so the input is the golden with those keys removed by the transform
-// tools/oracle/regen-parse-refs.sh applies (J7 amendments 1, 2); the raw import throws the T3-recorded exception.
+// export (it writes `resolvedAlgorithm`), so the input is the golden with that key removed by the transform
+// tools/oracle/regen-parse-refs.sh applies (J7 amendment 1); the raw import throws the T3-recorded exception.
+// The port registers CoreOptions plus layered, so the layered-only `layering.layerId` and
+// `crossingMinimization.positionId` survive the import as they do on the oracle. They were stripped too
+// (J7 amendment 2) until issue #63 retired that amendment and regenerated the refs.
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { LayeredMetaDataProvider } from '../../src/alg/layered/options/LayeredMetaDataProvider.js';
 import { LayoutMetaDataService } from '../../src/core/data/LayoutMetaDataService.js';
 import { ElkGraphJson } from '../../src/graph/json/ElkGraphJson.js';
 import { repoRoot } from '../corpus/corpus.js';
@@ -18,8 +21,8 @@ const GOLDEN_DIR = path.join(repoRoot(), 'test', 'golden', 'refs', 'elk');
 const PARSE_DIR = path.join(repoRoot(), 'test', 'golden', 'refs', 'elk-parse');
 const META_FILE = '_meta.json';
 const JSON_EXT = '.json';
-// Keep in sync with STRIP_KEYS in tools/oracle/regen-parse-refs.sh (J7 amendments 1 and 2).
-const STRIP_KEYS = ['resolvedAlgorithm', 'layering.layerId', 'crossingMinimization.positionId'];
+// Keep in sync with STRIP_KEYS in tools/oracle/regen-parse-refs.sh (J7 amendment 1; amendment 2 retired by #63).
+const STRIP_KEYS = ['resolvedAlgorithm'];
 const RAW_IMPORT_ROW = 'err-resolved-algorithm';
 
 interface ParseMeta {
@@ -61,7 +64,7 @@ function stripResolvedAlgorithm(raw: string): string {
 
 beforeEach(() => {
   LayoutMetaDataService.unload();
-  LayoutMetaDataService.getInstance();
+  LayoutMetaDataService.getInstance().registerLayoutMetaDataProviders(new LayeredMetaDataProvider());
 });
 
 describe('layout goldens: oracle import -> export round trip', () => {

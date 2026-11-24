@@ -2574,7 +2574,8 @@ the registry check subtracts them (`test/melk/held-back.ts`).
 - Converter rows for the algorithms `fixed`, `box`, `random` and the `""`/"Other" category
   (`MISSION5_PROVIDERS`; `CoreOptions.ts` withholds them): closed by mission 5.
 - Parse inputs strip `layering.layerId` and `crossingMinimization.positionId` (J7 amendment,
-  `STRIP_KEYS`): closed by mission 7h. `resolvedAlgorithm` is stripped permanently (see the quirks).
+  `STRIP_KEYS`): closed by issue #63 (parse refs regenerated). `resolvedAlgorithm` is stripped
+  permanently (see the quirks).
 
 **Deferred graph.text cases (G3).** The sweep and the validator vectors skip what needs the algorithms
 above.
