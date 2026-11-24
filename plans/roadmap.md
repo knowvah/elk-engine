@@ -3638,3 +3638,53 @@ last-ulp math. The seven option-key cases of item A are recorded as `ok` since r
 **Open.** #74 (`queue:ready`): the AD-4 amendment and the audit of the other last-ulp entries. #169 (`follow-up`):
 `docs/architecture/overview.md` still says mission 8a is proven by 40 `trees` goldens. #133: the translated `docs-site/`
 pages. `tools/corpus/ts-findings.json` keeps its `#68` note on `sloppy_overlaps_2` until the branch merges.
+
+## Revision 2026-11-24 (component-dfs-depth)
+
+Queue mission for issue #70, on `chore/issue-queue` (plan and journal in `plans/component-dfs-depth/`). Mission 8b kept the
+two component searches of force, stress and disco recursive (FD7), and its probe found the port overflowing V8's stack on
+paths the oracle lays out. The maintainer's ruling of 2026-11-23 on #70 covers #67, #70 and #76: such a recursion becomes an
+explicit-stack loop proven against a verbatim recursive reference, "so long as results stay the same". No landed ref,
+vector, golden or assertion changed, and no oracle patch or pin changed. Oracle: `8bca22f4` + patches 0001-0004 (built
+2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over core, alg.force and alg.disco is empty.
+
+**1. The oracle's depth, measured again.** On the brief's grid (a path of 16,000 to 64,000 nodes, two cold JVMs per
+algorithm) force and stress threw `StackOverflowError` at every depth: a cold JVM does not lay out a 16,000-node force
+path. A JVM that first runs shallower paths, a ladder from 2,000, completes 16,000 and throws from 17,000 up (three ladders
+for force, one for stress), so #70's 16,000 was a warmed JVM. Disco completes 16,000 to 32,000 cold and 40,000 in one
+ladder, where 32,000 threw between 24,000 and 36,000. The bar, the deepest path completed in any run: force 16,000, stress
+16,000, disco 40,000. The unconverted port overflowed at 6,000 (force), 4,000 (stress) and 8,000 (disco).
+
+**2. Two recursions are explicit-stack loops (AC6)**, each with a `*.explicit-stack.test.ts`: a verbatim recursive twin
+called through `split`, 60 or 80 seeded graphs compared on component order, element order and identity, and a 20,000-node
+path that was red before the change.
+
+| Bundle | Site | Frame |
+| ------ | ---- | ----- |
+| force (and stress) | `ComponentsProcessor.dfs` | node, `last`, component, the live iterator over the incidence list, the current edge and its step (source-side call, target-side call, then the edge and its labels) |
+| disco | `ElkGraphComponentsProcessor.dfs` | node and the live iterator over its incidence set; `visited.includes` runs when the iterator reaches a neighbour |
+
+Both call `checkStackDepth` after each frame push, as the mrtree `ComponentsProcessor.dfs` of #67 does. Both stop on visited
+marks, so neither can run without end; a comment on #167 names the two call sites for its question 3.
+
+**3. Results are the same.** At the oracle's depth, on Node's default stack, a path and a caterpillar complete for all
+three algorithms and are byte-identical to the output of the unconverted port run on a raised stack
+(`node --stack-size=7000`). All six shapes equal the oracle at 1e-6. The stress caterpillar (32,000 nodes)
+takes the oracle 69 minutes on a quiet machine; a first run on a loaded machine was ended by the probe's 90-minute limit, a
+time result and not a stack one. All 2,710 force, stress and disco cases of the corpus sweep have the same category and detail before and after (force 817 `ok` and 89 `both-throw`, stress
+809 and 89, disco 819 and 87). The landed replays pass unchanged.
+
+**4. Beyond the stack.** The force caterpillar (32,000 nodes) and the stress runs need `--max-old-space-size`: the force
+adjacency matrix is n x n with 8 bytes per element in the port (4 in the Java), and stress holds two n x n `double`
+matrices. The port is up to 8 times slower than the oracle on the force shapes. Both are #170 (`follow-up`).
+
+**5. Docs.** `docs/architecture/alg-force-disco.md` § 5 keeps the T12 probe as history and adds the sites, the measured
+depths, the result and the depth check; § 7 drops the recursion row. `docs/conformance.md` has the same facts in the FD7,
+stack-depth and AC6 bullets.
+
+**Gates.** The coverage gate failed four times on test timeouts while other queue sessions saturated the machine (the
+layered phase sweep took 17 minutes against its 15-minute limit; three 5 s and 60 s tests ran a few hundredths over), each
+with no failed assertion, and passed unchanged once it ran without `nice`. Nothing was changed to get green.
+
+**Open.** #167 (`needs-ruling`): the depth check, now with the two visited-mark loops of #70 named. #170 (`follow-up`):
+heap and time at depth. #76 (spore) is the last issue under the same ruling.

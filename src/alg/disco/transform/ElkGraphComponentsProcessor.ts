@@ -3,6 +3,7 @@ import type { ElkEdge } from '../../../graph/ElkEdge.js';
 import type { ElkNode } from '../../../graph/ElkNode.js';
 import type { ElkPort } from '../../../graph/ElkPort.js';
 import { ElkGraphUtil } from '../../../graph/util/ElkGraphUtil.js';
+import { checkStackDepth } from '../../../java/lang/StackDepth.js';
 
 /**
  * Class for splitting an {@link ElkNode} into a list of its components using a simple depth-first search.
@@ -260,20 +261,68 @@ export class ElkGraphComponentsProcessor {
   /**
    * Naive recursive implementation of depth-first search (dfs).
    *
+   * The recursive call of ElkGraphComponentsProcessor.java:214 is a frame push. AC6 (#70): explicit stack, same visit
+   * and side-effect order. A frame is one suspended Java activation: the node and the live iterator over its incidence
+   * set. `visited` and `component` receive the node at entry, and the `visited.includes` test (Java's linear
+   * `List.contains`) runs per neighbour when the iterator reaches it, so a neighbour visited deeper in the loop is
+   * skipped, as in the Java. The incidence sets are filled only by `computeIncidences`, which `split` runs to completion
+   * before the first `dfs`; `dfs` only reads them, so the live iterators see the sets the Java's do.
+   *
    * @param start Node to start with
    * @param component List to add all connected nodes to.
    * @see org.eclipse.elk.alg.disco/src/org/eclipse/elk/alg/disco/transform/ElkGraphComponentsProcessor.java
    */
   private static dfs(start: ElkNode, component: ElkNode[]): void {
-    ElkGraphComponentsProcessor.visited.push(start);
-    component.push(start);
-    const adjacentNodes = ElkGraphComponentsProcessor.incidenceMap.get(start);
-    if (adjacentNodes !== undefined) {
-      for (const node of adjacentNodes) {
-        if (!ElkGraphComponentsProcessor.visited.includes(node)) {
-          ElkGraphComponentsProcessor.dfs(node, component);
-        }
+    const stack: DfsFrame[] = [];
+    ElkGraphComponentsProcessor.openDfs(start, component, stack);
+    while (stack.length > 0) {
+      const next = ElkGraphComponentsProcessor.nextDfsCall(stack[stack.length - 1]!);
+      if (next === null) {
+        stack.pop();
+      } else {
+        ElkGraphComponentsProcessor.openDfs(next, component, stack);
       }
     }
   }
+
+  /**
+   * Entry of one `dfs` activation (ElkGraphComponentsProcessor.java:208-210): the node is marked visited and added to
+   * the component, and its frame pushed; a node without an incidence entry gets a frame with no iterator (java:211).
+   *
+   * @param start the node of the activation
+   * @param component the list to add the node to
+   * @param stack the explicit stack of suspended activations
+   */
+  private static openDfs(start: ElkNode, component: ElkNode[], stack: DfsFrame[]): void {
+    ElkGraphComponentsProcessor.visited.push(start);
+    component.push(start);
+    const adjacentNodes = ElkGraphComponentsProcessor.incidenceMap.get(start);
+    // the incidence sets are not modified while the DFS runs; the iterator stays live as the Java's does
+    stack.push({ node: start, adjacentNodes: adjacentNodes === undefined ? null : adjacentNodes.values() });
+    checkStackDepth(stack.length);
+  }
+
+  /**
+   * Runs a frame's loop (ElkGraphComponentsProcessor.java:212-216) up to its next recursive call and returns the node of
+   * that call, or `null` when the loop ends and the activation returns.
+   *
+   * @param frame the innermost suspended activation
+   * @returns the next unvisited neighbour, or `null`
+   */
+  private static nextDfsCall(frame: DfsFrame): ElkNode | null {
+    if (frame.adjacentNodes !== null) {
+      for (let next = frame.adjacentNodes.next(); next.done !== true; next = frame.adjacentNodes.next()) {
+        if (!ElkGraphComponentsProcessor.visited.includes(next.value)) {
+          return next.value;
+        }
+      }
+    }
+    return null;
+  }
+}
+
+/** One suspended `dfs` activation (AC6, #70): its node and the live iterator over its incidence set, if any. */
+interface DfsFrame {
+  readonly node: ElkNode;
+  readonly adjacentNodes: Iterator<ElkNode> | null;
 }

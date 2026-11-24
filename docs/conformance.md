@@ -901,7 +901,8 @@ Mission 6a ported `alg.common` except `nodespacing/**` and `NodeMicroLayout` (AC
   because some compute values (`BowyerWatsonTriangulation.java:101-102`).
 - **Iterative traversals (AC6).** `NetworkSimplex.tightTreeDFS` and `postorderTraversal` are explicit-stack loops; the
   behaviour is identical and proven against a verbatim recursive reference (`NetworkSimplexTree.test.ts`). The tree
-  algorithms' sites are listed under [alg-trees.md § 7](architecture/alg-trees.md#alg-trees-recursion).
+  algorithms' sites are listed under [alg-trees.md § 7](architecture/alg-trees.md#alg-trees-recursion), the component
+  searches of force, stress and disco under [alg-force-disco.md § 5](architecture/alg-force-disco.md#alg-force-disco-recursion).
 - **Exception class where Java dereferences null.** `SVGImage.addElementStr` after `removeGroup` of the current group:
   `IllegalStateException` (Java NPE; T2). Disconnected input to `NetworkSimplex` (`feasibleTree`): `TypeError` (Java
   NPE; T7). A null quadrant or `xMin` in `RectilinearConvexHull` and a null `lastX` in its event handler:
@@ -2062,8 +2063,11 @@ registered beside `DisCoMetaDataProvider`, as `ElkOracle.java:218-221` does.
   insertion order; the other 39 are bit-identical either way; no row matches neither order. The force bundle has none.
 - `Math.log` (FD3): `EadesModel.attractive` calls the fdlibm `JavaMath.log`; the 20,014 `log` rows are raw-bit equal (native V8
   differs on 101, 0.50 %); proven on the oracle's arm64 JVM 21.0.1, unverified on x86_64.
-- Recursion (FD7): kept verbatim; a 2,000-node path completes in the oracle, in TS and under `--jitless` for force, stress and
-  disco. Beyond it TS overflows before the oracle (issue #70, `follow-up`).
+- Recursion (FD7): ported verbatim; a 2,000-node path completes in the oracle, in TS and under `--jitless` for force, stress
+  and disco. Beyond it TS overflowed before the oracle, so issue #70 made `ComponentsProcessor.dfs` (force, stress) and
+  `ElkGraphComponentsProcessor.dfs` (disco) explicit-stack loops (AC6), each with a `*.explicit-stack.test.ts` holding a
+  verbatim recursive twin; see the stack-depth bullet below and
+  [alg-force-disco.md § 5](architecture/alg-force-disco.md#alg-force-disco-recursion).
 - `U` rows: `plans/alg-force-disco/unreached.md` lists the 16 `U` rows (branches proven dead from the Java, each with its Java
   line and whether a unit test forces the arm); "neither reached nor proven dead" is empty. The four branches coverage reports
   unreached are rows 7, 8, 12 and 16.
@@ -2135,8 +2139,12 @@ null` and `adjacentNodes != null` false arms are dead (`U` rows 10-14).
 interactive-constraints/interactiveRectpacking_{hierarchy,oneBigNode}` (`layoutOptions.desiredPosition`). Closed by 8c.
 - Upstream defects the ports copy (issue #69, `needs-ruling`): the `avoidSamePosition` hang and DisCo's no-op polyomino options,
   as listed under the kept quirks; drafts for upstream, nothing filed upstream.
-- Stack depth: TS overflows on a path of 16,000 nodes (4,000 under `--jitless`) where the oracle completes (issue #70,
-  `follow-up`).
+- Stack depth (issue #70): the unconverted port overflowed on paths of 4,000 to 8,000 nodes, where a warmed oracle JVM
+  completes 16,000 (force, stress) and 40,000 (disco); a cold JVM throws on a 16,000-node force or stress path. With the two
+  component searches as explicit-stack loops, a path and a caterpillar of that depth complete on Node's default stack for all
+  three, byte-identical to the unconverted port run on a raised stack and equal to the oracle at 1e-6; all 2,710 sweep cases of the three algorithms classify as
+  before. Both loops call `checkStackDepth` (limit 100,000; issue #167, `needs-ruling`). At that depth the heap and the time limit
+  the port, not the stack (issue #170, `follow-up`).
 - `Math.log` is bit-exact on the oracle's arm64 JVM 21.0.1 and unverified on x86_64 (FD3).
 - The held-back stress cases (issue #58), resolved after this mission. 8b left `STRESS_PENDING` untouched and showed that
   the three cases pass from temporary copies with `elk.force` and `elk.stress` registered, and it named two further blockers:
