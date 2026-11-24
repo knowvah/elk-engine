@@ -3855,3 +3855,53 @@ against the base untouched.
 
 **Open.** #175 (`follow-up`): time at depth. #167 (`needs-ruling`): the depth check's model, and whether `compactTree` and
 `growAt` gain it. No `needs-ruling` issue was filed and no row is a partial.
+
+## Revision 2026-11-24 (rectpacking-open-arm)
+
+Queue mission for issue #81, on `chore/issue-queue` (plan, journal and evidence in `plans/rectpacking-open-arm/`). Mission 8c
+left one rectpacking arm neither reached nor proven dead: `Compaction.java:364-365`, the early `return false` of
+`placeBeside` (`CompactionPlacement.ts:117-118`). Result: **proven dead at the pin** (branch D3 of the brief). No `src/` file,
+landed ref, vector, golden or assertion changed, and no oracle patch or pin. Oracle: `8bca22f4` + patches 0001-0004 (built
+2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over alg.rectpacking is empty.
+
+**1. Why it was open.** 8c measured at `8aaa3c14`. The pin `8bca22f4` carries eclipse-elk/elk#1239 (`3f5e4f97`), which makes
+`placeBeside` set the parent row of the block it moves (`Compaction.java:413`). Before it, a block already in the current row,
+possibly holding several rects, could read as `wasFromNextRow` and reach `placeBeside`; the arm needs such a block.
+
+**2. The proof**, from the Java at the pin (`evidence.md` § 2; one journal row per lemma). With `rowHeightReevaluation` off the
+first operand of the `if` is false. With it on:
+
+| Lemma | Claim | Java |
+| ----- | ----- | ---- |
+| L1 | `InitialPlacement.place` gives every block at most one rect (the planning hypothesis said exactly one: the first block can be empty) | `InitialPlacement.java:71-81`, `RowFillingAndCompaction.java:96`, `:105-106` |
+| L2 | only a block of the row being compacted gains rects | `InitialPlacement.java:105`, `:110`, `Compaction.java:266`, `:113`, `:59-69` |
+| L3 | a row above `rowIdx` holds only blocks `place` built | `InitialPlacement.java:64`, `:85`, `Compaction.java:132`, `:328`, `:419`, `RowFillingAndCompaction.java:99`, `:117` |
+| L4 | a block's parent row is the row that holds it, so the `nextBlock` of `placeBeside` is the first block of the next row: one rect | `Block.java:89`, `Compaction.java:101`, `:152`, `:219`, `:324`, `:413` |
+| L5 | a one-rect block is as high at any width as its `minHeight`, for every height (NaN, infinities, negative) | `Block.java:188`, `:258`, `:268-269`, `:285`, `:293` |
+
+Every "only" claim has an `ast-grep` enumeration over the bundle with a positive control (`evidence.md` § 3).
+
+**3. Support.** A scratch copy of the port with probes in `placeBeside` and at every block step of `compact`, six child
+processes under a 10 s kill timer per input:
+
+| Run | Result |
+| --- | ------ |
+| 1,000,000 seeded inputs, flag on (2 to 14 nodes; negative, zero and positive spacing; `inNewRow`; both width strategies) | 4,717,461 `placeBeside` calls, 1,418,504 with `shouldRowHeigthBeReevalauted`; 0 multi-rect `nextBlock`s, 0 invariant violations, 0 arm hits, 0 timeouts |
+| 1,200 of those inputs on the oracle and on the unmodified port | 1,200 equal at 1e-6 (largest difference 0) |
+| Controls | a forged two-rect `nextBlock` takes the arm; a planted hang is killed and the run resumes; with the flag off the multi-rect detector fires (3,855 of 22,249 calls) |
+| The line of #1239 removed from the copy, 40,000 inputs | 86 multi-rect `nextBlock`s with the flag on, 58 hangs (#73): the source of the 299 that 8c counted. Port evidence; no oracle was built at `8aaa3c14` |
+
+**4. Records.** `plans/alg-packing/unreached.md` gains `## Addendum 2026-11-24 (#81)` with `U` row 19, which supersedes its
+"Neither reached nor proven dead" row; `plans/alg-packing/decision-journal.md` has one closing row. `docs/conformance.md` and
+`docs/architecture/alg-packing.md` (§ 2, § 5) call the arm dead at the pin. The port keeps the Java's `if` verbatim, and
+nothing is filed upstream (dead code). Comment on #81:
+https://github.com/knowvah/elk-engine/issues/81#issuecomment-7144882798; its labels are unchanged.
+
+**5. Gates.** Queue gates 1-7 green on the final tree: coverage 1,222 files, 50,706 tests, 98.82 / 97.01 / 98.57 / 98.86 (a
+first run at `nice` 10 failed on five test timeouts and no assertion while other sessions drove the load average to 263;
+the second, without `nice`, passed unchanged); CodeQL with no new accepted entry; `test/golden/refs/` against the base
+untouched.
+
+**Open.** #107 (`follow-up`, not worked here): by L4, `rows.size() > nextRowIndex` is always true at `Compaction.java:325` and
+`:416`, so its proof can start from this mission's invariant. No `needs-ruling` or `follow-up` issue was filed and no row is
+a partial.

@@ -2275,8 +2275,9 @@ providers are registered explicitly, not by `getInstance()` (PK8); `SporeMetaDat
 
 - Coverage, each bundle from its own tests: rectpacking 99.38 % statements, 98.12 % branches (418 of 426), 98.46 % functions;
   spore 99.21 %, 100 % (85 of 85); topdownpacking 98.61 %, 96.42 % (54 of 56); the whole project at the batch 5 gate 98.92 / 96.99 /
-  98.84 / 98.92 (statements / branches / functions / lines) over 49,156 tests. `plans/alg-packing/unreached.md` lists 18 `U` rows and
-  one arm neither reached nor proven dead (`Compaction.java:364`, issue #81).
+  98.84 / 98.92 (statements / branches / functions / lines) over 49,156 tests. `plans/alg-packing/unreached.md` lists 18 `U` rows; the
+  one arm mission 8c could not close (`Compaction.java:364`, issue #81) is proven dead at the `8bca22f4` pin and is `U` row 19
+  of that file's addendum of 2026-11-24.
 
 ### Upstream quirks kept (mission 8c) {#alg-packing-quirks}
 
@@ -2400,8 +2401,12 @@ topdownpacking:
   (`needs-ruling`, seven further defects: the `AreaApproximation.java:98` NPE, the unused visitor and its reversed `endsWith`,
   `RectRow.removeBlock`, the stale parent row, dead `calculateBlockStacks` and `copyPosition`, spore's overwritten margins,
   `ScanlineOverlapCheck.java:166`); drafts for upstream, nothing filed upstream.
-- **Open arm.** `Compaction.java:364` (`placeBeside`, `shouldRowHeigthBeReevalauted && nextBlockHeight > nextBlock.getMinHeight()`)
-  is neither reached by any row nor proven dead (issue #81, `follow-up`).
+- **Dead arm (issue #81).** `Compaction.java:364` (`placeBeside`, `shouldRowHeigthBeReevalauted && nextBlockHeight > nextBlock.getMinHeight()`)
+  is proven dead at the `8bca22f4` pin: `U` row 19 of `plans/alg-packing/unreached.md`. With `rowHeightReevaluation` on, every
+  block starts with at most one rect, and since eclipse-elk/elk#1239 the `nextBlock` of `placeBeside` is always the first block of
+  the next row, so it holds one rect, whose height at any width is its minimum height. Support: 1,000,000 seeded inputs through
+  an instrumented copy of the port (no multi-rect `nextBlock`, no arm hit), 1,200 of them equal to the oracle at 1e-6
+  (`plans/rectpacking-open-arm/evidence.md`). The port keeps the `if` verbatim.
 
 **Landed shim fixed at the origin.** `src/java/util/JavaObjects.ts` `equals` called `a.equals(b)` without an identity test. The JVM's
 `Objects.equals` is true for one and the same object, so a vector with a NaN component (not equal to itself under
