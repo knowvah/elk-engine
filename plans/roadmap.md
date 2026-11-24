@@ -3433,3 +3433,63 @@ not accepted; after it every finding is accepted, with no new entry. Gate 7: col
 lost two tests to timeouts while another queue session held the load above 40 (no assertion failed; journal, T6
 `divergence`).
 
+
+## Revision 2026-11-23 (compound-mutant-rows)
+
+Queue mission for issue #60, on `chore/issue-queue` (plan and journal in `plans/compound-mutant-rows/`). #60 lists the
+survivors of mission 7h's mutation run over the compound classes that a row reaches but no recorded field observes. The
+mission rebuilt the mutants and recorded oracle rows that kill them. No file of production `src/` changed, no oracle patch
+or pin changed, and every existing row of every ref is byte-identical. Oracle: `8bca22f4` + patches 0001-0004 (built
+2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over alg.layered and core is empty.
+
+**1. Seventeen rows appended to `layered-compound.json`.** A new array `EVIDENCE_ROWS` in
+`tools/vectors/LayeredCompoundVectors.java`, read last by `siteSpecs`: 557 rows (`sites` 24 → 41), 12,575,221 bytes
+(12,237,513 before), sha256 `35a89a3a…32a63d2`. An id-keyed diff against the base after each of the three recordings, and
+after a cold rerun, shows the 540 earlier rows byte-equal and in their order; no other ref differs. Every new row replays
+at the AD-4 bar; none diverged from the port.
+
+**2. Every item has outcome 1 (recorded)** (`plans/compound-mutant-rows/items.md`;
+`plans/layered-compound/unreached.md` § "Mutant rows (issue #60, compound-mutant-rows)", appended). 7h's mutant table no
+longer exists, so 58 one-token mutants were rebuilt at the arms the issue names and run in scratch copies: 30 survive
+every row at base at those arms (26 are killed by the new rows, 4 are equivalent), 24 were killed at base, and 4 more are
+equivalent as 7h's G21 and G22.
+
+| 7h ids | Rows (`sites/…`) | Killed |
+| ------ | ---------------- | ------ |
+| G18 | `CompoundGraphPreprocessor/mergeInDeep` | 1 mutant |
+| D10 | `…/mergeOffOut` | 1 |
+| D14 | `…/outThenParent`, `parentThenOut`, `inThenParent`, `parentThenIn` | 1 (2 variants equivalent) |
+| D15 | `…/mergedThickness` | 2 |
+| D32, D33, D36, D39, D40, D44 | `…/flowInside`, `flowPlain`, `flowYoInactive`, `flowInsideRev`, `flowPlainRev` | 11 (2 equivalent) |
+| R29, R30, R34-R38 | `HierarchicalNodeResizingProcessor/resizerTopLevelChild`, `resizerTopLevelWidth`, `resizerTopLevelHeight` | 6 |
+| R1, R4, R5, R8, R10-R12 | `HierarchicalNodeResizingProcessor/nonSquarePort` | 2 |
+| K9 | `ElkLayered/recursiveWork` (kind `worked`) | 2 |
+
+**3. A new `sites` kind, `worked`.** The row runs under a `WorkRecorder`, a `BasicProgressMonitor` that overrides the
+protected `doBegin` and `doSubTask`, on both sides. `expected.work` lists the task name and the total work of every
+monitor that began, depth first; the replay compares it exactly (`replayWorkedSite`). On the recorded graph
+`ElkLayered.hierarchicalLayout` announces 43.
+
+**4. The resizer group, from the oracle.** `moveExternalPorts` (`HierarchicalNodeResizingProcessor.java:207-220`) is
+redundant in every nested graph, as 7h diagnosed. A compound node under a flat root keeps the shift: at its postprocessor
+stop the oracle has the EAST dummy at (288, 18) and the SOUTH dummy at (98, 238), where the port without the call has x 132
+and y 43. The export is equal either way; the port stays verbatim.
+
+**5. Two rows are not the form the issue names.** The issue asks for `models` rows for D15 and the resizer group. They
+were recorded (24 rows over three runs) and replayed, but `CompoundGraphPreprocessorSections.test.ts:112-115` pins the
+`models` group to ten preprocessor stops, all at index 0 (AD-13). The recorder edit is withheld
+(`plans/compound-mutant-rows/withheld/models-rows.patch`), issue #165 (`needs-ruling`) asks whether the count may change,
+and `sites` rows observe the same statements: a long merged edge shows the thickness in the layout, and a root with
+`crossingMinimization.strategy=NONE` and `greedySwitch.type=OFF` makes no stop of its own.
+
+**6. The twins list.** Nine of the new rows have a port shared by two cross-hierarchy edges and joined
+`DIFFERING_ROWS['post crossHierarchyMap.keySet() (:89)']` in `LayeredCompoundTwins.test.ts` (22 ids now), under the
+maintainer's ruling on #156 and the requeue of #60 that followed it. The two list commits are separate in the pre-squash
+history (tag `compound-mutant-rows/pre-squash`). No other pinned value changed.
+
+**7. Base status of the two resizer groups.** Their mutants survived every row at base, but the Java-structure class
+test already killed them. The brief counted a class-test kill as a kill, which would have left both groups without a row;
+the mission recorded rows for both, because the issue asks for oracle rows (journal, T1 `decision`).
+
+**Open.** #165 (`needs-ruling`): the pinned count of preprocessor stops. #156's withheld patch touches the same recorder,
+list and ref; a comment there gives the new size and SHA-256.

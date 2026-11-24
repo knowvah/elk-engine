@@ -602,3 +602,37 @@ Why the earlier scans missed the reachable arms:
 Corrections to § Open: the Java lines of arms 8-14 are `ModelOrderNodeComparator.java:450`, `:453` and `:456` (not `:440`, the (source, source) test); arm 24 is the index test `ForsterConstraintResolver.java:261`, arm 25 `candidate == nodeGroup1` at `:427` (`plans/layered-arm-search/arms.md`, "T1 line check").
 
 Arms outside the 25 (D9): none. v8 branch coverage of `src/alg/layered/**` under the layered oracle evidence, in the base tree and in a scratch tree that holds the ten rows, differs in exactly these 17 arms.
+
+## Mutant rows (issue #60, compound-mutant-rows)
+
+Mission `compound-mutant-rows` (2026-11-23, brief `plans/compound-mutant-rows/`) recorded oracle rows for the survivors of 7h's mutation run that a row reaches but no recorded field observes (T15, kind (c)). Nothing above is edited. No production file changed.
+
+7h's mutant table is gone, so each mutant was rebuilt as one token at the arm the issue names and run again (`plans/compound-mutant-rows/items.md` § Reconstructed mutants: 58 mutants, the ids below are that table's). A mutant counts as killed when `LayeredCompoundVectors.test.ts`, `LayeredCompoundSites.test.ts` or `LayeredCompoundTwins.test.ts` fails. Outcomes: **1** recorded (the row landed, replays at the AD-4 bar and kills the mutant); **2** equivalent.
+
+| 7h ids | Rebuilt mutant | Row (all `sites`, appended last) | Outcome |
+| ------ | -------------- | -------------------------------- | ------- |
+| G18 | `CompoundGraphPreprocessorSegments.ts:298` `newExternalPort !== currentExternalPort` → `true` (`CompoundGraphPreprocessor.java:433`) | `sites/CompoundGraphPreprocessor/mergeInDeep` | 1 |
+| D10 | `CompoundGraphPreprocessorDummies.ts:163` `!mergeExternalPorts` → `false` (`:750`) | `…/mergeOffOut` | 1 |
+| D14 | `:163` `parentEndPort !== null` → `false` (`:750`) | `…/outThenParent`, `parentThenOut`, `inThenParent`, `parentThenIn` | 1 |
+| D14 (variants) | `:154`, `:156` `portType === PortType.…` → `true` | none | 2: an OUTPUT segment's edge never starts at the parent node, an INPUT segment's edge never ends at it |
+| D15 | `:171` `Math.max` → `Math.min`; `:173` the second operand read from the dummy edge (`:792-794`) | `…/mergedThickness` | 1 |
+| D32, D33, D36, D39, D40, D44 | eleven mutants of `calculateNetFlow` and its two vote helpers (`:275`, `:308-314`, `:329-335`; `:829`) | `…/flowInside`, `flowPlain`, `flowYoInactive`, `flowInsideRev`, `flowPlainRev` | 1 |
+| (same group) | `:313`, `:334` `!isInsideSelfLoop` → `isInsideSelfLoop` | none | 2: a plain self loop falls through to the hierarchy test, where a node is never the parent node of its own graph, and gets the same vote |
+| K9 | `ElkLayered.ts:166` `work` → `work + 1`; `:162` `work +=` → `work -=` (`ElkLayered.java:225-235`) | `sites/ElkLayered/recursiveWork` (mode `worked`) | 1 |
+| R29, R30, R34-R38 | `HierarchicalNodeResizingProcessor.ts:161` (each operand), `:163` (the call), `:180`, `:184`, `:186` (`HierarchicalNodeResizingProcessor.java:205-220`) | `sites/HierarchicalNodeResizingProcessor/resizerTopLevelChild`, `resizerTopLevelWidth`, `resizerTopLevelHeight` | 1 |
+| R1, R4, R5, R8, R10-R12 | `:61` width and height of the port passed as (height, height) and as (width, width) (`:86`) | `…/nonSquarePort` | 1 |
+
+Seventeen rows, 557 in the ref (`sites` 24 → 41), 12,575,221 bytes. Every earlier row is byte-identical and in its order (an id-keyed diff against the base ref after each of the three recordings).
+
+**The twins list (D1).** Nine of the rows have a port that two cross-hierarchy original edges share, so their replay differs when `CompoundGraphPostprocessor.java:89` iterates in reverse, and `DIFFERING_ROWS['post crossHierarchyMap.keySet() (:89)']` (`LayeredCompoundTwins.test.ts`) gained their ids: `mergeInDeep`, `mergeOffOut`, the four edge-order rows, `flowInside`, `flowInsideRev` and `mergedThickness`. The twin loop's four per-row checks pass on each. Basis: the maintainer's ruling on #156 ("Extend by the 10 ids above") and the requeue of #60 24 seconds later, which the parking comment on #60 had asked for; the two list commits are separate in the pre-squash history.
+
+**Two rows are not the form the issue names (stop 4, issue #165).** The issue asks for `models` rows for D15 (stop 0) and for the resizer group (the stop after the resizer). Both were recorded (24 rows over three runs) and replayed, but `CompoundGraphPreprocessorSections.test.ts:112-115` pins the `models` group to ten preprocessor stops, all at index 0, and any new `models` run adds one. The recorder edit is kept in `plans/compound-mutant-rows/withheld/models-rows.patch`. The `sites` rows that landed observe the same statements at the last stop:
+
+- `mergedThickness` adds a node `z` to `d`. The merged dummy edge then passes `z`'s layer as a long edge, and its long-edge dummy is as high as the edge is thick (`LongEdgeSplitter`), so the layout carries the merged value after the postprocessor has removed the dummy edge.
+- The `resizerTopLevel*` rows keep the issue's root (layered, no `INCLUDE_CHILDREN`) and set `crossingMinimization.strategy=NONE` and `greedySwitch.type=OFF` on it. The flat root then runs no hierarchy-aware processor, so the run's last stop is the compound node's `CompoundGraphPostprocessor`.
+
+**Why the resizer group is invisible in every nested graph** (the issue's paragraph, with the oracle's values). `moveExternalPorts` (`HierarchicalNodeResizingProcessor.java:207-220`) shifts the one coordinate of each EAST and SOUTH dummy that `LGraphUtil.getExternalPortPosition` (`LGraphUtil.java:1002-1003`, `:1009-1010`) overwrites with a value computed from the resized graph. For a nested graph that happens in `graphLayoutToNode`, in the same `process` call (`:82-87`), so the trees and the export are equal with and without the call. Only a layered run whose top-level graph has an ElkNode parent skips `graphLayoutToNode`; there the dummy keeps the shifted position until `ElkGraphLayoutTransferrer` rewrites it. On the oracle, at the postprocessor stop of the compound node: graph size (276, 226), EAST dummy at (288, 18), SOUTH dummy at (98, 238) for `resizerTopLevelChild`; EAST dummy at (288, 13) with size (276, 30) for `resizerTopLevelWidth`; SOUTH dummy at (98, 238) with size (100, 226) for `resizerTopLevelHeight`. The port without the call leaves them at x 132 and y 43 (7h's trace). The export is equal in both cases. The port is verbatim; the redundancy is ELK's.
+
+**Base status of the two resizer groups.** Their mutants survived every row at base but were already killed by the Java-structure class test (`HierarchicalNodeResizingProcessor.test.ts`), as 7h's journal says. The rows above make the oracle kill them too.
+
+Rebuilt and not listed above: 24 mutants that the landed rows killed at base (first guesses at the arms), and four `newExternalPort.exported` → `true` mutants that are equivalent for the reason 7h gave for G21 and G22 (the importer orders the outside edge before the edge to the parent's port).

@@ -1658,19 +1658,19 @@ a dated note; this section states the state after 7h: the enum tally is **59 por
 
 **Evidence.**
 
-- `test/golden/refs/java/layered-compound.json` (12,237,513 bytes; JDK 21.0.1; oracle `8aaa3c14`; recorder
-  `tools/vectors/layered-compound-vectors.sh`, `-XX:hashCode=2`): byte-stable; 540 rows. Row counts per group and family:
+- `test/golden/refs/java/layered-compound.json` (12,575,221 bytes; JDK 21.0.1; oracle `8bca22f4`; recorder
+  `tools/vectors/layered-compound-vectors.sh`, `-XX:hashCode=2`): byte-stable; 557 rows. Row counts per group and family:
 
   | Group       | Rows | Families                                                                                                                                                                                                                                                                                          |
   | ----------- | ---: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
   | `full`      |  355 | issues 17, include-children 253, ptolemy-include 48, hierarchy-aware 16, resizer 21                                                                                                                                                                                                               |
   | `models`    |   73 | `edge_label_placement-hierarchy01` 30, `ticket-455_longHierarchicalEdges` 27, `ptolemy-clockdrifthierarchy` 6, `ticket-160` 5, `ticket-552` 5; by processor: resizer 41, preprocessor 10, postprocessor 10, `LAYER_SWEEP` 9, `MEDIAN_LAYER_SWEEP` 1, one-sided and two-sided greedy switch 1 each |
   | `scenarios` |   88 | `CompoundGraphPreprocessor` 48, `CompoundGraphPostprocessor` 28, `ElkLayered` 12                                                                                                                                                                                                                  |
-  | `sites`     |   24 | 19 run rows (one logged: `sites/JsonDebugUtil/loggedCompound`, 89 DOT and JSON pairs) and 5 throw rows                                                                                                                                                                                            |
+  | `sites`     |   41 | 19 run rows (one logged: `sites/JsonDebugUtil/loggedCompound`, 89 DOT and JSON pairs) and 5 throw rows; the 17 evidence rows of issue #60 (16 run rows, one worked: `sites/ElkLayered/recursiveWork`)                                                                                             |
 
   `LayeredCompoundVectors.test.ts` replays every row of the four groups through the real driver and enum at the AD-4 bar
-  with 0 mismatches (542 tests, 5.3 s alone at batch 7; budget 30 s); `LayeredCompoundSites.test.ts` replays the 24 `sites`
-  rows again under their scenario titles (27 tests). A `models` row is a stop of the hierarchical run with the whole `LGraph`
+  with 0 mismatches (559 tests; 5.3 s alone at batch 7, when it had 542; budget 30 s); `LayeredCompoundSites.test.ts` replays
+  the 41 `sites` rows again under their scenario titles (44 tests). A `models` row is a stop of the hierarchical run with the whole `LGraph`
   tree dumped from the root (the preprocessor, each hierarchy-aware processor on the root, the resizer on every graph, the
   postprocessor). The dump carries `layerNodes` (the node objects of layer-only nodes), added by T1 before any TS existed;
   with it removed the second recording equals the first on all 516 rows. The five throw rows pin `ElkLayered.java:344`,
@@ -1806,6 +1806,29 @@ ported verbatim; no production file changed.
     `(P, G)` has `P` processed before `G`, and `G → P` would need the reverse; a group is processed once per round and only
     after every predecessor (the incoming-count invariant of `:197-213`, `:332-340`, `:422-435`).
 - **Unreached, not proven dead:** none.
+
+**The mutation survivors (issue #60), settled by mission compound-mutant-rows (2026-11-23).** 7h's mutation run over the
+compound classes left survivors that a row reaches but no recorded field observes. The mutants were rebuilt as one-token
+changes (`plans/compound-mutant-rows/items.md`), and 17 `sites` rows were appended to `layered-compound.json`; each replays
+at the AD-4 bar and kills its mutants in the row suites. Every earlier row of the ref is byte-identical and in its order.
+Outcomes per group: `plans/layered-compound/unreached.md` § "Mutant rows (issue #60, compound-mutant-rows)".
+
+- **Merging of external ports** (`CompoundGraphPreprocessor.java:433`, `:750`, `:792-794`): `mergeInDeep`, `mergeOffOut`,
+  the four edge-order rows `outThenParent`, `parentThenOut`, `inThenParent`, `parentThenIn`, and `mergedThickness`.
+- **Net flow of a free hierarchical port** (`:829`): `flowInside`, `flowPlain`, `flowYoInactive`, `flowInsideRev`,
+  `flowPlainRev`.
+- **`HierarchicalNodeResizingProcessor`**: `nonSquarePort` (the port's width and height, `:86`), and `resizerTopLevelChild`,
+  `resizerTopLevelWidth`, `resizerTopLevelHeight` (the shift of EAST and SOUTH external port dummies, `:203-220`). The shift
+  is visible only in a compound graph that has no parent `LNode`; in a nested graph `getExternalPortPosition` overwrites the
+  same coordinate in the same call. It never reaches the export, so the redundancy is ELK's and the port keeps it.
+- **Monitor work** (`ElkLayered.java:225-235`): `sites/ElkLayered/recursiveWork`, a row of the new kind `worked`. It runs
+  under a monitor that records the task name and the total work of every `begin`, and the replay compares the list exactly.
+- **Equivalent mutants** (no input tells them apart): the port-type operands of the `parentEndPort` test, and the
+  plain-self-loop arm of the two vote helpers, which falls through to the same vote.
+- **Withheld.** The `models` rows the issue names for the thickness and the resizer (24 rows over three runs) replay, but a
+  test pins the `models` group to ten preprocessor stops (issue #165, `needs-ruling`); the recorder edit is kept in
+  `plans/compound-mutant-rows/withheld/models-rows.patch`. Nine of the new rows joined the pinned list of the twins test
+  under the ruling on #156.
 
 **Upstream typos (CLAUDE.md carve-out).** None: the journal records no prose typo in the 7h sources.
 

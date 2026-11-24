@@ -126,15 +126,15 @@ reaches are in § 9.
 
 One recorder, `tools/vectors/LayeredCompoundVectors.java` (a JDK 21 single-file launcher, 3,668 lines at T14, limit 5,000;
 core copied from 7g's `LayeredLoopsVectors.java`, origin cited in its header; run by `tools/vectors/layered-compound-vectors.sh`
-under `-XX:hashCode=2`), writes one ref, `test/golden/refs/java/layered-compound.json` (12,237,513 bytes, limit 16 MiB), with
-four groups; the counts equal the header's `rowCounts`, 540 rows in all:
+under `-XX:hashCode=2`), writes one ref, `test/golden/refs/java/layered-compound.json` (12,575,221 bytes, limit 16 MiB), with
+four groups; the counts equal the header's `rowCounts`, 557 rows in all:
 
 | Group       | Rows | What                                                                                                                                                                            |
 | ----------- | ---: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `full`      |  355 | whole layouts through `RecursiveGraphLayoutEngine`: issues 17, include-children 253, ptolemy-include 48, hierarchy-aware 16, resizer 21                                         |
 | `models`    |   73 | stops on the whole `LGraph` tree: `edge_label_placement-hierarchy01` 30, `ticket-455_longHierarchicalEdges` 27, `ptolemy-clockdrifthierarchy` 6, `ticket-160` 5, `ticket-552` 5 |
 | `scenarios` |   88 | hand-built hierarchical graphs: `CompoundGraphPreprocessor` 48, `CompoundGraphPostprocessor` 28, `ElkLayered` 12                                                                |
-| `sites`     |   24 | one row per arm scenario an oracle graph reaches: 19 run rows (one of them logged) and 5 throw rows                                                                             |
+| `sites`     |   41 | one row per arm scenario an oracle graph reaches: 19 run rows (one of them logged) and 5 throw rows; and the 17 evidence rows of issue #60: 16 run rows and one worked row      |
 
 No refusal category remains: every plan member of every level is in the allowed set, and a member outside it exits the
 recorder naming the row. A model whose hierarchy names an algorithm the recorder classpath does not register (`elk.stress`,
@@ -183,6 +183,31 @@ base name starts with the Java class of the recorded frame and the first named s
 inspection was chosen over a spy because V8 records where the error was raised, while a spy would also pass for an error
 from a callee. `FIXED_POS` on the same graph as `FIXED_RATIO` does not throw on the oracle and is an ordinary run row,
 `hierarchicalPortFIXED_POS`.
+
+**The evidence rows (issue #60).** 7h's mutation run left survivors that a row reaches but no recorded field observes. Each
+has an oracle graph now, in a separate array `EVIDENCE_ROWS` that `siteSpecs` reads last, so every earlier row is
+byte-identical and in its order. The rows were chosen with one-token mutants of the port (rebuilt in
+`plans/compound-mutant-rows/items.md`); each row kills its mutants in `LayeredCompoundSites.test.ts` and
+`LayeredCompoundVectors.test.ts`.
+
+| Rows (`sites/…`)                                                                                          | What the row makes visible                                                                                                                                                                   |
+| --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CompoundGraphPreprocessor/mergeInDeep`                                                                   | a reused external input port is not added to the created ports again (`CompoundGraphPreprocessor.java:433`)                                                                                  |
+| `…/mergeOffOut`                                                                                           | `mergeHierarchyEdges=false` gives one external port per edge (`:750`)                                                                                                                        |
+| `…/outThenParent`, `parentThenOut`, `inThenParent`, `parentThenIn`                                        | an edge that ends at the parent's own port gets a port of its own although an exported one exists (`:750`)                                                                                   |
+| `…/mergedThickness`                                                                                       | a merged dummy edge takes the larger `edge.thickness` (`:792-794`): the edge is long, and its long-edge dummy is as high as the edge is thick                                                |
+| `…/flowInside`, `flowPlain`, `flowYoInactive`, `flowInsideRev`, `flowPlainRev`                            | the vote of a self loop in `calculateNetFlow` (`:829`): the side of a free port's dummy follows the sign of the net flow                                                                     |
+| `HierarchicalNodeResizingProcessor/nonSquarePort`                                                         | `graphLayoutToNode` passes the port's width and height in that order (`HierarchicalNodeResizingProcessor.java:86`)                                                                           |
+| `HierarchicalNodeResizingProcessor/resizerTopLevelChild`, `resizerTopLevelWidth`, `resizerTopLevelHeight` | the shift of EAST and SOUTH external port dummies after a resize (`:203-220`), which only a compound graph without a parent `LNode` keeps: EAST `(288, 18)`, SOUTH `(98, 238)` on the oracle |
+| `ElkLayered/recursiveWork`                                                                                | the total work `ElkLayered.hierarchicalLayout` announces (`ElkLayered.java:225-235`): 43 on this graph                                                                                       |
+
+The three `resizerTopLevel*` rows are the only rows whose engine root is not the compound graph: the root is a flat layered
+graph with `crossingMinimization.strategy=NONE` and `greedySwitch.type=OFF`, so it runs no hierarchy-aware processor and the
+run's last stop is the compound node's postprocessor. The one **worked** row runs under a `WorkRecorder`, a
+`BasicProgressMonitor` whose `doBegin` keeps the task name and the total work and whose `doSubTask` returns a monitor of the
+same kind; `expected.work` lists `{ task, work }` for every monitor of the tree that began, depth first, and the replay
+compares it exactly (`replayWorkedSite`, `test/helpers/layered-compound-replay-sites.ts`). The `models` form the issue
+names for the thickness and resizer rows is withheld: a test pins the `models` group to ten preprocessor stops (issue #165).
 
 **Inputs.** 23 `.elkt` (the 20 `INCLUDE_CHILDREN` inputs plus `455_shortHierarchicalEdges` and the two
 `734_nodeEdgeSpacingFlat*`, needed by suites only) and 8 ptolemy hierarchical `.json` are vendored under
@@ -251,7 +276,8 @@ numbers edges by first meeting, so the two edges swap paths and every later diff
 export: the exported layout of the Java-order and the reversed run is string-identical on every such row, which a test
 asserts. Seven rows of the 516 differ reversed (`models/edge_label_placement-hierarchy01/14--…/default` and `14-n0-…/DOWN`,
 `models/ptolemy-clockdrifthierarchy/5-G1-…/default`, `scenarios/CompoundGraphPostprocessor/junctions-{out,in}/{RIGHT,DOWN}`),
-and six `sites` run rows added by T14 join them (13 ids in all). The test asserts that the Java order matches the oracle on
+and six `sites` run rows added by T14 join them (13 ids in all); nine of the evidence rows of issue #60 join them as well (22 ids,
+under the ruling on #156). The test asserts that the Java order matches the oracle on
 each and the reversed order does not. Insertion order is the oracle's order (G3a).
 
 **Preprocessor `keySet()` (`:252`).** Removals commute (`:301-302`). The only order-dependent write is the label append onto
@@ -336,7 +362,7 @@ was re-recorded by its script (16 added keys, nothing else changed).
 
 | Layer                      | What                                                                                                                                                                                                                                                                    |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rows (T1, T9, T14)         | `layered-compound.json`: `full` 355, `models` 73, `scenarios` 88, `sites` 24; `LayeredCompoundVectors.test.ts` (542 tests) replays every row through the real driver at the AD-4 bar with 0 mismatches                                                                  |
+| Rows (T1, T9, T14, #60)    | `layered-compound.json`: `full` 355, `models` 73, `scenarios` 88, `sites` 41; `LayeredCompoundVectors.test.ts` (559 tests) replays every row through the real driver at the AD-4 bar with 0 mismatches                                                                  |
 | Goldens (T3, T10)          | 24 layered refs, byte-stable, equal to the TS layout at AD-4 (27 tests); no-flag run byte-equal on all 24                                                                                                                                                               |
 | Breadth sweep (T13)        | 1,169 oracle cases, 1,164 ok, 5 throws, 0 timeouts, 0 refusals; TS at stride 1: 1,164 hash-equal, 5 throws equal, 0 mismatches                                                                                                                                          |
 | Twins (T6, T7, T9)         | § 5: five sites order-independent on every row that reaches them, one (`:89`) observable in the intermediate tree only                                                                                                                                                  |
