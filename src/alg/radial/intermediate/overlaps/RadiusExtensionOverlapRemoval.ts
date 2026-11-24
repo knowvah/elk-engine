@@ -4,6 +4,7 @@ import { CoreOptions } from '../../../../core/options/CoreOptions.js';
 import type { IElkProgressMonitor } from '../../../../core/util/IElkProgressMonitor.js';
 import type { ElkNode } from '../../../../graph/ElkNode.js';
 import { KVector } from '../../../../core/math/KVector.js';
+import { checkStackDepth } from '../../../../java/lang/StackDepth.js';
 import { InternalProperties } from '../../InternalProperties.js';
 import { RadialOptions } from '../../options/RadialOptions.js';
 import { RadialUtil } from '../../RadialUtil.js';
@@ -46,30 +47,46 @@ export class RadiusExtensionOverlapRemoval
   /**
    * Extend the first radius nodes until the nodes are non-overlapping.
    *
+   * The recursive call of `RadiusExtensionOverlapRemoval.java:93` (`extend(graph, new ArrayList<>(nextLevelNodes), ...)`) is
+   * the activation's last statement, so the only state a suspended activation holds is the next level's list: the loop
+   * replaces `nodes` by it. AC6 (#67): explicit stack, same visit, side-effect and accumulation order. The levels entered
+   * are depth-checked (`checkStackDepth`: Java's `StackOverflowError` on a recursion without end).
+   *
    * @param nodes A list of the same radius.
    */
   extend(graph: ElkNode, nodes: ElkNode[], progressMonitor: IElkProgressMonitor): void {
-    if (nodes.length > 0) {
-      const movedDistance = this.removeLevelOverlaps(graph, nodes, progressMonitor);
-      const nextLevelSet = RadialUtil.getNextLevelNodeSet(nodes);
-      const nextLevelNodes = this.nextLevelOrder === 'reversed' ? new Set([...nextLevelSet].reverse()) : nextLevelSet;
-      // Calculate the moved distance which is the amount all children and grandchildren have to be moved.
-      let index = 1;
-      if (nextLevelNodes.size > 0) {
-        for (const nextLevelNode of nextLevelNodes) {
-          this.moveNode(nextLevelNode, movedDistance);
-        }
-        progressMonitor.logGraph(graph, `Child movement ${String(index)}`);
-        index++;
-      }
-
-      if (this.sorter !== null) {
-        // the copy is sorted and discarded (RadiusExtensionOverlapRemoval.java:91): its only effect is the ORDER_ID
-        // writes of a polar sorter. Kept verbatim.
-        this.sorter.sort([...nextLevelNodes]);
-      }
-      this.extend(graph, [...nextLevelNodes], progressMonitor);
+    let levelNodes = nodes;
+    let depth = 0;
+    while (levelNodes.length > 0) {
+      checkStackDepth(++depth);
+      levelNodes = this.extendLevel(graph, levelNodes, progressMonitor);
     }
+  }
+
+  /**
+   * The body of one Java activation of `extend` (`RadiusExtensionOverlapRemoval.java:59-92`) for a non-empty level; returns the
+   * argument of its recursive call.
+   */
+  private extendLevel(graph: ElkNode, nodes: ElkNode[], progressMonitor: IElkProgressMonitor): ElkNode[] {
+    const movedDistance = this.removeLevelOverlaps(graph, nodes, progressMonitor);
+    const nextLevelSet = RadialUtil.getNextLevelNodeSet(nodes);
+    const nextLevelNodes = this.nextLevelOrder === 'reversed' ? new Set([...nextLevelSet].reverse()) : nextLevelSet;
+    // Calculate the moved distance which is the amount all children and grandchildren have to be moved.
+    let index = 1;
+    if (nextLevelNodes.size > 0) {
+      for (const nextLevelNode of nextLevelNodes) {
+        this.moveNode(nextLevelNode, movedDistance);
+      }
+      progressMonitor.logGraph(graph, `Child movement ${String(index)}`);
+      index++;
+    }
+
+    if (this.sorter !== null) {
+      // the copy is sorted and discarded (RadiusExtensionOverlapRemoval.java:91): its only effect is the ORDER_ID
+      // writes of a polar sorter. Kept verbatim.
+      this.sorter.sort([...nextLevelNodes]);
+    }
+    return [...nextLevelNodes];
   }
 
   /**

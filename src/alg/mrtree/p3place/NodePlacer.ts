@@ -5,6 +5,7 @@ import { Direction } from '../../../core/options/Direction.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import * as Iterables from '../../../guava/Iterables.js';
 import { l2i, roundToLong } from '../../../java/lang/JavaMath.js';
+import { checkStackDepth } from '../../../java/lang/StackDepth.js';
 import { LinkedList } from '../../../java/util/LinkedList.js';
 import type { TGraph } from '../graph/TGraph.js';
 import type { TNode } from '../graph/TNode.js';
@@ -13,6 +14,33 @@ import { InternalProperties } from '../options/InternalProperties.js';
 import { MrTreeOptions } from '../options/MrTreeOptions.js';
 import { TreeLayoutPhases } from '../TreeLayoutPhases.js';
 import { TreeUtil } from '../TreeUtil.js';
+
+/** One suspended `firstWalk` activation of an internal node (NodePlacer.java:137-184). */
+interface FirstWalkFrame {
+  readonly cN: TNode;
+  readonly level: number;
+  readonly lS: TNode | null;
+  readonly children: Iterator<TNode>;
+}
+
+/** The call a suspended `secondWalk` activation makes next (NodePlacer.java:328-342). */
+const SecondWalkStep = {
+  /** the first-child call (`:334`) */
+  CHILD: 0,
+  /** the right-sibling call (`:341`) */
+  SIBLING: 1,
+  /** none: the activation returns */
+  DONE: 2,
+} as const;
+type SecondWalkStep = (typeof SecondWalkStep)[keyof typeof SecondWalkStep];
+
+/** One suspended `secondWalk` activation (NodePlacer.java:319-342). */
+interface SecondWalkFrame {
+  readonly tNode: TNode;
+  readonly yCoor: number;
+  readonly modsum: number;
+  step: SecondWalkStep;
+}
 
 /**
  * The algorithm comes from
@@ -115,10 +143,35 @@ export class NodePlacer implements ILayoutPhase<TreeLayoutPhases, TGraph> {
    * PRELIM). In addition, internal nodes are given modifiers, which will be used to move their offspring to the right
    * (held in property MODIFIER).
    *
+   * The recursive call of NodePlacer.java:160 is a frame push. AC6 (#67): explicit stack, same visit, side-effect and
+   * accumulation order. A frame is one suspended Java activation of an internal node: the node, its level, `lS` (read
+   * at entry, as the Java local is) and the live iterator over its children; the work after the loop runs when the
+   * iterator is exhausted. A leaf's activation completes at entry without a frame.
+   *
    * @param cN the root level of the tree
    * @param level the index of the passed level
    */
   private firstWalk(cN: TNode, level: number): void {
+    const stack: FirstWalkFrame[] = [];
+    this.enterFirstWalk(cN, level, stack);
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      /** This Node is not a leaf, so call this procedure recursively for each of its offspring. */
+      const next = frame.children.next();
+      if (next.done !== true) {
+        this.enterFirstWalk(next.value, frame.level + 1, stack);
+      } else {
+        stack.pop();
+        this.finishFirstWalk(frame.cN, frame.level, frame.lS);
+      }
+    }
+  }
+
+  /**
+   * Entry of one `firstWalk` activation (NodePlacer.java:138-158): resets the modifier and reads the left sibling; a
+   * leaf gets its preliminary x-coordinate at once, an internal node a frame for its child loop.
+   */
+  private enterFirstWalk(cN: TNode, level: number, stack: FirstWalkFrame[]): void {
     cN.setProperty(InternalProperties.MODIFIER, 0);
     const lS = cN.getProperty(InternalProperties.LEFTSIBLING);
 
@@ -135,30 +188,33 @@ export class NodePlacer implements ILayoutPhase<TreeLayoutPhases, TGraph> {
         cN.setProperty(InternalProperties.PRELIM, 0);
       }
     } else {
-      /** This Node is not a leaf, so call this procedure recursively for each of its offspring. */
-      for (const child of cN.getChildren()) {
-        this.firstWalk(child, level + 1);
-      }
+      // the edge lists do not change during the walk; the iterator stays live as the Java's does
+      stack.push({ cN, level, lS, children: cN.getChildren()[Symbol.iterator]() });
+      // Java's StackOverflowError of an endless recursion, raised from this class
+      checkStackDepth(stack.length);
+    }
+  }
 
-      /**
-       * Set the prelim and modifer for this node by determine the midpoint of its offsprings and the middle node size
-       * of the node and its left sibling
-       */
-      const lM = Iterables.getFirst(cN.getChildren(), null);
-      const rM = Iterables.getLast(cN.getChildren(), null);
-      const midPoint = (rM!.getProperty(InternalProperties.PRELIM) + lM!.getProperty(InternalProperties.PRELIM)) / 2;
+  /** The work of a `firstWalk` activation after its child loop (NodePlacer.java:163-182). */
+  private finishFirstWalk(cN: TNode, level: number, lS: TNode | null): void {
+    /**
+     * Set the prelim and modifer for this node by determine the midpoint of its offsprings and the middle node size of
+     * the node and its left sibling
+     */
+    const lM = Iterables.getFirst(cN.getChildren(), null);
+    const rM = Iterables.getLast(cN.getChildren(), null);
+    const midPoint = (rM!.getProperty(InternalProperties.PRELIM) + lM!.getProperty(InternalProperties.PRELIM)) / 2;
 
-      if (lS !== null) {
-        /** This Node has a left sibling so its offsprings must be shifted to the right */
-        const p = lS.getProperty(InternalProperties.PRELIM) + this.spacing + this.meanNodeWidth(lS, cN);
-        cN.setProperty(InternalProperties.PRELIM, p);
-        cN.setProperty(InternalProperties.MODIFIER, cN.getProperty(InternalProperties.PRELIM) - midPoint);
-        /** shift the offsprings of this node to the right */
-        this.apportion(cN, level);
-      } else {
-        /** No sibling on the left to worry about. */
-        cN.setProperty(InternalProperties.PRELIM, midPoint);
-      }
+    if (lS !== null) {
+      /** This Node has a left sibling so its offsprings must be shifted to the right */
+      const p = lS.getProperty(InternalProperties.PRELIM) + this.spacing + this.meanNodeWidth(lS, cN);
+      cN.setProperty(InternalProperties.PRELIM, p);
+      cN.setProperty(InternalProperties.MODIFIER, cN.getProperty(InternalProperties.PRELIM) - midPoint);
+      /** shift the offsprings of this node to the right */
+      this.apportion(cN, level);
+    } else {
+      /** No sibling on the left to worry about. */
+      cN.setProperty(InternalProperties.PRELIM, midPoint);
     }
   }
 
@@ -289,11 +345,52 @@ export class NodePlacer implements ILayoutPhase<TreeLayoutPhases, TGraph> {
    * subtree, each node remembers the distance to the provisional place in a modifier field (property MODIFIER). In
    * this second pass down the tree, modifiers are accumulated and applied to every node.
    *
+   * The recursive calls of NodePlacer.java:334 (first child) and :341 (right sibling) are separate frame pushes in that
+   * order. AC6 (#67): explicit stack, same visit, side-effect and accumulation order. A frame is one suspended Java
+   * activation: the node, its `yCoor` and `modsum`, and the call it makes next; the right-sibling call is a tail call
+   * in Java but still holds the caller's frame there, so the caller's frame stays until it returns and the stack length
+   * is the Java depth.
+   *
    * @param tNode the root of the tree
    * @param yCoor the y coordinate of previous level
    * @param modsum the modifiers of all the node's ancestors
    */
   private secondWalk(tNode: TNode | null, yCoor: number, modsum: number): void {
+    const stack: SecondWalkFrame[] = [];
+    this.enterSecondWalk(tNode, yCoor, modsum, stack);
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      const t = frame.tNode;
+      if (frame.step === SecondWalkStep.CHILD) {
+        frame.step = SecondWalkStep.SIBLING;
+        // Apply the modifier value for this node to all its offspring.
+        if (!t.isLeaf()) {
+          // This node got offsprings so we will step a level down and take care of them.
+          this.enterSecondWalk(
+            Iterables.getFirst(t.getChildren(), null),
+            frame.yCoor + t.getProperty(InternalProperties.LEVELHEIGHT) + this.spacing,
+            frame.modsum + t.getProperty(InternalProperties.MODIFIER),
+            stack,
+          );
+        }
+      } else if (frame.step === SecondWalkStep.SIBLING) {
+        frame.step = SecondWalkStep.DONE;
+        // Go ahead with the sibling to the right. This is a dfs so we just layout the current
+        // subtree.
+        if (t.getProperty(InternalProperties.RIGHTSIBLING) !== null) {
+          this.enterSecondWalk(t.getProperty(InternalProperties.RIGHTSIBLING), frame.yCoor, frame.modsum, stack);
+        }
+      } else {
+        stack.pop();
+      }
+    }
+  }
+
+  /**
+   * Entry of one `secondWalk` activation (NodePlacer.java:320-330): a node gets its final coordinates and a frame for
+   * its two calls; `null` returns at once.
+   */
+  private enterSecondWalk(tNode: TNode | null, yCoor: number, modsum: number, stack: SecondWalkFrame[]): void {
     if (tNode !== null) {
       // The x-position of the node is the sum of its prev x-coordinate and the modifiers of
       // all the node's ancestors and the adjust of the root location.
@@ -305,20 +402,10 @@ export class NodePlacer implements ILayoutPhase<TreeLayoutPhases, TGraph> {
       // framework will take care of this.
       tNode.setProperty(InternalProperties.XCOOR, l2i(roundToLong(xTemp)));
       tNode.setProperty(InternalProperties.YCOOR, l2i(roundToLong(yTemp)));
-      // Apply the modifier value for this node to all its offspring.
-      if (!tNode.isLeaf()) {
-        // This node got offsprings so we will step a level down and take care of them.
-        this.secondWalk(
-          Iterables.getFirst(tNode.getChildren(), null),
-          yCoor + tNode.getProperty(InternalProperties.LEVELHEIGHT) + this.spacing,
-          modsum + tNode.getProperty(InternalProperties.MODIFIER),
-        );
-      }
-      // Go ahead with the sibling to the right. This is a dfs so we just layout the current
-      // subtree.
-      if (tNode.getProperty(InternalProperties.RIGHTSIBLING) !== null) {
-        this.secondWalk(tNode.getProperty(InternalProperties.RIGHTSIBLING), yCoor, modsum);
-      }
+      stack.push({ tNode, yCoor, modsum, step: SecondWalkStep.CHILD });
+      // Java's StackOverflowError of an endless recursion (a node that is its own right sibling), raised from this
+      // class
+      checkStackDepth(stack.length);
     }
   }
 }

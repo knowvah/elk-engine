@@ -6,6 +6,7 @@ import { NullElkProgressMonitor } from '../../core/util/NullElkProgressMonitor.j
 import { compare as doubleCompare } from '../../java/lang/DoubleCompare.js';
 import * as Int32 from '../../java/lang/Int32.js';
 import * as JavaInteger from '../../java/lang/JavaInteger.js';
+import { checkStackDepth } from '../../java/lang/StackDepth.js';
 import { JavaHashMap } from '../../java/util/JavaHashMap.js';
 import { LinkedList } from '../../java/util/LinkedList.js';
 import { CoreOptions } from '../../core/options/CoreOptions.js';
@@ -15,6 +16,26 @@ import type { TNode } from './graph/TNode.js';
 import { GraphBoundsProcessor } from './intermediate/GraphBoundsProcessor.js';
 import { InternalProperties } from './options/InternalProperties.js';
 import { MrTreeOptions } from './options/MrTreeOptions.js';
+
+/** The point a suspended `dfs` activation has reached in its loop body (ComponentsProcessor.java:142-151). */
+const DfsStep = {
+  /** before the source-side test of the next edge (`:143`) */
+  SOURCE: 0,
+  /** after the source-side call, before the target-side test (`:146`) */
+  TARGET: 1,
+  /** after the target-side call, before the edge is added (`:150`) */
+  ADD: 2,
+} as const;
+type DfsStep = (typeof DfsStep)[keyof typeof DfsStep];
+
+/** One suspended `dfs` activation (ComponentsProcessor.java:129-155). */
+interface DfsFrame {
+  readonly node: TNode;
+  readonly component: TGraph;
+  readonly edges: Iterator<TEdge>;
+  edge: TEdge | null;
+  step: DfsStep;
+}
 
 /**
  * A processor that is able to split an input graph into connected components and to pack those components after
@@ -99,11 +120,36 @@ export class ComponentsProcessor {
    * Perform a DFS starting on the given node and collect all nodes that are found in the corresponding connected
    * component.
    *
+   * The two recursive calls of ComponentsProcessor.java:144 (source side) and :147 (target side) are separate frame
+   * pushes in that order. AC6 (#67): explicit stack, same visit, side-effect and accumulation order. A frame is one
+   * suspended Java activation with an unvisited node: the node, the component, the live iterator over its incidence
+   * list and the current edge with the step reached in the loop body; an activation on a visited node returns at entry
+   * without a frame, as the Java's `if` does.
+   *
    * @param node the starting node
    * @param graph a graph representing a connected component, or `null`
    * @returns the connected component, or `null` if the node was already visited
    */
   private dfs(node: TNode, graph: TGraph | null): TGraph | null {
+    const stack: DfsFrame[] = [];
+    const component = this.openDfs(node, graph, stack);
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      const next = this.nextDfsCall(frame);
+      if (next === null) {
+        stack.pop();
+      } else {
+        this.openDfs(next, frame.component, stack);
+      }
+    }
+    return component;
+  }
+
+  /**
+   * Entry of one `dfs` activation (ComponentsProcessor.java:131-140): an unvisited node is marked, the component
+   * created if necessary, the node added and a frame pushed; a visited node yields `null` and no frame.
+   */
+  private openDfs(node: TNode, graph: TGraph | null, stack: DfsFrame[]): TGraph | null {
     const visited = this.visited!;
     // check if node was visited earlier
     if (!visited[node.id]) {
@@ -116,21 +162,48 @@ export class ComponentsProcessor {
       }
       // add the node to the component
       component.getNodes().add(node);
-      // follow all edges from this node
-      for (const edge of this.incidence![node.id]!) {
-        if (edge.getSource() !== node) {
-          this.dfs(edge.getSource()!, component);
-        }
-        if (edge.getTarget() !== node) {
-          this.dfs(edge.getTarget()!, component);
-        }
-        // add the edges an labels to the component
-        component.getEdges().add(edge);
-      }
+      // the incidence lists are not modified while the DFS runs; the iterator stays live as the Java's does
+      stack.push({ node, component, edges: this.incidence![node.id]!.iterator(), edge: null, step: DfsStep.SOURCE });
+      this.checkDfsDepth(stack.length);
       return component;
     }
     // if the node was visited before skip it
     return null;
+  }
+
+  /**
+   * Runs a frame's loop body (ComponentsProcessor.java:142-151) up to its next recursive call and returns the node of
+   * that call, or `null` when the loop ends and the activation returns.
+   */
+  private nextDfsCall(frame: DfsFrame): TNode | null {
+    for (;;) {
+      if (frame.step === DfsStep.SOURCE) {
+        // follow all edges from this node
+        const next = frame.edges.next();
+        if (next.done === true) {
+          return null;
+        }
+        frame.edge = next.value;
+        frame.step = DfsStep.TARGET;
+        if (frame.edge.getSource() !== frame.node) {
+          return frame.edge.getSource()!;
+        }
+      }
+      if (frame.step === DfsStep.TARGET) {
+        frame.step = DfsStep.ADD;
+        if (frame.edge!.getTarget() !== frame.node) {
+          return frame.edge!.getTarget()!;
+        }
+      }
+      // add the edges an labels to the component
+      frame.component.getEdges().add(frame.edge!);
+      frame.step = DfsStep.SOURCE;
+    }
+  }
+
+  /** Java's `StackOverflowError` of an endless `dfs` recursion, raised from this class (AC6, #67). */
+  private checkDfsDepth(depth: number): void {
+    checkStackDepth(depth);
   }
 
   /**

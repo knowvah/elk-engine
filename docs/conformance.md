@@ -899,7 +899,8 @@ Mission 6a ported `alg.common` except `nodespacing/**` and `NodeMicroLayout` (AC
   `NGraph.writeDebugGraph` keep their logic and write nothing, because `src/` is browser-safe. Every `/*d*/` call stays,
   because some compute values (`BowyerWatsonTriangulation.java:101-102`).
 - **Iterative traversals (AC6).** `NetworkSimplex.tightTreeDFS` and `postorderTraversal` are explicit-stack loops; the
-  behaviour is identical and proven against a verbatim recursive reference (`NetworkSimplexTree.test.ts`).
+  behaviour is identical and proven against a verbatim recursive reference (`NetworkSimplexTree.test.ts`). The tree
+  algorithms' sites are listed under [alg-trees.md § 7](architecture/alg-trees.md#alg-trees-recursion).
 - **Exception class where Java dereferences null.** `SVGImage.addElementStr` after `removeGroup` of the current group:
   `IllegalStateException` (Java NPE; T2). Disconnected input to `NetworkSimplex` (`feasibleTree`): `TypeError` (Java
   NPE; T7). A null quadrant or `xMin` in `RectilinearConvexHull` and a null `lastX` in its event handler:
@@ -1893,8 +1894,10 @@ staged provider classes, not `PENDING_TYPES`, because of the tripwire `test/melk
   order is unobservable); radial's iterated identity sets are the I30 sites (`RadialUtil.java:77, 224`), whose order is
   observable on one treeified row (see below). Two JVMs without `-XX:hashCode=2` differ from the mrtree ref on 0 of 188 rows
   and from the radial ref on 54 rows.
-- Recursion (TR7): kept verbatim; a 2,000-deep path and caterpillar per algorithm complete in oracle and port, with and without
-  `--jitless`, with layouts equal at 1e-6.
+- Recursion (TR7, issue #67): 18 recursions the default options reach are explicit-stack loops (AC6), each proven against a
+  verbatim recursive twin (`*.explicit-stack.test.ts`); the option-gated ones stay verbatim (issue #166). A path and a
+  caterpillar per algorithm complete at 10,000 deep in oracle and port, with layouts equal at 1e-6 and byte-identical to the
+  recursive port on a raised stack. See [alg-trees.md § 7](architecture/alg-trees.md#alg-trees-recursion).
 
 ### Upstream quirks kept (mission 8a) {#alg-trees-quirks}
 
@@ -1982,8 +1985,11 @@ vertiflex:
   `interactiveRectpacking_{hierarchy,oneBigNode}` (each algorithm), `missing layoutOptions.desiredPosition` and
   `desiredEdgeLength` (rectpacking and force; mission 8x). With the three mislabelled golden entries (`*-generated`,
   recorded with layered) they are issue #68 (`needs-ruling`).
-- Stack depth: the port overflows at 2,500-3,500 deep in four of six probe shapes where the oracle overflows at 3,500-7,000
-  (issue #67, `follow-up`).
+- Stack depth: the six probe shapes complete at the oracle's measured depth of 10,000 (issue #67). An explicit-stack loop
+  throws the `RangeError` of stack exhaustion beyond 100,000 activations (`src/java/lang/StackDepth.ts`), where the Java
+  recursion throws `StackOverflowError` at the JVM's own limit (15,000 was the deepest tree the oracle completed); the
+  173 cyclic sweep cases and the `NodePlacer.java:341` rows throw on both sides as before. The limit is issue #167
+  (`needs-ruling`).
 
 **Upstream typos (CLAUDE.md carve-out).** Two progress-monitor task names, message strings nothing branches on and no ref
 records: `AbsoluteXPlacer.java:32` "AbsolutPlacer" is "AbsolutePlacer" in the port (asserted by `VertiFlexPhases.test.ts`), and

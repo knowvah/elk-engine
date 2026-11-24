@@ -3542,3 +3542,50 @@ issue saying that a sweep rerun was still needed. That premise was wrong, so non
 #139 already covers the age of the sweep cache against oracle patch 0004.
 
 **Open.** Nothing from this mission.
+
+## Revision 2026-11-23 (tree-recursion-depth)
+
+Queue mission for issue #67, on `chore/issue-queue` (plan and journal in `plans/tree-recursion-depth/`). Mission 8a kept
+the tree algorithms' recursion verbatim (TR7), and its probe found the port overflowing below the oracle in four of six
+deep shapes. The maintainer ruled on 2026-11-21 that such recursions become explicit-stack loops proven against a verbatim
+recursive reference, "so long as results are the same". No landed ref, vector, golden or assertion changed, and no oracle
+patch or pin changed. Oracle: `8bca22f4` + patches 0001-0004 (built 2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log
+8bca22f4..HEAD` over core and the three tree bundles is empty.
+
+**1. The oracle's depth, measured again.** One JVM per shape over 2,000 to 10,000 deep in steps of 500, twice: the oracle
+completed 10,000 for all six shapes (a path and a caterpillar for mrtree, radial and vertiflex, default options). Its limit
+moves with JIT warm-up: the vertiflex path threw `StackOverflowError` at 4,000 to 5,500 and completed every depth above in
+the same JVM, and a JVM started at 20,000 threw at every depth. The issue's brackets (3,500 to 7,000) were a colder JVM.
+The deepest tree the oracle completed in any run was 15,000. The unconverted port overflowed at 3,000 to 5,000 in all six
+shapes.
+
+**2. 18 recursions are explicit-stack loops (AC6)**, converted in the order the probes named them, each with a
+`*.explicit-stack.test.ts`: a verbatim recursive twin, 60 or more seeded trees compared on every effect at raw bits, and a
+15,000-deep case that was red before the change.
+
+| Bundle | Sites |
+| ------ | ----- |
+| mrtree | `ComponentsProcessor.dfs`, `DFSTreeifyer.dfs`, `NodePlacer.firstWalk`, `NodePlacer.secondWalk`; as loops over the levels: `FanProcessor.calculateFan`, `LevelProcessor.setLevel`, `NeighborsProcessor.setNeighbors`, `LevelHeightProcessor.setNeighbors` |
+| radial | `AnnulusWedgeByNodeSpace.calculateWedgeSpace`, `EadesRadial.positionNodes`, `StraightLineEdgeRouter.routeEdges`; as a loop: `RadiusExtensionOverlapRemoval.extend` |
+| vertiflex | `VertiFlexLayoutProvider.checkVerticalConstraintValidity`, `NodeYPlacer.setYLevels`, `RelativeXPlacer.recursiveStraightlinePlacement`, `AbsoluteXPlacer.findMinimalX`, `AbsoluteXPlacer.absoluteTreeCoords`, `StraightEdgeRouter.routeEdges` |
+
+**3. Results are the same.** At 10,000 deep, on Node's default stack, each of the six shapes completes, equals the oracle
+at 1e-6 and is byte-identical to the output of the unconverted port run on a raised stack. All 2,718 tree cases of the
+corpus sweep have the same category and detail before and after (mrtree 817 `ok` and 89 `both-throw`; radial 540, 365 and
+the one accepted last-ulp mismatch; vertiflex 352, 553 and 1 excluded). The landed replays pass unchanged.
+
+**4. A recursion without end still throws.** The Java throws `StackOverflowError` on a cyclic successor structure that
+passes `findRoot` (173 sweep cases) and on a node that is its own right sibling (`NodePlacer.java:341`, four recorded
+rows); the recursive port threw `RangeError`. The first conversions hung there, which the review caught before anything
+landed. Every converted site now calls `checkStackDepth` (`src/java/lang/StackDepth.ts`) with the number of activations
+the Java would hold; beyond 100,000 it throws that `RangeError`. Each site that can be given an endless input has a test
+where the port and the recursive twin both throw. The brief's D3 had not foreseen this; the fixed limit is the mission's
+choice and is put to the maintainer as #167.
+
+**5. Docs.** `docs/architecture/alg-trees.md` § 7 lists the sites, the result and the depth check; `docs/conformance.md`
+has the same facts in the TR7 and stack-depth bullets.
+
+**Open.** #167 (`needs-ruling`): a fixed depth limit or cycle detection, the value 100,000, and whether the earlier
+explicit-stack sites and those of #70 and #76 use the same check. #166 (`follow-up`): the recursions left verbatim, which
+only other options reach, plus `TreeUtil.getLeftMost`. #168 (`follow-up`): the port is 6 to 26 times slower than the
+oracle at 10,000 deep.
