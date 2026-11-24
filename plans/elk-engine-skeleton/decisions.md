@@ -240,3 +240,19 @@ re-parented (9 subclasses follow); the six listed assertions rewritten with the 
 One behaviour change follows the Java: `DefaultDeclarativeQualifiedNameProvider.invokeDispatcher` rethrows only
 `RangeError` (Java `Error`), so an `ArithmeticException` from a dispatched method now gives `null`, as
 `PolymorphicDispatcher.java:304-307` does, instead of propagating.
+
+## AD-4 amendment (2026-11-13)
+
+Maintainer ruling of 2026-11-13 (issue #68 item B, made the general bar): "we pursue perfection but accept deltas because the algos
+for trig functions work that way." AD-4 above is unchanged; this amendment bounds how far a last-ulp `Math.*` difference may carry.
+The four points are the rule as recorded in [issue #74](https://github.com/knowvah/elk-engine/issues/74), copied unchanged.
+
+1. **The conformance bar stays 1e-6.** Every comparison, comparator and test keeps the 1e-6 absolute tolerance. Nothing is loosened.
+2. A case that misses 1e-6 is accepted as a known divergence **only if both hold**:
+   - **Mechanism:** a demonstrated platform floating-point difference: a last-ulp difference between HotSpot `Math.*` (trig, `exp`, `log`, `pow` and the like) and V8, shown with the actual values per the diagnosis artifact (CLAUDE.md, `rules/diagnosis.md`). An unexplained delta is never accepted on size alone.
+   - **Bound:** its effect on every position and size in the layout (nodes, ports, labels, bend points, junction points, edge sections) stays **at or below 0.01 px** absolute, measured against the oracle.
+3. A last-ulp case whose effect exceeds 0.01 px, or which flips a discrete decision (an ordering, a branch, an element count), is **not** accepted. It is a defect to fix or a STOP for a ruling.
+4. Each known-divergence entry records its mechanism, its measured maximum positional delta, and the test that pins both. No global tolerance or comparator change; the pin is per case.
+
+Recorded by mission last-ulp-bar (`plans/last-ulp-bar/`, 2026-11-24), which audited the existing entries: the result is the table
+"Last-ulp `Math.*` entries" in `docs/conformance.md` § 2, pinned by `test/golden/last-ulp-divergences.test.ts`.

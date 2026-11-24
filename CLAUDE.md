@@ -47,8 +47,10 @@ values before hypothesizing — the default stance is "my port differs — find 
   emulation differs from the JVM and cannot carry our patches).
 - Conformance bar (AD-4): ids, element counts, edge-section topology,
   bend-point counts, and non-numeric values match exactly; numeric
-  coordinates/sizes match within absolute tolerance **1e-6**. Last-ulp
-  `Math.*` JVM-vs-V8 differences go to a known-divergences list.
+  coordinates/sizes match within absolute tolerance **1e-6**. A last-ulp
+  `Math.*` case is a known divergence only with a demonstrated HotSpot-vs-V8
+  mechanism and an effect at or below **0.01 px** on every position and size,
+  pinned per case (AD-4 amendment, `docs/conformance.md` § 2).
 - Goldens (AD-5): curated oracle outputs under `test/golden/refs/elk/` with
   `_meta.json`; JVM vectors under `test/golden/refs/java/`; comparator
   `test/golden/compare-json.ts`. Regenerate refs by script, never by hand, and

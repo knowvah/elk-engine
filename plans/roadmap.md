@@ -3745,3 +3745,59 @@ tests and loses none.
 
 **Open.** Nothing from this mission: no `needs-ruling` issue, no partial, no follow-up. #135 and #143 touch the same
 recorders and are unchanged by it.
+
+## Revision 2026-11-24 (last-ulp-bar)
+
+Queue mission for issue #74, on `chore/issue-queue` (plan and journal in `plans/last-ulp-bar/`). The maintainer ruled on
+2026-11-13 (#68 item B, made general) that the bar for last-ulp math divergences is 0.01 px: "we pursue perfection but accept
+deltas because the algos for trig functions work that way." This mission wrote that rule down as an amendment to AD-4,
+audited every existing last-ulp entry against it, and gave each one recorded oracle evidence and a pinning test. The 1e-6
+tolerance, the comparator, every landed ref, golden and assertion and every `src/` file are unchanged. Oracle: `8bca22f4` +
+patches 0001-0004 (built 2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over core, alg.radial and
+alg.disco is empty.
+
+**1. The rule.** `plans/elk-engine-skeleton/decisions.md` ends with `## AD-4 amendment (2026-11-13)`: the four points of #74,
+copied unchanged, after an untouched AD-4 (the old 14,435 bytes are byte-identical). The conformance bar stays 1e-6. A case
+the 1e-6 comparison reports is a known divergence only with a demonstrated last-ulp difference between HotSpot `Math.*` and
+V8 and an effect at or below 0.01 px on every position and size; a larger effect or a flipped discrete decision is a defect
+or a STOP; each entry records its mechanism, its measured delta and its pin. `CLAUDE.md` (Verification) and
+`docs/conformance.md` § 2 state it.
+
+**2. The audit.** Five entries; none fails the bar, none lies between 1e-6 and 0.01 px, none flips a discrete decision.
+
+| Entry | Class | Mechanism | Measured maximum delta |
+| ----- | ----- | --------- | ---------------------- |
+| E1 radial `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2` (#68 B) | accepted | `Math.sin` at `EadesRadial.java:102`: HotSpot one ulp from `StrictMath` and V8 on 3 of 7 inputs | 4.55e-13 px (one option string is the only 1e-6 diff) |
+| E2 disco `getOrthogonalPoints`, six `import` stops | inside 1e-6 | `Math.sin`/`Math.cos` at `ElkGraphTransformer.java:636-639`: one ulp on 5 and 9 of 160 inputs | 8.53e-14 px (32 fields) |
+| E3 `Math.log` at `EadesModel.java:100` | no divergence | bit-exact `JavaMath.log`; HotSpot equals `StrictMath.log` on the reference platform | none |
+| E4 `Random.nextGaussian` | no divergence | Javadoc-specified `StrictMath.log`, ported bit for bit | none |
+| E5 the other 31 non-strict Math call sites | no divergence | none observed | none |
+
+**3. The evidence.** A new recorder, `tools/vectors/LastUlpVectors.java` (script `last-ulp-vectors.sh`), writes the new ref
+`test/golden/refs/java/last-ulp.json`: HotSpot `Math` on the first call and after 1,336,000 calls against `StrictMath` on the
+334 inputs of the two divergent call sites (`tools/vectors/last-ulp-inputs.txt`, collected on the TS side), and the oracle's
+layout of the radial case, cold and after 3,000 further layouts. Two cold recordings are byte-identical. HotSpot gives the
+same bits interpreted and compiled on every input, and the cold and warm layouts are the same string, equal to the sweep
+cache: for `sin` and `cos` the oracle reproduces itself. V8 has the bits of `StrictMath` on all 334 inputs.
+
+**4. The pin.** `test/golden/last-ulp-divergences.test.ts` (19 tests): per entry the mechanism rows (V8 equals `StrictMath`;
+HotSpot differs on exactly the listed inputs, by one ulp), the bound (computed delta ≤ measured ≤ 0.01 px), no discrete
+difference (the 1e-6 comparison reports exactly the one option string for E1 and nothing for E2), and the cause: with
+HotSpot's recorded bits substituted on the divergent inputs, the port's output equals the oracle's bit for bit. A walker
+self-check finds a planted 0.02 px in an option string, a bend point and a hex double. `docs/conformance.md` § 2 has the
+table "Last-ulp `Math.*` entries"; the three sentences that deferred the audit to #74 now give its result.
+
+**5. Decisions.** D0-D7 as planned, with two departures, both journaled. The recorder does not stamp the ref with the pinned
+commit: `test/architecture/elk-pin.fitness.test.ts` pins the number of stamping recorders at 41 and that count is not
+edited (AD-13), so `last-ulp.json` has no `oracle` field (#173). `docs/architecture/elk-upgrade.md` § 7.1 gained the row
+the runbook inventory test requires for a new recorder script. T2 and T3 were done by the orchestrator, not by subagents.
+
+**Gates.** Queue gates 1-7 green on the final tree: coverage 1,220 files, 50,664 tests passed and 83 skipped, 98.81 / 97.01
+/ 98.57 / 98.86 (the planning baseline on the base: 1,219 files, 50,645 passed; the mission adds one file and 19 tests and
+loses none); CodeQL with no new accepted entry; `test/golden/refs/` against the base differs only by the added
+`java/last-ulp.json`.
+
+**Open.** #173 (`needs-ruling`): may the stamping-recorder count go from 41 to 42, or does `last-ulp.json` stay unstamped.
+#174 (`follow-up`): 12 stale TS lines in the math-call-sites table, and "within 1e-13" in `tools/corpus/ts-findings.json`
+and `docs/parity-report.md` (measured 4.55e-13). A wording note on point 2 of the rule is in the report on #74: E1 has no
+number beyond 1e-6; it is reported because an option string compares exactly.

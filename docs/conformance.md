@@ -204,6 +204,18 @@ test or fixture it affects. Accepted classes:
   is specified to use `StrictMath.log`, so `src/java/util/Random.ts` carries a
   `StrictMath.log`-exact implementation instead of `Math.log`. Prefer a
   bit-exact port of the `StrictMath` algorithm over widening tolerance.
+  The **AD-4 amendment of 2026-11-13** (maintainer ruling; appended to `plans/elk-engine-skeleton/decisions.md`,
+  [issue #74](https://github.com/knowvah/elk-engine/issues/74)) bounds how far such a difference may carry:
+  1. **The conformance bar stays 1e-6.** Every comparison, comparator and test keeps the 1e-6 absolute tolerance. Nothing is loosened.
+  2. A case that misses 1e-6 is accepted as a known divergence **only if both hold**:
+     - **Mechanism:** a demonstrated platform floating-point difference: a last-ulp difference between HotSpot `Math.*` (trig, `exp`, `log`, `pow` and the like) and V8, shown with the actual values per the diagnosis artifact (CLAUDE.md, `rules/diagnosis.md`). An unexplained delta is never accepted on size alone.
+     - **Bound:** its effect on every position and size in the layout (nodes, ports, labels, bend points, junction points, edge sections) stays **at or below 0.01 px** absolute, measured against the oracle.
+  3. A last-ulp case whose effect exceeds 0.01 px, or which flips a discrete decision (an ordering, a branch, an element count), is **not** accepted. It is a defect to fix or a STOP for a ruling.
+  4. Each known-divergence entry records its mechanism, its measured maximum positional delta, and the test that pins both. No global tolerance or comparator change; the pin is per case.
+
+  The audited entries, each with its mechanism, measured delta and pin, are the table
+  [Last-ulp `Math.*` entries](#last-ulp-entries) below.
+
 - **Identity-hash iteration (AD-10).** Iterating a `HashMap`/`HashSet` keyed by
   identity-hashed objects is non-deterministic in Java itself. Journal the site
   and port with insertion order; goldens must not depend on it. Value-hashed
@@ -227,6 +239,33 @@ Concrete entries (add one only with the user's approval):
 | #   | Divergence               | Cause                                                                       | Scope                                                                                                                                                 | Approved             |
 | --- | ------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | 1   | Parse-error message text | ANTLR messages are artifacts of the generated parser, which is never ported | Invalid grammar input (`.elkt`, `.elkj`, `.elkr`): only the _presence_ of a parse failure must match, not the message. Valid input must match exactly | D8, user, 2026-10-11 |
+
+### Last-ulp `Math.*` entries (AD-4 amendment) {#last-ulp-entries}
+
+The audit of issue #74 (mission last-ulp-bar, 2026-11-24): every place this repository records a last-ulp or platform `Math.*`
+difference, with its class under the amendment. `accepted`: the 1e-6 comparison reports the case, the mechanism is demonstrated
+and every position and size is within 0.01 px. `inside 1e-6`: not bit-identical, but the 1e-6 comparison reports nothing, so
+the case needs no acceptance; it is measured and pinned all the same. `no divergence`: nothing differs on the reference
+platform (macOS arm64, JDK 21.0.1), so there is no delta to bound. No entry is above the bar, none lies between 1e-6 and
+0.01 px, and none flips a discrete decision.
+
+The delta is the maximum absolute difference from the oracle over every position and size of the output: `x`, `y`, `width` and
+`height` of the graph, nodes, ports and labels, every section start, end, bend and junction point, and layout options whose
+value is a size (`childAreaHeight`, `childAreaWidth`, `radius`); for a step dump, every recorded double. The mechanism rows are
+recorded evidence: `tools/vectors/LastUlpVectors.java` evaluates HotSpot's `Math` (first call and after 1,336,000 calls) and
+`StrictMath` on each input of the divergent calls and writes `test/golden/refs/java/last-ulp.json`. HotSpot gives the same bits
+interpreted and compiled on all 334 inputs, and V8 has the bits of `StrictMath` on all of them. The pin is
+`test/golden/last-ulp-divergences.test.ts`: per entry the mechanism rows, the bound (computed delta ≤ measured ≤ 0.01), no
+discrete difference, and the cause (with HotSpot's recorded bits substituted on the divergent inputs the port's output equals
+the oracle's bit for bit).
+
+| Entry                                                                                                                  | Class         | Mechanism                                                                                                                                                                                                                                                                                                                                                       | Measured maximum positional delta                                                                                                                                                                                                                                                                                                      | Pin                                                                                 | Approved                                        |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------- |
+| E1: radial sweep case `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2` ([8a](#alg-trees-divergences)) | accepted      | `Math.sin` at `EadesRadial.java:102`. HotSpot is one ulp above `StrictMath` and V8 in magnitude on 3 of the 7 `sin` inputs of the layout (`3ff88c45f46b0994`, `3ff9b7b0b41d509e`, `4012fee9d7296ab4`); for 1.6073462520335293 HotSpot gives 0.9993321258384178 (`3feffa875dca2e60`), V8 and `StrictMath` 0.9993321258384177 (`…2e5f`). The 7 `cos` inputs agree | 4.55e-13 px, at `layoutOptions.childAreaHeight` (`"2561.1171089266686"` against `"2561.117108926668"`, the one diff the 1e-6 comparison reports, because option strings compare exactly); 18 of 56 numbers are not bit-identical; no discrete difference                                                                               | `last-ulp-divergences.test.ts`, `E1` (cold and warm oracle runs of `last-ulp.json`) | maintainer, issue #68 item B, 2026-11-13        |
+| E2: disco `getOrthogonalPoints`, the `import` stops of six rows of `disco.json` ([8b](#alg-force-disco-divergences))   | inside 1e-6   | `Math.sin` and `Math.cos` at `ElkGraphTransformer.java:636-639`. Of the 160 distinct inputs per function in the 88 stops rows, HotSpot is one ulp from `StrictMath` and V8 on 9 `cos` and 5 `sin` (listed in the test)                                                                                                                                          | 8.53e-14 px, an edge contour point of `bends/default`, `bends/thickMixed` and `bends/junctions`; 32 fields in the `import` stops of `multi6/spacing60` (1), `multi6/combo2` (1), `bends/default` (9), `bends/thickness3` (4), `bends/thickMixed` (8), `bends/junctions` (9); every later stop and all 92 `full` rows are bit-identical | `last-ulp-divergences.test.ts`, `E2`                                                | not needed: the 1e-6 comparison reports nothing |
+| E3: `Math.log` at `EadesModel.java:100` (force)                                                                        | no divergence | The port calls `JavaMath.log`, a bit-exact `StrictMath.log`; on the reference platform HotSpot's `Math.log` equals `StrictMath.log` on all 20,014 `log` rows of `force.json` (FD3). x86_64 is unverified and is not the reference platform                                                                                                                      | none to measure                                                                                                                                                                                                                                                                                                                        | the `log` rows of `force.json` (`ForceVectors.java`)                                | n/a                                             |
+| E4: `Random.nextGaussian`                                                                                              | no divergence | The Javadoc specifies `StrictMath.log` and `StrictMath.sqrt`; `src/java/lang/JavaMath.ts` `log` is that algorithm, bit for bit                                                                                                                                                                                                                                  | none to measure                                                                                                                                                                                                                                                                                                                        | the `Random` vectors (`random.json`)                                                | n/a                                             |
+| E5: the other 31 [non-strict Math call sites](#math-call-sites)                                                        | no divergence | none observed: no golden, vector or sweep case shows a last-ulp difference at these sites, and the full TS sweep of 2026-11-13 (18,930 cases) has no last-ulp effect but E1. Seven of the sites are reached by unit tests only. The other 5 of the 36 rows are E1 and E2                                                                                        | none to measure                                                                                                                                                                                                                                                                                                                        | `math-call-sites.fitness.test.ts` pins the set of sites                             | n/a                                             |
 
 ### Non-strict Math call sites (AD-4 known-divergences list) {#math-call-sites}
 
@@ -280,8 +319,9 @@ this file.
 There is no `StrictMath.ts`. `src/java/lang/JavaMath.ts` `log` is the bit-exact `StrictMath.log` shim and its callers
 (`Random.nextGaussian`, `EadesModel`) are not `Math.log` sites; every site above ports a Java `Math` call, and 8b measured V8
 equal to `StrictMath` on all 160 `sin` and 160 `cos` inputs while HotSpot's `Math` differs from both, so a fdlibm port of
-`sin`, `cos` or `atan2` would not match the oracle any better (TP7). Measuring each site's delta against the 0.01 px bar is
-issue #74's audit.
+`sin`, `cos` or `atan2` would not match the oracle any better (TP7). The audit against the 0.01 px bar (issue #74) is the table
+[Last-ulp `Math.*` entries](#last-ulp-entries): the two sites with an observed difference measure 4.55e-13 px and 8.53e-14 px,
+and the other 31 rows have no observed difference to measure.
 
 **Verdicts.** Each case gets one verdict from two separate JVM runs of the oracle (D4, D5, OR-2):
 
@@ -2001,11 +2041,14 @@ vertiflex:
   (`shapes/binary4-sym`, `i30/four-parents-big-12`) match.
 - The last-ulp `Math.sin` case in the sweep: `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`. HotSpot's
   `Math.sin(1.6073462520335293)` is ...4178, V8 and `StrictMath` give ...4177 (`EadesRadial.java:102`); the only difference
-  is the string `layoutOptions.childAreaHeight` ("2561.1171089266686" against "2561.117108926668"); geometry agrees within 1e-13
+  the 1e-6 comparison reports is the string `layoutOptions.childAreaHeight` ("2561.1171089266686" against "2561.117108926668"),
   and no discrete decision flips. Known-divergences list of AD-4, accepted by the maintainer (issue #68 item B) under this
-  bar: the positional effect stays at or below 0.01 px. Here the effect is one numeric option string and no coordinate moves
-  by more than 1e-13. The comparator does not read numeric option strings within a tolerance. The 0.01 px bar is the general
-  one for last-ulp math divergences; the AD-4 amendment and the audit of the other entries are issue #74.
+  bar: the positional effect stays at or below 0.01 px. The comparator does not read numeric option strings within a
+  tolerance. The 0.01 px bar is the general one for last-ulp math divergences (AD-4 amendment, § 2). Audited for issue #74:
+  HotSpot differs from `StrictMath` and V8 on 3 of the 7 `sin` inputs of this layout, by one ulp; the measured maximum
+  positional delta is 4.55e-13 px (the option string; no coordinate or size moves further, and 18 of the 56 numbers are not
+  bit-identical); the oracle gives the same output cold and warm. Recorded in `test/golden/refs/java/last-ulp.json` and pinned
+  by `test/golden/last-ulp-divergences.test.ts` (entry E1 of [Last-ulp `Math.*` entries](#last-ulp-entries)).
 - Seven sweep cases whose option keys belonged to providers unported at 8a: `hierarchicalLayoutMixing` (mrtree) and
   `interactiveRectpacking_{hierarchy,oneBigNode}` (each algorithm), `missing layoutOptions.desiredPosition` and
   `desiredEdgeLength` (rectpacking and force). Ruled a harness limit (issue #68 item A); all seven are `ok` since row 9
@@ -2140,7 +2183,9 @@ null` and `adjacentNodes != null` false arms are dead (`U` rows 10-14).
   replayed the 491 distinct call inputs of the 88 disco runs in the oracle JVM (21.0.1, arm64): `atan2` (171 inputs) is
   bit-identical in V8, `Math` and `StrictMath`; V8 equals `StrictMath` on all 160 `cos` and all 160 `sin` inputs; HotSpot's
   `Math.cos` differs from it on 9 and `Math.sin` on 5, by one ulp. No tolerance was loosened; no contour cell flips in any
-  row.
+  row. Audited for issue #74: the measured maximum delta is 8.53e-14 px; the 14 inputs and HotSpot's values are recorded in
+  `test/golden/refs/java/last-ulp.json` and pinned by `test/golden/last-ulp-divergences.test.ts` (entry E2 of
+  [Last-ulp `Math.*` entries](#last-ulp-entries)). The case is inside 1e-6, so it needs no acceptance under the AD-4 amendment.
 - `layoutOptions.debug.discoGraph` (issue #71 item 1, `needs-ruling`): the oracle writes the `Object.toString()` of the
   `DCGraph` (`DisCoLayoutProvider.java:86`; no `toString`), `...DCGraph@1` under `-XX:hashCode=2`; the port writes
   `[object Object]`. In all 20 disco goldens and every disco sweep row that lays out (819 of 906; 1,503 occurrences). The
@@ -2474,8 +2519,9 @@ null` at `ModelOrderCycleBreaker.java:70`. Under `hierarchyHandling: INCLUDE_CHI
      the importer under `INCLUDE_CHILDREN`.
 2. **A known last-ulp `Math.sin` divergence (issue #68 item B, accepted).** `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`
    is the one `mismatch`, options-only: `layoutOptions.childAreaHeight` is `"2561.1171089266686"` in the oracle and
-   `"2561.117108926668"` in the port. It is already listed in § Known divergences (mission 8a) and annotated `#68`; the 0.01 px
-   audit is issue #74.
+   `"2561.117108926668"` in the port. It is already listed in § Known divergences (mission 8a) and annotated `#68`; the audit
+   of issue #74 measured it at 4.55e-13 px, under the 0.01 px bar (entry E1 of
+   [Last-ulp `Math.*` entries](#last-ulp-entries)).
 3. **Spore jitter (issue #79, oracle nondeterminism, not a port defect).** `ElkGraphImporter.java:167-169` (spore) shifts
    coincident centres by `(Math.random() - 0.5) * 0.001`, unseeded. In this oracle sweep the four cases of #79 are
    `nondeterministic` (their two oracle runs differed), so they are `excluded`. Two further cases have verdict `throws`,
