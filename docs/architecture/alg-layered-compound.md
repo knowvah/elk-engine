@@ -23,7 +23,7 @@ mission's diagrams are [data-flow](../../plans/layered-compound/diagrams/data-fl
 | [1. Package map](#part-i-package-map)                     | What 7h ported, where it lives, the facade and sections split, the last arm           |
 | [2. The hierarchical driver](#part-i-driver)              | `doCompoundLayout`, `hierarchicalLayout`, the hierarchy-aware processors, the resizer |
 | [3. The recorder and its rows](#part-i-rows)              | The four groups, the tree dump, the stops, the `sites` rows                           |
-| [4. Goldens and the breadth sweep](#part-i-goldens)       | The 24 layered goldens, the flag evidence, the sweep                                  |
+| [4. Goldens and the breadth sweep](#part-i-goldens)       | The 27 layered goldens, the flag evidence, the sweep                                  |
 | [5. Hashed containers and their twins](#part-i-twins)     | The six sites, the one observable order, container sizes, the treeification caution   |
 | [6. Replay helpers and test files](#part-i-replay)        | Helpers, the files that replay the rows, the anchored cases                           |
 | [7. The ported suites](#part-i-suites)                    | The nine issue suites, the graph.json methods, H13                                    |
@@ -216,14 +216,23 @@ names for the thickness and resizer rows is withheld: a test pins the `models` g
 ## 4. Goldens and the breadth sweep (H4, H5) {#part-i-goldens}
 
 **The layered goldens.** `tools/oracle/regen-goldens.sh --set layered` adds a set the way `--set algorithms` does: manifest
-`test/golden/layered.json` (24 entries), refs `test/golden/refs/elk-layered/` with `_meta.json`, inputs from
+`test/golden/layered.json` (27 entries: 24 of this mission and three added by issue #68, below), refs
+`test/golden/refs/elk-layered/` with `_meta.json`, inputs from
 `test/golden/inputs/pipeline`. The four models (`ptolemy-scrambler`, `ptolemy-afdx-multicast`, `ptolemy-clockdrift-hierarchy`,
 `ptolemy-crossbar-switch`) are crossed with the variants `direction-right`, `direction-left`, `direction-down`,
 `direction-up`, `hierarchy-include` and `hierarchy-separate`: 24 refs. The default (`INHERIT`) golden of each model is already
 in `refs/elk`. `JAVA_TOOL_OPTIONS` gets `-XX:+UnlockExperimentalVMOptions -XX:hashCode=2` for this set only, and the flag is
 named as `jvmFlags` in this set's `_meta.json` only. A second run is byte-identical; `refs/elk` (4) and `refs/elk-algorithms`
-(9) regenerate unchanged. `test/golden/layered-hierarchy-goldens.test.ts` (27 tests) checks the manifest (4 models × 6
-variants once each, `jvmFlags`, `elkCommit`) and compares each ref at AD-4.
+(9) regenerate unchanged. `test/golden/layered-hierarchy-goldens.test.ts` (31 tests) checks the manifest (4 models × 6
+variants once each, the three generated entries, `jvmFlags`, `elkCommit`) and compares each of the 27 refs at AD-4.
+
+**The three generated tree inputs (issue #68).** `generated-{mrtree,radial,vertiflex}-tree-small--default` are the layouts of
+`test/corpus/generated/<alg>-tree-small.json` under variant `default` with no `retarget`: the inputs set no algorithm, so the
+oracle resolves the default, layered. Mission 8a recorded them in the trees set as `<alg>-generated`; the refs moved here
+byte-identical, and both sets regenerate unchanged. Their manifest paths begin `generated/`: `regen-goldens.sh` reads such a
+path from `test/corpus/` (the files are not in elk-models) and first checks it against the vendored copy under
+`test/golden/inputs/pipeline/generated/`, which the runner reads. The trees set keeps `<alg>-generated-retarget`, the same
+inputs retargeted to each tree algorithm.
 
 **The no-flag evidence (T3).** The 24 cases run without `-XX:hashCode` are byte-equal to the committed refs on all 24 ids.
 Identity-hash order does not reach these exports, so the flagged refs stand. This is evidence about these four models, not
@@ -308,7 +317,7 @@ that makes a container above 10 observable is stop 17.
 | `src/alg/layered/LayeredCompoundVectors.test.ts` | every row of the four groups through the real provider and enum, no injection (542 tests, 5.3 s alone at batch 7)                                                                                                        |
 | `src/alg/layered/LayeredCompoundSites.test.ts`   | the 24 `sites` rows under their scenario titles and the table checks (27 tests)                                                                                                                                          |
 | `src/alg/layered/LayeredCompoundTwins.test.ts`   | the H3 reversal twins and the reach counts (14 s alone)                                                                                                                                                                  |
-| `test/golden/layered-hierarchy-goldens.test.ts`  | the 24 layered goldens                                                                                                                                                                                                   |
+| `test/golden/layered-hierarchy-goldens.test.ts`  | the 27 layered goldens                                                                                                                                                                                                   |
 | `test/corpus/compound-sweep.test.ts`             | the breadth sweep at stride 1                                                                                                                                                                                            |
 | class tests (T4-T8)                              | `compound/*.test.ts`, `HierarchicalNodeResizingProcessor.test.ts`: each class proven by its own stops and by Java-structure cases                                                                                        |
 | anchored tests (T15)                             | `compound/{CompoundGraphPreprocessorAnchored,CompoundGraphPostprocessorAnchored,CrossHierarchyEdgeAnchored}`, `intermediate/HierarchicalNodeResizingProcessorAnchored`, `ElkLayeredHierarchyAnchored` (each `*.test.ts`) |
@@ -412,7 +421,7 @@ The drafts are issue #61; nothing is filed upstream. The oracle's throw for `chi
 
 ```bash
 bash tools/vectors/layered-compound-vectors.sh test/golden/refs/java       # the ref; byte-stable, cached by salted input hash
-tools/oracle/regen-goldens.sh --set layered                                # the 24 refs, JAVA_TOOL_OPTIONS with -XX:hashCode=2
+tools/oracle/regen-goldens.sh --set layered                                # the 27 refs, JAVA_TOOL_OPTIONS with -XX:hashCode=2
 bash tools/oracle/compound-sweep.sh --force                                # test/corpus/.compound-sweep/ (gitignored)
 npx vitest run test/corpus/compound-sweep.test.ts                          # stride 1 (the default gate skips it)
 tools/oracle/compound-sweep.sh --dump <case id> <outDir>                   # the canonical form one case's hash is taken over

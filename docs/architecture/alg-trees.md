@@ -149,14 +149,16 @@ refuses them, and the whole-pipeline replay covers those rows. The dump does not
 (`NodePlacer.java:103-105`), so `buildBeforeGraphs` restores that one write. Replay times alone: mrtree 1.4 s, radial 5.9 s,
 vertiflex 4.3 s (budget 30 s); every whole-ref loop carries an explicit 60 s timeout.
 
-**Goldens (TR2).** `tools/oracle/regen-goldens.sh --set trees` writes `test/golden/refs/elk-trees/`: 40 refs (manifest
-`test/golden/trees.json`, inputs under `test/golden/trees-inputs/`, `jvmFlags` in `_meta.json`): 37 from T4 (mrtree 14, radial
-17, vertiflex 6; three of them the generated corpus inputs) and 3 added later,
-`{mrtree,radial,vertiflex}-generated-retarget`. The three first entries of the generated inputs were recorded with layered,
-because the corpus inputs set no algorithm and an entry without `retarget` records the default algorithm; they stay as valid
-layered goldens (`RECORDED_WITH_LAYERED`, issue #68). `test/golden/tree-goldens.test.ts` compares every entry with its ref at
-AD-4. The refs of the `default`, `algorithms` and `layered` sets regenerate byte-identically. Without the flag, 11 radial refs
-differ (the identity-hash order, I30).
+**Goldens (TR2).** `tools/oracle/regen-goldens.sh --set trees` writes `test/golden/refs/elk-trees/`: 37 refs (manifest
+`test/golden/trees.json`, inputs under `test/golden/trees-inputs/`, `jvmFlags` in `_meta.json`): 34 from T4 (mrtree 13, radial
+16, vertiflex 5) and 3 added later, `{mrtree,radial,vertiflex}-generated-retarget`, the generated corpus inputs retargeted to
+each algorithm. T4 also recorded those three inputs without `retarget`; the corpus inputs set no algorithm and an entry
+without `retarget` records the default algorithm, so those refs are layered layouts. Issue #68 moved them, byte-identical, to
+the layered set as `generated-{mrtree,radial,vertiflex}-tree-small--default` (formerly `{mrtree,radial,vertiflex}-generated`;
+see [alg-layered-compound.md](alg-layered-compound.md#part-i-goldens)). `test/golden/tree-goldens.test.ts` compares every
+entry with its ref at AD-4 and checks that each ref records the algorithm its entry names. The refs of the `default`,
+`algorithms` and `layered` sets regenerate byte-identically. Without the flag, 11 radial refs differ (the identity-hash
+order, I30).
 
 **Sweep (TR6).** Oracle `tools/oracle/sweep.sh --filter /<alg>/` under `-XX:hashCode=2`, 906 cases per algorithm (898 retarget
 and 8 generated). Oracle throws: mrtree 89, radial 365, vertiflex 553 and 1 timeout. TS through

@@ -351,9 +351,10 @@ leaves the old files); a rerun with nothing changed is a git no-op. The TS grand
 reproduce these `.json` files byte for byte; algorithm goldens never depend on it.
 
 **Tree goldens (mission 8a).** `regen-goldens.sh --set trees` adds a set the way `--set layered` does: manifest
-`test/golden/trees.json`, refs `test/golden/refs/elk-trees/` (40 refs, `-XX:hashCode=2` named in `_meta.json`), inputs read from
+`test/golden/trees.json`, refs `test/golden/refs/elk-trees/` (37 refs, `-XX:hashCode=2` named in `_meta.json`), inputs read from
 `test/golden/trees-inputs/` in the repository (`NEEDS_MODELS=0` skips the elk-models checks for this set only). An entry
-without `retarget` records the default algorithm, so the generated corpus inputs have `*-generated-retarget` entries. The
+without `retarget` records the default algorithm, so the generated corpus inputs have `*-generated-retarget` entries here; their
+default-algorithm (layered) goldens are in the layered set as `generated-<alg>-tree-small--default` (issue #68). The
 sweep tool `tools/corpus/ts-layout-compare.ts` registers the three tree providers (`registerTreeAlgorithms()`); layered is
 not registered there (row 9). See [alg-trees.md](architecture/alg-trees.md).
 
@@ -1682,7 +1683,9 @@ a dated note; this section states the state after 7h: the enum tally is **59 por
   ptolemy hierarchical models × `direction-right`, `-left`, `-down`, `-up`, `hierarchy-include`, `hierarchy-separate`),
   `_meta.json` naming `jvmFlags` `-XX:hashCode=2`, manifest `test/golden/layered.json`. A second run is byte-identical;
   `refs/elk` (4) and `refs/elk-algorithms` (9) regenerate unchanged. The 24 cases run without the flag are byte-equal to
-  the committed refs on all 24 ids. `test/golden/layered-hierarchy-goldens.test.ts` (27 tests) compares each at AD-4.
+  the committed refs on all 24 ids. `test/golden/layered-hierarchy-goldens.test.ts` (27 tests) compares each at AD-4. Since
+  issue #68 the set holds 27 refs: the layered goldens of the three generated tree inputs moved in from the trees set, and the
+  runner has 31 tests.
 - Java suites, at mission start (load 11) and at mission end (the `End` column is runs / failures of the
   mission-end run; the start counts equal `plans/layered-compound/java-baseline.md`, `failures=0` for all):
 
@@ -1872,9 +1875,12 @@ staged provider classes, not `PENDING_TYPES`, because of the tripwire `test/melk
 - Replays: `MrTreeVectors.test.ts` (both mrtree refs, 401 rows), `RadialVectors.test.ts` (309), `VertiFlexVectors.test.ts` (471)
   run every row through the real provider: 0 mismatches except the two classified radial rows below. Isolated transitions
   for each mrtree processor (88 each) and for every radial and vertiflex step match at 1e-6.
-- Goldens (TR2): `tools/oracle/regen-goldens.sh --set trees` writes `test/golden/refs/elk-trees/`: 40 refs (the `trees` set
-  of `test/golden/trees.json`; 37 from T4 and 3 retargeted `*-generated-retarget` entries added by T4's `fix`), equal to the
+- Goldens (TR2): `tools/oracle/regen-goldens.sh --set trees` writes `test/golden/refs/elk-trees/`: 37 refs (the `trees` set
+  of `test/golden/trees.json`; 34 from T4 and 3 retargeted `*-generated-retarget` entries added by T4's `fix`), equal to the
   TS layout at AD-4 in `test/golden/tree-goldens.test.ts`. `default`, `algorithms` and `layered` regenerate byte-identically.
+  T4 recorded three more, `{mrtree,radial,vertiflex}-generated`, without `retarget`: the inputs set no algorithm, so the
+  oracle laid them out with layered. Issue #68 moved those refs, byte-identical, to the layered set as
+  `generated-{mrtree,radial,vertiflex}-tree-small--default`.
 - JUnit: `MrTreeGraphSizeTest` 6 of 6 and `CenterOnRootTest` 2 of 2 ported with the Java's assertions; the oracle runs at the
   start and at the end of the mission are 6 / 0 and 2 / 0 (`plans/alg-trees/java-baseline.md`). `alg.vertiflex` has no
   test bundle.
@@ -1980,11 +1986,14 @@ vertiflex:
 - The last-ulp `Math.sin` case in the sweep: `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`. HotSpot's
   `Math.sin(1.6073462520335293)` is ...4178, V8 and `StrictMath` give ...4177 (`EadesRadial.java:102`); the only difference
   is the string `layoutOptions.childAreaHeight` ("2561.1171089266686" against "2561.117108926668"); geometry agrees within 1e-13
-  and no discrete decision flips. Known-divergences list of AD-4.
-- Seven sweep cases whose option keys belong to unported providers: `hierarchicalLayoutMixing` (mrtree) and
+  and no discrete decision flips. Known-divergences list of AD-4, accepted by the maintainer (issue #68 item B) under this
+  bar: the positional effect stays at or below 0.01 px. Here the effect is one numeric option string and no coordinate moves
+  by more than 1e-13. The comparator does not read numeric option strings within a tolerance. The 0.01 px bar is the general
+  one for last-ulp math divergences; the AD-4 amendment and the audit of the other entries are issue #74.
+- Seven sweep cases whose option keys belonged to providers unported at 8a: `hierarchicalLayoutMixing` (mrtree) and
   `interactiveRectpacking_{hierarchy,oneBigNode}` (each algorithm), `missing layoutOptions.desiredPosition` and
-  `desiredEdgeLength` (rectpacking and force; mission 8x). With the three mislabelled golden entries (`*-generated`,
-  recorded with layered) they are issue #68 (`needs-ruling`).
+  `desiredEdgeLength` (rectpacking and force). Ruled a harness limit (issue #68 item A); all seven are `ok` since row 9
+  registered every provider (issue #40).
 - Stack depth: the six probe shapes complete at the oracle's measured depth of 10,000 (issue #67). An explicit-stack loop
   throws the `RangeError` of stack exhaustion beyond 100,000 activations (`src/java/lang/StackDepth.ts`), where the Java
   recursion throws `StackOverflowError` at the JVM's own limit (15,000 was the deepest tree the oracle completed); the

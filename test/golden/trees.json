@@ -239,27 +239,6 @@
       "note": "vertiflex x verticalConstraint-set: designed input carrying its option set at the root (TR2); recorded with -XX:hashCode=2 (H4)."
     },
     {
-      "id": "mrtree-generated",
-      "path": "mrtree-generated.json",
-      "algorithm": "org.eclipse.elk.mrtree",
-      "variant": "default",
-      "note": "mrtree x generated: corpus input test/corpus/generated/mrtree-tree-small.json copied byte-identical; recorded with -XX:hashCode=2 (H4)."
-    },
-    {
-      "id": "radial-generated",
-      "path": "radial-generated.json",
-      "algorithm": "org.eclipse.elk.radial",
-      "variant": "default",
-      "note": "radial x generated: corpus input test/corpus/generated/radial-tree-small.json copied byte-identical; recorded with -XX:hashCode=2 (H4)."
-    },
-    {
-      "id": "vertiflex-generated",
-      "path": "vertiflex-generated.json",
-      "algorithm": "org.eclipse.elk.vertiflex",
-      "variant": "default",
-      "note": "vertiflex x generated: corpus input test/corpus/generated/vertiflex-tree-small.json copied byte-identical; recorded with -XX:hashCode=2 (H4)."
-    },
-    {
       "id": "mrtree-generated-retarget",
       "path": "mrtree-generated.json",
       "algorithm": "org.eclipse.elk.mrtree",

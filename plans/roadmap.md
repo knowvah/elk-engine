@@ -3589,3 +3589,52 @@ has the same facts in the TR7 and stack-depth bullets.
 explicit-stack sites and those of #70 and #76 use the same check. #166 (`follow-up`): the recursions left verbatim, which
 only other options reach, plus `TreeUtil.getLeftMost`. #168 (`follow-up`): the port is 6 to 26 times slower than the
 oracle at 10,000 deep.
+
+## Revision 2026-11-23 (generated-goldens-layered)
+
+Queue mission for issue #68, on `chore/issue-queue` (plan and journal in `plans/generated-goldens-layered/`). #68 carries
+the maintainer's ruling of 2026-11-13 on the 8a sweep residuals. Item C: the three goldens `mrtree-generated`,
+`radial-generated` and `vertiflex-generated` of the trees set were recorded with layered, because their inputs set no
+algorithm and their entries carry no `retarget`; keep them, as layered goldens, under ids that say what they are. No
+file of production `src/` changed, no oracle patch or pin changed, and no ref content changed. Oracle: `8bca22f4` +
+patches 0001-0004 (built 2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over core, graph,
+graph.json, alg.layered, alg.mrtree, alg.radial and alg.vertiflex is empty.
+
+**1. The three goldens are in the layered set.**
+
+| Was (`test/golden/trees.json`) | Is (`test/golden/layered.json`) |
+| ------------------------------ | ------------------------------- |
+| `mrtree-generated` | `generated-mrtree-tree-small--default` |
+| `radial-generated` | `generated-radial-tree-small--default` |
+| `vertiflex-generated` | `generated-vertiflex-tree-small--default` |
+
+Each new entry has `algorithm` `org.eclipse.elk.layered`, variant `default`, no `retarget`, and a note naming its source,
+`test/corpus/generated/<alg>-tree-small.json`. The layered set holds 27 entries (the 24 of mission 7h and these), the
+trees set 37 (mrtree 14, radial 17, vertiflex 6, the three `<alg>-generated-retarget` entries among them, unchanged).
+
+**2. The refs moved by `git mv`, byte-identical, and both sets regenerate unchanged.** After the move,
+`regen-goldens.sh --set layered` wrote 27 refs and `--set trees` 37, with nothing modified: `git diff -M` against the
+base shows three renames at 100% over `test/golden/refs/` and no other line. Neither `_meta.json` changed. The ruling
+asked to update their ids and counts; they hold none (commit, patches, JDK, models commit, script, JVM flags), so the
+regeneration is the proof that they need no edit.
+
+**3. Where the layered set reads the three inputs.** That set sends the oracle elk-models files and checks each vendored
+copy under `test/golden/inputs/pipeline/` against them. The generated tree inputs are repository files. A manifest path
+beginning `generated/` is now read from `test/corpus/` and its vendored copy
+(`test/golden/inputs/pipeline/generated/`) is compared with that file; every other path resolves as before, and the 24
+existing cases send the same files (the case files were compared). The oracle uses an input path for its extension only.
+
+**4. Tests.** `test/golden/tree-goldens.test.ts` loses `RECORDED_WITH_LAYERED`: every ref of the trees set must now
+record the algorithm its entry names. `test/golden/layered-hierarchy-goldens.test.ts` keeps mission 7h's numbers (24
+entries, 4 models × 6 variants) on the model grid, pins the three generated entries (id, path, algorithm, variant, no
+`retarget`, input equal to its corpus source, ref resolved by layered) and lays out all 27 at AD-4. No expected value
+changed (AD-13).
+
+**5. Docs.** `docs/conformance.md`, `docs/architecture/alg-trees.md` and `docs/architecture/alg-layered-compound.md` give
+37 and 27 and describe the move; the mislabel notes are gone. The `sloppy_overlaps_2` known divergence (item B) states
+the maintainer's bar, a positional effect at or below 0.01 px, and cites #74, where the bar becomes the general one for
+last-ulp math. The seven option-key cases of item A are recorded as `ok` since row 9 (#40).
+
+**Open.** #74 (`queue:ready`): the AD-4 amendment and the audit of the other last-ulp entries. #169 (`follow-up`):
+`docs/architecture/overview.md` still says mission 8a is proven by 40 `trees` goldens. #133: the translated `docs-site/`
+pages. `tools/corpus/ts-findings.json` keeps its `#68` note on `sloppy_overlaps_2` until the branch merges.
