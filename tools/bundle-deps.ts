@@ -24,8 +24,8 @@ export const COMMITTED_JSON_RELATIVE = 'test/architecture/bundle-deps.json';
 export const PINNED_COMMIT_RELATIVE = 'tools/oracle/ELK_COMMIT';
 
 /**
- * In-scope bundles (decisions.md "Bundle scope", amended by conformance-corpus D0),
- * without the ELK prefix.
+ * In-scope bundles (decisions.md "Bundle scope", amended by conformance-corpus D0 and by AD-17,
+ * which adopts the two Graphviz bundles), without the ELK prefix.
  */
 export const IN_SCOPE_SUFFIXES: readonly string[] = [
   'core',
@@ -44,6 +44,8 @@ export const IN_SCOPE_SUFFIXES: readonly string[] = [
   'graph.text',
   'graph.json.text',
   'core.debug.grandom',
+  'alg.graphviz.dot',
+  'alg.graphviz.layouter',
 ];
 
 export const IN_SCOPE_BUNDLES: readonly string[] = IN_SCOPE_SUFFIXES.map((suffix) => `${ELK_PREFIX}${suffix}`);

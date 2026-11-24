@@ -6,15 +6,16 @@ All 32 directories under `$ELK_SOURCE_DIR/plugins` (ELK commit
 `8aaa3c145c2a18a38aabbc725aa3791ddc517a76`), plus `pom.xml` (the Tycho aggregator listing every
 bundle as a module). Scope is the authoritative classification in
 `plans/elk-engine-skeleton/decisions.md` ("Bundle scope"), amended by D0 in
-`plans/conformance-corpus/decisions.md`. Prefix `org.eclipse.elk.` omitted.
+`plans/conformance-corpus/decisions.md` and by AD-17 (the maintainer's ruling on the
+[deferred-bundles ADR](deferred-bundles-adr.md)). Prefix `org.eclipse.elk.` omitted.
 
 ## Plugins
 
 LOC = hand-written Java + Xtend lines (`wc -l`), excluding `src-gen/` and `xtend-gen/`.
 Generated = sources produced by a generator: `.melk` (ELK metadata, compiled by `core.meta`),
 `src-gen` (EMF or Xtext output, committed), `xtext` grammar.
-Scope classes: In = ported; Deferred = roadmap decides; Reference = read for ideas, never ported
-line by line, no `@see`; Out = not ported.
+Scope classes: In = in scope (ported, or its port is tracked by a named issue); Deferred = roadmap
+decides; Reference = read for ideas, never ported line by line, no `@see`; Out = not ported.
 
 | Bundle                   | Purpose                                                      |         LOC | Generated                                | Scope     | Rationale                                                                                                                                                                     |
 | ------------------------ | ------------------------------------------------------------ | ----------: | ---------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -34,10 +35,10 @@ line by line, no `@see`; Out = not ported.
 | `core.debug.grandom`     | Random graph generator (Xtext DSL)                           |       2,543 | Xtext/Ecore, 40 `src-gen` files          | In        | Ported (mission 4f), evidence in `docs/architecture/grandom.md`; `alg.test` and the generated conformance tier need it (D0)                                                   |
 | `graph.text`             | Textual ElkGraph format (Xtext)                              |       1,232 | Xtext, 11 `src-gen` files                | In        | `.elkt` parser/writer; 898 corpus models exist only as `.elkt` (D0)                                                                                                           |
 | `graph.json.text`        | Textual ELK JSON format (Xtext)                              |         801 | Xtext, 12 `src-gen` files                | In        | `.elkj` parser/writer; ported with lazy linking, validation and writer, evidence in `docs/architecture/elk-json-text.md` (D0)                                                 |
-| **In-scope total**       | 16 bundles                                                   | **139,176** |                                          |           |                                                                                                                                                                               |
-| `alg.libavoid`           | Libavoid connector routing integration                       |       1,548 | `.melk`                                  | Deferred  | Drives an external C++ process; decision proposed: [ADR](deferred-bundles-adr.md)                                                                                             |
-| `alg.graphviz.dot`       | Graphviz DOT language parser                                 |       2,728 | Xtext/Ecore, 40 `src-gen` files          | Deferred  | DOT I/O; candidate to delegate to dot-engine; decision proposed: [ADR](deferred-bundles-adr.md)                                                                               |
-| `alg.graphviz.layouter`  | Bridge to external Graphviz `dot`                            |       1,743 | `.melk`                                  | Deferred  | Needs external `dot` binary; decision proposed: [ADR](deferred-bundles-adr.md)                                                                                                |
+| `alg.graphviz.dot`       | Graphviz DOT language parser                                 |       2,728 | Xtext/Ecore, 40 `src-gen` files          | In        | In scope by AD-17 ([ADR](deferred-bundles-adr.md)); not yet ported, port tracked by #95                                                                                       |
+| `alg.graphviz.layouter`  | Bridge to external Graphviz `dot`                            |       1,743 | `.melk`                                  | In        | In scope by AD-17 ([ADR](deferred-bundles-adr.md)), Graphviz process replaced by an injected runner; not yet ported, port tracked by #95                                      |
+| **In-scope total**       | 18 bundles                                                   | **143,647** |                                          |           |                                                                                                                                                                               |
+| `alg.libavoid`           | Libavoid connector routing integration                       |       1,548 | `.melk`                                  | Out       | Client of an external C++ routing server; out of scope by AD-17 ([ADR](deferred-bundles-adr.md))                                                                              |
 | `core.service`           | Layout service layer (Eclipse/JFace/Guice)                   |       2,676 | none                                     | Out       | Platform runtime, not layout                                                                                                                                                  |
 | `core.ui`                | Core UI components                                           |       4,177 | none                                     | Out       | Eclipse UI                                                                                                                                                                    |
 | `core.meta`              | `.melk` language (Xtext) and generator                       |       1,859 | Xtext, 39 `src-gen` files                | Out       | Build-time tool; AD-12 replaces it with a TS generator                                                                                                                        |
@@ -53,7 +54,7 @@ line by line, no `@see`; Out = not ported.
 | `graph.json.text.ui`     | Textual JSON UI                                              |         629 | 5 `src-gen` files                        | Out       | Eclipse editor UI                                                                                                                                                             |
 | `pom.xml`                | Tycho aggregator, lists the 32 modules                       |         n/a | n/a                                      | n/a       | Build file, not a bundle                                                                                                                                                      |
 
-Classification counts: 16 In, 6 Deferred, 2 Reference, 8 Out (= 32).
+Classification counts: 18 In, 3 Deferred, 2 Reference, 9 Out (= 32).
 
 ## Test plugins
 

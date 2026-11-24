@@ -12,7 +12,7 @@ and must run in a browser.
 
 Keep the `plans/` contents — they are the archaeology of this effort. Never
 delete or rewrite them; append to the active mission's `decision-journal.md`.
-Locked decisions (AD-1…AD-16) live in `plans/elk-engine-skeleton/decisions.md`.
+Locked decisions (AD-1…AD-17) live in `plans/elk-engine-skeleton/decisions.md`.
 
 ## The Java Is Sacred
 
@@ -50,7 +50,9 @@ values before hypothesizing — the default stance is "my port differs — find 
   coordinates/sizes match within absolute tolerance **1e-6**. A last-ulp
   `Math.*` case is a known divergence only with a demonstrated HotSpot-vs-V8
   mechanism and an effect at or below **0.01 px** on every position and size,
-  pinned per case (AD-4 amendment, `docs/conformance.md` § 2).
+  pinned per case (AD-4 amendment, `docs/conformance.md` § 2). AD-17 exempts one
+  planned suite from 1e-6: the Graphviz end-to-end suite (issue #95), which uses
+  dot-engine's bar.
 - Goldens (AD-5): curated oracle outputs under `test/golden/refs/elk/` with
   `_meta.json`; JVM vectors under `test/golden/refs/java/`; comparator
   `test/golden/compare-json.ts`. Regenerate refs by script, never by hand, and
@@ -159,10 +161,11 @@ vectors (`tools/vectors/JavaVectors.java`).
 - `alg.spore` — SPOrE overlap removal and compaction
 - `alg.topdownpacking` — top-down packing
 - `alg.vertiflex` — VertiFlex tree layout
+- `alg.graphviz.dot` — ELK Graphviz Dot Language Parser
+- `alg.graphviz.layouter` — ELK Layout Bridge for Graphviz (Graphviz process
+  replaced by an injected runner; AD-17)
 
-**Deferred** (roadmap decides): `alg.libavoid` (drives an external C++ process),
-`alg.graphviz.dot` / `alg.graphviz.layouter` (DOT I/O + external `dot`;
-candidate for delegating to dot-engine); `graph.text.ide`, `graph.json.text.ide`,
+**Deferred** (roadmap decides): `graph.text.ide`, `graph.json.text.ide`,
 `core.debug.grandom.ide` (Xtext generic IDE services: content assist; needs a
 browser-editor host decision).
 
@@ -174,7 +177,8 @@ visualization).
 
 **Out of scope**: `core.service` (Eclipse/JFace/Guice runtime), `core.ui`,
 `core.meta`, `core.meta.ui`, `conn.gmf`, `graph.text.ui`, `graph.json.text.ui`,
-`core.debug.grandom.ui` (Eclipse editors; require Eclipse UI, `core.ui`/`core.service`).
+`core.debug.grandom.ui` (Eclipse editors; require Eclipse UI, `core.ui`/`core.service`);
+`alg.libavoid` (client of an external C++ routing server; AD-17).
 
 Third-party `Require-Bundle` entries (Guava, EMF, Gson, Xtend/Xbase, Xtext, ANTLR)
 are not TS directories; AD-10, AD-11, and the translation rules cover them. The

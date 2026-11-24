@@ -99,7 +99,8 @@ matter:
 
 Bundle resolution is `bundleOf` in `test/architecture/module-boundaries.fitness.test.ts`: the
 longest `tsDir` in `test/architecture/bundle-deps.json` that is a path prefix of the file. That file
-lists the 13 in-scope `tsDir`s, so this map and it agree.
+lists the 18 in-scope `tsDir`s: the 13 of the Summary table, the three grammar bundles added by D0 and the two Graphviz
+bundles adopted by AD-17 (not yet ported).
 
 ## AD-12 generated artifacts
 
@@ -617,16 +618,20 @@ ported (mission 4c, [section above](#graphjsontext--srcgraphjsontext)); `core.de
 Mission mapping: `graph.text` is roadmap 4b, `graph.json.text` 4c, `core.debug.grandom` 4d
 (`plans/roadmap.md`, Revision 2026-10-11); the grandom mission brief is labelled 4f
 (`plans/grandom/`). `bundle-deps.json` gained `graph.text` in mission 4b, `graph.json.text` in 4c and
-`core.debug.grandom` in 4f.
+`core.debug.grandom` in 4f. It gained `alg.graphviz.dot` (`src/alg/graphviz/dot/`) and `alg.graphviz.layouter`
+(`src/alg/graphviz/layouter/`) under issue #88 (mission deferred-bundles-acceptance, AD-17), before any file of either
+bundle was ported; the ports are issue #95.
 
 ## Out of scope or deferred (not rows above)
 
 `core.service`, `core.ui`, `core.meta`, `core.meta.ui`, `conn.gmf`, `graph.text.ui`,
-`graph.json.text.ui`, `core.debug.grandom.ui` (out of scope); `alg.libavoid`, `alg.graphviz.dot`,
-`alg.graphviz.layouter`, `graph.text.ide`, `graph.json.text.ide`, `core.debug.grandom.ide`
-(deferred); `core.debug`, `alg.disco.debug` (reference only: read for ideas, never ported).
-A decision for the three deferred algorithm bundles (`alg.libavoid`, `alg.graphviz.dot`, `alg.graphviz.layouter`) is
-proposed in the [deferred-bundles ADR](deferred-bundles-adr.md); they stay deferred until the maintainer rules on it.
+`graph.json.text.ui`, `core.debug.grandom.ui`, `alg.libavoid` (out of scope); `graph.text.ide`,
+`graph.json.text.ide`, `core.debug.grandom.ide` (deferred); `core.debug`, `alg.disco.debug`
+(reference only: read for ideas, never ported).
+The maintainer accepted the [deferred-bundles ADR](deferred-bundles-adr.md) amended (ruling of 2026-11-14 on issue #88,
+recorded as AD-17): `alg.libavoid` is out of scope; `alg.graphviz.dot` and `alg.graphviz.layouter` are in scope, with
+`GraphvizTool`'s process replaced by an injected runner. Neither Graphviz bundle is ported yet and neither has rows in
+this map; their ports, and their rows here, are issue #95.
 `core.meta` contains the `.melk` compiler whose behavior the `tools/melk/` generator reproduces
 (AD-12); it is read as a reference only. `graph.text`, `graph.json.text` and `core.debug.grandom`
 are in scope per D0 (`plans/conformance-corpus/decisions.md`); see the next section.

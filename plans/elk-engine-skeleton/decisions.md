@@ -256,3 +256,30 @@ The four points are the rule as recorded in [issue #74](https://github.com/knowv
 
 Recorded by mission last-ulp-bar (`plans/last-ulp-bar/`, 2026-11-24), which audited the existing entries: the result is the table
 "Last-ulp `Math.*` entries" in `docs/conformance.md` § 2, pinned by `test/golden/last-ulp-divergences.test.ts`.
+
+## AD-17: Deferred algorithm bundles (maintainer ruling 2026-11-14, #88)
+
+Maintainer ruling of 2026-11-14 on issue #88, confirmed there on 2026-11-23 ("good to go"): the deferred-bundles ADR
+(`docs/architecture/deferred-bundles-adr.md`, roadmap row 11) is accepted **amended**. "`alg.libavoid`: no-go, out of scope, as the
+ADR recommends. `alg.graphviz.dot` and `alg.graphviz.layouter`: **go**, inside `@knowvah/elk-engine`, ported faithfully with
+`GraphvizTool`'s process replaced by an injected runner." AD-1 to AD-16 above are unchanged; the port is tracked by issue #95.
+
+1. **`alg.libavoid` is out of scope.** It is a client of an external C++ routing server; the routing is not in the Java, the pinned
+   source does not define the result, and dot-engine holds no libavoid (ADR evidence LA-3, LA-7, LA-8, LA-11, LA-12).
+2. **`alg.graphviz.dot` and `alg.graphviz.layouter` are in scope**, ported faithfully like every other bundle. The one deviation is
+   that `GraphvizTool`'s process becomes an injected runner: DOT text and the algorithm in, DOT text out. How the runner is injected
+   is new API, to settle with the maintainer under #95; module-level mutable state is not an option (AD-8).
+3. **Zero runtime dependencies and browser-safe `src/` hold.** "The same functionality then comes from `@knowvah/dot-engine` through
+   a small adapter outside this package." The adapter is not part of `@knowvah/elk-engine`.
+4. **AD-4 exception, for one suite only.** "The export, DOT parse and `transferLayout` are deterministic ELK Java and meet AD-4
+   exactly. Only an end-to-end suite (pinned Graphviz 16.1.0 against the dot-engine adapter) uses dot-engine's bar, as a stated AD-4
+   exception for that suite." That bar is ±0.01 pt for `dot` and ±0.5 pt for `neato` and `fdp` (#95). Export, parse and
+   `transferLayout` stay at 1e-6. The exception enters `docs/conformance.md` with the suite (#95); until then no test uses it.
+5. **It amends the `## Bundle scope` table above**, which is not edited: its "Deferred" row now holds only the three `.ide` bundles
+   that conformance-corpus D0 deferred (`graph.text.ide`, `graph.json.text.ide`, `core.debug.grandom.ide`, as CLAUDE.md lists them),
+   its "In scope" row gains the two Graphviz bundles, and its "Out of scope" row gains `alg.libavoid`.
+
+Recorded by mission deferred-bundles-acceptance (`plans/deferred-bundles-acceptance/`, 2026-11-24), which ported nothing: it wrote
+the ruling into the ADR, CLAUDE.md, `docs/architecture/inventory.md` and `docs/architecture/port-map.md`, and added both Graphviz
+suffixes to `IN_SCOPE_SUFFIXES` (`tools/bundle-deps.ts`), so `test/architecture/bundle-deps.json` maps `src/alg/graphviz/dot` and
+`src/alg/graphviz/layouter`, pinned by the block `graphviz bundles (AD-17)` in `test/architecture/module-boundaries.fitness.test.ts`.

@@ -404,6 +404,52 @@ describe('grammar bundles (conformance-corpus D0)', () => {
   });
 });
 
+/**
+ * AD-17 (maintainer ruling on issue #88): alg.graphviz.dot and alg.graphviz.layouter are in scope, alg.libavoid is not.
+ * Expected values are the Require-Bundle headers at the pin (MANIFEST.MF of each bundle), in-scope entries only: the
+ * layouter's optional org.eclipse.elk.core.service is out of scope, so it is no directory.
+ */
+describe('graphviz bundles (AD-17)', () => {
+  const DOT_DIR = 'src/alg/graphviz/dot';
+  const LAYOUTER_DIR = 'src/alg/graphviz/layouter';
+
+  it('maps alg.graphviz.dot to src/alg/graphviz/dot requiring core and graph', () => {
+    expect(committed.bundles[DOT_DIR]).toEqual({
+      bundle: 'org.eclipse.elk.alg.graphviz.dot',
+      requires: ['src/core', 'src/graph'],
+    });
+  });
+
+  it('maps alg.graphviz.layouter to src/alg/graphviz/layouter requiring dot, core and graph', () => {
+    expect(committed.bundles[LAYOUTER_DIR]).toEqual({
+      bundle: 'org.eclipse.elk.alg.graphviz.layouter',
+      requires: [DOT_DIR, 'src/core', 'src/graph'],
+    });
+  });
+
+  it('resolves a layouter file to the layouter bundle', () => {
+    expect(bundleOf(`${LAYOUTER_DIR}/X.ts`, committed)).toBe(LAYOUTER_DIR);
+  });
+
+  it('allows layouter -> dot', () => {
+    expect(checkFile(`${LAYOUTER_DIR}/X.ts`, "import { Y } from '../dot/Y.js';", committed)).toEqual([]);
+  });
+
+  it('forbids dot -> layouter, naming both files', () => {
+    expect(checkFile(`${DOT_DIR}/X.ts`, "import { Y } from '../layouter/Y.js';", committed)).toEqual([
+      `${DOT_DIR}/X.ts -> ${LAYOUTER_DIR}/Y.ts: ${DOT_DIR} may not import ${LAYOUTER_DIR}`,
+    ]);
+  });
+
+  it('leaves out-of-scope alg.libavoid unmapped', () => {
+    expect(unmappedFile('src/alg/libavoid/X.ts', committed)).toBe('src/alg/libavoid/X.ts: unmapped directory');
+  });
+
+  it('leaves src/alg/graphviz itself unmapped: no bundle owns it', () => {
+    expect(unmappedFile('src/alg/graphviz/X.ts', committed)).toBe('src/alg/graphviz/X.ts: unmapped directory');
+  });
+});
+
 describe('src/guava boundary (java-foundations M6)', () => {
   it('lets src/guava import src/java', () => {
     expect(checkFile('src/guava/Lists.ts', "import { Int32 } from '../java/lang/Int32.js';", committed)).toEqual([]);
