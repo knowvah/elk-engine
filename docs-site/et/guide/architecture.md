@@ -1,6 +1,6 @@
 ---
 title: Arhitektuur
-sourceHash: b28f7adf145c6e3ab8efc737a9e5e9bb883714a2c79e0811ade88704241f3c21
+sourceHash: bd9497d352debbb8c889e45fc334c90f3e318451e38381e96d0a09fdce150fe5
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -75,8 +75,8 @@ ja 1105 juhtumiga sweepiga, mille 935 ok-juhtumit langevad täpselt kokku;
 [alg-layered-labels.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-labels.md)).
 Iseseotud servad, graafi mähkimine ja tihendamine töötavad samuti (missioon 7g: paketi `loops` sisu, neli
 iseseotud serva protsessorit, murdepunkti- ja üksikserva-mähkijad, `HorizontalGraphCompactor`, kihilise `compaction`
-paketi sisu ja `ComponentsCompactor`, tõestatud 1627 oraakli reaga (`full` 731, `models` 307, `scenarios` 525,
-`sites` 64), 10 baasjoone JUnit-komplektiga, 3073 juhtumiga sweepiga, mille 2997 ok-juhtumit langevad täpselt
+paketi sisu ja `ComponentsCompactor`, tõestatud 1642 oraakli reaga (`full` 731, `models` 307, `scenarios` 525,
+`sites` 79), 10 baasjoone JUnit-komplektiga, 3073 juhtumiga sweepiga, mille 2997 ok-juhtumit langevad täpselt
 kokku ja 76 viset langevad kokku mõlemal poolel, ning üheksa haruga ühendusega, mis jätab 58 haru portituks;
 [alg-layered-loops.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-loops.md)).
 Liitgraafid töötavad samuti (missioon 7h: pakett `compound`, `HierarchicalNodeResizingProcessor` ja viimane haru,
@@ -85,7 +85,7 @@ goldeniga, üheksa probleemikomplekti ja kolme graph.json-meetodiga, 1169 juhtum
 langevad täpselt kokku ja 5 viset langevad kokku mõlemal poolel;
 [alg-layered-compound.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-compound.md)).
 Kihiline algoritm töötab nüüd igas hierarhiakäsitluse režiimis: 59 enumi haru on portitud, ühtegi pole ootel ja
-etapilist nimekirja pole enam. Ootel on ainult probleemi #58 kolm `elk.stress`-juhtumit (missioon 8b). Ühtegi teist
+etapilist nimekirja pole enam. Probleemi #58 kolm `elk.stress`-juhtumit ootasid missiooni 8b ja töötavad sellest ajast, kui selle otsus ellu viidi (missioon layered-stress-cases). Ühtegi teist
 paigutusalgoritmi veel ei käitata (mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex).
 Missioonist 8a alates töötavad ka mrtree, radial ja vertiflex (tõestatud 1181 oraakli reaga neljas viites tervetest
 paigutustest ja peatustest, 2656-realise ühikvektorite viitega, 40 `trees`-goldeniga, `MrTreeGraphSizeTest`i ja

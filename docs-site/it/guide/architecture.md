@@ -1,6 +1,6 @@
 ---
 title: Architettura
-sourceHash: b28f7adf145c6e3ab8efc737a9e5e9bb883714a2c79e0811ade88704241f3c21
+sourceHash: bd9497d352debbb8c889e45fc334c90f3e318451e38381e96d0a09fdce150fe5
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -77,8 +77,8 @@ completi, le 11 suite JUnit di base e uno sweep di 1.105 casi i cui 935 casi ok 
 [alg-layered-labels.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-labels.md)).
 Girano anche self loop, graph wrapping e compattazione (missione 7g: il pacchetto loops, i quattro processor
 per i self loop, i wrapper per breaking point e per arco singolo, `HorizontalGraphCompactor`, il pacchetto
-layered `compaction` e `ComponentsCompactor`, provati da 1.627 righe dell'oracolo (`full` 731, `models` 307,
-`scenarios` 525, `sites` 64), le 10 suite JUnit di base, uno sweep di 3.073 casi i cui 2.997 casi ok coincidono
+layered `compaction` e `ComponentsCompactor`, provati da 1.642 righe dell'oracolo (`full` 731, `models` 307,
+`scenarios` 525, `sites` 79), le 10 suite JUnit di base, uno sweep di 3.073 casi i cui 2.997 casi ok coincidono
 esattamente e 76 eccezioni coincidono su entrambi i lati, e il cablaggio a nove rami che lascia 58 rami portati;
 [alg-layered-loops.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-loops.md)).
 Girano anche i grafi composti (missione 7h: il pacchetto `compound`, `HierarchicalNodeResizingProcessor` e
@@ -87,8 +87,7 @@ l'ultimo ramo, provati da 540 righe dell'oracolo (`full` 355, `models` 73 con st
 1.169 casi i cui 1.164 casi ok coincidono esattamente e 5 eccezioni coincidono su entrambi i lati;
 [alg-layered-compound.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-compound.md)).
 L'algoritmo layered ora gira in ogni modalità di gestione della gerarchia: 59 rami di enum sono portati,
-nessuno è in sospeso e l'elenco dei rami in staging è vuoto. Restano in attesa solo i tre casi `elk.stress`
-dell'issue #58 (missione 8b). Nessun altro algoritmo di layout gira ancora (mrtree, radial, force, disco,
+nessuno è in sospeso e l'elenco dei rami in staging è vuoto. I tre casi `elk.stress` dell'issue #58 attendevano la missione 8b e girano da quando la sua decisione è stata applicata (missione layered-stress-cases). Nessun altro algoritmo di layout gira ancora (mrtree, radial, force, disco,
 rectpacking, spore, topdownpacking, vertiflex). Dalla missione 8a girano anche mrtree, radial e vertiflex
 (provati da 1.181 righe dell'oracolo in quattro ref di layout completi e stop, un ref di vettori unitari di
 2.656 righe, 40 golden `trees`, `MrTreeGraphSizeTest` e `CenterOnRootTest` a 6/6 e 2/2, e uno sweep di 906 casi

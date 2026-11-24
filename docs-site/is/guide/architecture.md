@@ -1,6 +1,6 @@
 ---
 title: Arkitektúr
-sourceHash: b28f7adf145c6e3ab8efc737a9e5e9bb883714a2c79e0811ade88704241f3c21
+sourceHash: bd9497d352debbb8c889e45fc334c90f3e318451e38381e96d0a09fdce150fe5
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -76,8 +76,8 @@ og villuleitartólin, sannað með 1.305 véfréttarröðum stoppa og heilla upp
 [alg-layered-labels.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-labels.md)).
 Sjálflykkjur, umbrot grafa og samþjöppun keyra líka (verkefni 7g: loops-pakkinn, vinnsluhlutarnir fjórir fyrir
 sjálflykkjur, brotpunkta- og einleggjaumbrotsrarnir, `HorizontalGraphCompactor`, layered-pakkinn `compaction`
-og `ComponentsCompactor`, sannað með 1.627 véfréttarröðum (`full` 731, `models` 307, `scenarios` 525, `sites`
-64), JUnit-söfnunum 10 í grunni, 3.073 tilvika sweep þar sem 2.997 ok-tilvik stemma nákvæmlega og 76 undantekningar
+og `ComponentsCompactor`, sannað með 1.642 véfréttarröðum (`full` 731, `models` 307, `scenarios` 525, `sites`
+79), JUnit-söfnunum 10 í grunni, 3.073 tilvika sweep þar sem 2.997 ok-tilvik stemma nákvæmlega og 76 undantekningar
 stemma báðum megin, og níu arma tengingunni sem skilur eftir 58 yfirfærða arma;
 [alg-layered-loops.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-loops.md)).
 Samsett graf keyra líka (verkefni 7h: `compound`-pakkinn, `HierarchicalNodeResizingProcessor` og síðasti armurinn,
@@ -86,7 +86,7 @@ sannað með 540 véfréttarröðum (`full` 355, `models` 73 með stoppum á öl
 ok-tilvik stemma nákvæmlega og 5 undantekningar stemma báðum megin;
 [alg-layered-compound.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-compound.md)).
 Lagskipta algrímið keyrir nú alla stigveldishami: 59 enum-armar eru yfirfærðir, enginn bíður og stigskipti
-listinn er tómur. Aðeins þrjú `elk.stress`-tilvik issue #58 bíða (verkefni 8b). Ekkert annað
+listinn er tómur. Þrjú `elk.stress`-tilvik issue #58 biðu eftir verkefni 8b og keyra síðan úrskurði þess var framfylgt (verkefni layered-stress-cases). Ekkert annað
 uppröðunaralgrím keyrir enn (mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex).
 Frá og með verkefni 8a keyra mrtree, radial og vertiflex einnig (sannað með 1.181 véfréttarröð í fjórum
 ref-skrám heilla uppröðunar og stoppa, 2.656 raða einingarvigur-ref, 40 `trees` golden-viðmiðum,

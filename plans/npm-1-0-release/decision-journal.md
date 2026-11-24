@@ -51,3 +51,12 @@ GitHub links the English sections contain and no bare relative `.md` link; every
 every page (Estonian writes four-digit numbers unseparated); prettier clean; `test/docs` 782 passed; `docs:i18n-status`
 reports no stale or missing page; `docs:build` ok. Repo-only docs link to `github.com/.../blob/main/docs/architecture/`,
 as `rewriteIncludedHref` does on the English page.
+
+## 2026-11-24 — carry #171's overview edit into the architecture translations
+
+#171 (merged while this refresh was open) changed one line of `docs/architecture/overview.md`: mission 7g's oracle rows
+1,627 → 1,642 (`sites` 64 → 79), and issue #58's three `elk.stress` cases "wait (mission 8b)" → "waited for mission 8b
+and run since its ruling was carried out (mission layered-stress-cases)". Both facts updated in all 23
+`docs-site/<locale>/guide/architecture.md` pages (number separators kept per locale). The edit keeps the overview at 135
+lines, so the include ranges stay valid. New `sourceHash`
+`bd9497d352debbb8c889e45fc334c90f3e318451e38381e96d0a09fdce150fe5` (merged overview + component map).

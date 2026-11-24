@@ -1,6 +1,6 @@
 ---
 title: Architektúra
-sourceHash: b28f7adf145c6e3ab8efc737a9e5e9bb883714a2c79e0811ade88704241f3c21
+sourceHash: bd9497d352debbb8c889e45fc334c90f3e318451e38381e96d0a09fdce150fe5
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -78,7 +78,7 @@ egyezik;
 [alg-layered-labels.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-labels.md)).
 Az önhurkok, a gráf wrappingje és a tömörítés is futnak (7g küldetés: a loops csomag, a négy önhurok-processzor, a
 töréspont- és az egyéleres wrapperek, a `HorizontalGraphCompactor`, a layered `compaction` csomag és a
-`ComponentsCompactor`, 1 627 orákulumsorral (`full` 731, `models` 307, `scenarios` 525, `sites` 64), a 10 alap
+`ComponentsCompactor`, 1 642 orákulumsorral (`full` 731, `models` 307, `scenarios` 525, `sites` 79), a 10 alap
 JUnit-csomaggal, egy 3 073 esetes sweeppel, amelynek 2 997 ok esete pontosan egyezik és 76 kivétele mindkét oldalon
 egyezik, valamint a kilencágú bekötéssel bizonyítva, amely 58 ágat hagy portolva;
 [alg-layered-loops.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-loops.md)).
@@ -88,7 +88,7 @@ goldennel, a kilenc issue-csomaggal és három graph.json-metódussal, egy 1 169
 1 164 ok esete pontosan egyezik és 5 kivétele mindkét oldalon egyezik;
 [alg-layered-compound.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-compound.md)).
 A layered algoritmus most már minden hierarchiakezelési módot futtat: 59 enumág portolva van, egy sem függőben, és a
-fokozatos lista üres. Csak a #58-as issue három `elk.stress` esete vár (8b küldetés). Más elrendezési algoritmus még
+fokozatos lista üres. A #58-as issue három `elk.stress` esete a 8b küldetésre várt, és a döntése végrehajtása óta fut (layered-stress-cases küldetés). Más elrendezési algoritmus még
 nem fut (mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex). A 8a küldetés óta az mrtree, a
 radial és a vertiflex is fut (1 181 orákulumsorral négy, teljes elrendezéseket és megállásokat tartalmazó
 referenciában, egy 2 656 soros egységvektor-referenciával, 40 `trees` goldennel, a `MrTreeGraphSizeTest` és a

@@ -1,6 +1,6 @@
 ---
 title: Mimari
-sourceHash: b28f7adf145c6e3ab8efc737a9e5e9bb883714a2c79e0811ade88704241f3c21
+sourceHash: bd9497d352debbb8c889e45fc334c90f3e318451e38381e96d0a09fdce150fe5
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -72,7 +72,7 @@ bir tarama ile kanıtlandı;
 [alg-layered-labels.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-labels.md)).
 Kendi kendine döngüler, grafik sarma ve sıkıştırma da çalışır (görev 7g: loops paketi, dört kendi kendine döngü
 işlemcisi, kırılma noktası ve tek kenar sarmalayıcıları, `HorizontalGraphCompactor`, layered `compaction` paketi ve
-`ComponentsCompactor`; 1.627 oracle satırı (`full` 731, `models` 307, `scenarios` 525, `sites` 64), 10 temel JUnit
+`ComponentsCompactor`; 1.642 oracle satırı (`full` 731, `models` 307, `scenarios` 525, `sites` 79), 10 temel JUnit
 takımı, 2.997 ok vakasının tam eşleştiği ve 76 throw'un iki tarafta da eşleştiği 3.073 vakalık bir tarama ve 58 kolu
 taşınmış bırakan dokuz kollu bağlantı ile kanıtlandı;
 [alg-layered-loops.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-loops.md)).
@@ -82,7 +82,7 @@ takımı ve üç graph.json metodu, 1.164 ok vakasının tam eşleştiği ve 5 t
 bir tarama ile kanıtlandı;
 [alg-layered-compound.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-compound.md)).
 Layered algoritması artık her hiyerarşi işleme kipini çalıştırır: 59 enum kolu taşınmıştır, hiçbiri beklemede değildir
-ve aşamalı liste boştur. Yalnızca #58 numaralı issue'nun üç `elk.stress` vakası bekler (görev 8b). Henüz başka hiçbir
+ve aşamalı liste boştur. #58 numaralı issue'nun üç `elk.stress` vakası görev 8b'yi bekledi ve kararı uygulandığından beri çalışır (görev layered-stress-cases). Henüz başka hiçbir
 yerleşim algoritması çalışmaz (mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex). Görev
 8a'dan beri mrtree, radial ve vertiflex de çalışır (tam yerleşimler ve duraklardan oluşan dört referans dosyasında
 1.181 oracle satırı, 2.656 satırlık bir birim vektör referansı, 40 `trees` golden'ı, 6/6 ve 2/2 ile `MrTreeGraphSizeTest`

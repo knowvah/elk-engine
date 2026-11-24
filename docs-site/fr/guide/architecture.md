@@ -1,6 +1,6 @@
 ---
 title: Architecture
-sourceHash: b28f7adf145c6e3ab8efc737a9e5e9bb883714a2c79e0811ade88704241f3c21
+sourceHash: bd9497d352debbb8c889e45fc334c90f3e318451e38381e96d0a09fdce150fe5
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -78,8 +78,8 @@ exactement ;
 [alg-layered-labels.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-labels.md)).
 Les boucles propres, le wrapping du graphe et le compactage s’exécutent aussi (mission 7g : le paquet loops, les
 quatre processeurs de boucles propres, les wrappers à points de rupture et à arête unique, `HorizontalGraphCompactor`,
-le paquet layered `compaction` et `ComponentsCompactor`, prouvés par 1 627 lignes d’oracle (`full` 731, `models` 307,
-`scenarios` 525, `sites` 64), les 10 suites JUnit de référence, un balayage de 3 073 cas dont les 2 997 cas ok
+le paquet layered `compaction` et `ComponentsCompactor`, prouvés par 1 642 lignes d’oracle (`full` 731, `models` 307,
+`scenarios` 525, `sites` 79), les 10 suites JUnit de référence, un balayage de 3 073 cas dont les 2 997 cas ok
 concordent exactement et dont les 76 exceptions concordent des deux côtés, et le câblage à neuf branches qui laisse 58
 branches portées ;
 [alg-layered-loops.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-loops.md)).
@@ -89,8 +89,7 @@ dernière branche, prouvés par 540 lignes d’oracle (`full` 355, `models` 73 a
 les 1 164 cas ok concordent exactement et dont les 5 exceptions concordent des deux côtés ;
 [alg-layered-compound.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-compound.md)).
 L’algorithme layered exécute désormais tous les modes de gestion de la hiérarchie : 59 branches d’enum sont portées,
-aucune n’est en attente et la liste d’étapes est vide. Seuls les trois cas `elk.stress` de l’issue #58 attendent
-(mission 8b). Aucun autre algorithme de layout ne s’exécute encore (mrtree, radial, force, disco, rectpacking, spore,
+aucune n’est en attente et la liste d’étapes est vide. Les trois cas `elk.stress` de l’issue #58 attendaient la mission 8b et s’exécutent depuis que sa décision a été appliquée (mission layered-stress-cases). Aucun autre algorithme de layout ne s’exécute encore (mrtree, radial, force, disco, rectpacking, spore,
 topdownpacking, vertiflex). Depuis la mission 8a, mrtree, radial et vertiflex s’exécutent aussi (prouvés par 1 181
 lignes d’oracle dans quatre références de layouts complets et d’arrêts, une référence de vecteurs unitaires de 2 656
 lignes, 40 goldens `trees`, `MrTreeGraphSizeTest` et `CenterOnRootTest` à 6/6 et 2/2, et un balayage de 906 cas par

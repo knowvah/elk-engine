@@ -1,6 +1,6 @@
 ---
 title: Arkkitehtuuri
-sourceHash: b28f7adf145c6e3ab8efc737a9e5e9bb883714a2c79e0811ade88704241f3c21
+sourceHash: bd9497d352debbb8c889e45fc334c90f3e318451e38381e96d0a09fdce150fe5
 ---
 
 <!-- SPDX-License-Identifier: EPL-2.0 -->
@@ -77,7 +77,7 @@ tapauksen sweepillä, jonka 935 ok-tapausta täsmäävät tarkasti;
 [alg-layered-labels.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-labels.md)).
 Omasilmukat, graafin wrapping ja tiivistys toimivat myös (tehtävä 7g: loops-paketti, neljä omasilmukkaprosessoria,
 katkaisupiste- ja yksisärmäwrapperit, `HorizontalGraphCompactor`, kerroksellinen `compaction`-paketti ja
-`ComponentsCompactor`, todistettu 1 627 oraakkelin rivillä (`full` 731, `models` 307, `scenarios` 525, `sites` 64),
+`ComponentsCompactor`, todistettu 1 642 oraakkelin rivillä (`full` 731, `models` 307, `scenarios` 525, `sites` 79),
 10 perustason JUnit-sarjalla, 3 073 tapauksen sweepillä, jonka 2 997 ok-tapausta täsmäävät tarkasti ja 76 heittoa
 täsmäävät kummallakin puolella, sekä yhdeksän haaran kytkennällä, joka jättää 58 haaraa porttatuiksi;
 [alg-layered-loops.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-loops.md)).
@@ -87,7 +87,7 @@ haara, todistettu 540 oraakkelin rivillä (`full` 355, `models` 73 koko puun pys
 sweepillä, jonka 1 164 ok-tapausta täsmäävät tarkasti ja 5 heittoa täsmäävät kummallakin puolella;
 [alg-layered-compound.md](https://github.com/knowvah/elk-engine/blob/main/docs/architecture/alg-layered-compound.md)).
 Kerroksellinen algoritmi ajaa nyt kaikki hierarkiankäsittelytilat: 59 enum-haaraa on porttattu, yhtään ei ole
-odottamassa, ja vaiheistettu lista on tyhjä. Vain issuen #58 kolme `elk.stress`-tapausta odottaa (tehtävä 8b).
+odottamassa, ja vaiheistettu lista on tyhjä. Issuen #58 kolme `elk.stress`-tapausta odottivat tehtävää 8b, ja ne ajetaan siitä lähtien, kun sen ratkaisu pantiin toimeen (tehtävä layered-stress-cases).
 Mitään muuta asettelualgoritmia ei vielä ajeta (mrtree, radial, force, disco, rectpacking, spore, topdownpacking,
 vertiflex). Tehtävästä 8a lähtien myös mrtree, radial ja vertiflex toimivat (todistettu 1 181 oraakkelin rivillä
 neljässä kokonaisten asettelujen ja pysäytysten viitteessä, 2 656 rivin yksikkövektoriviitteellä, 40 `trees`-
