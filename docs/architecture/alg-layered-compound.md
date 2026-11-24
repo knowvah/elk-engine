@@ -23,7 +23,7 @@ mission's diagrams are [data-flow](../../plans/layered-compound/diagrams/data-fl
 | [1. Package map](#part-i-package-map)                     | What 7h ported, where it lives, the facade and sections split, the last arm           |
 | [2. The hierarchical driver](#part-i-driver)              | `doCompoundLayout`, `hierarchicalLayout`, the hierarchy-aware processors, the resizer |
 | [3. The recorder and its rows](#part-i-rows)              | The four groups, the tree dump, the stops, the `sites` rows                           |
-| [4. Goldens and the breadth sweep](#part-i-goldens)       | The 24 layered goldens, the flag evidence, the sweep                                  |
+| [4. Goldens and the breadth sweep](#part-i-goldens)       | The 27 layered goldens, the flag evidence, the sweep                                  |
 | [5. Hashed containers and their twins](#part-i-twins)     | The six sites, the one observable order, container sizes, the treeification caution   |
 | [6. Replay helpers and test files](#part-i-replay)        | Helpers, the files that replay the rows, the anchored cases                           |
 | [7. The ported suites](#part-i-suites)                    | The nine issue suites, the graph.json methods, H13                                    |
@@ -126,19 +126,21 @@ reaches are in § 9.
 
 One recorder, `tools/vectors/LayeredCompoundVectors.java` (a JDK 21 single-file launcher, 3,668 lines at T14, limit 5,000;
 core copied from 7g's `LayeredLoopsVectors.java`, origin cited in its header; run by `tools/vectors/layered-compound-vectors.sh`
-under `-XX:hashCode=2`), writes one ref, `test/golden/refs/java/layered-compound.json` (12,237,513 bytes, limit 16 MiB), with
-four groups; the counts equal the header's `rowCounts`, 540 rows in all:
+under `-XX:hashCode=2`), writes one ref, `test/golden/refs/java/layered-compound.json` (12,575,221 bytes, limit 16 MiB), with
+four groups; the counts equal the header's `rowCounts`, 557 rows in all:
 
 | Group       | Rows | What                                                                                                                                                                            |
 | ----------- | ---: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `full`      |  355 | whole layouts through `RecursiveGraphLayoutEngine`: issues 17, include-children 253, ptolemy-include 48, hierarchy-aware 16, resizer 21                                         |
 | `models`    |   73 | stops on the whole `LGraph` tree: `edge_label_placement-hierarchy01` 30, `ticket-455_longHierarchicalEdges` 27, `ptolemy-clockdrifthierarchy` 6, `ticket-160` 5, `ticket-552` 5 |
 | `scenarios` |   88 | hand-built hierarchical graphs: `CompoundGraphPreprocessor` 48, `CompoundGraphPostprocessor` 28, `ElkLayered` 12                                                                |
-| `sites`     |   24 | one row per arm scenario an oracle graph reaches: 19 run rows (one of them logged) and 5 throw rows                                                                             |
+| `sites`     |   41 | one row per arm scenario an oracle graph reaches: 19 run rows (one of them logged) and 5 throw rows; and the 17 evidence rows of issue #60: 16 run rows and one worked row      |
 
 No refusal category remains: every plan member of every level is in the allowed set, and a member outside it exits the
 recorder naming the row. A model whose hierarchy names an algorithm the recorder classpath does not register (`elk.stress`,
 H13, issue #58) is out of scope: counted on stderr (20 `INCLUDE_CHILDREN` inputs vendored, 3 out of scope), never recorded.
+Two of those three are vendored under `compound/` since issue #58's ruling, for the runner suites only (§ 7): the recorder's
+`MODEL_TABLE` does not list them and it walks no vendored directory, so they stay out of scope here.
 Rows where the oracle throws inside ELK are not recorded in `full`, `models` or `scenarios` (8 at T1, the candidates for
 `sites`).
 
@@ -182,6 +184,31 @@ inspection was chosen over a spy because V8 records where the error was raised, 
 from a callee. `FIXED_POS` on the same graph as `FIXED_RATIO` does not throw on the oracle and is an ordinary run row,
 `hierarchicalPortFIXED_POS`.
 
+**The evidence rows (issue #60).** 7h's mutation run left survivors that a row reaches but no recorded field observes. Each
+has an oracle graph now, in a separate array `EVIDENCE_ROWS` that `siteSpecs` reads last, so every earlier row is
+byte-identical and in its order. The rows were chosen with one-token mutants of the port (rebuilt in
+`plans/compound-mutant-rows/items.md`); each row kills its mutants in `LayeredCompoundSites.test.ts` and
+`LayeredCompoundVectors.test.ts`.
+
+| Rows (`sites/…`)                                                                                          | What the row makes visible                                                                                                                                                                   |
+| --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CompoundGraphPreprocessor/mergeInDeep`                                                                   | a reused external input port is not added to the created ports again (`CompoundGraphPreprocessor.java:433`)                                                                                  |
+| `…/mergeOffOut`                                                                                           | `mergeHierarchyEdges=false` gives one external port per edge (`:750`)                                                                                                                        |
+| `…/outThenParent`, `parentThenOut`, `inThenParent`, `parentThenIn`                                        | an edge that ends at the parent's own port gets a port of its own although an exported one exists (`:750`)                                                                                   |
+| `…/mergedThickness`                                                                                       | a merged dummy edge takes the larger `edge.thickness` (`:792-794`): the edge is long, and its long-edge dummy is as high as the edge is thick                                                |
+| `…/flowInside`, `flowPlain`, `flowYoInactive`, `flowInsideRev`, `flowPlainRev`                            | the vote of a self loop in `calculateNetFlow` (`:829`): the side of a free port's dummy follows the sign of the net flow                                                                     |
+| `HierarchicalNodeResizingProcessor/nonSquarePort`                                                         | `graphLayoutToNode` passes the port's width and height in that order (`HierarchicalNodeResizingProcessor.java:86`)                                                                           |
+| `HierarchicalNodeResizingProcessor/resizerTopLevelChild`, `resizerTopLevelWidth`, `resizerTopLevelHeight` | the shift of EAST and SOUTH external port dummies after a resize (`:203-220`), which only a compound graph without a parent `LNode` keeps: EAST `(288, 18)`, SOUTH `(98, 238)` on the oracle |
+| `ElkLayered/recursiveWork`                                                                                | the total work `ElkLayered.hierarchicalLayout` announces (`ElkLayered.java:225-235`): 43 on this graph                                                                                       |
+
+The three `resizerTopLevel*` rows are the only rows whose engine root is not the compound graph: the root is a flat layered
+graph with `crossingMinimization.strategy=NONE` and `greedySwitch.type=OFF`, so it runs no hierarchy-aware processor and the
+run's last stop is the compound node's postprocessor. The one **worked** row runs under a `WorkRecorder`, a
+`BasicProgressMonitor` whose `doBegin` keeps the task name and the total work and whose `doSubTask` returns a monitor of the
+same kind; `expected.work` lists `{ task, work }` for every monitor of the tree that began, depth first, and the replay
+compares it exactly (`replayWorkedSite`, `test/helpers/layered-compound-replay-sites.ts`). The `models` form the issue
+names for the thickness and resizer rows is withheld: a test pins the `models` group to ten preprocessor stops (issue #165).
+
 **Inputs.** 23 `.elkt` (the 20 `INCLUDE_CHILDREN` inputs plus `455_shortHierarchicalEdges` and the two
 `734_nodeEdgeSpacingFlat*`, needed by suites only) and 8 ptolemy hierarchical `.json` are vendored under
 `test/golden/inputs/compound/` (31 manifest rows), outside `inputs/realworld/`.
@@ -189,14 +216,23 @@ from a callee. `FIXED_POS` on the same graph as `FIXED_RATIO` does not throw on 
 ## 4. Goldens and the breadth sweep (H4, H5) {#part-i-goldens}
 
 **The layered goldens.** `tools/oracle/regen-goldens.sh --set layered` adds a set the way `--set algorithms` does: manifest
-`test/golden/layered.json` (24 entries), refs `test/golden/refs/elk-layered/` with `_meta.json`, inputs from
+`test/golden/layered.json` (27 entries: 24 of this mission and three added by issue #68, below), refs
+`test/golden/refs/elk-layered/` with `_meta.json`, inputs from
 `test/golden/inputs/pipeline`. The four models (`ptolemy-scrambler`, `ptolemy-afdx-multicast`, `ptolemy-clockdrift-hierarchy`,
 `ptolemy-crossbar-switch`) are crossed with the variants `direction-right`, `direction-left`, `direction-down`,
 `direction-up`, `hierarchy-include` and `hierarchy-separate`: 24 refs. The default (`INHERIT`) golden of each model is already
 in `refs/elk`. `JAVA_TOOL_OPTIONS` gets `-XX:+UnlockExperimentalVMOptions -XX:hashCode=2` for this set only, and the flag is
 named as `jvmFlags` in this set's `_meta.json` only. A second run is byte-identical; `refs/elk` (4) and `refs/elk-algorithms`
-(9) regenerate unchanged. `test/golden/layered-hierarchy-goldens.test.ts` (27 tests) checks the manifest (4 models × 6
-variants once each, `jvmFlags`, `elkCommit`) and compares each ref at AD-4.
+(9) regenerate unchanged. `test/golden/layered-hierarchy-goldens.test.ts` (31 tests) checks the manifest (4 models × 6
+variants once each, the three generated entries, `jvmFlags`, `elkCommit`) and compares each of the 27 refs at AD-4.
+
+**The three generated tree inputs (issue #68).** `generated-{mrtree,radial,vertiflex}-tree-small--default` are the layouts of
+`test/corpus/generated/<alg>-tree-small.json` under variant `default` with no `retarget`: the inputs set no algorithm, so the
+oracle resolves the default, layered. Mission 8a recorded them in the trees set as `<alg>-generated`; the refs moved here
+byte-identical, and both sets regenerate unchanged. Their manifest paths begin `generated/`: `regen-goldens.sh` reads such a
+path from `test/corpus/` (the files are not in elk-models) and first checks it against the vendored copy under
+`test/golden/inputs/pipeline/generated/`, which the runner reads. The trees set keeps `<alg>-generated-retarget`, the same
+inputs retargeted to each tree algorithm.
 
 **The no-flag evidence (T3).** The 24 cases run without `-XX:hashCode` are byte-equal to the committed refs on all 24 ids.
 Identity-hash order does not reach these exports, so the flagged refs stand. This is evidence about these four models, not
@@ -249,7 +285,8 @@ numbers edges by first meeting, so the two edges swap paths and every later diff
 export: the exported layout of the Java-order and the reversed run is string-identical on every such row, which a test
 asserts. Seven rows of the 516 differ reversed (`models/edge_label_placement-hierarchy01/14--…/default` and `14-n0-…/DOWN`,
 `models/ptolemy-clockdrifthierarchy/5-G1-…/default`, `scenarios/CompoundGraphPostprocessor/junctions-{out,in}/{RIGHT,DOWN}`),
-and six `sites` run rows added by T14 join them (13 ids in all). The test asserts that the Java order matches the oracle on
+and six `sites` run rows added by T14 join them (13 ids in all); nine of the evidence rows of issue #60 join them as well (22 ids,
+under the ruling on #156). The test asserts that the Java order matches the oracle on
 each and the reversed order does not. Insertion order is the oracle's order (G3a).
 
 **Preprocessor `keySet()` (`:252`).** Removals commute (`:301-302`). The only order-dependent write is the label append onto
@@ -280,7 +317,7 @@ that makes a container above 10 observable is stop 17.
 | `src/alg/layered/LayeredCompoundVectors.test.ts` | every row of the four groups through the real provider and enum, no injection (542 tests, 5.3 s alone at batch 7)                                                                                                        |
 | `src/alg/layered/LayeredCompoundSites.test.ts`   | the 24 `sites` rows under their scenario titles and the table checks (27 tests)                                                                                                                                          |
 | `src/alg/layered/LayeredCompoundTwins.test.ts`   | the H3 reversal twins and the reach counts (14 s alone)                                                                                                                                                                  |
-| `test/golden/layered-hierarchy-goldens.test.ts`  | the 24 layered goldens                                                                                                                                                                                                   |
+| `test/golden/layered-hierarchy-goldens.test.ts`  | the 27 layered goldens                                                                                                                                                                                                   |
 | `test/corpus/compound-sweep.test.ts`             | the breadth sweep at stride 1                                                                                                                                                                                            |
 | class tests (T4-T8)                              | `compound/*.test.ts`, `HierarchicalNodeResizingProcessor.test.ts`: each class proven by its own stops and by Java-structure cases                                                                                        |
 | anchored tests (T15)                             | `compound/{CompoundGraphPreprocessorAnchored,CompoundGraphPostprocessorAnchored,CrossHierarchyEdgeAnchored}`, `intermediate/HierarchicalNodeResizingProcessorAnchored`, `ElkLayeredHierarchyAnchored` (each `*.test.ts`) |
@@ -308,14 +345,23 @@ runs in the file); their "Deferred" header lines are "Ported" lines. All 97 `alg
 (96 `<Name>.test.ts`, and `intermediate/loops/SelfLoopTestGraphCreator.java`, which has no `@Test`, as
 `test/helpers/SelfLoopTestGraphCreator.ts`).
 
-**H13, three cases wait (issue #58).** `tickets/layered/665_includeChildrenDoesntStop.elkt:21` and
-`examples/hierarchy/hierarchicalLayoutMixing.elkt:49` lay out a child with `elk.stress`, which is roadmap row 8b and
-unported, and the recorders register no stress provider. That affects `Issue665Test` (its 1 case) and `Issue700Test` (2 of
-4). The suites are ported whole; one named filter, `STRESS_PENDING` in `test/helpers/stress-pending.ts` (citing issue #58),
-holds exactly these two inputs (three cases: 665's 1 and 700's 2) and a test asserts it. `Issue665Test` has 0 cases left and emits one `it.skip` with the reason,
-so the file reports 1 skipped and does not fail; `Issue700Test` keeps 2 of 4. The oracle counts are unchanged. A third
-`elk.stress` input, `tickets/layered/588_hierarchicalLayoutNPE.elkt`, is read by no 7h suite and is never vendored or
-recorded. When `elk.stress` lands (8b), deleting `stress-pending.ts` and its uses restores the 1 + 2 cases.
+**H13, resolved (issue #58).** `tickets/layered/665_includeChildrenDoesntStop.elkt:21` and
+`examples/hierarchy/hierarchicalLayoutMixing.elkt:49` lay out a child with `elk.stress`. That affects `Issue665Test` (its 1
+case) and `Issue700Test` (2 of 4). 7h ported both suites whole and held these three cases back behind one named filter,
+`STRESS_PENDING`, because stress was roadmap row 8b and unported. Stress is ported now, and mission layered-stress-cases
+carried out the maintainer's ruling on issue #58:
+
+- `test/helpers/stress-pending.ts` and its pin test are deleted; both suites list their sources inline.
+- The layout-test runner registers `elk.force` and `elk.stress` next to layered (`registerTestAlgorithms` in
+  `test/helpers/layout-test-runner.ts`), as `PlainJavaInitialization` does for every runner suite. Each provider is
+  registered once, guarded by a probe (issue #120).
+- The two models are vendored under `test/golden/inputs/compound/` with manifest rows, and `layered-label-metrics.json`
+  holds the four label texts they need.
+
+Both suites run every case with the Java's assertions, 1 and 4, as the oracle does (`runs=1 failures=0`, `runs=4
+failures=0`), and the port's layout of each model is byte-equal to the oracle's JSON export. The recorders still register no
+stress provider, so the two models are suite inputs only. A third `elk.stress` input,
+`tickets/layered/588_hierarchicalLayoutNPE.elkt`, is read by no suite and is never vendored or recorded.
 
 The Java statements that assign never-read locals stay as bare calls (`Issue701Test`: the lookups throw on a missing node or
 port). 16 unknown label texts were appended to `tools/vectors/layered-label-metrics-texts.txt` and `layered-label-metrics.json`
@@ -325,7 +371,7 @@ was re-recorded by its script (16 added keys, nothing else changed).
 
 | Layer                      | What                                                                                                                                                                                                                                                                    |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rows (T1, T9, T14)         | `layered-compound.json`: `full` 355, `models` 73, `scenarios` 88, `sites` 24; `LayeredCompoundVectors.test.ts` (542 tests) replays every row through the real driver at the AD-4 bar with 0 mismatches                                                                  |
+| Rows (T1, T9, T14, #60)    | `layered-compound.json`: `full` 355, `models` 73, `scenarios` 88, `sites` 41; `LayeredCompoundVectors.test.ts` (559 tests) replays every row through the real driver at the AD-4 bar with 0 mismatches                                                                  |
 | Goldens (T3, T10)          | 24 layered refs, byte-stable, equal to the TS layout at AD-4 (27 tests); no-flag run byte-equal on all 24                                                                                                                                                               |
 | Breadth sweep (T13)        | 1,169 oracle cases, 1,164 ok, 5 throws, 0 timeouts, 0 refusals; TS at stride 1: 1,164 hash-equal, 5 throws equal, 0 mismatches                                                                                                                                          |
 | Twins (T6, T7, T9)         | § 5: five sites order-independent on every row that reaches them, one (`:89`) observable in the intermediate tree only                                                                                                                                                  |
@@ -350,10 +396,14 @@ resizer stop differs (EAST (288,18) against (132,18)), the export does not. The 
 ## 9. Unreached, unobserved, copied oddities {#part-i-gaps}
 
 **Unreached.** `plans/layered-compound/unreached.md` partitions the untaken items of the 7h classes, the driver files and the
-C3 files (S, J, U, open, E; the classes are defined at its head). The 25 handed-over arms that are neither reached nor proven
-dead are issue #59 (`needs-ruling`): six arms of `NorthToSouthRoutingStrategy`/`SouthToNorthRoutingStrategy` (`:38 if[0]`,
-`:58 if[1]`, `:78 if[0]`; H8 (3)) and 19 arms of 7c's list (H8 (4)). They stay as they are. `CrossHierarchyEdge.toString`, the
-26th open item, is closed: the logged site row calls it 216 times and the text equals the oracle's.
+C3 files (S, J, U, open, E; the classes are defined at its head). At the end of 7h, 25 handed-over arms were neither reached
+nor proven dead (issue #59): six arms of `NorthToSouthRoutingStrategy`/`SouthToNorthRoutingStrategy` (`:38 if[0]`,
+`:58 if[1]`, `:78 if[0]`; H8 (3)) and 19 arms of 7c's list (H8 (4)). Mission layered-arm-search settled them
+(`unreached.md` § "Search outcomes"): 8 are reached through layout (the six routing arms among them), 9 by a site scenario
+only, 8 are proven dead, none stays open. The inputs are under `tools/arm-search/`; their ten oracle rows are recorded but
+withheld until issue #156 is ruled, because three tests pin lists of row ids ([conformance.md](../conformance.md#alg-layered-compound)).
+The arms stay ported verbatim. `CrossHierarchyEdge.toString`, the 26th open item, is closed: the logged site row calls it
+216 times and the text equals the oracle's.
 
 **Oracle throws the port reproduces (issue #61).** The port throws where the oracle throws, in the same method:
 (U1) `edgeRouting=SPLINES` in direction `DOWN` or `UP` under `INCLUDE_CHILDREN` throws `NullPointerException` at
@@ -371,7 +421,7 @@ The drafts are issue #61; nothing is filed upstream. The oracle's throw for `chi
 
 ```bash
 bash tools/vectors/layered-compound-vectors.sh test/golden/refs/java       # the ref; byte-stable, cached by salted input hash
-tools/oracle/regen-goldens.sh --set layered                                # the 24 refs, JAVA_TOOL_OPTIONS with -XX:hashCode=2
+tools/oracle/regen-goldens.sh --set layered                                # the 27 refs, JAVA_TOOL_OPTIONS with -XX:hashCode=2
 bash tools/oracle/compound-sweep.sh --force                                # test/corpus/.compound-sweep/ (gitignored)
 npx vitest run test/corpus/compound-sweep.test.ts                          # stride 1 (the default gate skips it)
 tools/oracle/compound-sweep.sh --dump <case id> <outDir>                   # the canonical form one case's hash is taken over
@@ -398,13 +448,13 @@ carries `org.eclipse.elk.graph.json.test` (issue #97). Check `uptime` before a J
 | A hash-order difference on a new row             | a mismatch the flagged oracle does not reproduce, or a container above 10 entries           | never silent: add a reversal twin, measure, take a decision (stop 17); the sites are in § 5                                                         |
 | A logged row prints `LinkedHashMultimap@…`       | a `crossHierarchyMap` line with an object hash                                              | the multimap `toString` of `src/guava/Multimap.ts` (T14 `fix`) is missing                                                                           |
 | A refusal                                        | the recorder or the sweep exits 1 naming the row                                            | a later mission's processor reached the plan; it belongs to that mission                                                                            |
-| An `elk.stress` input appears                    | a recorder audit line `out of scope (algorithm)`, or a suite model outside `STRESS_PENDING` | out of scope until 8b (issue #58): never vendor it, never a row                                                                                     |
+| An `elk.stress` input appears                    | a recorder audit line `out of scope (algorithm)`, or a runner suite that reads such a model | recorders: never a row. A runner suite: vendor it under `compound/` with a manifest row and its label texts in the metrics table (issue #58)        |
 | A site row passes but a mutation survives        | `unreached.md`, issue #60                                                                   | the row reaches the arm without observing it; a discriminating oracle graph is needed                                                               |
 | A cap exceeded                                   | the recorder's size or line check                                                           | 16 MiB per ref, 5,000 lines per launcher: a decision                                                                                                |
 
 ## What still throws
 
 Nothing in the layered hierarchy modes: every arm is ported (59 ported, 0 pending), `test/architecture/staged-classes.json` is
-`[]`, and no `// @staged` marker remains. The three `elk.stress` cases of issue #58 wait for 8b, and the layouts that need
-another algorithm bundle (mrtree, radial, force, disco, rectpacking, spore, topdownpacking, vertiflex) still fail to resolve
-it.
+`[]`, and no `// @staged` marker remains. The three `elk.stress` cases of issue #58 run since its ruling was carried out
+(mission layered-stress-cases), and the layouts that need another algorithm bundle (mrtree, radial, force, disco,
+rectpacking, spore, topdownpacking, vertiflex) still fail to resolve it.

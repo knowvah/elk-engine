@@ -3,6 +3,7 @@ import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import * as Iterables from '../../../guava/Iterables.js';
 import * as Int32 from '../../../java/lang/Int32.js';
+import { checkStackDepth } from '../../../java/lang/StackDepth.js';
 import type { TGraph } from '../graph/TGraph.js';
 import type { TNode } from '../graph/TNode.js';
 import { InternalProperties } from '../options/InternalProperties.js';
@@ -53,14 +54,21 @@ export class NeighborsProcessor implements ILayoutProcessor<TGraph> {
    * Set the neighbors of each node in the current level and for their children. A neighbor is the current node's
    * nearest node, at the same level. A sibling is a neighbor with the same parent.
    *
+   * The recursive call of NeighborsProcessor.java:123 is the last statement of the activation (a tail call), so it is
+   * the next iteration of a loop over the levels. AC6 (#67): explicit stack, same visit, side-effect and accumulation
+   * order. Each iteration stands for one Java activation, which still holds a frame in Java: they are counted for the
+   * depth check.
+   *
    * @param currentLevel the list of TNode at the same level, for which the neighbors and siblings should be determined
    * @param progressMonitor the current progress monitor
    */
   private setNeighbors(currentLevel: Iterable<TNode>, progressMonitor: IElkProgressMonitor): void {
+    let level = currentLevel;
+    let depth = 1;
     /** only do something in filled levels */
-    if (!Iterables.isEmpty(currentLevel)) {
+    while (!Iterables.isEmpty(level)) {
       /** create subtask for recursive descent */
-      const sT = progressMonitor.subTask(Int32.div(Iterables.size(currentLevel), this.numberOfNodes))!;
+      const sT = progressMonitor.subTask(Int32.div(Iterables.size(level), this.numberOfNodes))!;
 
       sT.begin('Set neighbors in level', 1);
 
@@ -70,7 +78,7 @@ export class NeighborsProcessor implements ILayoutProcessor<TGraph> {
       let lN: TNode | null = null;
 
       /** the left neighbor is the previous processed node the right neighbor of the left neighbor is the current node */
-      for (const cN of currentLevel) {
+      for (const cN of level) {
         /** append the children of the current node to the next level */
         nextLevel = Iterables.concat(nextLevel, cN.getChildren());
         if (lN !== null) {
@@ -89,7 +97,9 @@ export class NeighborsProcessor implements ILayoutProcessor<TGraph> {
       sT.done();
 
       /** determine neighbors by bfs and for the whole graph */
-      this.setNeighbors(nextLevel, progressMonitor);
+      level = nextLevel;
+      // Java's StackOverflowError of an endless recursion, raised from this class
+      checkStackDepth(++depth);
     }
   }
 }

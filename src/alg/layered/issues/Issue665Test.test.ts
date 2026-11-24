@@ -4,23 +4,25 @@
  * (no `@Algorithm`), one `@GraphResourceProvider` (`tickets/layered/**` filtered by `665.+\.elkt`), one empty `@Test`
  * (1 oracle run).
  *
- * H13: the only model, `tickets/layered/665_includeChildrenDoesntStop.elkt`, lays a child out with `elk.stress`, which has
- * no TypeScript port (issue #58); it is dropped through `STRESS_PENDING`, so the suite has 0 cases here and is reported as
- * skipped, never as failing. The provider and the `@Test` method stay as in the Java.
+ * The only model, `tickets/layered/665_includeChildrenDoesntStop.elkt`, lays a child out with `elk.stress`. Mission 7h
+ * held it back (H13) until stress was ported; the maintainer's ruling on issue #58 removed the hold-back, so the case
+ * runs: the runner registers `elk.stress` as `PlainJavaInitialization` does, and the model is vendored under `compound/`.
  *
  * @see org.eclipse.elk.alg.layered.test/src/org/eclipse/elk/alg/layered/issues/Issue665Test.java
  */
-import { describe, it } from 'vitest';
-import { defineLayoutTest, type LayoutTestSpec } from '../../../../test/helpers/layout-test-runner.js';
+import { describe, expect, it } from 'vitest';
 import {
-  ISSUE665_GRAPHS,
-  STRESS_PENDING_ISSUE,
-  vendored,
-  withoutStressPending,
-} from '../../../../test/helpers/stress-pending.js';
+  buildLayoutTests,
+  defineLayoutTest,
+  type LayoutTestSpec,
+} from '../../../../test/helpers/layout-test-runner.js';
 import type { ElkNode } from '../../../graph/ElkNode.js';
 
-const GRAPHS = withoutStressPending([...ISSUE665_GRAPHS, ...ISSUE665_GRAPHS.map(vendored)]);
+const GRAPHS = [
+  // vendored under `compound/`; the models repository holds it at the Java path
+  { path: 'compound/tickets/layered/**', filter: /665.+\.elkt/ },
+  { path: 'tickets/layered/**', filter: /665.+\.elkt/ },
+] as const;
 
 function test(_graph: ElkNode): void {
   // We're not actually testing anything here, we're just hoping that Layered doesn't throw an
@@ -34,12 +36,10 @@ const SPEC: LayoutTestSpec = {
   afterLayout: { test },
 };
 
-if (GRAPHS.length === 0) {
-  describe('Issue665Test', () => {
-    it.skip(`has no case left: its only model needs elk.stress (STRESS_PENDING, ${STRESS_PENDING_ISSUE})`, () => {
-      // pending the elk.stress port
-    });
+defineLayoutTest(SPEC);
+
+describe('Issue665Test (non-vacuity)', () => {
+  it('runs 1 case (the oracle runs)', () => {
+    expect(buildLayoutTests(SPEC).length).toBe(1);
   });
-} else {
-  defineLayoutTest(SPEC);
-}
+});

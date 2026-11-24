@@ -31,17 +31,6 @@ const REF_EXTENSION = '.json';
 const ELK_COMMIT_FILE = path.join(ROOT, 'tools', 'oracle', 'ELK_COMMIT');
 const JVM_FLAGS = '-XX:hashCode=2';
 const RESOLVED_ALGORITHM_OPTION = 'resolvedAlgorithm';
-const LAYERED_RESOLVED = 'Layout Algorithm: org.eclipse.elk.layered';
-
-/**
- * Goldens whose ref was recorded by LAYERED, not by the tree algorithm their entry names (classified, reported to the
- * orchestrator). Mechanism: the entries carry no `retarget`, so `tools/oracle/regen-goldens.sh` `write_cases` sends no
- * `algorithm`, and the corpus-generated inputs (`test/corpus/generated/*-tree-small.json`) set none, so the oracle
- * resolved the default algorithm. Each ref's root `layoutOptions.resolvedAlgorithm` says so. Honest consequence: these
- * three goldens prove the TS layered pipeline on a tree-shaped graph and exercise no mrtree, radial or vertiflex code.
- * The test below fails when a ref is regenerated with `retarget` (the id must then leave this list).
- */
-export const RECORDED_WITH_LAYERED: readonly string[] = ['mrtree-generated', 'radial-generated', 'vertiflex-generated'];
 
 function readJson(file: string): unknown {
   return JSON.parse(readFileSync(file, 'utf8')) as unknown;
@@ -68,7 +57,7 @@ const entries = loadEntries();
 describe('tree goldens (AD-4, TR2)', () => {
   beforeAll(() => {
     // The oracle registers every algorithm; the export names an option by its shortest unique suffix, so `direction`
-    // becomes `elk.direction` once layered's `priority.direction` is registered. The generated goldens run layered (below).
+    // becomes `elk.direction` once layered's `priority.direction` is registered.
     registerLayered();
     LayoutMetaDataService.getInstance().registerLayoutMetaDataProviders(
       new MrTreeMetaDataProvider(),
@@ -99,18 +88,12 @@ describe('tree goldens (AD-4, TR2)', () => {
     expect(meta['elkCommit']).toBe(readFileSync(ELK_COMMIT_FILE, 'utf8').trim());
   });
 
-  it('the refs record the algorithm their entry names, except the classified generated ones', () => {
+  it('the refs record the algorithm their entry names', () => {
     const resolved = (id: string): unknown => {
       const root = readJson(path.join(REFS_DIR, `${id}.json`)) as { layoutOptions?: Record<string, unknown> };
       return root.layoutOptions?.[RESOLVED_ALGORITHM_OPTION];
     };
-    const classified = entries.filter((e) => RECORDED_WITH_LAYERED.includes(e.id));
-    expect(classified.map((e) => e.id)).toEqual(RECORDED_WITH_LAYERED);
-    expect(classified.map((e) => [e.retarget, resolved(e.id)])).toEqual(
-      classified.map(() => [undefined, LAYERED_RESOLVED]),
-    );
-    const others = entries.filter((e) => !RECORDED_WITH_LAYERED.includes(e.id));
-    expect(others.map((e) => resolved(e.id))).toEqual(others.map((e) => `Layout Algorithm: ${e.algorithm}`));
+    expect(entries.map((e) => resolved(e.id))).toEqual(entries.map((e) => `Layout Algorithm: ${e.algorithm}`));
   });
 
   it.each(entries.map((entry) => [entry.id, entry] as const))('%s equals the oracle ref', (id, entry) => {

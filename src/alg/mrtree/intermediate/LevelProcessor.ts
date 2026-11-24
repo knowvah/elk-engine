@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
+import { checkStackDepth } from '../../../java/lang/StackDepth.js';
 import { INTEGER } from '../../../java/util/HashStrategy.js';
 import { JavaHashMap } from '../../../java/util/JavaHashMap.js';
 import { LinkedList } from '../../../java/util/LinkedList.js';
@@ -45,21 +46,32 @@ export class LevelProcessor implements ILayoutProcessor<TGraph> {
   /**
    * Sets the level for all nodes.
    *
+   * The recursive call of LevelProcessor.java:75 is the last statement of the activation (a tail call), so it is the
+   * next iteration of a loop over the levels. AC6 (#67): explicit stack, same visit, side-effect and accumulation
+   * order. Each iteration stands for one Java activation, which still holds a frame in Java: they are counted for the
+   * depth check.
+   *
    * @param currentLevel the level we are currently in
    * @param level the level index
    */
   private setLevel(currentLevel: LinkedList<TNode>, level: number): void {
-    if (!currentLevel.isEmpty()) {
+    let nodes = currentLevel;
+    let index = level;
+    let depth = 1;
+    while (!nodes.isEmpty()) {
       const nextLevel = new LinkedList<TNode>();
 
-      for (const tNode of currentLevel) {
-        this.gloLevelMap.put(tNode.id, level);
+      for (const tNode of nodes) {
+        this.gloLevelMap.put(tNode.id, index);
         for (const tChild of tNode.getChildren()) {
           nextLevel.add(tChild);
         }
       }
 
-      this.setLevel(nextLevel, level + 1);
+      nodes = nextLevel;
+      index = index + 1;
+      // Java's StackOverflowError of an endless recursion, raised from this class
+      checkStackDepth(++depth);
     }
   }
 }

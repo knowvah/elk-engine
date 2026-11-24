@@ -1,0 +1,123 @@
+{
+  "north-south": [
+    {
+      "n": 1,
+      "file": "src/alg/layered/p5edges/orthogonal/direction/NorthToSouthRoutingStrategy.ts",
+      "line": 38,
+      "arm": "if[0]"
+    },
+    {
+      "n": 2,
+      "file": "src/alg/layered/p5edges/orthogonal/direction/SouthToNorthRoutingStrategy.ts",
+      "line": 38,
+      "arm": "if[0]"
+    },
+    {
+      "n": 3,
+      "file": "src/alg/layered/p5edges/orthogonal/direction/NorthToSouthRoutingStrategy.ts",
+      "line": 58,
+      "arm": "if[1]"
+    },
+    {
+      "n": 4,
+      "file": "src/alg/layered/p5edges/orthogonal/direction/SouthToNorthRoutingStrategy.ts",
+      "line": 58,
+      "arm": "if[1]"
+    },
+    {
+      "n": 5,
+      "file": "src/alg/layered/p5edges/orthogonal/direction/NorthToSouthRoutingStrategy.ts",
+      "line": 78,
+      "arm": "if[0]"
+    },
+    {
+      "n": 6,
+      "file": "src/alg/layered/p5edges/orthogonal/direction/SouthToNorthRoutingStrategy.ts",
+      "line": 78,
+      "arm": "if[0]"
+    }
+  ],
+  "model-order": [
+    {
+      "n": 7,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
+      "line": 120,
+      "arm": "if[1]"
+    },
+    {
+      "n": 8,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
+      "line": 172,
+      "arm": "if[0]"
+    },
+    {
+      "n": 9,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
+      "line": 172,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "n": 10,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
+      "line": 175,
+      "arm": "if[1]"
+    },
+    {
+      "n": 11,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
+      "line": 178,
+      "arm": "if[0]"
+    },
+    {
+      "n": 12,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
+      "line": 178,
+      "arm": "if[1]"
+    },
+    {
+      "n": 13,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
+      "line": 178,
+      "arm": "binary-expr[0]"
+    },
+    {
+      "n": 14,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
+      "line": 178,
+      "arm": "binary-expr[1]"
+    },
+    {
+      "n": 15,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderPortComparator.ts",
+      "line": 148,
+      "arm": "if[1]"
+    },
+    {
+      "n": 16,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderPortComparatorIncoming.ts",
+      "line": 157,
+      "arm": "if[1]"
+    },
+    {
+      "n": 17,
+      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderPortComparatorOutgoing.ts",
+      "line": 107,
+      "arm": "if[1]"
+    }
+  ],
+  "barycenter": [
+    { "n": 18, "file": "src/alg/layered/p3order/AbstractBarycenterPortDistributor.ts", "line": 272, "arm": "if[1]" },
+    { "n": 19, "file": "src/alg/layered/p3order/ModelOrderBarycenterHeuristic.ts", "line": 77, "arm": "if[0]" },
+    { "n": 20, "file": "src/alg/layered/p3order/ModelOrderBarycenterHeuristic.ts", "line": 179, "arm": "if[0]" },
+    { "n": 21, "file": "src/alg/layered/p3order/ModelOrderBarycenterHeuristic.ts", "line": 184, "arm": "if[0]" },
+    { "n": 22, "file": "src/alg/layered/p3order/ModelOrderBarycenterHeuristic.ts", "line": 189, "arm": "if[0]" },
+    { "n": 23, "file": "src/alg/layered/p3order/ModelOrderBarycenterHeuristic.ts", "line": 194, "arm": "if[0]" },
+    { "n": 24, "file": "src/alg/layered/p3order/ForsterConstraintResolver.ts", "line": 323, "arm": "if[0]" },
+    {
+      "n": 25,
+      "file": "src/alg/layered/p3order/ForsterConstraintResolverConstraintGroup.ts",
+      "line": 115,
+      "arm": "if[0]"
+    }
+  ]
+}

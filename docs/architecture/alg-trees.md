@@ -115,8 +115,11 @@ step), `throws` (class, message, first ELK frame).
 | ------------------------------------ | ------------------------------------- | ---: | ---: | ----: | -----: |
 | `mrtree.json`                        | `tools/vectors/MrTreeVectors.java`    |  188 |  122 |    54 |     12 |
 | `mrtree-extra.json`                  | the same launcher, second output      |  213 |  140 |    68 |      5 |
+| `mrtree-extra2.json`                 | the same launcher, third output       |    3 |    0 |     3 |      0 |
 | `radial.json`                        | `tools/vectors/RadialVectors.java`    |  309 |  148 |   150 |     11 |
+| `radial-extra.json`                  | the same launcher, second output      |    7 |    5 |     2 |      0 |
 | `vertiflex.json`                     | `tools/vectors/VertiFlexVectors.java` |  471 |  247 |   216 |      8 |
+| `vertiflex-extra.json`               | the same launcher, second output      |    4 |    3 |     1 |      0 |
 
 `mrtree-units.json` (recorder `tools/vectors/MrTreeUnitVectors.java`, `mrtree-unit-vectors.sh`) holds 2,656 rows of code the
 pipeline rows cannot reach or isolate: `edgeRouter` 422 (hand-built `TGraph`s through the oracle's `EdgeRouter`,
@@ -126,7 +129,14 @@ committed rows are JSON-identical and in place (`fix(T3)`, T1 `fix`), and `mrtre
 pin its counts. `mrtree-extra.json` holds the scenarios the first ref did not reach: compaction x five directions x two routing
 modes, MIDDLE_TO_MIDDLE x four directions, multi-level gaps, cycle-inducing edges, node-order constraints with priorities 2-4,
 fans of 11, 12 and 100, BFS two-parent shapes (4 complete and 4 throwing), `deepLevel` (a same-level edge at level 130), debug
-logs, `omitNodeMicroLayout`.
+logs, `omitNodeMicroLayout`. `radial-extra.json`, `vertiflex-extra.json` and `mrtree-extra2.json` (issue #66) are separate
+files because committed tests pin the row counts of `radial.json`, `vertiflex.json` and `mrtree.json`, and `mrtree-extra.json`
+is at its 8 MiB cap. Each recorder writes its new file after the earlier ones from a plan of its own, so the earlier files stay
+byte-identical. Their rows take the `tau` arm of `EadesRadial` and the `sorter != null` arms of `RadialCompaction`, give stops
+rows to four multi-level gap arms of the mrtree `EdgeRouter`, and kill eight mutants the earlier rows let survive (a node at
+exactly angle 0 in the polar sorter, exactly touching boxes in the radial compaction, an outline tie in `RelativeXPlacer`, the
+`BendEdgeRouter` epsilon, a compaction into level 0). `RadialExtraVectors.test.ts` and `VertiFlexExtraVectors.test.ts` replay
+the first two; `MrTreeVectors.test.ts` replays all three mrtree files.
 
 **Replays (TR1 exit).** `src/alg/mrtree/MrTreeVectors.test.ts`, `src/alg/radial/RadialVectors.test.ts` and
 `src/alg/vertiflex/VertiFlexVectors.test.ts` replay every row through the real provider (a `full` row through
@@ -139,14 +149,16 @@ refuses them, and the whole-pipeline replay covers those rows. The dump does not
 (`NodePlacer.java:103-105`), so `buildBeforeGraphs` restores that one write. Replay times alone: mrtree 1.4 s, radial 5.9 s,
 vertiflex 4.3 s (budget 30 s); every whole-ref loop carries an explicit 60 s timeout.
 
-**Goldens (TR2).** `tools/oracle/regen-goldens.sh --set trees` writes `test/golden/refs/elk-trees/`: 40 refs (manifest
-`test/golden/trees.json`, inputs under `test/golden/trees-inputs/`, `jvmFlags` in `_meta.json`): 37 from T4 (mrtree 14, radial
-17, vertiflex 6; three of them the generated corpus inputs) and 3 added later,
-`{mrtree,radial,vertiflex}-generated-retarget`. The three first entries of the generated inputs were recorded with layered,
-because the corpus inputs set no algorithm and an entry without `retarget` records the default algorithm; they stay as valid
-layered goldens (`RECORDED_WITH_LAYERED`, issue #68). `test/golden/tree-goldens.test.ts` compares every entry with its ref at
-AD-4. The refs of the `default`, `algorithms` and `layered` sets regenerate byte-identically. Without the flag, 11 radial refs
-differ (the identity-hash order, I30).
+**Goldens (TR2).** `tools/oracle/regen-goldens.sh --set trees` writes `test/golden/refs/elk-trees/`: 37 refs (manifest
+`test/golden/trees.json`, inputs under `test/golden/trees-inputs/`, `jvmFlags` in `_meta.json`): 34 from T4 (mrtree 13, radial
+16, vertiflex 5) and 3 added later, `{mrtree,radial,vertiflex}-generated-retarget`, the generated corpus inputs retargeted to
+each algorithm. T4 also recorded those three inputs without `retarget`; the corpus inputs set no algorithm and an entry
+without `retarget` records the default algorithm, so those refs are layered layouts. Issue #68 moved them, byte-identical, to
+the layered set as `generated-{mrtree,radial,vertiflex}-tree-small--default` (formerly `{mrtree,radial,vertiflex}-generated`;
+see [alg-layered-compound.md](alg-layered-compound.md#part-i-goldens)). `test/golden/tree-goldens.test.ts` compares every
+entry with its ref at AD-4 and checks that each ref records the algorithm its entry names. The refs of the `default`,
+`algorithms` and `layered` sets regenerate byte-identically. Without the flag, 11 radial refs differ (the identity-hash
+order, I30).
 
 **Sweep (TR6).** Oracle `tools/oracle/sweep.sh --filter /<alg>/` under `-XX:hashCode=2`, 906 cases per algorithm (898 retarget
 and 8 generated). Oracle throws: mrtree 89, radial 365, vertiflex 553 and 1 timeout. TS through
@@ -267,7 +279,9 @@ non-finite vectors only.
 
 ## 7. Recursion {#alg-trees-recursion}
 
-Recursion is ported verbatim (TR7; core-engine C7). The input-depth recursions at the pin:
+Recursion was ported verbatim (TR7; core-engine C7). Issue #67 then turned the recursions that kept the port below the
+oracle's depth into explicit-stack loops (AC6), each proven against a verbatim recursive twin. The input-depth recursions at
+the pin:
 
 | Algorithm | Method (Java)                                                                                                                                                                                           |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -277,21 +291,47 @@ Recursion is ported verbatim (TR7; core-engine C7). The input-depth recursions a
 
 **Probe (T19).** A 2,000-deep path and a 2,000-deep caterpillar per algorithm: the oracle (default `-Xss`) completes all six,
 the port completes all six with and without `--jitless`, layouts equal at 1e-6 (mrtree jitless 762 s and 1,116 s, with JIT
-20 s and 34 s). No port overflow where the oracle completes at the probe depth, so no site was converted (stop 6 does not
-apply). Beyond the probe, the port on the default stack overflows at 2,500-3,500 deep in four of six shapes (mrtree path and
-caterpillar, radial path, vertiflex path) where the oracle overflows at 3,500-7,000; filed as issue #67 (`follow-up`). On cyclic
-inputs that pass `findRoot`, oracle and port both overflow at the same recursion (173 sweep cases: vertiflex 171, radial 2).
+20 s and 34 s). No port overflow where the oracle completes at the probe depth, so no site was converted then.
+
+**Explicit-stack loops (issue #67, AC6).** The oracle's depth was measured again: one JVM per shape over 2,000 to 10,000 in
+steps of 500, twice. It completed 10,000 for all six shapes. Its limit moves with JIT warm-up: the vertiflex path threw
+`StackOverflowError` at 4,000 to 5,500 and completed 6,000 to 10,000 in the same JVM. The unconverted port overflowed at
+3,000 to 5,000 in all six. The sites below were converted in the order the probes named them. Each keeps its name,
+signature, visit order, side-effect order and floating-point accumulation order, and each has a test file beside it with a
+verbatim recursive twin, 60 or more seeded trees compared on every effect (raw double bits) and a 15,000-deep case.
+
+| Algorithm | Explicit-stack sites                                                                                                                                                                                                                            | Test files (`*.explicit-stack.test.ts`)                                                                                             |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| mrtree    | `ComponentsProcessor.dfs`, `DFSTreeifyer.dfs`, `NodePlacer.firstWalk` and `secondWalk`; as loops over the levels: `FanProcessor.calculateFan`, `LevelProcessor.setLevel`, the `setNeighbors` of `NeighborsProcessor` and `LevelHeightProcessor` | `ComponentsProcessor`, `DFSTreeifyer`, `NodePlacer`, `FanProcessor`, `LevelProcessor`, `NeighborsProcessor`, `LevelHeightProcessor` |
+| radial    | `AnnulusWedgeByNodeSpace.calculateWedgeSpace`, `EadesRadial.positionNodes`, `StraightLineEdgeRouter.routeEdges`; as a loop over the levels: `RadiusExtensionOverlapRemoval.extend`                                                              | `AnnulusWedgeByNodeSpace`, `EadesRadial`, `StraightLineEdgeRouter`, `RadiusExtensionOverlapRemoval`                                 |
+| vertiflex | `VertiFlexLayoutProvider.checkVerticalConstraintValidity`, `NodeYPlacer.setYLevels`, `RelativeXPlacer.recursiveStraightlinePlacement`, `AbsoluteXPlacer.findMinimalX` and `absoluteTreeCoords`, `StraightEdgeRouter.routeEdges`                 | `VertiFlexLayoutProvider`, `NodeYPlacer`, `RelativeXPlacer`, `AbsoluteXPlacer`, `StraightEdgeRouter`                                |
+
+Result at 10,000, on Node's default stack: all six shapes complete, equal the oracle at 1e-6, and are byte-identical to the
+output of the unconverted port run on a raised stack (`node --stack-size=7000`; mrtree also needed
+`--max-old-space-size=48000`, because the recursive `calculateFan` kept one map per level alive). All 2,718 tree cases of the
+corpus sweep classify the same before and after.
+
+**The depth check.** A Java recursion that never ends throws `StackOverflowError`: a cyclic successor structure that passes
+`findRoot` (173 sweep cases: vertiflex 171, radial 2), or a node that is its own right sibling (`NodePlacer.java:341`, four
+`mrtree-extra.json` rows). The recursive port threw V8's `RangeError` there. A loop has no such end, so every converted site
+calls `checkStackDepth` (`src/java/lang/StackDepth.ts`) with the number of activations the Java would hold, and it throws that
+`RangeError` beyond 100,000. The oracle's deepest completed tree in the probes was 15,000. Whether a fixed limit is the right
+model is issue #167 (`needs-ruling`).
+
+**Still verbatim.** The recursions only other options reach (vertiflex `layoutStrategy` `BEND`, the radial compactors, sorters
+and `wedgeCriteria` `LEAF_NUMBER`, mrtree `weighting` other than `MODEL_ORDER`) and `TreeUtil.getLeftMost`, which the six
+shapes keep shallow: issue #166 (`follow-up`).
 
 ## 8. Known divergences and open issues {#alg-trees-open}
 
-| Item                                                                                        | State                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| radial `stops/i30/rand-chain-big` and `full/i30/rand-chain-big` (issue #64, `needs-ruling`) | the level-2 and level-3 next-level sets hold 12 identity-hashed nodes each and share one bin of the oracle's `HashSet` under `-XX:hashCode=2`; the bin's tree order sets the cyclic neighbour pairs `overlapLayer` tests and so the number of extension steps. 449 of 3,000 seeded permutations reproduce the oracle stop at 1e-6. Left as recorded and classified in `TREEIFIED_DIVERGENCES` (`RadialVectors.test.ts`), which asserts the stops row equals the oracle up to the step before `RadiusExtensionOverlapRemoval` and differs at it |
-| radial `…/splines/sloppy_overlaps_2` in the sweep                                           | last-ulp: `Math.sin(1.6073462520335293)` is ...4177 in V8 and `StrictMath`, ...4178 in HotSpot's `Math.sin` (`EadesRadial.java:102`); visible only as the string `layoutOptions.childAreaHeight`; geometry agrees within 1e-13                                                                                                                                                                                                                                                                                                                 |
-| 8 residual sweep cases and the three layered-labelled goldens (issue #68, `needs-ruling`)   | see § 3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| upstream defects the ports copy (issue #65, `needs-ruling`)                                 | BFS two-parent trees, `edgeRoutingMode=NONE` with an edge, the boxed and `String` comparisons, `EadesRadial.java:108`, cyclic graphs that pass the tree checks; drafts only, nothing filed upstream                                                                                                                                                                                                                                                                                                                                            |
-| recorder rows for unobserved mutants and unrecorded arms (issue #66, `follow-up`)           | `RADIUS` below 0, `RADIAL_COMPACTION` with `sorter=ID`, mutants R1, R5, V5, M9, M12                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| recursion depth below the oracle's for four deep shapes (issue #67, `follow-up`)            | § 7                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Item                                                                                                       | State                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| radial `stops/i30/rand-chain-big` and `full/i30/rand-chain-big` (issue #64, `needs-ruling`)                | the level-2 and level-3 next-level sets hold 12 identity-hashed nodes each and share one bin of the oracle's `HashSet` under `-XX:hashCode=2`; the bin's tree order sets the cyclic neighbour pairs `overlapLayer` tests and so the number of extension steps. 449 of 3,000 seeded permutations reproduce the oracle stop at 1e-6. Left as recorded and classified in `TREEIFIED_DIVERGENCES` (`RadialVectors.test.ts`), which asserts the stops row equals the oracle up to the step before `RadiusExtensionOverlapRemoval` and differs at it |
+| radial `…/splines/sloppy_overlaps_2` in the sweep                                                          | last-ulp: `Math.sin(1.6073462520335293)` is ...4177 in V8 and `StrictMath`, ...4178 in HotSpot's `Math.sin` (`EadesRadial.java:102`); visible only as the string `layoutOptions.childAreaHeight`; geometry agrees within 1e-13                                                                                                                                                                                                                                                                                                                 |
+| 8 residual sweep cases and the three layered-labelled goldens (issue #68, `needs-ruling`)                  | see § 3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| upstream defects the ports copy (issue #65, `needs-ruling`)                                                | BFS two-parent trees, `edgeRoutingMode=NONE` with an edge, the boxed and `String` comparisons, `EadesRadial.java:108`, cyclic graphs that pass the tree checks; drafts only, nothing filed upstream                                                                                                                                                                                                                                                                                                                                            |
+| recorder rows for unobserved mutants and unrecorded arms (issue #66, `follow-up`)                          | `RADIUS` below 0, `RADIAL_COMPACTION` with `sorter=ID`, mutants R1, R5, V5, M9, M12                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| recursions left verbatim after #67 (issue #166, `follow-up`); the depth check (issue #167, `needs-ruling`) | § 7                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 The oracle throws the ports reproduce: mrtree `ElkUtil.java:938` (`IllegalArgumentException`, `edgeRoutingMode=NONE` with an
 edge, 9 rows), `FanProcessor.java:128` (`StringIndexOutOfBoundsException`; JS `substring` clamps where Java throws, so
@@ -306,9 +346,9 @@ oracle built by `tools/oracle/build.sh` at the stamp in `oracle-build.json`.
 
 ```bash
 # re-record each ref; ELK_VECTORS_CACHE=off forces a cold run; the output must be cmp-identical to the committed ref
-ELK_VECTORS_CACHE=off bash tools/vectors/mrtree-vectors.sh      "$TMPDIR/mrtree"      # mrtree.json and mrtree-extra.json
-ELK_VECTORS_CACHE=off bash tools/vectors/radial-vectors.sh      "$TMPDIR/radial"      # radial.json
-ELK_VECTORS_CACHE=off bash tools/vectors/vertiflex-vectors.sh   "$TMPDIR/vertiflex"   # vertiflex.json
+ELK_VECTORS_CACHE=off bash tools/vectors/mrtree-vectors.sh      "$TMPDIR/mrtree"      # mrtree.json, mrtree-extra.json, mrtree-extra2.json
+ELK_VECTORS_CACHE=off bash tools/vectors/radial-vectors.sh      "$TMPDIR/radial"      # radial.json, radial-extra.json
+ELK_VECTORS_CACHE=off bash tools/vectors/vertiflex-vectors.sh   "$TMPDIR/vertiflex"   # vertiflex.json, vertiflex-extra.json
 ELK_VECTORS_CACHE=off bash tools/vectors/mrtree-unit-vectors.sh "$TMPDIR/mrtree-units" # mrtree-units.json
 
 # regenerate the goldens; the refs must not change

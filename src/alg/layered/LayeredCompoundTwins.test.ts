@@ -142,6 +142,17 @@ const DIFFERING_ROWS: Readonly<Record<string, readonly string[]>> = {
     'sites/OrthogonalEdgeRouter/extPortSelfLoop/north',
     'sites/OrthogonalEdgeRouter/extPortSelfLoop/south',
     'sites/JsonDebugUtil/loggedCompound',
+    // #60 (compound-mutant-rows): the evidence rows with a port that two cross-hierarchy original edges share (the maintainer's ruling
+    // on #156, applied to #60); the loop below asserts the same per-row conditions on them
+    'sites/CompoundGraphPreprocessor/mergeInDeep',
+    'sites/CompoundGraphPreprocessor/mergeOffOut',
+    'sites/CompoundGraphPreprocessor/outThenParent',
+    'sites/CompoundGraphPreprocessor/parentThenOut',
+    'sites/CompoundGraphPreprocessor/inThenParent',
+    'sites/CompoundGraphPreprocessor/parentThenIn',
+    'sites/CompoundGraphPreprocessor/flowInside',
+    'sites/CompoundGraphPreprocessor/flowInsideRev',
+    'sites/CompoundGraphPreprocessor/mergedThickness',
   ],
 };
 

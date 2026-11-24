@@ -1,0 +1,21 @@
+--- a/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p3order/ForsterConstraintResolver.java
++++ b/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p3order/ForsterConstraintResolver.java
+@@ -260,6 +260,9 @@
+                         if (predecessor.getBarycenter().floatValue() == group.getBarycenter().floatValue()) {
+                             if (groups.indexOf(predecessor) > groups.indexOf(group)) {
+                                 // The predecessor has equal barycenter, but higher index
++                                System.err.println("ARM24 ForsterConstraintResolver.java:261 predecessor=" + predecessor
++                                        + " group=" + group + " barycenter=" + group.getBarycenter()
++                                        + " indices=" + groups.indexOf(predecessor) + ">" + groups.indexOf(group));
+                                 return Pair.of(predecessor, group);
+                             }
+                         } else if (predecessor.getBarycenter() > group.getBarycenter()) {
+@@ -425,6 +428,8 @@
+                 if (nodeGroup2.outgoingConstraints != null) {
+                     for (ConstraintGroup candidate : nodeGroup2.outgoingConstraints) {
+                         if (candidate == nodeGroup1) {
++                            System.err.println("ARM25 ForsterConstraintResolver.java:427 nodeGroup1=" + nodeGroup1
++                                    + " nodeGroup2=" + nodeGroup2);
+                             continue;
+                         } else if (outgoingConstraints.contains(candidate)) {
+                             // The candidate was in both vertices' successor list

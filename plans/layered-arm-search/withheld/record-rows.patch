@@ -1,0 +1,381 @@
+--- a/tools/vectors/LayeredOrderVectors.java
++++ b/tools/vectors/LayeredOrderVectors.java
+@@ -2523,12 +2523,54 @@
+         row("HeadLabels/invertedPort/short", gr("", "a[FS;E;W] b", "", raw("e0", "b", "a.p0")), lb);
+         row("HeadLabels/invertedPort/both", gr("", "a[FS;E;W] b c d", "b>c c>d d>a.p1", raw("e3", "b", "a.p0")), lb);
+         row("HeadLabels/westOutput", gr("", "a[FS;E;W] b", "", raw("e0", "a.p1", "b")), lb);
++    }
++
++    // ---- group arm search (issue #59, plans/layered-arm-search T5): the six order candidates of tools/arm-search/model-order and
++    // tools/arm-search/barycenter (candidates.json; generate.ts there derives each graph from the guard of the arm it reaches), with the
++    // candidates' steps. A scenarios row runs the plan prefix of its graph; a sites row builds state no layout produces (a hand-placed
++    // layering against the edges, the model order strategy set after the import, SORT_BY_INPUT_ORDER_OF_MODEL run twice). The rows with
++    // a layers step have ten imported nodes (isolated fillers): no full dump. Arms per row: test/helpers/layered-order-search-arms.json.
++
++    static final String ARM_0 = """
++{"id":"root","layoutOptions":{"considerModelOrder.strategy":"NODES_AND_EDGES"},"children":[{"id":"a","width":30,"height":30,"layoutOptions":{"portConstraints":"FIXED_SIDE","considerModelOrder.noModelOrder":"true"},"ports":[{"id":"a.p0","width":4,"height":4,"layoutOptions":{"port.side":"EAST"}},{"id":"a.p1","width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}]},{"id":"b","width":30,"height":30},{"id":"c","width":30,"height":30}],"edges":[{"id":"e0","sources":["b"],"targets":["c"]}]}""";
++    static final String ARM_1 = """
++{"id":"root","layoutOptions":{"considerModelOrder.strategy":"NODES_AND_EDGES"},"children":[{"id":"s","width":30,"height":30},{"id":"x","width":30,"height":30,"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"x.p0","width":4,"height":4,"layoutOptions":{"port.side":"EAST"}},{"id":"x.p1","width":4,"height":4,"layoutOptions":{"port.side":"WEST"}},{"id":"x.p2","width":4,"height":4,"layoutOptions":{"port.side":"WEST"}},{"id":"x.p3","width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}]},{"id":"y","width":30,"height":30},{"id":"z","width":30,"height":30},{"id":"u","width":30,"height":30},{"id":"f0","width":30,"height":30},{"id":"f1","width":30,"height":30},{"id":"f2","width":30,"height":30},{"id":"f3","width":30,"height":30},{"id":"f4","width":30,"height":30}],"edges":[{"id":"e0","sources":["s"],"targets":["x.p0"]},{"id":"e1","sources":["x.p1"],"targets":["y"]},{"id":"e2","sources":["x.p2"],"targets":["z"]},{"id":"e3","sources":["x.p3"],"targets":["u"]}]}""";
++    static final String ARM_2 = """
++{"id":"root","layoutOptions":{"considerModelOrder.strategy":"NODES_AND_EDGES"},"children":[{"id":"a","width":30,"height":30},{"id":"b","width":30,"height":30},{"id":"x","width":30,"height":30,"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"x.p0","width":4,"height":4,"layoutOptions":{"port.side":"EAST"}},{"id":"x.p1","width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}]},{"id":"s1","width":30,"height":30},{"id":"s2","width":30,"height":30},{"id":"f0","width":30,"height":30},{"id":"f1","width":30,"height":30},{"id":"f2","width":30,"height":30},{"id":"f3","width":30,"height":30},{"id":"f4","width":30,"height":30}],"edges":[{"id":"e0","sources":["a"],"targets":["b"]},{"id":"e1","sources":["b"],"targets":["x"]},{"id":"e2","sources":["s1"],"targets":["x.p0"]},{"id":"e3","sources":["s2"],"targets":["x.p1"]}]}""";
++    static final String ARM_3 = """
++{"id":"root","layoutOptions":{"considerModelOrder.strategy":"NODES_AND_EDGES"},"children":[{"id":"t","width":30,"height":30,"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"t.p0","width":4,"height":4,"layoutOptions":{"port.side":"WEST"}},{"id":"t.p1","width":4,"height":4,"layoutOptions":{"port.side":"WEST"}}]},{"id":"w","width":30,"height":30,"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"w.p0","width":4,"height":4,"layoutOptions":{"port.side":"WEST"}},{"id":"w.p1","width":4,"height":4,"layoutOptions":{"port.side":"WEST"}}]},{"id":"f0","width":30,"height":30},{"id":"f1","width":30,"height":30},{"id":"f2","width":30,"height":30},{"id":"f3","width":30,"height":30},{"id":"f4","width":30,"height":30},{"id":"f5","width":30,"height":30},{"id":"f6","width":30,"height":30},{"id":"f7","width":30,"height":30}],"edges":[{"id":"e0","sources":["w.p0"],"targets":["t.p0"]},{"id":"e1","sources":["w.p1"],"targets":["t.p1"]}]}""";
++    static final String ARM_4 = """
++{"id":"root","children":[{"id":"T","width":300,"height":200,"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"T.p0","width":4,"height":4,"layoutOptions":{"port.side":"EAST"}},{"id":"T.p1","width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}],"children":[{"id":"c","width":30,"height":30,"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"c.p0","width":4,"height":4,"layoutOptions":{"port.side":"EAST"}},{"id":"c.p1","width":4,"height":4,"layoutOptions":{"port.side":"EAST"}}]},{"id":"f0","width":30,"height":30},{"id":"f1","width":30,"height":30},{"id":"f2","width":30,"height":30},{"id":"f3","width":30,"height":30},{"id":"f4","width":30,"height":30},{"id":"f5","width":30,"height":30},{"id":"f6","width":30,"height":30}],"edges":[{"id":"e0","sources":["c.p0"],"targets":["T.p0"]},{"id":"e1","sources":["c.p1"],"targets":["T.p1"]}]}]}""";
++    static final String ARM_5 = """
++{"id":"root","layoutOptions":{"org.eclipse.elk.layered.crossingMinimization.semiInteractive":"true","org.eclipse.elk.layered.considerModelOrder.strategy":"NODES_AND_EDGES","org.eclipse.elk.separateConnectedComponents":"false","org.eclipse.elk.randomSeed":"1"},"children":[{"id":"u2","width":30,"height":30},{"id":"u1","width":30,"height":30},{"id":"p","width":30,"height":30,"layoutOptions":{"org.eclipse.elk.position":"(0.0,0.0)"}},{"id":"x","width":30,"height":30,"layoutOptions":{"org.eclipse.elk.position":"(0.0,20.0)"}},{"id":"g","width":30,"height":30,"layoutOptions":{"org.eclipse.elk.position":"(0.0,10.0)"}},{"id":"w","width":30,"height":30}],"edges":[{"id":"e0","sources":["u2"],"targets":["g"]},{"id":"e1","sources":["u1"],"targets":["p"]},{"id":"e2","sources":["x"],"targets":["w"]},{"id":"e3","sources":["p"],"targets":["w"]},{"id":"e4","sources":["g"],"targets":["w"]}]}""";
++
++    /** normalise, then the plan prefix of a graph up to the layering, the three layer-constraint members of 7b included. */
++    static Sc armPlanPrefix(Sc s) {
++        s.norm().procs("EDGE_AND_LAYER_CONSTRAINT_EDGE_REVERSER");
++        s.st.add(phase(P1, "GREEDY"));
++        s.procs("LAYER_CONSTRAINT_PREPROCESSOR");
++        s.st.add(phase(P2, "NETWORK_SIMPLEX"));
++        return s.procs("LAYER_CONSTRAINT_POSTPROCESSOR");
++    }
++
++    static void armSearchScenarios() {
++        String nc = "sites/ModelOrderNodeComparator/", pc = "sites/ModelOrderPortComparator/";
++        armPlanPrefix(sc("ModelOrderPortComparator/noModelOrderPorts", ARM_0)).procs(LES, PSP, IPP, PLS, SBI).done();
++        armPlanPrefix(sc(nc + "sourceThenTargetFeedback", ARM_1)).procs(LES, PSP, IPP, PLS, SBI, SBI).done();
++        sc(nc + "targetFeedbackPair", ARM_2).norm().layers(List.of("g0/n0"), List.of("g0/n1"), List.of("g0/n2"), List.of("g0/n3", "g0/n4"))
++                .procs(LES, PSP, IPP, PLS, SBI).done();
++        sc(pc + "westLongEdgeSources", ARM_3).norm().layers(List.of("g0/n0"), List.of("g0/n1")).procs(LES, PSP, IPP, PLS, SBI).done();
++        armPlanPrefix(sc(pc + "edgesWithoutModelOrder", ARM_4).target("T")
++                .set("g0", "CONSIDER_MODEL_ORDER_STRATEGY", E("OrderingStrategy", OrderingStrategy.NODES_AND_EDGES)))
++                        .procs(HPC, LES, PSP, IPP, PLS, SBI).done();
++        sc("ForsterConstraintResolver/equalFloatBarycenter", ARM_5).base().procs(SIC, LES, PSP, PLS, SBI).p3("LAYER_SWEEP").done();
+     }
+ 
+     static void scenarioSpecs(List<Spec> out) {
+         SCENARIOS = out;
+         orderScenarios();
+         siteScenarios();
++        armSearchScenarios();
+     }
+ 
+     // ------------------------------------------------------------------------------------------------------------
+--- a/tools/vectors/LayeredCompoundVectors.java
++++ b/tools/vectors/LayeredCompoundVectors.java
+@@ -2882,6 +2882,16 @@
+ {"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"a","x":0,"y":0,"width":30,"height":30},{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"d","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30},{"id":"y","x":0,"y":0,"width":30,"height":30}]}],"ports":[{"id":"cp","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"EAST"}},{"id":"cq","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"WEST"}}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"e1","sources":["x"],"targets":["cp"]},{"id":"e2","sources":["y"],"targets":["cp"]},{"id":"e3","sources":["cq"],"targets":["x"]},{"id":"e4","sources":["cq"],"targets":["y"]},{"id":"e5","sources":["a"],"targets":["cq"]}]}""";
+     static final String SITE_18 = """
+ {"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"a","x":0,"y":0,"width":30,"height":30},{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"nodeSize.fixedGraphSize":"true","nodeSize.constraints":"[MINIMUM_SIZE]","nodeSize.minimum":"(200, 150)"}}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"},"edges":[{"id":"e1","sources":["a"],"targets":["x"]}]}""";
++    // Issue #59 (plans/layered-arm-search T6): the four north/south routing inputs of tools/arm-search/north-south/candidates.json
++    // (generate.ts there derives each graph from the guard of the arm it reaches). A northern port is routed by the south-to-north strategy.
++    static final String SITE_19 = """
++{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x0","x":0,"y":0,"width":30,"height":30},{"id":"x1","x":0,"y":0,"width":30,"height":30},{"id":"x2","x":0,"y":0,"width":30,"height":30},{"id":"x3","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"p1","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"NORTH"}},{"id":"p2","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"NORTH"}}],"edges":[{"id":"e1","sources":["p1"],"targets":["x1"]},{"id":"e2","sources":["p1"],"targets":["x3"]},{"id":"e3","sources":["x0"],"targets":["p2"]},{"id":"e4","sources":["x2"],"targets":["p2"]},{"id":"c0","sources":["x0"],"targets":["x1"]},{"id":"c1","sources":["x1"],"targets":["x2"]},{"id":"c2","sources":["x2"],"targets":["x3"]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"}}""";
++    static final String SITE_20 = """
++{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x0","x":0,"y":0,"width":30,"height":30},{"id":"x1","x":0,"y":0,"width":30,"height":30},{"id":"x2","x":0,"y":0,"width":30,"height":30},{"id":"x3","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"p1","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"SOUTH"}},{"id":"p2","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"SOUTH"}}],"edges":[{"id":"e1","sources":["p1"],"targets":["x1"]},{"id":"e2","sources":["p1"],"targets":["x3"]},{"id":"e3","sources":["x0"],"targets":["p2"]},{"id":"e4","sources":["x2"],"targets":["p2"]},{"id":"c0","sources":["x0"],"targets":["x1"]},{"id":"c1","sources":["x1"],"targets":["x2"]},{"id":"c2","sources":["x2"],"targets":["x3"]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"}}""";
++    static final String SITE_21 = """
++{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x0","x":0,"y":0,"width":30,"height":30},{"id":"x1","x":0,"y":0,"width":30,"height":30},{"id":"x2","x":0,"y":0,"width":30.003,"height":30},{"id":"x3","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"p1","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"NORTH"}}],"edges":[{"id":"e1","sources":["p1"],"targets":["x1"]},{"id":"e2","sources":["p1"],"targets":["x2"]},{"id":"e3","sources":["p1"],"targets":["x3"]},{"id":"c0","sources":["x0"],"targets":["x1"]},{"id":"c1","sources":["x1"],"targets":["x2"]},{"id":"c2","sources":["x2"],"targets":["x3"]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"}}""";
++    static final String SITE_22 = """
++{"id":"root","x":0,"y":0,"width":0,"height":0,"children":[{"id":"c","x":0,"y":0,"width":30,"height":30,"children":[{"id":"x0","x":0,"y":0,"width":30,"height":30},{"id":"x1","x":0,"y":0,"width":30,"height":30},{"id":"x2","x":0,"y":0,"width":30.003,"height":30},{"id":"x3","x":0,"y":0,"width":30,"height":30}],"layoutOptions":{"portConstraints":"FIXED_SIDE"},"ports":[{"id":"p1","x":0,"y":0,"width":4,"height":4,"layoutOptions":{"port.side":"SOUTH"}}],"edges":[{"id":"e1","sources":["p1"],"targets":["x1"]},{"id":"e2","sources":["p1"],"targets":["x2"]},{"id":"e3","sources":["p1"],"targets":["x3"]},{"id":"c0","sources":["x0"],"targets":["x1"]},{"id":"c1","sources":["x1"],"targets":["x2"]},{"id":"c2","sources":["x2"],"targets":["x3"]}]}],"layoutOptions":{"elk.direction":"RIGHT","hierarchyHandling":"INCLUDE_CHILDREN"}}""";
+ 
+     static final String[][] SITE_ROWS = {
+         {"CompoundGraphPreprocessor/portLabelNorth", "run", SITE_0},
+@@ -2902,7 +2912,11 @@
+         {"OrthogonalEdgeRouter/extPortSelfLoop/north", "run", SITE_15},
+         {"OrthogonalEdgeRouter/extPortSelfLoop/south", "run", SITE_16},
+         {"JsonDebugUtil/loggedCompound", "logged", SITE_17},
+-        {"HierarchicalNodeResizingProcessor/fixedGraphSize", "run", SITE_18}
++        {"HierarchicalNodeResizingProcessor/fixedGraphSize", "run", SITE_18},
++        {"HierarchicalPortOrthogonalEdgeRouter/splitSegment/north", "run", SITE_19},
++        {"HierarchicalPortOrthogonalEdgeRouter/splitSegment/south", "run", SITE_20},
++        {"HierarchicalPortOrthogonalEdgeRouter/straightEdge/north", "run", SITE_21},
++        {"HierarchicalPortOrthogonalEdgeRouter/straightEdge/south", "run", SITE_22}
+     };
+ 
+     /** The smallest of the three inputs of the hierarchical SPLINES throw (tickets 040, 160, 701; SplineSegment.java:247, the "ORACLE THROWS" of
+--- a/tools/vectors/compound-site-arms.mjs
++++ b/tools/vectors/compound-site-arms.mjs
+@@ -3,8 +3,15 @@
+ // arms plans/layered-compound/unreached.md names for its scenario (test/helpers/layered-compound-site-arms.json: file, line and arm
+ // `if[k]` / `binary-expr[k]` / `cond-expr[k]` / `fn` as the v8 coverage JSON keys them). One vitest run per row (the row replayed alone
+ // by src/alg/layered/LayeredCompoundSites.test.ts, v8 coverage, JSON reporter, no thresholds), then the arm counts are read from
+-// coverage-final.json. Usage: node tools/vectors/compound-site-arms.mjs [row id ...]   (default: every row of the table).
+-// Exit 1 when a named arm is not taken (the document or the scenario is wrong: never weaken the table).
++// coverage-final.json. Usage: node tools/vectors/compound-site-arms.mjs [--table <file>] [--test <file>] [--title <suffix>] [row id ...]
++// (default: every row of the table). Exit 1 when a named arm is not taken (the document or the scenario is wrong: never weaken the table).
++// The flags point the same measurement at another arm table and replay suite (paths relative to the repository root):
++//   --table <file>    the arm table (default test/helpers/layered-compound-site-arms.json)
++//   --test <file>     the replay suite that has one test per row (default src/alg/layered/LayeredCompoundSites.test.ts)
++//   --title <suffix>  what follows the row id in the test title, as a regular expression (default `$`: the title is the id)
++// The order rows of issue #59 (test/helpers/layered-order-search-arms.json), whose titles are `<id>: replays the recorded result`:
++//   node tools/vectors/compound-site-arms.mjs --table test/helpers/layered-order-search-arms.json \
++//     --test src/alg/layered/LayeredOrderVectors.test.ts --title ': replays the recorded result$'
+ import { spawnSync } from 'node:child_process';
+ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+ import { tmpdir } from 'node:os';
+@@ -12,11 +19,39 @@
+ import { fileURLToPath } from 'node:url';
+ 
+ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+-const table = JSON.parse(readFileSync(path.join(root, 'test/helpers/layered-compound-site-arms.json'), 'utf8'));
+-const ids = process.argv.length > 2 ? process.argv.slice(2) : Object.keys(table);
+-const SITES_TEST = 'src/alg/layered/LayeredCompoundSites.test.ts';
++const FLAG_DEFAULTS = {
++  '--table': 'test/helpers/layered-compound-site-arms.json',
++  '--test': 'src/alg/layered/LayeredCompoundSites.test.ts',
++  '--title': '$',
++};
+ const ARM = /^(.*)\[(\d+)\]$/;
++const EXIT_USAGE = 2;
++const REGEX_METACHARACTERS = /[.*+?^${}()|[\]\\]/g;
+ 
++/** The flags (each takes one value) and the row ids of the command line. */
++function parseArguments(argv) {
++  const flags = { ...FLAG_DEFAULTS };
++  const rowIds = [];
++  for (let i = 0; i < argv.length; i++) {
++    if (!Object.hasOwn(FLAG_DEFAULTS, argv[i])) {
++      rowIds.push(argv[i]);
++    } else if (i + 1 < argv.length) {
++      flags[argv[i]] = argv[++i];
++    } else {
++      console.error(`${argv[i]} needs a value`);
++      process.exit(EXIT_USAGE);
++    }
++  }
++  return { flags, rowIds };
++}
++
++const { flags, rowIds } = parseArguments(process.argv.slice(2));
++const table = JSON.parse(readFileSync(path.join(root, flags['--table']), 'utf8'));
++const ids = rowIds.length > 0 ? rowIds : Object.keys(table);
++const REPLAY_TEST = flags['--test'];
++/** The `-t` pattern of one row: its id taken literally, then the title suffix. */
++const titlePattern = (id) => `${id.replace(REGEX_METACHARACTERS, '\\$&')}${flags['--title']}`;
++
+ /** Count of one arm of `file` at `line` in a coverage-final entry: the largest count over the branches of that kind at that line. */
+ function armCount(entry, spec) {
+   if (spec.arm === 'fn') {
+@@ -42,9 +77,9 @@
+     [
+       'vitest',
+       'run',
+-      SITES_TEST,
++      REPLAY_TEST,
+       '-t',
+-      `${id}$`,
++      titlePattern(id),
+       '--coverage',
+       ...include,
+       '--coverage.reporter=json',
+--- a/test/helpers/layered-compound-site-arms.json
++++ b/test/helpers/layered-compound-site-arms.json
+@@ -258,6 +258,44 @@
+       "file": "src/alg/layered/compound/CrossHierarchyEdge.ts",
+       "line": 37,
+       "arm": "fn"
++    }
++  ],
++  "sites/HierarchicalPortOrthogonalEdgeRouter/splitSegment/north": [
++    {
++      "file": "src/alg/layered/p5edges/orthogonal/direction/SouthToNorthRoutingStrategy.ts",
++      "line": 38,
++      "arm": "if[0]"
++    },
++    {
++      "file": "src/alg/layered/p5edges/orthogonal/direction/SouthToNorthRoutingStrategy.ts",
++      "line": 78,
++      "arm": "if[0]"
++    }
++  ],
++  "sites/HierarchicalPortOrthogonalEdgeRouter/splitSegment/south": [
++    {
++      "file": "src/alg/layered/p5edges/orthogonal/direction/NorthToSouthRoutingStrategy.ts",
++      "line": 38,
++      "arm": "if[0]"
++    },
++    {
++      "file": "src/alg/layered/p5edges/orthogonal/direction/NorthToSouthRoutingStrategy.ts",
++      "line": 78,
++      "arm": "if[0]"
+     }
++  ],
++  "sites/HierarchicalPortOrthogonalEdgeRouter/straightEdge/north": [
++    {
++      "file": "src/alg/layered/p5edges/orthogonal/direction/SouthToNorthRoutingStrategy.ts",
++      "line": 58,
++      "arm": "if[1]"
++    }
++  ],
++  "sites/HierarchicalPortOrthogonalEdgeRouter/straightEdge/south": [
++    {
++      "file": "src/alg/layered/p5edges/orthogonal/direction/NorthToSouthRoutingStrategy.ts",
++      "line": 58,
++      "arm": "if[1]"
++    }
+   ]
+ }
+--- a/src/alg/layered/LayeredOrderVectors.test.ts
++++ b/src/alg/layered/LayeredOrderVectors.test.ts
+@@ -4,7 +4,12 @@
+ // uses it: processors by `IntermediateProcessorStrategy` name, phases by `CycleBreakingStrategy` / `LayeringStrategy` /
+ // `CrossingMinimizationStrategy`. Model rows replay their recorded `prefix`; step rows interpret their `steps`. Numbers
+ // within 1e-6 (AD-4), everything else exactly (the comparators of test/helpers/layered-order-replay-compare.ts).
+-import { readFileSync } from 'node:fs';
++// Arm reach (issue #59): test/helpers/layered-order-search-arms.json names, per arm-search row, the TS arms (file, line, v8
++// arm) the row exists to reach; `node tools/vectors/compound-site-arms.mjs --table ... --test ... --title ...` (its
++// header has the command) replays each row alone under v8 coverage and fails when a named arm is not taken. The
++// structural test here pins that table to the ref and to the sources, as LayeredCompoundSites.test.ts pins its table.
++import { existsSync, readFileSync } from 'node:fs';
++import path from 'node:path';
+ import { describe, expect, it } from 'vitest';
+ import { repoRoot } from '../../../test/corpus/corpus.js';
+ import { dumpLGraph } from '../../../test/helpers/layered-framework-replay.js';
+@@ -17,9 +22,24 @@
+ import { STRICT_ORDER_PHASE_FACTORIES } from '../../../test/helpers/layered-replay-factories.js';
+ 
+ const ROWS_FILE = `${repoRoot()}/test/golden/refs/java/layered-order.json`;
++const SEARCH_ARMS_FILE = 'test/helpers/layered-order-search-arms.json';
++const ARM_FORM = /^(if|binary-expr|cond-expr)\[\d+\]$|^fn$/;
++/** The order rows of issue #59 (tools/vectors/LayeredOrderVectors.java, `armSearchScenarios`). */
++const SEARCH_ROW_COUNT = 6;
+ 
++interface ArmSpec {
++  readonly file: string;
++  readonly line: number;
++  readonly arm: string;
++}
++
+ const rows = loadOrderRows(ROWS_FILE);
+ const rowCounts = (JSON.parse(readFileSync(ROWS_FILE, 'utf8')) as { rowCounts: Record<string, number> }).rowCounts;
++const searchArms = JSON.parse(readFileSync(path.join(repoRoot(), SEARCH_ARMS_FILE), 'utf8')) as Record<
++  string,
++  readonly ArmSpec[]
++>;
++const sourceLines = (file: string): string[] => readFileSync(path.join(repoRoot(), file), 'utf8').split('\n');
+ 
+ function replay(row: OrderRow): ReturnType<typeof orderDump> {
+   const graph =
+@@ -43,6 +63,16 @@
+     expect(rows.filter((row) => row.group === group).length).toBe(rowCounts[group] ?? 0);
+   });
+ 
++  it('names the arms of arm-search rows that exist, in files and lines that exist, in the v8 arm forms', () => {
++    const stepRowIds = new Set(rows.filter((row) => row.steps !== null).map((row) => row.id));
++    expect(Object.keys(searchArms).length).toBe(SEARCH_ROW_COUNT);
++    expect(Object.keys(searchArms).filter((id) => !stepRowIds.has(id))).toEqual([]);
++    const specs = Object.values(searchArms).flat();
++    expect(specs.filter((spec) => !existsSync(path.join(repoRoot(), spec.file)))).toEqual([]);
++    expect(specs.filter((spec) => !ARM_FORM.test(spec.arm))).toEqual([]);
++    expect(specs.filter((spec) => sourceLines(spec.file)[spec.line - 1] === undefined)).toEqual([]);
++  });
++
+   it.each(rows.map((row) => [row.id, row] as const))('%s: replays the recorded result', (_id, row) => {
+     const actual = replay(row);
+     expect(compareOrder(actual, row.expected)).toEqual([]);
+--- a/src/alg/layered/intermediate/SortByInputModelProcessor.test.ts
++++ b/src/alg/layered/intermediate/SortByInputModelProcessor.test.ts
+@@ -61,6 +61,12 @@
+   'scenarios/SortByInputModelProcessor/preserve-order-long',
+   'scenarios/SortByInputModelProcessor/group-enforced',
+   'scenarios/SortByInputModelProcessor/feedback-edges',
++  // issue #59 (layered-arm-search): the comparator rows that stop at this processor
++  'scenarios/ModelOrderPortComparator/noModelOrderPorts',
++  'sites/ModelOrderNodeComparator/sourceThenTargetFeedback',
++  'sites/ModelOrderNodeComparator/targetFeedbackPair',
++  'sites/ModelOrderPortComparator/westLongEdgeSources',
++  'sites/ModelOrderPortComparator/edgesWithoutModelOrder',
+ ];
+ 
+ /** The entries a row replays, spelled like prefix entries (`NAME` or `PHASE/STRATEGY`). */
+--- a/src/alg/layered/p3order/LayerSweepCrossingMinimizer.test.ts
++++ b/src/alg/layered/p3order/LayerSweepCrossingMinimizer.test.ts
+@@ -117,6 +117,8 @@
+   'sites/ExternalPorts/newFirstLastLayer',
+   'sites/NorthSouth/portOptions/portAnchors',
+   'sites/NorthSouth/portOptions/allowNonFlow',
++  // issue #59 (layered-arm-search)
++  'scenarios/ForsterConstraintResolver/equalFloatBarycenter',
+ ];
+ 
+ const MEDIAN_ROWS: readonly string[] = [
+--- a/src/alg/layered/LayeredCompoundTwins.test.ts
++++ b/src/alg/layered/LayeredCompoundTwins.test.ts
+@@ -142,6 +142,11 @@
+     'sites/OrthogonalEdgeRouter/extPortSelfLoop/north',
+     'sites/OrthogonalEdgeRouter/extPortSelfLoop/south',
+     'sites/JsonDebugUtil/loggedCompound',
++    // issue #59 (layered-arm-search): a north/south port shared by two or three original edges
++    'sites/HierarchicalPortOrthogonalEdgeRouter/splitSegment/north',
++    'sites/HierarchicalPortOrthogonalEdgeRouter/splitSegment/south',
++    'sites/HierarchicalPortOrthogonalEdgeRouter/straightEdge/north',
++    'sites/HierarchicalPortOrthogonalEdgeRouter/straightEdge/south',
+   ],
+ };
+ 
+--- /dev/null
++++ b/test/helpers/layered-order-search-arms.json
+@@ -0,0 +1,69 @@
++{
++  "scenarios/ModelOrderPortComparator/noModelOrderPorts": [
++    {
++      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderPortComparator.ts",
++      "line": 148,
++      "arm": "if[1]"
++    }
++  ],
++  "sites/ModelOrderNodeComparator/sourceThenTargetFeedback": [
++    {
++      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
++      "line": 172,
++      "arm": "if[0]"
++    },
++    {
++      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
++      "line": 172,
++      "arm": "binary-expr[1]"
++    }
++  ],
++  "sites/ModelOrderNodeComparator/targetFeedbackPair": [
++    {
++      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
++      "line": 120,
++      "arm": "if[1]"
++    },
++    {
++      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
++      "line": 175,
++      "arm": "if[1]"
++    },
++    {
++      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
++      "line": 178,
++      "arm": "if[0]"
++    },
++    {
++      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
++      "line": 178,
++      "arm": "binary-expr[0]"
++    },
++    {
++      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderNodeComparatorHelperDummies.ts",
++      "line": 178,
++      "arm": "binary-expr[1]"
++    }
++  ],
++  "sites/ModelOrderPortComparator/westLongEdgeSources": [
++    {
++      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderPortComparatorIncoming.ts",
++      "line": 157,
++      "arm": "if[1]"
++    }
++  ],
++  "sites/ModelOrderPortComparator/edgesWithoutModelOrder": [
++    {
++      "file": "src/alg/layered/intermediate/preserveorder/ModelOrderPortComparatorOutgoing.ts",
++      "line": 107,
++      "arm": "if[1]"
++    }
++  ],
++  "scenarios/ForsterConstraintResolver/equalFloatBarycenter": [
++    {
++      "file": "src/alg/layered/p3order/ForsterConstraintResolver.ts",
++      "line": 323,
++      "arm": "if[0]"
++    }
++  ]
++}

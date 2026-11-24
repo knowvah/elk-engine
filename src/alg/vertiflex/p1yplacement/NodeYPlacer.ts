@@ -4,10 +4,18 @@ import type { LayoutProcessorConfiguration } from '../../../core/alg/LayoutProce
 import { CoreOptions } from '../../../core/options/CoreOptions.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import type { ElkNode } from '../../../graph/ElkNode.js';
+import { checkStackDepth } from '../../../java/lang/StackDepth.js';
 import { InternalProperties } from '../InternalProperties.js';
 import type { VertiFlexLayoutPhases } from '../VertiFlexLayoutPhases.js';
 import { VertiFlexOptions } from '../options/VertiFlexOptions.js';
 import { castToElkNode } from '../p2relative/RelativeXPlacerChildren.js';
+
+/** One suspended activation of `setYLevels` (NodeYPlacer.java:64-67). */
+interface YLevelFrame {
+  readonly node: ElkNode;
+  readonly newMinHeight: number;
+  i: number;
+}
 
 /**
  * Node placer to position nodes vertically. Nodes that have a vertical constraint are placed according to that
@@ -38,9 +46,31 @@ export class NodeYPlacer implements ILayoutPhase<VertiFlexLayoutPhases, ElkNode>
    *
    * @param node and it's children are getting updated Y-coords.
    * @param minHeight Node gets minimum this height. (Java reassigns the parameter; so does this.)
+   *
+   * The recursive call of NodeYPlacer.java:66 is a frame push. AC6 (#67): explicit stack, same visit, side-effect and
+   * accumulation order. A frame is one suspended Java activation: the node, its `newMinHeight` and the loop index `i`;
+   * the loop bound `getOutgoingEdges().size()` is re-read per step, as the Java `for` condition is. `i` is advanced when
+   * the child's frame is pushed rather than when it returns: nothing reads it in between. The stack is depth-checked
+   * after each push (`checkStackDepth` on its length): Java's `StackOverflowError` on a recursion without end.
    * @see NodeYPlacer.java:46
    */
   private setYLevels(node: ElkNode, minHeight: number): void {
+    const stack: YLevelFrame[] = [this.enterYLevel(node, minHeight)];
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      if (frame.i < frame.node.getOutgoingEdges().size()) {
+        const child = castToElkNode(frame.node.getOutgoingEdges().get(frame.i).getTargets().get(0)!);
+        frame.i++;
+        stack.push(this.enterYLevel(child, frame.newMinHeight));
+        checkStackDepth(stack.length);
+      } else {
+        stack.pop();
+      }
+    }
+  }
+
+  /** One activation of `setYLevels` up to its loop (NodeYPlacer.java:57-63): places the node and returns its frame. */
+  private enterYLevel(node: ElkNode, minHeight: number): YLevelFrame {
     if (node.hasProperty(VertiFlexOptions.VERTICAL_CONSTRAINT)) {
       minHeight = node.getProperty(VertiFlexOptions.VERTICAL_CONSTRAINT);
     }
@@ -50,10 +80,7 @@ export class NodeYPlacer implements ILayoutPhase<VertiFlexLayoutPhases, ElkNode>
       this.layerDistance +
       node.getHeight() +
       Math.max(node.getProperty(CoreOptions.MARGINS).bottom, this.nodeNodeSpacing);
-    for (let i = 0; i < node.getOutgoingEdges().size(); i++) {
-      const child = castToElkNode(node.getOutgoingEdges().get(i).getTargets().get(0)!);
-      this.setYLevels(child, newMinHeight);
-    }
+    return { node, newMinHeight, i: 0 };
   }
 
   getLayoutProcessorConfiguration(

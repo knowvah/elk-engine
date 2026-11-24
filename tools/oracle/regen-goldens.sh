@@ -19,6 +19,11 @@
 # test/golden/packing-inputs/ (PK2). The examples set reads the input twins of
 # the documentation examples (test/docs/examples/) from
 # test/golden/examples-inputs/ (docs-publish-prep DP4).
+# In the sets that read the elk-models checkout, a manifest path beginning
+# "generated/" names a repository file instead: it is read from test/corpus/
+# (the generated corpus, absent from elk-models), and its vendored copy is
+# compared with that file (#68: the three generated tree inputs of the layered
+# set). Every other path is read from elk-models as before.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -36,6 +41,8 @@ GENERATED_BY="tools/oracle/regen-goldens.sh"
 META_FILE="_meta.json"
 JVM_FLAGS=""
 LAYERED_JVM_FLAGS="-XX:hashCode=2"
+GENERATED_PREFIX="generated/"
+GENERATED_ROOT="$ROOT/test/corpus"
 
 die() {
   echo "error: $1" >&2
@@ -133,20 +140,22 @@ golden_paths() { # prints one golden input path per line
 }
 
 # Prints one oracle case per golden entry (JSON Lines). `variant` is always
-# sent; `algorithm` only when the entry carries `retarget` (D2).
-write_cases() { # write_cases <input dir> <dest file>
+# sent; `algorithm` only when the entry carries `retarget` (D2). With a
+# generated root, a path under GENERATED_PREFIX is read from that root (#68).
+write_cases() { # write_cases <input dir> <dest file> [<generated root>]
   node -e '
     const fs = require("fs");
-    const [manifest, inputDir, dest] = process.argv.slice(1, 4);
+    const [manifest, inputDir, dest, generatedPrefix, generatedRoot] = process.argv.slice(1, 6);
     const m = JSON.parse(fs.readFileSync(manifest, "utf8"));
+    const rootOf = (p) => (generatedRoot !== "" && p.startsWith(generatedPrefix) ? generatedRoot : inputDir);
     const lines = m.golden.map((g) => {
-      const c = { id: g.id, input: inputDir + "/" + g.path, mode: "layout" };
+      const c = { id: g.id, input: rootOf(g.path) + "/" + g.path, mode: "layout" };
       if (g.retarget !== undefined) c.algorithm = g.algorithm;
       c.variant = g.variant;
       return JSON.stringify(c);
     });
     fs.writeFileSync(dest, lines.join("\n") + "\n");
-  ' "$MANIFEST" "$1" "$2"
+  ' "$MANIFEST" "$1" "$2" "$GENERATED_PREFIX" "${3:-}"
 }
 
 require_models_commit() {
@@ -159,13 +168,22 @@ require_models_commit() {
     die "elk-models at $actual, expected pinned $expected"
 }
 
-# The algorithms set vendors its inputs; they must equal the pinned corpus.
+# The algorithms and layered sets vendor their inputs; they must equal the
+# pinned corpus, or the generated corpus for a path under GENERATED_PREFIX.
 require_vendored_inputs() {
   local rel
   [ -n "$VENDORED_DIR" ] || return 0
   while IFS= read -r rel; do
-    cmp -s "$VENDORED_DIR/$rel" "$MODELS_DIR/$rel" ||
-      die "vendored input $rel differs from the pinned corpus"
+    case "$rel" in
+      "$GENERATED_PREFIX"*)
+        cmp -s "$VENDORED_DIR/$rel" "$GENERATED_ROOT/$rel" ||
+          die "vendored input $rel differs from test/corpus/$rel"
+        ;;
+      *)
+        cmp -s "$VENDORED_DIR/$rel" "$MODELS_DIR/$rel" ||
+          die "vendored input $rel differs from the pinned corpus"
+        ;;
+    esac
   done < <(golden_paths)
 }
 
@@ -188,7 +206,11 @@ write_meta() { # write_meta <dest file>
 }
 
 run_harness() { # run_harness <outDir> <casesFile>
-  write_cases "${INPUTS_DIR:-$MODELS_DIR}" "$2"
+  if [ -n "$INPUTS_DIR" ]; then
+    write_cases "$INPUTS_DIR" "$2"
+  else
+    write_cases "$MODELS_DIR" "$2" "$GENERATED_ROOT"
+  fi
   "$ROOT/tools/oracle/run.sh" --cases "$2" "$1"
 }
 

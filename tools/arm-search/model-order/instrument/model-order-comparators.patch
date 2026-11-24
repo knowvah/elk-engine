@@ -1,0 +1,74 @@
+--- a/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/preserveorder/ModelOrderNodeComparator.java
++++ b/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/preserveorder/ModelOrderNodeComparator.java
+@@ -425,6 +425,9 @@
+             
+             // After this each reference node should be a real node in this layer that I can use to compare n1 and n2.
+             
++            System.err.println("MOARM NC:429 twoLongEdges n1=" + n1 + " n2=" + n2 + " src1=" + n1SourceFeedbackNode + " tgt1=" + n1TargetFeedbackNode
++                    + " src2=" + n2SourceFeedbackNode + " tgt2=" + n2TargetFeedbackNode + " ref1=" + n1ReferenceNode + " ref2=" + n2ReferenceNode
++                    + " sameRef=" + n1ReferenceNode.equals(n2ReferenceNode) + " beforePorts=" + beforePorts);
+             // Case both are on the same node.
+             if (n1ReferenceNode.equals(n2ReferenceNode)) {
+                 // Find the first port that occurs on the node.
+@@ -437,6 +440,16 @@
+                     // If one is source one is target, I will just order them but it will always create a crossing.
+                     // If both are target, I should not have this problem and can never be here, since these nodes
+                     // should have a previous layer node.
++                    System.err.println("MOARM NC:434 beforePorts sameRef src1=" + n1SourceFeedbackNode + " tgt1=" + n1TargetFeedbackNode + " src2=" + n2SourceFeedbackNode + " tgt2=" + n2TargetFeedbackNode);
++                    boolean ss = n1SourceFeedbackNode && n2SourceFeedbackNode, st = n1SourceFeedbackNode && n2TargetFeedbackNode,
++                            ts = n1TargetFeedbackNode && n2SourceFeedbackNode, tt = n1TargetFeedbackNode && n2TargetFeedbackNode;
++                    if (!ss && n1SourceFeedbackNode) System.err.println("ARM9 NC:450 right operand n2TargetFeedbackNode evaluated");
++                    if (st) System.err.println("ARM8 NC:450 (source, target) taken");
++                    if (!ss && !st && !ts) System.err.println("ARM10 NC:453 (target, source) false");
++                    if (!ss && !st && !ts) System.err.println("ARM13 NC:456 condition reached");
++                    if (!ss && !st && !ts && n1TargetFeedbackNode) System.err.println("ARM14 NC:456 right operand n2TargetFeedbackNode evaluated");
++                    if (tt && !ss && !st && !ts) System.err.println("ARM11 NC:456 (target, target) taken");
++                    if (!ss && !st && !ts && !tt) System.err.println("ARM12 NC:456 (target, target) false, falls through");
+                     if (n1SourceFeedbackNode && n2SourceFeedbackNode) {
+                         int returnValue = new ModelOrderPortComparator(graph, previousLayer, orderingStrategy, null, n2TargetFeedbackNode)
+                             .compare(n1dummyNodeSourcePort, n2dummyNodeSourcePort);
+@@ -473,6 +486,9 @@
+                 }
+             }
+             
++            if (n1ReferenceNode.equals(n2ReferenceNode)) {
++                System.err.println("ARM7 NC:479 sameRef fell through to compare(ref1, ref2) beforePorts=" + beforePorts + " n1=" + n1 + " n2=" + n2);
++            }
+             // If the nodes are different, just compare them since one should be a normal non-feedback dummy now.
+             // Worst case would be that one is a dummy and one a normal dangling node, where this would just create a 
+             // static ordering.
+--- a/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/preserveorder/ModelOrderPortComparator.java
++++ b/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/preserveorder/ModelOrderPortComparator.java
+@@ -181,7 +181,11 @@
+                 // if it is a SOUTH or EAST port reverse the order.
+                 // checkReferenceLayer already updates the transitive ordering association.
+                 int inPreviousLayer =  checkReferenceLayer(previousLayer, p1Node, p2Node, p1, p2);
++                System.err.println("MOARM PC:183 longEdgeSources p1=" + p1 + " p2=" + p2 + " sides=" + p1.getSide() + "/" + p2.getSide() + " ref=" + inPreviousLayer);
+                 if (inPreviousLayer != 0) {
++                    if (!(p1.getSide() == PortSide.EAST && p2.getSide() == PortSide.EAST)) {
++                        System.err.println("ARM16 PC:185 notBothEast p1=" + p1 + " p2=" + p2);
++                    }
+                     if (p1.getSide() == PortSide.EAST && p2.getSide() == PortSide.EAST) {
+                         // Some ports are ordered in the way around.
+                         // Previously this did not matter, since the north south processor did override the ordering.
+@@ -272,6 +276,12 @@
+             
+             int p1Order = 0;
+             int p2Order = 0;
++            if (!p1.getOutgoingEdges().get(0).hasProperty(InternalProperties.MODEL_ORDER)) {
++                System.err.println("ARM17 PC:275 p1 first outgoing edge without MODEL_ORDER p1=" + p1 + " edge=" + p1.getOutgoingEdges().get(0));
++            }
++            if (!p2.getOutgoingEdges().get(0).hasProperty(InternalProperties.MODEL_ORDER)) {
++                System.err.println("ARM17 PC:279 p2 first outgoing edge without MODEL_ORDER p2=" + p2 + " edge=" + p2.getOutgoingEdges().get(0));
++            }
+             if (p1.getOutgoingEdges().get(0).hasProperty(InternalProperties.MODEL_ORDER)) {
+                 p1Order = CMGroupModelOrderCalculator.calculateModelOrderOrGroupModelOrder(p1.getOutgoingEdges().get(0),
+                         p2.getOutgoingEdges().get(0), graph, p1.getOutgoingEdges().size() + p1.getIncomingEdges().size());
+@@ -345,6 +355,7 @@
+                 return -reverseOrder;
+             }
+         } else {
++            System.err.println("ARM15 PC:347 no in/out split, not both MODEL_ORDER p1=" + p1 + " p2=" + p2);
+             updateBiggerAndSmallerAssociations(p2, p1, reverseOrder);
+             return -reverseOrder;
+         }

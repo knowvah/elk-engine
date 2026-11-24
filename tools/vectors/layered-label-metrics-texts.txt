@@ -2315,3 +2315,7 @@ n2_1_1
 n2_1_2
 outside
 inside
+insideOtherLayout
+child1
+child2
+insideOtherDirection

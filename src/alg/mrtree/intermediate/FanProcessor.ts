@@ -3,6 +3,7 @@ import type { ILayoutProcessor } from '../../../core/alg/ILayoutProcessor.js';
 import type { IElkProgressMonitor } from '../../../core/util/IElkProgressMonitor.js';
 import { add } from '../../../java/lang/Int32.js';
 import { d2i } from '../../../java/lang/JavaMath.js';
+import { checkStackDepth } from '../../../java/lang/StackDepth.js';
 import { StringIndexOutOfBoundsException } from '../../../java/lang/StringIndexOutOfBoundsException.js';
 import { STRING } from '../../../java/util/HashStrategy.js';
 import { JavaHashMap } from '../../../java/util/JavaHashMap.js';
@@ -76,30 +77,39 @@ export class FanProcessor implements ILayoutProcessor<TGraph> {
   /**
    * Calculates a fan for the nodes in the list currentLevel including their descendants.
    *
+   * The recursive call of FanProcessor.java:146 is the last statement of the activation (a tail call), so it is the
+   * next iteration of a loop over the levels. AC6 (#67): explicit stack, same visit, side-effect and accumulation
+   * order. Each iteration stands for one Java activation, which still holds a frame in Java: they are counted for the
+   * depth check.
+   *
    * @param currentLevel the list of TNode for which the fan should be calculated.
    */
   private calculateFan(currentLevel: LinkedList<TNode>): void {
-    if (!currentLevel.isEmpty()) {
+    let level = currentLevel;
+    let depth = 1;
+    while (!level.isEmpty()) {
       /** the children of the current level are the next level */
       const nextLevel = new LinkedList<TNode>();
 
       /** the size of the which the stringId will be extended for this level */
-      const digits = d2i(Math.floor(Math.log10(currentLevel.size())) + 1);
+      const digits = d2i(Math.floor(Math.log10(level.size())) + 1);
 
       /**
        * set final stringId for all nodes in this level and set the provisional stringId for their children
        * (currentLevel is not empty so the id is set)
        */
-      const id = this.assignIds(currentLevel, nextLevel, digits);
+      const id = this.assignIds(level, nextLevel, digits);
 
       /** holds the occurences of descendants in this level */
-      const locFanMap = this.countDescendants(currentLevel, id, digits);
+      const locFanMap = this.countDescendants(level, id, digits);
 
       /** update the gloFanMap with the values from locFanMap will only increase the values */
       this.mergeLocal(locFanMap);
 
       /** calculate the occurrences in the deeper levels and add them to the global gloFanMap */
-      this.calculateFan(nextLevel);
+      level = nextLevel;
+      // Java's StackOverflowError of an endless recursion, raised from this class
+      checkStackDepth(++depth);
     }
   }
 

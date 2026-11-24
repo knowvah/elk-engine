@@ -1,0 +1,79 @@
+--- a/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/orthogonal/OrthogonalRoutingGenerator.java
++++ b/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/orthogonal/OrthogonalRoutingGenerator.java
+@@ -200,6 +200,12 @@
+         
+         // if there are at least two critical dependencies, there may be critical cycles that need to be broken
+         Random random = layeredGraph.getProperty(InternalProperties.RANDOM);
++        if (debugPrefix != null && debugPrefix.startsWith("ext")) {
++            for (HyperEdgeSegment s : edgeSegments) {
++                System.err.println("ARM " + debugPrefix + " segment in=" + s.getIncomingConnectionCoordinates() + " out=" + s.getOutgoingConnectionCoordinates());
++            }
++            System.err.println("ARM " + debugPrefix + " criticalThreshold=" + criticalConflictThreshold + " criticalDependencies=" + criticalDependencyCount);
++        }
+         if (criticalDependencyCount >= 2) {
+             breakCriticalCycles(edgeSegments, random);
+         }
+@@ -231,6 +237,9 @@
+                 continue;
+             }
+ 
++            if (debugPrefix != null && debugPrefix.startsWith("ext")) {
++                System.err.println("ARM " + debugPrefix + " calculateBendPoints slot=" + node.getRoutingSlot() + " dummy=" + node.isDummy() + " split=" + (node.getSplitPartner() != null) + " in=" + node.getIncomingConnectionCoordinates() + " out=" + node.getOutgoingConnectionCoordinates());
++            }
+             rankCount = Math.max(rankCount, node.getRoutingSlot());
+ 
+             routingStrategy.calculateBendPoints(node, startPos, edgeSpacing);
+--- a/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/orthogonal/direction/NorthToSouthRoutingStrategy.java
++++ b/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/orthogonal/direction/NorthToSouthRoutingStrategy.java
+@@ -45,6 +45,7 @@
+     public void calculateBendPoints(final HyperEdgeSegment segment, final double startPos, final double edgeSpacing) {
+         // We don't do anything with dummy segments; they are dealt with when their partner is processed
+         if (segment.isDummy()) {
++            System.err.println("ARM NorthToSouthRoutingStrategy.java:47 dummy segment, return");
+             return;
+         }
+         
+@@ -71,6 +72,7 @@
+                         // If this segment was split, we need two additional bend points
+                         HyperEdgeSegment splitPartner = segment.getSplitPartner();
+                         if (splitPartner != null) {
++                            System.err.println("ARM NorthToSouthRoutingStrategy.java:72 split partner, edge " + edge);
+                             double splitX = splitPartner.getIncomingConnectionCoordinates().get(0);
+                             
+                             bend = new KVector(splitX, currentY);
+@@ -89,6 +91,8 @@
+                         bend = new KVector(targetX, currentY);
+                         edge.getBendPoints().add(bend);
+                         addJunctionPointIfNecessary(edge, currentSegment, bend, false);
++                    } else {
++                        System.err.println("ARM NorthToSouthRoutingStrategy.java:62 straight edge skipped, sourceX=" + sourceX + " targetX=" + targetX + " edge " + edge);
+                     }
+                 }
+             }
+--- a/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/orthogonal/direction/SouthToNorthRoutingStrategy.java
++++ b/org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/p5edges/orthogonal/direction/SouthToNorthRoutingStrategy.java
+@@ -45,6 +45,7 @@
+     public void calculateBendPoints(final HyperEdgeSegment segment, final double startPos, final double edgeSpacing) {
+         // We don't do anything with dummy segments; they are dealt with when their partner is processed
+         if (segment.isDummy()) {
++            System.err.println("ARM SouthToNorthRoutingStrategy.java:47 dummy segment, return");
+             return;
+         }
+         
+@@ -71,6 +72,7 @@
+                         // If this segment was split, we need two additional bend points
+                         HyperEdgeSegment splitPartner = segment.getSplitPartner();
+                         if (splitPartner != null) {
++                            System.err.println("ARM SouthToNorthRoutingStrategy.java:72 split partner, edge " + edge);
+                             double splitX = splitPartner.getIncomingConnectionCoordinates().get(0);
+                             
+                             bend = new KVector(splitX, currentY);
+@@ -89,6 +91,8 @@
+                         bend = new KVector(targetX, currentY);
+                         edge.getBendPoints().add(bend);
+                         addJunctionPointIfNecessary(edge, currentSegment, bend, false);
++                    } else {
++                        System.err.println("ARM SouthToNorthRoutingStrategy.java:62 straight edge skipped, sourceX=" + sourceX + " targetX=" + targetX + " edge " + edge);
+                     }
+                 }
+             }

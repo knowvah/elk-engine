@@ -4,7 +4,8 @@
 # the recursive engine result for designed tree scenarios. Runs tools/vectors/RadialVectors.java as a single-file source program
 # against the source-built oracle jars (AD-3) plus the third-party bundles the ELK JSON importer needs. The program is invoked as
 #   java -cp <classpath> RadialVectors.java <outDir> <tools/vectors dir>
-# and writes <outDir>/radial.json itself (the landed copy lives in test/golden/refs/java/radial.json).
+# and writes <outDir>/radial.json and then <outDir>/radial-extra.json itself (the second plan, issue #66; the landed copies live in
+# test/golden/refs/java/radial.json and test/golden/refs/java/radial-extra.json).
 # Usage: radial-vectors.sh <outDir>              the pinned recording (cached by salted input hash, vector-cache.sh)
 #        radial-vectors.sh --unpinned <outDir>   TR3 evidence run: no -XX:hashCode=2, no cache, no self-checks; never committed
 # Honours ELK_ORACLE_DIR (default <repo>/../elk-oracle), P2_BUNDLES and ELK_VECTORS_CACHE=off. The cache salt does not cover the
