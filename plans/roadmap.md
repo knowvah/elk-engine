@@ -4146,3 +4146,52 @@ was changed between the runs.
 **Open.** Nothing from this mission: no `needs-ruling` or `follow-up` issue was filed, no stop condition fired on a row, and
 no row is a partial. Rows with a non-default `randomSeed` were out of scope; `randomSeed` 0 is the unseeded generator and
 cannot have exact rows.
+
+## Revision 2026-11-24 (rectpacking-next-row-arm)
+
+Queue mission for issue #107, on `chore/issue-queue` (plan, journal and evidence in `plans/rectpacking-next-row-arm/`). Since
+eclipse-elk/elk#1239, no recorded row had reached the false arm of `if (rows.size() > nextRowIndex)` in `placeBelow`
+(`Compaction.java:325`) and `placeBeside` (`:416`), the port's shared `removeFromNextRow` (`CompactionPlacement.ts:55`). Result:
+**proven dead at the pin** (branch D3 of the brief). No `src/` file, landed ref, vector, golden or assertion changed, and no
+oracle patch or pin. Oracle: `8bca22f4` + patches 0001-0004 (built 2026-11-25T00:05:58Z); `git -C ~/git/knowvah/elk log
+8bca22f4..HEAD` over alg.rectpacking is empty.
+
+**1. Why it was open.** Until `e7eaea57` the rows `stops/arm/staleParentRow*` reached the arm. A block that `placeBeside` had
+moved kept its old parent row, so a block of the current row read as `wasFromNextRow` after the next row was gone. #1239 added
+`nextBlock.setParentRow(row)` (`:413`).
+
+**2. The proof**, from the Java at the pin (`evidence.md` § 2; one journal row per lemma). The guard reads neither the flag
+`rowHeightReevaluation` nor any number, so the proof covers both flag values:
+
+| Lemma | Claim | Java |
+| ----- | ----- | ---- |
+| N0 | invariant **I** of #81 (a block's parent row is the row that holds it) uses no flag fact | `InitialPlacement.java:72-80`, `Compaction.java:101`, `:126-137`, `:323-326`, `:412-417` |
+| N1 | `wasFromNextRow` means `getNextBlock` took its next-row arm, which needs `nextRowIndex < rows.size()` | `Compaction.java:101`, `:216-219` |
+| N2 | nothing shortens the list or moves `nextRowIndex` before the guard (`final` parameters, no alias, `:132` followed by `continue`, `placeBelow` writes only when it returns true) | `:54`, `:58`, `:132-137`, `:149`, `:311-333`, `InitialPlacement.java:64`, `:85`, `RowFillingAndCompaction.java:96`, `:105`, `:171` |
+| N3 | `:325` runs only under `if (wasFromNextRow)` | `:322` |
+| N4 | `placeBeside` has one call, under `if (wasFromNextRow)` | `:152`, `:158` |
+
+Every "only" claim has an `ast-grep` enumeration over the bundle with a positive control (`evidence.md` § 3); #81's
+enumerations E2, E3, E6 and E8 give the same hit lists at the pin.
+
+**3. Support.** A scratch copy of the port with probes at both guards, at every block step and after `getNextBlock`. #81's
+generator and watchdog search were reused unchanged:
+
+| Run | Result |
+| --- | ------ |
+| 1,000,000 seeded inputs, 500,000 per flag value | guard calls: `placeBelow` 200,405 (on) and 186,741 (off), `placeBeside` 455,108 and 311,450; 0 false-arm hits, 0 violations of **I**, N1 or N2, 0 timeouts, 0 throws |
+| 1,200 of those inputs (600 per flag value) on the oracle and on the unmodified port | 1,200 equal at 1e-6 (largest difference 0); the comparator control flags a 0.001 move |
+| Mutant: `CompactionPlacement.ts:176` (#1239's line) removed | both `staleParentRow` inputs take the false arm in `placeBeside` again |
+| Side count of `Compaction.java:127` | both arms reached (false 491,141 with the flag on, 5,329 off): no follow-up |
+
+**4. Records.** `plans/alg-packing/unreached.md` gains `## Addendum 2026-11-24 (#107)` with `U` row 20; the T14 row for the
+`staleParentRow` rows stays as the record of the reach before #1239. `plans/alg-packing/decision-journal.md` has one closing row.
+`docs/conformance.md` and `docs/architecture/alg-packing.md` (§ 2, § 5) call the arm dead at the pin. The port keeps the Java's
+`if` verbatim, and nothing is filed upstream (dead code). Comment on #107:
+https://github.com/knowvah/elk-engine/issues/107#issuecomment-7153425136; its labels are unchanged.
+
+**5. Gates.** Queue gates 1-7 green on the final tree: coverage 1,257 files, 51,943 tests, 98.85 / 97.02 / 98.63 / 98.9; CodeQL
+with no new accepted entry; `test/golden/refs/` against the base untouched.
+
+**Open.** Nothing from this mission: no `needs-ruling` or `follow-up` issue was filed and no row is a partial. With `U` rows 19
+and 20 the rectpacking bundle has no open arm.

@@ -2280,7 +2280,9 @@ providers are registered explicitly, not by `getInstance()` (PK8); `SporeMetaDat
   spore 99.21 %, 100 % (85 of 85); topdownpacking 98.61 %, 96.42 % (54 of 56); the whole project at the batch 5 gate 98.92 / 96.99 /
   98.84 / 98.92 (statements / branches / functions / lines) over 49,156 tests. `plans/alg-packing/unreached.md` lists 18 `U` rows; the
   one arm mission 8c could not close (`Compaction.java:364`, issue #81) is proven dead at the `8bca22f4` pin and is `U` row 19
-  of that file's addendum of 2026-11-24.
+  of that file's addendum of 2026-11-24. The `rows.size() > nextRowIndex` false arm of `placeBelow` and `placeBeside`
+  (`Compaction.java:325`, `:416`, issue #107), unreached since eclipse-elk/elk#1239, is proven dead at the same pin and is `U`
+  row 20 of the addendum (#107). `U` rows 19 and 20 close the bundle's open arms.
 
 ### Upstream quirks kept (mission 8c) {#alg-packing-quirks}
 
@@ -2417,6 +2419,14 @@ topdownpacking:
   the next row, so it holds one rect, whose height at any width is its minimum height. Support: 1,000,000 seeded inputs through
   an instrumented copy of the port (no multi-rect `nextBlock`, no arm hit), 1,200 of them equal to the oracle at 1e-6
   (`plans/rectpacking-open-arm/evidence.md`). The port keeps the `if` verbatim.
+- **Dead arm (issue #107).** `Compaction.java:325` (`placeBelow`) and `:416` (`placeBeside`), the false arm of
+  `if (rows.size() > nextRowIndex)` (the port's shared `CompactionPlacement.ts:55`), are proven dead at the `8bca22f4` pin for
+  both values of `rowHeightReevaluation`: `U` row 20 of `plans/alg-packing/unreached.md`. Both guards run only when
+  `wasFromNextRow` holds. Since eclipse-elk/elk#1239 that means `getNextBlock` took the next row's first block, which needs
+  `nextRowIndex < rows.size()`, and nothing shortens the list before the guard. Support: 1,000,000 seeded inputs, 500,000 per
+  flag value, through an instrumented copy of the port (no false-arm hit, no invariant violation), and 1,200 of them, 600 per flag value, are equal to the oracle at 1e-6. With the line of
+  #1239 removed from that copy, the two `staleParentRow` inputs reach the arm again
+  (`plans/rectpacking-next-row-arm/evidence.md`). The port keeps the `if` verbatim.
 
 **Landed shim fixed at the origin.** `src/java/util/JavaObjects.ts` `equals` called `a.equals(b)` without an identity test. The JVM's
 `Objects.equals` is true for one and the same object, so a vector with a NaN component (not equal to itself under
