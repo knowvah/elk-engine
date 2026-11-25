@@ -6,6 +6,7 @@ import type { EObject } from '../../../emf/ecore/EObject.js';
 import type { InternalEObject } from '../../../emf/ecore/InternalEObject.js';
 import { ResourceSetImpl } from '../../../emf/ecore/resource/impl/ResourceSetImpl.js';
 import { EObjectResolvingEList } from '../../../emf/ecore/util/EObjectResolvingEList.js';
+import { AssertionError } from '../../../java/lang/AssertionError.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { IllegalStateException } from '../../../java/lang/IllegalStateException.js';
 import { RuntimeException } from '../../../java/lang/RuntimeException.js';
@@ -338,6 +339,26 @@ describe('cyclic linking', () => {
       expect((e as CyclicLinkingException).triple).toBe(second);
     }
   });
+
+  it('LazyLinkingResource.java:62-71: the cyclic exception is an AssertionError named after its own class', () => {
+    const w = world();
+    const node = new ReferenceNode({ owner: w.root, feature: 't', index: 0, ruleName: 'ID', text: 't', line: 1 });
+    const triple = new LazyProxyTriple(w.root, ref('a', 1), node);
+    w.resource.resolvingSet.push(triple);
+    let thrown: unknown = null;
+    try {
+      w.resource.cyclic(triple);
+    } catch (e) {
+      thrown = e;
+    }
+    expect(thrown).toBeInstanceOf(AssertionError);
+    expect(thrown).toBeInstanceOf(CyclicLinkingException);
+    expect((thrown as CyclicLinkingException).name).toBe('CyclicLinkingException');
+    // Throwable.toString(): the name of the runtime class, then the detail message
+    expect(String(thrown)).toBe(
+      "CyclicLinkingException: Cyclic resolution of lazy links : Cls.a->Cls.a in resource 'file:/a.elkj'.",
+    );
+  });
 });
 
 describe('resolveLazyCrossReferences', () => {
@@ -447,6 +468,20 @@ describe('diagnostic severities', () => {
     const w = world(provider(new DiagnosticMessage('ignored', Severity.IGNORE, null)));
     w.target(w.root, 'x');
     expect(() => w.resource.getEObject('|0')).toThrow(/Unexpected severity/);
+  });
+
+  it('LazyLinkingResource.java:423: the unexpected severity is a java.lang.AssertionError with the Java text', () => {
+    // IGNORE is the one severity that reaches the default arm: DiagnosticMessage rejects INFO
+    const w = world(provider(new DiagnosticMessage('ignored', Severity.IGNORE, null)));
+    w.target(w.root, 'x');
+    let thrown: unknown = null;
+    try {
+      w.resource.getEObject('|0');
+    } catch (e) {
+      thrown = e;
+    }
+    expect(thrown).toBeInstanceOf(AssertionError);
+    expect((thrown as AssertionError).message).toBe('Unexpected severity: IGNORE');
   });
 
   it('adds nothing when the provider has no message, also with errors present', () => {

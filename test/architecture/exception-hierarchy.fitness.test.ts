@@ -105,9 +105,10 @@ const JAVA_PARENTS: ReadonlyMap<ErrorClass, ErrorClass> = new Map<ErrorClass, Er
   [RegionTraceMissingException, RuntimeException],
   [RegionsOutsideFrameException, RuntimeException],
   [RegionTrace, RuntimeException],
-  // LazyLinkingResource.CyclicLinkingException extends AssertionError, OperationCanceledError (Xtext) extends
-  // java.lang.Error: neither AssertionError nor Error is shimmed (D10), so both extend JS Error (= Throwable)
-  [CyclicLinkingException, Error],
+  // LazyLinkingResource.CyclicLinkingException extends AssertionError (LazyLinkingResource.java:62-71)
+  [CyclicLinkingException, AssertionError],
+  // OperationCanceledError (Xtext) extends java.lang.Error, which has no class here (dev-assert D3): JS Error
+  // (= Throwable)
   [OperationCanceledError, Error],
   // Eclipse runtime: org.eclipse.core.runtime.OperationCanceledException
   [OperationCanceledException, RuntimeException],
@@ -163,7 +164,11 @@ describe('exception hierarchy (AD-16a)', () => {
   it('puts every Java exception under Exception, so a catch of the parent catches the family', () => {
     for (const [cls, parent] of JAVA_PARENTS) {
       if (parent === Error && cls !== Exception) continue; // port-local errors
+      // the AssertionError family: java.lang.Errors in Java, outside Exception
+      if (cls === AssertionError || cls.prototype instanceof AssertionError) continue;
       expect(cls === Exception || cls.prototype instanceof Exception, cls.name).toBe(true);
     }
+    // a Java `catch (Exception e)` does not catch a CyclicLinkingException
+    expect(CyclicLinkingException.prototype instanceof Exception).toBe(false);
   });
 });

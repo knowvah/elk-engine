@@ -5,6 +5,7 @@ import type { URI } from '../../../emf/common/util/URI.js';
 import type { EObject } from '../../../emf/ecore/EObject.js';
 import type { InternalEObject } from '../../../emf/ecore/InternalEObject.js';
 import type { ResourceDiagnostic } from '../../../emf/ecore/resource/Resource.js';
+import { AssertionError } from '../../../java/lang/AssertionError.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import { IllegalStateException } from '../../../java/lang/IllegalStateException.js';
 import { RuntimeException } from '../../../java/lang/RuntimeException.js';
@@ -410,7 +411,7 @@ export class LazyLinkingResource extends LazyLinkingResourceBase {
         case Severity.WARNING:
           return this.getWarnings();
         default:
-          throw new Error(`Unexpected severity: ${String(message.getSeverity())}`);
+          throw new AssertionError(`Unexpected severity: ${String(message.getSeverity())}`);
       }
     }
     return new BasicEList<ResourceDiagnostic>();

@@ -4195,3 +4195,46 @@ with no new accepted entry; `test/golden/refs/` against the base untouched.
 
 **Open.** Nothing from this mission: no `needs-ruling` or `follow-up` issue was filed and no row is a partial. With `U` rows 19
 and 20 the rectpacking bundle has no open arm.
+
+## Revision 2026-11-25 (assertion-error-shim)
+
+Queue mission for issue #114, on `chore/issue-queue` (plan, journal and evidence in `plans/assertion-error-shim/`). The dev-assert
+mission (#45) added the `java.lang.AssertionError` shim and left three older stand-ins alone. This mission moves them onto the
+shim, and a fourth that the Java enumeration found. No ref, vector, golden, oracle patch or pin changed, and no oracle output was
+used (D6). Oracle state: `8bca22f4` + patches 0001-0004 (built 2026-11-25T00:05:58Z); `git -C ~/git/knowvah/elk log
+8bca22f4..HEAD` over alg.layered is empty.
+
+**1. The sites.**
+
+| Site | Java | Before | After |
+| ---- | ---- | ------ | ----- |
+| `DefaultLinkingService.getLinkedObjects`, null scope | `DefaultLinkingService.java:109-113` | plain `Error`, `name = 'AssertionError'` | `throw new AssertionError(<same message>)` |
+| `CyclicLinkingException` | `LazyLinkingResource.java:62-71` | `extends Error`, `name = 'AssertionError'` | `extends AssertionError`, `name = 'CyclicLinkingException'` |
+| `SplinesMath` constructor | `SplinesMath.java:53-55` | no constructor | private constructor with the Java `throw` (not `devAssert`: the Java throws unconditionally) |
+| `LazyLinkingResource.getDiagnosticList`, unexpected severity | `LazyLinkingResource.java:423` | `throw new Error(<message>)` | `throw new AssertionError(<same message>)` |
+
+**2. The fourth site.** A search for `name = 'AssertionError'` finds a stand-in only when it sets the name. The Java was
+enumerated too: every `AssertionError` in ELK at the pin and in the source bundles of Xtext, EMF, Gson, Guava and Equinox (p2
+cache), matched against the Java files `src/` cites and the classes it ports. `LazyLinkingResource.java:423` was the one plain
+`Error` standing in for an `AssertionError`. Its `name` changes from `Error` to `AssertionError`; no shipped language reaches the
+arm (the one diagnostic provider in `src/` builds `ERROR` messages only).
+
+**3. The name of `CyclicLinkingException`** (#114 left it open). It is the class name, as at the 41 other `this.name` sites. No
+test pinned the old name. No `src/` reader of a caught error's name can receive the exception: it crosses only the frames between
+two nested resolutions, because the frame that owns the triple catches it (`LazyLinkingResource.ts:255`), and the scope providers
+of both languages resolve no cross-reference. The two readers the brief names model Java calls that print the runtime class
+(`AbstractScope.java:246`, `getSimpleName()`; `RegionTraceMissingException`, `cause.toString()`).
+
+**4. Tests.** One expected value changed, the fitness row #114 names: `[CyclicLinkingException, AssertionError]`. The "under
+Exception" case skips the `AssertionError` family, which checks the same rows as before, and asserts that
+`CyclicLinkingException` is not an `Exception`. Four additive tests pin the class and the Java message at each site.
+`docs/translation-rules.md` (the `CyclicLinkingException`, `OperationCanceledError` row) says what each class extends.
+
+**5. Gates.** Queue gates 1-7 green on the final tree: coverage 1,257 files, 51,947 tests, 98.85 / 97.02 / 98.63 / 98.9; CodeQL
+with no new accepted entry; `test/golden/refs/` against the base untouched. The first coverage run failed on one wall-clock
+timeout (`test/corpus/phase-sweep.test.ts`, 933 s against its 900 s limit, `mismatches=0`, load 57 to 141 from other sessions);
+the rerun passed with nothing changed. Comment on #114:
+https://github.com/knowvah/elk-engine/issues/114#issuecomment-7154636091; its labels are unchanged.
+
+**Open.** #180 (`follow-up`): `InternalNodeModelUtils.java:46-48` throws `new AssertionError()` in its constructor and the port's
+constructor is empty. It builds no stand-in, so it is outside #114. No `needs-ruling` issue was filed and no row is a partial.
