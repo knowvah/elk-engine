@@ -122,8 +122,8 @@ Every row was recorded from the oracle (ELK built from source with patches 0001 
 `-XX:+UnlockExperimentalVMOptions -XX:hashCode=2` (PK1). A row is `{ id, group, input, expected }`; `input` is the graph as ELK
 JSON, re-imported by the recorder before the run (round-trip self-check); doubles are 16-hex raw bits. Groups: `full` (the
 result of `RecursiveGraphLayoutEngine`), `stops` (the state after each step), `throws` (class, message, first ELK frame), and per
-bundle `sort` (PK7), `minst` (PK5), `jitter` (PK4), `objects` (the `JavaObjects.equals` vector) and `predicted`
-(`getPredictedGraphSize`).
+bundle `sort` (PK7), `minst` (PK5), `jitter` (PK4), `shift` (the jitter scenarios exact, section 3.2), `objects` (the
+`JavaObjects.equals` vector) and `predicted` (`getPredictedGraphSize`).
 
 ```plantuml
 @startuml
@@ -174,8 +174,11 @@ message (`ArrayList`, the helpful-NPE text) is compared by class and frame, not 
 **The additive-extension rule.** A recorder is extended only by appending scenarios at the end of its scenario lists, never by
 editing or reordering existing ones, so the committed rows stay valid evidence and the new rows are the only diff. T14b did this
 twice: `rectpacking.json` 1,343 to 1,356 rows (seven arms no row reached, found by a seeded search of the port) and
-`spore-layout.json` 274 to 276; T13 then appended the 63-row `objects` group after every other spore row (276 to 339). The proof
-that an extension is additive, run against the revision before it:
+`spore-layout.json` 274 to 276; T13 then appended the 63-row `objects` group after every other spore row (276 to 339). The
+`8bca22f4` pin turned one spore throws row into a full row and its stops row (340), and issue #106 added the 4-row `shift` group
+between the `jitter` and `objects` rows (344, 3,196,430 B): all 340 earlier rows byte-identical and in the same order, the header
+changed by `"shift": 4` in `rowCounts` alone. The table above keeps the counts of mission 8c. The proof that an extension is
+additive, run against the revision before it:
 
 ```bash
 git show <revision-before>:test/golden/refs/java/rectpacking.json > "$TMPDIR/before.json"
@@ -302,10 +305,17 @@ centres differed, and "nondeterministic" was a property of the input. What that 
   `originalVertex` differs from the centre; a row that reached the loop becomes a `jitter` row. The 4 `jitter` rows (corpus
   inputs x2 with 11 shifted vertices, `dup5` x2) record invariants only: node count, no remaining overlap, and an input-derived
   displacement bound (a bound derived from a run differed between two builds, so none is). The TS test checks the same
-  invariants over three runs. The group keeps that form: `runsAgree` is recorded `true` now and the three runs give one dump;
-  exact `jitter` rows are issue #106.
-- **Exact evidence.** `full/overlap/scanlineHitboxes/default` and its stops row reach the `updateGraph` shift and replay at raw
-  bits; `RandomSeedTest` is ported (default seed, explicit seed, seed selects the shift).
+  invariants over three runs. The group keeps that form: `runsAgree` is recorded `true` now and the three runs give one dump.
+- **Exact rows (issue #106).** The same four scenarios are recorded a second time in the group `shift`
+  (`shift/{overlap,compaction}/{corpus,dup5}/default`), in the shape of a `stops` row: every stop from `import`, whose `v` values
+  are the shifted `originalVertex` (11 of the 12 corpus centres, 1 of the 5 of `dup5`), to `end` with the ELK dump. A `shift` row
+  passes every check of a `stops` row in the recorder (round trip, stepwise end against the engine run, two builds), and fails
+  the recording if it counts no shifted vertex. The group is in `rowCounts` but not in `tieSummary` or `optionCoverage`, like
+  `objects`, so no landed row, count or header line moved. `SporeLayoutVectors.test.ts` replays the rows through the providers
+  (every stop, the engine's end dump, `jitterNodes`, the tie summary) and `ElkGraphImporter.test.ts` replays the importer's
+  stops with raw-bit equality asserted. The provider replay compares 1,357 doubles, all raw-bit identical. No row sets `randomSeed` to 0, the unseeded generator.
+- **More exact evidence.** `full/overlap/scanlineHitboxes/default` and its stops row reach the `updateGraph` shift and replay at
+  raw bits; `RandomSeedTest` is ported (default seed, explicit seed, seed selects the shift).
 - **Goldens.** Every `packing` input has distinct centres, so goldens compare in full.
 - **Sweep.** The oracle sweep runs each case twice; a case whose runs disagree is `nondeterministic` and is counted, not
   compared. That was 788 sporeOverlap and 807 sporeCompaction cases, plus four that flickered (issue #79). Now no spore case
@@ -515,14 +525,14 @@ modules passes except for that one.
 
 ## 5. Known divergences and open issues {#alg-packing-open}
 
-| Item                                        | State                                                                                                      |
-| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| 213 sort rows (PK7)                         | resolved by the `8bca22f4` pin: all 640 rows reproduce, the classified lists are deleted (section 3.5)     |
-| 4 `RectRow.test.ts` rows                    | `CHILDREN_NOT_X_GROUPED_ROWS` is empty since the `8bca22f4` pin: every re-recorded row rebuilds its stacks |
-| 4 nondeterministic sporeOverlap sweep cases | settled by the `8bca22f4` pin: the shift is seeded, no spore case is `nondeterministic` (section 3.2)      |
-| `updateGraph` collapse unit test            | replaced by a test of the shift (eclipse-elk/elk#1244), ruling of issue #105                               |
-| jitter rows, flag-gated chain row           | invariants only (exact rows: issue #106); `SPORE_CHAIN_FULL=1`                                             |
-| landed shim `JavaObjects.equals`            | now true for one and the same object before calling `a.equals(b)`; 63 JVM rows (group `objects`) prove it  |
+| Item                                        | State                                                                                                       |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 213 sort rows (PK7)                         | resolved by the `8bca22f4` pin: all 640 rows reproduce, the classified lists are deleted (section 3.5)      |
+| 4 `RectRow.test.ts` rows                    | `CHILDREN_NOT_X_GROUPED_ROWS` is empty since the `8bca22f4` pin: every re-recorded row rebuilds its stacks  |
+| 4 nondeterministic sporeOverlap sweep cases | settled by the `8bca22f4` pin: the shift is seeded, no spore case is `nondeterministic` (section 3.2)       |
+| `updateGraph` collapse unit test            | replaced by a test of the shift (eclipse-elk/elk#1244), ruling of issue #105                                |
+| jitter rows, flag-gated chain row           | jitter rows hold invariants; the same scenarios are exact in the `shift` group (#106); `SPORE_CHAIN_FULL=1` |
+| landed shim `JavaObjects.equals`            | now true for one and the same object before calling `a.equals(b)`; 63 JVM rows (group `objects`) prove it   |
 
 | Issue | Label          | Asks                                                                                                                                                                                                                                                                                                                                                                                         |
 | ----: | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -533,7 +543,7 @@ modules passes except for that one.
 |   #80 | `needs-ruling` | seven upstream defects the ports copy (`AreaApproximation.java:98` NPE, the unused visitor and its reversed `endsWith` at `InteractiveRectPackingGraphVisitor.java:47`, `RectRow.removeBlock`, the stale parent row, dead `calculateBlockStacks` and `copyPosition`, spore's overwritten margins, `ScanlineOverlapCheck.java:166`): which to file upstream, which to carry as oracle patches |
 |   #81 | `follow-up`    | `Compaction.java:364`, the arm 8c could not close: proven dead at the pin (`U` 19 of `plans/alg-packing/unreached.md`). Since eclipse-elk/elk#1239 the `nextBlock` of `placeBeside` holds one rect when `rowHeightReevaluation` is on, and a one-rect block is as high at any width as its minimum height (`plans/rectpacking-open-arm/evidence.md`)                                         |
 |  #105 | ruled          | the `updateGraph` collapse unit test of `ElkGraphImporter.test.ts`, which eclipse-elk/elk#1244 contradicts: ruled 2026-11-19, replaced by the test of the shift                                                                                                                                                                                                                              |
-|  #106 | `follow-up`    | exact `jitter` rows for the seeded shift (a recorder redesign)                                                                                                                                                                                                                                                                                                                               |
+|  #106 | `follow-up`    | exact rows for the seeded shift: done by the additive `shift` group, 4 rows replayed at raw bits beside the unchanged `jitter` rows (section 3.2)                                                                                                                                                                                                                                            |
 |  #107 | `follow-up`    | the `rows.size() > nextRowIndex` false arm of `placeBelow` and `placeBeside` (`Compaction.java:325`, `:416`), unreached since eclipse-elk/elk#1239: an input or a proof                                                                                                                                                                                                                      |
 |  #108 | `follow-up`    | 27 sporeOverlap corpus cases throw "Invalid hitboxes" through `NaN` rectangles (a zero-size compound node, `ElkUtil.resizeNode`): whether to draft an upstream issue                                                                                                                                                                                                                         |
 |  #175 | `follow-up`    | spore, time at depth after #76 (section 3.4): the loop form of `minUnderlapWithSubtree` costs 20 to 30 % on the compaction chain, and the oracle's sporeCompaction limit between 4,000 and 5,000 is not narrowed                                                                                                                                                                             |

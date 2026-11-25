@@ -345,7 +345,8 @@ the parity report): `random` (default `randomSeed` 0 is unseeded on nested compo
 seeds only the root, D2, kept by user decision). spore was a second source until the `8bca22f4`
 pin (#104): its jitter of coincident centres is seeded since
 [eclipse-elk/elk#1242](https://github.com/eclipse-elk/elk/pull/1242) (`randomSeed`, default 1), and
-only a seed of 0 draws from an unseeded generator (`ElkGraphImporter.java:133`). The exporter's
+only a seed of 0 draws from an unseeded generator (`ElkGraphImporter.java:133`). The seeded shift
+is recorded with exact values in the `shift` rows of `spore-layout.json` (#106). The exporter's
 `_g<random>` id renames are not a source: the seam patch fixes them.
 
 **Known flicker: `sporeOverlap` verdicts (#79, #86).** The two-run check calls a case deterministic
@@ -2244,7 +2245,9 @@ providers are registered explicitly, not by `getInstance()` (PK8); `SporeMetaDat
 
   Two of the counts are the result of additive extensions (rows appended at the end of the scenario lists; every earlier row
   byte-identical as JSON text and in the same order): `rectpacking.json` 1,343 to 1,356 and `spore-layout.json` 274 to 276
-  (T14b: arms no row reached), then 276 to 339 (the `objects` group).
+  (T14b: arms no row reached), then 276 to 339 (the `objects` group). The table keeps the counts of that mission. Since then
+  `spore-layout.json` went to 340 rows with the `8bca22f4` pin (one throws row became a full row and its stops row) and to 344
+  with the `shift` group of issue #106 (4 rows between the `jitter` and `objects` rows; the 340 earlier rows byte-identical).
 
 - Replays: `RectPackingVectors.test.ts` (at T12, before the extension: 552 full rows with 66,304 doubles bit-exact, 145 stops
   rows with 1,069 stops and 132,339 doubles bit-exact, 6 throws; now 558, 151, 7, and the sort group), `SporeLayoutVectors.test.ts`
@@ -2318,7 +2321,8 @@ spore:
 - `ElkGraphImporter.java:178`, `:263-268` `shiftUntilUnique`: `(random.nextDouble() - 0.5) * 0.001` shifts a centre that equals
   one already in `nodeMap`. `random` is seeded with `randomSeed` (`:131-136`; default 1, a seed of 0 is the unseeded generator)
   since [eclipse-elk/elk#1242](https://github.com/eclipse-elk/elk/pull/1242), followed since the `8bca22f4` pin (#104). Until
-  then it was an unseeded `Math.random()` (PK4, the policy of the one-argument `Collections.shuffle`).
+  then it was an unseeded `Math.random()` (PK4, the policy of the one-argument `Collections.shuffle`). The 4 `shift` rows of
+  `spore-layout.json` record this shift with exact values: the `import` stop holds the shifted centres (#106).
 - `ElkGraphImporter.java:233-253` `updateGraph`: a centre that equals one already in the new map is shifted with
   `shiftUntilUnique` and its node translated by the shift
   ([eclipse-elk/elk#1244](https://github.com/eclipse-elk/elk/pull/1244), followed since the `8bca22f4` pin). Until then two nodes
@@ -2384,7 +2388,13 @@ topdownpacking:
   overlap and an input-derived displacement bound; the TS test checks the same over three runs. Since the `8bca22f4` pin
   `runsAgree` is recorded `true` and the three runs give one dump. Exact values for the seeded shift come from the rows
   `full/overlap/scanlineHitboxes/default` and `stops/overlap/scanlineHitboxes/default` (the `updateGraph` shift, replayed at raw
-  bits), the ported `RandomSeedTest` and the 1,812 sweep cases; exact `jitter` rows are proposed in a follow-up issue.
+  bits), the ported `RandomSeedTest`, the 1,812 sweep cases, and the `shift` rows below.
+- **Shift rows (#106).** The group `shift` records the four jitter scenarios again with exact values
+  (`shift/{overlap,compaction}/{corpus,dup5}/default`), in the shape of a `stops` row: the `import` stop with the shifted
+  `originalVertex` values (11 of 12 centres in the corpus inputs, 1 of 5 in `dup5`), every stop after it, and the `end` stop with
+  the ELK dump. The recorder puts each row through its round-trip, stepwise-against-engine and build-twice checks. The port
+  replays all 4 rows through the providers (1,357 doubles compared, all raw-bit identical) and through the stepwise importer
+  (raw-bit equality asserted). The group is additive: the `jitter` rows and the other 336 rows are byte-identical, and `rowCounts.shift` is the one header change.
 - **The flag-gated chain row.** `full/compaction/chain2000/default` (a 2,000-node path, `DepthFirstCompaction` cubic) runs only with
   `SPORE_CHAIN_FULL=1`; with the flag it equals the oracle row (8,004 doubles), measured at 321 s under vitest. The explicit-stack
   conversions of `DepthFirstCompaction.compactTree` and `GrowTreePhase.growAt` (PK6) are proven against verbatim recursive copies

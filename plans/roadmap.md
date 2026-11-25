@@ -4093,3 +4093,56 @@ docs build; CodeQL with no new accepted entry (12 findings of the new recorders 
 and the end-to-end suite, `Blocked by #177`. #179 (`follow-up`): the vector cache after a record-only. #173 (`needs-ruling`)
 has a comment naming the six non-stamping recorders. No `needs-ruling` issue was filed by the execution, no stop condition
 halted a part, and no row is a partial.
+
+## Revision 2026-11-24 (spore-jitter-exact)
+
+Queue mission for issue #106, on `chore/issue-queue` (plan and journal in `plans/spore-jitter-exact/`). Mission 8c left the
+spore jitter of coincident centres with invariants only (PK4), because the shift was an unseeded `Math.random()`. Since
+eclipse-elk/elk#1242 and the `8bca22f4` pin the shift draws from a `Random` seeded by `randomSeed` (default 1), and #106 asked
+for exact rows. Result: **4 exact rows recorded and replayed at raw bits; no `src/` change.** Oracle: `8bca22f4` + patches
+0001-0004 (built 2026-11-25T00:05:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over alg.spore and alg.common is empty.
+No oracle patch, pin, landed row, count or assertion changed.
+
+**1. The rows.** `tools/vectors/SporeLayoutVectors.java` has a new additive group, `shift`: the four jitter scenarios again
+(`shift/{overlap,compaction}/{corpus,dup5}/default`) in the shape of a `stops` row, from the `import` stop with the shifted
+`originalVertex` values to the `end` stop with the ELK dump.
+
+| Row | Shifted centres | Stops |
+| --- | --------------: | ----: |
+| `shift/overlap/corpus/default` | 11 of 12 | 18 (3 overlap iterations) |
+| `shift/compaction/corpus/default` | 11 of 12 | 5 |
+| `shift/overlap/dup5/default` | 1 of 5 | 8 |
+| `shift/compaction/dup5/default` | 1 of 5 | 5 |
+
+The group is in `ROW_GROUPS` and not in `GROUPS`, as `objects` was (T13b), so `tieSummary` and `optionCoverage` are
+byte-equal. A converted `jitter` group or twins in `full` and `stops` would have moved frozen counts in six test files
+(AD-13); the 4 `jitter` rows keep their invariants form.
+
+**2. Evidence.**
+
+- The recorder's exact checks ran on a shifted input for the first time (round trip, stepwise end against the engine run,
+  two builds) and all passed on the first run: the stepwise importer and the engine draw the same sequence.
+- `test/golden/refs/java/spore-layout.json`: 340 to 344 rows, 3,156,771 to 3,196,430 bytes. A script compared the row
+  strings by id against the base: 340 byte-identical, in the same order; the header differs by `"shift": 4` in `rowCounts`
+  alone. A cold rerun of the recorder (`ELK_VECTORS_CACHE=off`) is `cmp`-identical to the committed ref.
+- The port replays the 4 rows through the providers (every stop, the engine's end dump, `jitterNodes`, the tie summary) and
+  through the stepwise importer: 1,357 doubles compared, all raw-bit identical, 0 within 1e-6. The file's tally went from
+  87,851 to 89,208, still with none inexact. A wrong seed in the port fails all 8 exact tests.
+- 14 new tests in new `describe` blocks (`SporeLayoutVectors.test.ts` 5, `ElkGraphImporter.test.ts` 9); the rows helper
+  knows the group. The spore replays went from 849 to 863 passed.
+
+**3. Records.** `docs/architecture/alg-packing.md` (§ 2, § 3.2, § 5) and `docs/conformance.md` describe the `shift` group and
+no longer call exact rows open; the two 8c ref tables keep their snapshot counts, with the later counts in a sentence after
+each. `plans/alg-packing/decision-journal.md` has one closing row. `.agent-notes/spore-jitter-exact.md` has three
+observations. A comment on #106 reports the result; its labels are unchanged.
+
+**4. Gates.** Queue gates 1-7 green on the final tree: format, typecheck, complexity (no violation); coverage 1,257 test files
+passed with every sweep directory on, 51,943 tests passed and 83 skipped, 98.85 / 97.02 / 98.63 / 98.90 (statements /
+branches / functions / lines); docs build; CodeQL with no new accepted entry; refs against the base differ in
+`java/spore-layout.json` alone. The coverage gate needed three runs: twice `test/corpus/phase-sweep.test.ts` passed its
+comparison (0 mismatches) and then exceeded its 900 s limit while other sessions held the load between 90 and 190; nothing
+was changed between the runs.
+
+**Open.** Nothing from this mission: no `needs-ruling` or `follow-up` issue was filed, no stop condition fired on a row, and
+no row is a partial. Rows with a non-default `randomSeed` were out of scope; `randomSeed` 0 is the unseeded generator and
+cannot have exact rows.

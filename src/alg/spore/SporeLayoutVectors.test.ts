@@ -2,7 +2,8 @@
 // Replays every row of test/golden/refs/java/spore-layout.json through the real providers (mission 8c, T11): a row's input runs through
 // `RecursiveGraphLayoutEngine` (OverlapRemovalLayoutProvider / ShrinkTreeLayoutProvider) and every stop of the recorder is observed on
 // that run by prototype wrappers (test/helpers/spore-replay-providers.ts). AD-4: ids, counts and non-numeric values exact, numbers
-// within 1e-6 (the tallies report how many doubles are raw-bit identical). `jitter` rows (PK4) are checked by their invariants only.
+// within 1e-6 (the tallies report how many doubles are raw-bit identical). `jitter` rows (PK4) are checked by their invariants only;
+// the `shift` rows (issue #106) are the same scenarios exact: every stop from the shifted centres of the import to the end dump.
 // SPORE_CHAIN_FULL=1 also runs `full/compaction/chain2000/default` (cubic DepthFirstCompaction).
 import { afterAll, describe, expect, it } from 'vitest';
 import { IllegalArgumentException } from '../../java/lang/IllegalArgumentException.js';
@@ -25,6 +26,8 @@ import {
   loadSporeRows,
   OVERLAP_ALGORITHM,
   STEP_END,
+  STEP_IMPORT,
+  stopOf,
   type FullRow,
   type MinstRow,
 } from '../../../test/helpers/spore-replay-rows.js';
@@ -234,4 +237,54 @@ describe('spore providers: jitter rows (PK4, invariants only)', () => {
       expect(dumps.size).toBe(1);
     },
   );
+});
+
+describe('spore providers: shift rows (the seeded shift of coincident centres, exact; issue #106)', () => {
+  const rows = loadSporeRows('shift');
+  /** The four jitter scenarios and how many centres `shiftUntilUnique` moved in each (`randomSeed` default 1). */
+  const SHIFTED: readonly (readonly [string, number])[] = [
+    ['shift/overlap/corpus/default', 11],
+    ['shift/compaction/corpus/default', 11],
+    ['shift/overlap/dup5/default', 1],
+    ['shift/compaction/dup5/default', 1],
+  ];
+  const shiftTotals: Tally = newTally();
+
+  afterAll(() => {
+    if (process.env['SPORE_REPORT'] !== undefined) {
+      console.info(
+        `spore replay doubles, shift rows: ${String(shiftTotals.identical)} raw-bit identical, ${String(shiftTotals.within)} within 1e-6`,
+      );
+    }
+  });
+
+  /** `expectEqual`, counted for the shift rows too. */
+  function expectShiftEqual(expected: unknown, actual: unknown, where: string): void {
+    const tally = compareTo(expected, actual, where);
+    shiftTotals.identical += tally.identical;
+    shiftTotals.within += tally.within;
+    expectEqual(expected, actual, where);
+  }
+
+  it('the ref has 4 shift rows: both algorithms on the corpus graph and on the duplicate-centre graph', () => {
+    expect(rows.map((row) => [row.id, row.expected.jitterNodes])).toEqual(SHIFTED);
+    expect(rows.map((row) => stopOf(row, STEP_IMPORT)!.jitterNodes)).toEqual(SHIFTED.map(([, shifted]) => shifted));
+  });
+
+  it.each(SHIFTED)('%s: every stop and the end dump equal the row, %i centres shifted', TIMEOUT, (id, shifted) => {
+    const row = rows.find((r) => r.id === id)!;
+    const result = run(row);
+    expect(result.stops.map((s) => s.step)).toEqual(row.expected.stops.map((s) => s.step));
+    expectShiftEqual(row.expected.stops, result.stops, id);
+    const { step, iterations, ...endDump } = stopOf(row, STEP_END)!;
+    expect(step).toBe(STEP_END);
+    expect(iterations === null).toBe(row.expected.algorithm === COMPACTION_ALGORITHM);
+    expectShiftEqual(endDump, result.dump, `${id} (engine dump)`);
+    expect(result.jitterNodes).toBe(shifted);
+    expect({
+      calls: result.minst.length,
+      orderSensitive: result.minst.some((m) => m.orderSensitive),
+      treeified: result.minst.some((m) => m.treeified),
+    }).toEqual(row.expected.tieOrder);
+  });
 });

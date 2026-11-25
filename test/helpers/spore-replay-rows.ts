@@ -6,6 +6,7 @@
 //   throws  expected = { algorithm, jitterNodes, throws: { class, message, frame } };
 //   minst   expected = one NaiveMinST call (edge sequence, weights, tree, reversed tree, order sensitivity, hash classification);
 //   jitter  expected = { algorithm, invariants } (PK4: the seeded jitter of coincident centres, invariants only);
+//   shift   expected = the stops shape, jitterNodes > 0 (issue #106: the jitter scenarios exact, from the shifted centres to the end);
 //   objects input = { call, objects, args }, expected = { result } (T13b: Objects.equals, KVector/TEdge.equals, TTriangle.contains).
 // Doubles are 16-hex raw bit strings (`Hex`); `decodeHex` / `encodeHex` / `isHex` are those of the vertiflex helper (one codec). A tree
 // is nested `[i, child, child, ...]` in Tree.children order. The file is parsed and validated ONCE per path (`loadSporeRows`).
@@ -40,7 +41,7 @@ export const STOP_NAMES = [
 ] as const;
 export type SporeStep = (typeof STOP_NAMES)[number];
 
-export const SPORE_ROW_GROUPS = ['full', 'stops', 'throws', 'minst', 'jitter', 'objects'] as const;
+export const SPORE_ROW_GROUPS = ['full', 'stops', 'throws', 'minst', 'jitter', 'shift', 'objects'] as const;
 export type SporeRowGroup = (typeof SPORE_ROW_GROUPS)[number];
 
 /** The two algorithms of the bundle (`SporeOverlapRemovalOptions.ALGORITHM_ID`, `SporeCompactionOptions.ALGORITHM_ID`). */
@@ -266,7 +267,12 @@ export interface JitterRow extends RowBase {
   readonly group: 'jitter';
   readonly expected: { readonly algorithm: string; readonly invariants: JitterInvariants };
 }
-export type SporeRow = FullRow | StopsRow | ThrowsRow | MinstRow | JitterRow | ObjectsRow;
+/** A jitter scenario recorded exact (issue #106): the stops of a `StopsRow`, with `jitterNodes` > 0 in the row and its `import` stop. */
+export interface ShiftRow extends RowBase {
+  readonly group: 'shift';
+  readonly expected: StopsRow['expected'];
+}
+export type SporeRow = FullRow | StopsRow | ThrowsRow | MinstRow | JitterRow | ShiftRow | ObjectsRow;
 
 export const isStopsRow = (row: SporeRow): row is StopsRow => row.group === 'stops';
 
@@ -288,7 +294,7 @@ function checkStops(id: string, expected: Obj): void {
   const wellFormed =
     Array.isArray(stops) && stops.every((stop) => isObject(stop) && known.includes(stop.step)) && stops.length > 0;
   if (!wellFormed) {
-    reject(id, `a stops row needs expected.stops of steps in ${STOP_NAMES.join(', ')}`);
+    reject(id, `a stops or shift row needs expected.stops of steps in ${STOP_NAMES.join(', ')}`);
   }
 }
 
@@ -299,7 +305,7 @@ function checkRow(raw: unknown, index: number): SporeRow {
   if (!(SPORE_ROW_GROUPS as readonly unknown[]).includes(raw.group)) {
     reject(raw.id, `unknown group ${JSON.stringify(raw.group)}`);
   }
-  if (raw.group === 'stops') {
+  if (raw.group === 'stops' || raw.group === 'shift') {
     checkStops(raw.id, raw.expected);
   } else if (raw.group === 'throws' && !isObject(raw.expected.throws)) {
     reject(raw.id, 'a throws row needs expected.throws');
@@ -352,6 +358,7 @@ export function loadSporeRows(group: 'stops', file?: string): readonly StopsRow[
 export function loadSporeRows(group: 'throws', file?: string): readonly ThrowsRow[];
 export function loadSporeRows(group: 'minst', file?: string): readonly MinstRow[];
 export function loadSporeRows(group: 'jitter', file?: string): readonly JitterRow[];
+export function loadSporeRows(group: 'shift', file?: string): readonly ShiftRow[];
 export function loadSporeRows(group: 'objects', file?: string): readonly ObjectsRow[];
 export function loadSporeRows(group?: SporeRowGroup, file?: string): readonly SporeRow[];
 export function loadSporeRows(group?: SporeRowGroup, file: string = sporeRefPath()): readonly SporeRow[] {
@@ -364,7 +371,7 @@ export function loadSporeRows(group?: SporeRowGroup, file: string = sporeRefPath
 }
 
 /** The stop of a stops row for one step, or `undefined` (the first of that step; `stopsOf` lists them all). */
-export function stopOf<S extends SporeStep>(row: StopsRow, step: S): Extract<Stop, { step: S }> | undefined {
+export function stopOf<S extends SporeStep>(row: StopsRow | ShiftRow, step: S): Extract<Stop, { step: S }> | undefined {
   return row.expected.stops.find((stop) => stop.step === step) as Extract<Stop, { step: S }> | undefined;
 }
 
