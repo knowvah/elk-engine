@@ -4283,3 +4283,56 @@ with no new accepted entry; `test/golden/refs/` against the base untouched. Comm
 https://github.com/knowvah/elk-engine/issues/115#issuecomment-7155350018; its labels are unchanged.
 
 **Open.** Nothing. No `needs-ruling` or `follow-up` issue was filed, and no row is a partial.
+
+## Revision 2026-11-25 (corpus-sweeps-asserts)
+
+Queue mission for issue #116, on `chore/issue-queue` (plan, journal and census in `plans/corpus-sweeps-asserts/`). It ran the
+thirteen vitest corpus sweeps with the restored Java asserts on, at stride 1 where a sweep has a stride, on the tree of
+`fb4b906a`. **No `AssertionError` fired**, so there was no site to triage and nothing under `src/` or `test/` changed. No ref,
+vector, golden, oracle patch or pin changed. Oracle state: `8bca22f4` + patches 0001-0004 (built 2026-11-25T00:05:58Z);
+`git -C ~/git/knowvah/elk log 8bca22f4..HEAD -- plugins/` is empty. The recorded sweep data was used as it was (2026-11-24 for
+the eight layered family caches); patch 0004 changes one `alg.common/spore` class that only `alg.spore` uses.
+
+**1. The sweeps.** All thirteen exit 0, none skipped. "Sites" is the number of `devAssert` call sites the sweep evaluates with
+assertions on (from the probe of point 3).
+
+| Sweep | Checked | Ok matched | Throws matched | `AssertionError` | Sites |
+| ----- | ------- | ---------- | -------------- | ---------------- | ----- |
+| `labels` | 950 of 1,105 | 935 | 15 (class compared) | 0 | 44 |
+| `label-sizing` | 759 models, 21,753 labels | all | none | 0 | 1 |
+| `loops` | 3,073 | 2,997 | 76 (presence only) | 0 | 61 |
+| `phase` | 30,265 of 32,652 | 27,617 | 2,648 (class compared) | 0 | 16 |
+| `pipeline` | 6,646 of 7,246 | 6,646 | none | 0 | 25 |
+| `compound` | 1,169 | 1,164 | 5 (presence only) | 0 | 52 |
+| `order` | 6,280 of 6,728 | 6,280 | none | 0 | 19 |
+| `placement` | 1,970 of 8,410 | 1,970 | none | 0 | 23 |
+| `routing` | 6,280 of 6,728 | 6,280 | none | 0 | 22 |
+| `json` | 550 models | 550 | none | 0 | 1 |
+| `elkj` | 378 converted files, five indicators | all | none | 0 | 1 |
+| `elkt` | 898 `.elkt` and 550 `.json`, five indicators | all | none | 0 | 1 |
+| `dot-export` | 898 models | 822 texts | 76 (stage and class compared) | 0 | 1 |
+
+The cases a sweep does not check are the oracle recorders' refusals and timeouts, as `docs/conformance.md` lists them.
+
+**2. The hidden path.** `loops` and `compound` accept any port exception on a case the oracle threw on, so a port
+`AssertionError` there shows only in the `throw-pairs:` summary. Both lines are in the journal verbatim: 48 `TypeError` for a
+Java NPE or index error and 28 `IllegalStateException` in `loops`, five `TypeError` in `compound`, no `AssertionError`.
+
+**3. What a green sweep covers.** A temporary probe (never committed; its shape is in `census.md` § 4) counted every
+`devAssert` evaluated with assertions on, by calling site: 45,661,377 evaluations, 0 fired. The sweeps reach **79 of the 140**
+`devAssert(` lines of `src/` (78 of 125 under `src/alg/layered`). The four format sweeps and `label-sizing` reach one site,
+`InstancePool.ts:37`: they lay nothing out, so they say almost nothing about the asserts. 61 lines are never evaluated with
+assertions on: 47 layered and 14 in other bundles (#137); `census.md` § 3 lists them. `withEndLabelRule` (#127) runs 145
+layouts with assertions off, 135 in `labels` and 10 in `compound`; the #32 site, `EndLabelPreprocessorPlacement.ts:117`, is
+never evaluated with assertions on by any sweep (input for #138).
+
+**4. Gates.** Queue gates 1-7 green on the final tree: coverage 1,258 files, 51,964 tests, 98.88 / 97.05 / 98.67 / 98.92; docs
+build with 200 typedoc warnings as at the base; CodeQL with no new accepted entry; `test/golden/refs/` against the base
+untouched.
+
+**Open.** One `follow-up`, #181: make the `loops` and `compound` sweeps fail on a port `AssertionError` where the oracle
+threw something else (a pass-rule change, so the maintainer's decision). No `needs-ruling`. Residual, unchanged by this mission:
+the five comment sites (`Not a devAssert yet`) wait on knowvah/elk#27 (#4, #5), knowvah/elk#28 (#114) and #128
+(`ThresholdStrategy.java:395`, `:403`); #137 covers the non-layered algorithms; #138 the breadth of the end-label rule; #139 the
+sweep cache key. Found on the way: the red sweeps of #151 and #152 come from caches in the main checkout that predate the pin
+move; the evidence is in a comment on each.
