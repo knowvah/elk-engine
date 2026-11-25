@@ -1,0 +1,5 @@
+digraph G {
+  subgraph s { a } -> b;
+  { c } -> d
+  e
+}

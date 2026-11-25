@@ -1,0 +1,8 @@
+digraph {
+	edge [weight=2.7, splines=ortho, width=1, label="default label"];
+	a -> b;
+	a -> b -> c [label="chain", weight=abc, headlabel=H];
+	edge [weight=5];
+	c -> a [taillabel=T, layout=neato, pack=true];
+	b -> b;
+}

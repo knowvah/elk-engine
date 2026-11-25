@@ -115,6 +115,32 @@ export class ArrayListTextSegmentSet<T> extends TextSegmentSet<T> {
     return this.contents[Symbol.iterator]();
   }
 
+  /** Index-based over the live list, like the Java `AbstractIterator`. */
+  iteratorAfter(segment: T): Iterator<T> {
+    const searchResult = 1 + binarySearch(this.contents, segment, new RegionComparator(this.getRegionAccess()));
+    if (searchResult < 1) {
+      return [][Symbol.iterator]();
+    }
+    return this.iterateFrom(searchResult);
+  }
+
+  private *iterateFrom(start: number): Generator<T, void, undefined> {
+    for (let index = start; index < this.contents.length; index++) {
+      yield this.contents[index]!;
+    }
+  }
+
+  reverseIterable(): Iterable<T> {
+    const contents = this.contents;
+    return {
+      *[Symbol.iterator](): Generator<T, void, undefined> {
+        for (let index = contents.length - 1; index >= 0; index--) {
+          yield contents[index]!;
+        }
+      },
+    };
+  }
+
   protected replaceExistingEntry(segment: T, index: number, merger: IMerger<T> | null): void {
     const existing = this.contents[index]!;
     const conflicting = [segment, existing];

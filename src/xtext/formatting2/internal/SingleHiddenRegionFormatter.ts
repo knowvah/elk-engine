@@ -16,6 +16,12 @@ export class SingleHiddenRegionFormatter extends AbstractHiddenRegionFormatter {
     this.formatting = formatting;
   }
 
+  /** An unset or negative trigger becomes 0 (wrap whenever needed); a trigger already set is kept. */
+  autowrap(): void {
+    const old = this.formatting.getAutowrap();
+    if (old === null || old < 0) this.formatting.setAutowrap(0);
+  }
+
   getRequest(): FormatterRequest {
     return this.formatting.getRequest();
   }

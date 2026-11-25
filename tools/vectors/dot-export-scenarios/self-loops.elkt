@@ -1,0 +1,13 @@
+node a {
+  layout [ size: 40, 30 ]
+  port p { layout [ position: 40, 10 size: 4, 4 ] ^port.side: EAST }
+  port q { layout [ position: 20, 30 size: 4, 4 ] ^port.side: SOUTH }
+}
+node b {
+  layout [ size: 20, 20 ]
+}
+edge a -> a
+edge a -> a
+edge a.p -> a.q
+edge b -> b
+edge a -> b

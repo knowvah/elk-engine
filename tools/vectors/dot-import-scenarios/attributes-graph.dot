@@ -1,0 +1,60 @@
+digraph g1 {
+	graph [layout=dot, nodesep=0.75, pack=true, pad="2.5", rankdir=TB, splines=spline, start=random, weight=2.7, margin="1.5,2.5"];
+	fixedsize=true;
+	width=1.5;
+	height=0.5;
+	a;
+}
+digraph g2 {
+	layout=neato;
+	nodesep=abc;
+	pack=yes;
+	pad="4,6";
+	rankdir=BT;
+	splines=true;
+	start=random5;
+	weight="-3.9";
+	margin=3;
+	a;
+}
+digraph g3 {
+	layout=bogus;
+	pad="x,y";
+	rankdir=LR;
+	splines=polyline;
+	start=randomX;
+	weight=abc;
+	margin="a,b";
+	fixedsize=false;
+	a;
+}
+digraph g4 {
+	layout=FDP;
+	pad=abc;
+	rankdir=RL;
+	splines=line;
+	start=self;
+	weight=1e10;
+	margin=abc;
+	fixedsize;
+	a;
+}
+digraph g5 {
+	layout=circo;
+	rankdir=XX;
+	splines=false;
+	pack=false;
+	margin="1,2,3";
+	a;
+}
+digraph g6 {
+	layout=twopi;
+	splines=ortho;
+	nodesep="12";
+	a;
+}
+digraph g7 {
+	splines=curved;
+	layout="";
+	a;
+}

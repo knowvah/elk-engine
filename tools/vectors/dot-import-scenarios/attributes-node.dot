@@ -1,0 +1,14 @@
+digraph {
+	a [width=0.3];
+	node [width=0.5, height=0.25, fixedsize=true];
+	b;
+	c [width=2, height=abc, pos="3,4!", label="see"];
+	d [pos="1.5,2.5", weight=4, splines=ortho, layout=dot, nodesep=0.1];
+	b [label="second declaration"];
+	node [width=bad, height="0.1", pack=true];
+	e;
+	f [fixedsize];
+	g [pos="1,2,3"];
+	h [label=""];
+	i [label="multi\nline \"q\""];
+}

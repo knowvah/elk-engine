@@ -1,0 +1,9 @@
+digraph G {
+  subgraph cluster_0 { a; b }
+  subgraph { c }
+  { d }
+  subgraph outer { subgraph inner { e } f }
+  subgraph cluster_1 { graph [label="x"]; node [shape=box]; g -> h };
+  subgraph empty {}
+  {}
+}

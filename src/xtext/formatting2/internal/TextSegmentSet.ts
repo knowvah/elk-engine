@@ -6,9 +6,8 @@ import { RegionTrace } from './RegionTrace.js';
 import { RegionTraceMissingException } from './RegionTraceMissingException.js';
 
 /**
- * An ordered set of segments that detects overlaps. Not ported: `get`, `iteratorAfter`, `reverseIterable`
- * (they serve autowrap and `getLocalReplacementsReverse` only), `getTraces` (deprecated), `toString` (debug
- * printer). `IdentityHashMap` is a `Map` (identity keys).
+ * An ordered set of segments that detects overlaps. Not ported: `get` (no caller), `getTraces` (deprecated),
+ * `toString` (debug printer). `IdentityHashMap` is a `Map` (identity keys).
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/internal/TextSegmentSet.java
  */
@@ -68,6 +67,11 @@ export abstract class TextSegmentSet<T> implements Iterable<T> {
   protected isConflict(t1: T, t2: T): boolean {
     return this.isConflictBetweenRegions(this.getRegion(t1), this.getRegion(t2));
   }
+
+  /** The segments after the member with the region of `segment`; empty when there is none. */
+  abstract iteratorAfter(segment: T): Iterator<T>;
+
+  abstract reverseIterable(): Iterable<T>;
 
   protected trace(segment: T): void {
     if (this.traces !== null) {

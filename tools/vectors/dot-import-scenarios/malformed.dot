@@ -1,0 +1,6 @@
+digraph {
+	a -> b;
+	c [label="ok"];
+	d [ = ];
+	e -> ;
+}

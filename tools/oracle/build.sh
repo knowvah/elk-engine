@@ -21,7 +21,8 @@ GIT_IDENT=(-c user.name=elk-engine-oracle -c user.email=oracle@invalid)
 # In-scope bundles, org.eclipse.elk. prefix omitted (decisions.md).
 BUNDLES=(core graph graph.json alg.common alg.layered alg.mrtree alg.radial
   alg.force alg.disco alg.rectpacking alg.spore alg.topdownpacking
-  alg.vertiflex graph.text graph.json.text core.debug.grandom)
+  alg.vertiflex graph.text graph.json.text core.debug.grandom
+  alg.graphviz.dot)
 # Build outputs ELK does not fully gitignore, and the local caches this repo's
 # scripts write at the worktree root (vector-cache/ by tools/vectors/vector-cache.sh).
 OUTPUT_FILTER='(^|/)(target|xtend-gen|src-gen)/|oracle-build\.json$|^\?\? (census|sweep|vector-cache)/$'

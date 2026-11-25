@@ -4023,3 +4023,73 @@ with no new accepted entry; `test/golden/refs/` against the base untouched.
 property), which the site drops; and its fixed list is built from Unicode 13.0 data, which fits the letters, marks and
 digits it drops and Node's Unicode 17.0 classes keep. On all 871 landed headings the two rules agree. No `needs-ruling` issue was filed,
 no stop condition fired and no row is a partial.
+
+## Revision 2026-11-24 (graphviz-dot)
+
+Queue mission for issue #95, step 2, on `chore/issue-queue` (plan and journal in `plans/graphviz-dot/`). It ported the whole
+`alg.graphviz.dot` bundle ("ELK Graphviz Dot Language Parser") to `src/alg/graphviz/dot/`. Step 1 landed with #88 (Revision
+`deferred-bundles-acceptance` above). Steps 3 to 5 and the end-to-end suite are not part of it: step 4 (how the Graphviz runner
+is injected) waits for the maintainer on #177, step 3 needs that seam, step 5 is blocked by knowvah/dot-engine#220. Oracle
+`8bca22f4afa3371562d2f702d59929818f7f7b71` with patches 0001-0004, JDK 21.0.1, arm64; no oracle patch, no pin change, no
+landed ref, vector, golden or assertion changed. `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over the bundle, `core` and
+`graph` is empty.
+
+**1. What landed.** 53 source files and 26 test files under `src/alg/graphviz/dot/`:
+
+| Part | Files | Java source |
+| ---- | ----- | ----------- |
+| DOT model | `dot/` (11 classes, 3 enums, `DotFactory`, `DotPackage`, `util/DotSwitch`) | the EMF-generated model, on the `src/emf` containment types with the generated `eGet`/`eIsSet` |
+| Lexer and parser | `parser/` | `GraphvizDot.xtext`; hand-written, with ANTLR 3 recovery as the recorded rows need it; Xtext's default terminal converters |
+| Writer | `services/`, `serializer/`, `formatting2/` | grammar-specific sequencers (as G1 for `.elkt`), `GraphvizDotFormatter` line by line, `GraphvizDotSerializer` at 255 columns |
+| Entry point | `GraphvizDot.ts` (`load`, `serialize`) | stands in for `DotResourceSetProvider` and the `XtextResource`; internal, nothing exported |
+| Transforms | `transform/` | `DotExporter` (982 lines), `DotImporter` (699), `Attributes`, `Command`, `NeatoModel`, `OverlapMode`, the transformation data types |
+
+Outside the bundle: Xtext's **autowrap path** in `src/xtext/formatting2` (what `autowrap()` with no argument reaches; the
+`.elkt`, `.elkj` and grandom writers never autowrap and their refs did not move); the shims `src/java/util/StringTokenizer.ts`,
+`src/java/lang/JavaFloat.ts` (`parseFloat`, correctly rounded and not through a double; `toString`) and `JavaBoolean.ts`, from
+the Javadoc only (AD-9); one fix in `src/emf` (`convertEStringToString` now casts to `String` as EMF does, found by a converter
+row). Omitted with a journal row each: the OSGi activator, the Guice modules and standalone setup, the generated ANTLR parser and
+sequencers, `DotAdapterFactory` and the reflective EMF members.
+
+**2. Evidence, recorded before the code (AD-13).** Six JVM refs by `tools/vectors/dot-vectors.sh`, every row replayed, each
+replay asserting its row count:
+
+| Ref | Rows | Result |
+| --- | ---- | ------ |
+| `graphviz-dot-jdk.json` | 701 (tokenizer 187, parseFloat 167, floatToString 304, trim 24, booleanValueOf 19) | exact |
+| `graphviz-dot-lexer.json` | 284 token rows, 106 converter rows | exact |
+| `graphviz-dot-parse.json` | 75 cases (61 scenarios, 14 real Graphviz outputs) | model dumps exact, partial models included; the 31 syntax-error cases are held to presence and line and also match in message, offset and length |
+| `graphviz-dot-write.json` | 443 (27 scenarios, 14 fixtures, 402 built; 133 around the 255-column limit; 28 exceptions) | byte for byte in the three forms |
+| `graphviz-dot-export.json` | 112 (82 `transform`, 30 `transferLayout`; 14 on Graphviz 16.1.2 output of five algorithms) | text byte for byte, graphs within 1e-6 |
+| `graphviz-dot-import.json` | 14 | graphs, messages, model and text after `transferLayout` |
+
+The refs carry no pin stamp (the six recorders do not call `elkCommit()` while #173 is open). The Graphviz outputs are inputs:
+the JVM records what ELK does with them. **Local export sweep** over the 898 elk-models `.elkt`
+(`tools/oracle/dot-export-sweep.sh`, `test/corpus/dot-export-sweep.test.ts`): text-equal 898/898 (822 byte-identical, 76 where
+the oracle throws `NullPointerException` for an edge label without `font.size` and the port fails in the same stage);
+reparse-equal 822/822. There is no JUnit plugin for either Graphviz bundle and no DOT file in elk-models, so there is no
+ported suite and no golden.
+
+**3. Not as planned.**
+
+- D9 said the layouter's manifest has no Xtext require; it has one (`MANIFEST.MF:11`). The test that would have forbidden
+  `src/alg/graphviz/layouter` importing `src/xtext` was not written; #178 names the line.
+- T5 grew with the recorded JDK ref: `Float.parseFloat` is not `(float) Double.parseDouble` (15 of 167 rows differ), so a
+  float parser and `Float.toString` were needed besides `StringTokenizer`.
+- The model sits on the `src/emf` containment classes, not plain arrays: `DotImporter` reads `eContainer()` and the
+  formatter walks `eContents()`.
+- The recorder for `LayoutDotExporter` is a copy of that class inside the recorder (the layouter jar is not in the oracle
+  record); its 55 rows replay through a test-only subclass of the port.
+- The sweep's port side is a corpus test, not a `tools/` comparer; `docs/architecture/elk-upgrade.md` and
+  `docs/translation-rules.md` changed too (the runbook must name every recorder and sweep script).
+- `build.sh --record-only` changed the salt of every vector cache: the next run of each recorder is cold (#179).
+
+**4. Gates.** Queue gates 1-7 green on the final tree: format, typecheck, complexity (no violation); coverage 1,257 test files (1,248 passed, 9 skipped with the nine phase sweep directories off), 51,919 tests passed and 92 skipped, 98.85 / 97.01 / 98.63 / 98.90 (statements / branches / functions / lines);
+docs build; CodeQL with no new accepted entry (12 findings of the new recorders and one test were fixed, not accepted);
+`tools/vectors/dot-vectors.sh`, `elkt-vectors.sh`, `regen-elkt-refs.sh` and five other recorders rerun with
+`git diff --exit-code test/golden/refs/` clean apart from the six new refs.
+
+**Open.** #177 (`needs-ruling`, filed at planning): the runner seam of step 3. #178 (`follow-up`): the layouter port, step 5
+and the end-to-end suite, `Blocked by #177`. #179 (`follow-up`): the vector cache after a record-only. #173 (`needs-ruling`)
+has a comment naming the six non-stamping recorders. No `needs-ruling` issue was filed by the execution, no stop condition
+halted a part, and no row is a partial.

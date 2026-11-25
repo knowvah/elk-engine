@@ -1,0 +1,11 @@
+digraph G {
+  a -> b
+  a -> b -> c -> d;
+  a -> b [color=red, weight=2];
+  a:p -> b:q:n;
+  a -> subgraph s { b c };
+  a -> { b c }
+  a -> { b } -> c
+  a -> subgraph { b } -> subgraph t { c } -> d [label="chain"]
+  a -- b
+}

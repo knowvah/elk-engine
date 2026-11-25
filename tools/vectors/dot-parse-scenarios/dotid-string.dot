@@ -1,0 +1,12 @@
+digraph "My Graph" {
+  "a" -> "b c";
+  "" [label=""];
+  "q" [label="say \"hi\""];
+  "esc" [label="\N \n \l \r \t \x"];
+  "k" [label="line one
+line two"];
+  "cont" [pos="e,1,2 3,4 \
+5,6"];
+  "unicode" [label="café café 日本"];
+  "x" = "y z"
+}

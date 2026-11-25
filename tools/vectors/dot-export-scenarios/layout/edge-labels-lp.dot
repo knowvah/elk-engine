@@ -1,0 +1,14 @@
+digraph {
+	graph [bb="0,0,300,250"];
+	node1 [pos="15,15", width=0.41667, height=0.41667];
+	node2 [pos="200,200", width=0.41667, height=0.41667];
+	node1 -> node2 [comment=edge1, pos="e,190,190 20,20 100,100 150,150", lp="100.5,90.25", xlp="1,1"];
+	node1 -> node2 [comment=edge2, pos="e,190,190 25,20 120,120", head_lp="180,170", tail_lp="30.5,35.75", lp="5,5"];
+	node1 -> node1 [comment=edge3, lp="x,y"];
+	node1 -> node2 [comment=edge4, lp="1,2,3"];
+	node1 -> node2 [comment=edge5, lp="60,70", tail_lp="40,41"];
+	node1 -> node2 [comment=edge6, head_lp="\"77,88\""];
+	node2 -> node1 [comment=edge7, pos="e,20,20 s,190,190 100,100", lp="111,122", head_lp="133,144", tail_lp="155,166"];
+	node2 -> node2 [comment=edge8, lp="210.5,230"];
+	node2 -> node1 [comment=edge9, lp="  50 , 60 "];
+}

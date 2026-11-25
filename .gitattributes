@@ -10,3 +10,7 @@ tools/vectors/elkr-lexer-cases.txt -text
 # Vendored elk-models inputs: hashed byte-for-byte against the oracle refs.
 test/corpus/elkt-curated/** -text
 test/corpus/elkj-curated/** -text
+# Same for the DOT vector inputs (graphviz-dot): scenarios, lexer cases and the Graphviz output fixtures are byte-meaningful.
+tools/vectors/dot-*-scenarios/** -text
+tools/vectors/dot-graphviz-output/** -text
+tools/vectors/dot-lexer-cases.txt -text

@@ -1,0 +1,5 @@
+graph g {
+  a -- b -- c;
+  a -- b [len=2];
+  d -> e
+}

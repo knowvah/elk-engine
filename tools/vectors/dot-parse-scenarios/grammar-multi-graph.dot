@@ -1,0 +1,4 @@
+graph A { a }
+digraph B { b }
+strict graph { c }
+digraph { }

@@ -8,9 +8,10 @@ import type { ITextSegment } from '../regionaccess/ITextSegment.js';
 const NEW_LINE = '\n';
 
 /**
- * Replaces a whitespace region (or an empty hidden region) by the computed spaces/newlines/indentation. The
- * autowrap lines of `createReplacements` (`context.setCanAutowrap`, the `isAutowrap` arm) are not ported: no
- * formatting has an autowrap trigger and no context is ever in autowrap state.
+ * Replaces a whitespace region (or an empty hidden region) by the computed spaces/newlines/indentation, or by a
+ * line break when the context is in autowrap state. Not ported: the `onAutowrap.format(...)` call of the autowrap
+ * arm (lines 84-87): no formatting has an `IAutowrapFormatter` (see `IHiddenRegionFormatting`), so Java's
+ * `onAutowrap != null` is always false; `toString` (debug printer).
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/internal/WhitespaceReplacer.java
  */
@@ -54,10 +55,15 @@ export class WhitespaceReplacer implements ITextReplacer {
   }
 
   createReplacements(context: ITextReplacerContext): ITextReplacerContext {
+    const autowrap = this.formatting.getAutowrap();
+    if (autowrap !== null && autowrap >= 0) context.setCanAutowrap(autowrap);
     const space = this.formatting.getSpace();
     const trailingNewLinesOfPreviousRegion = this.trailingNewLinesOfPreviousRegion();
     const computedNewLineCount = this.computeNewLineCount();
-    const newLineCount = Math.max(computedNewLineCount - trailingNewLinesOfPreviousRegion, 0);
+    let newLineCount = Math.max(computedNewLineCount - trailingNewLinesOfPreviousRegion, 0);
+    if (newLineCount === 0 && context.isAutowrap()) {
+      newLineCount = 1;
+    }
     const indentationCount = this.computeNewIndentation(context);
     if (newLineCount === 0 && trailingNewLinesOfPreviousRegion === 0) {
       if (space !== null) context.addReplacement(this.region.replaceWith(space));

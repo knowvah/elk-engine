@@ -18,6 +18,14 @@ export class DoubleHiddenRegionFormatter extends AbstractHiddenRegionFormatter {
     this.second = second;
   }
 
+  /** `autowrap()` of {@link SingleHiddenRegionFormatter} on each of both formattings. */
+  autowrap(): void {
+    const old1 = this.first.getAutowrap();
+    if (old1 === null || old1 < 0) this.first.setAutowrap(0);
+    const old2 = this.second.getAutowrap();
+    if (old2 === null || old2 < 0) this.second.setAutowrap(0);
+  }
+
   getRequest(): FormatterRequest {
     return this.first.getRequest();
   }

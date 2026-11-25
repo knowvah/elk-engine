@@ -1,0 +1,37 @@
+digraph {
+	node [width=0.5];
+	margin=5;
+	a -> cluster_late;
+	subgraph cluster_one {
+		margin="2,3";
+		node [height=0.75];
+		pad=7;
+		b;
+		c [width=1];
+		b -> c;
+		subgraph cluster_inner {
+			d;
+			rankdir=LR;
+		}
+	}
+	subgraph plain {
+		e;
+		a;
+	}
+	{
+		f -> g;
+	}
+	subgraph cluster_one {
+		h;
+	}
+	subgraph cluster_late {
+		i;
+	}
+	j;
+	a -> subgraph cluster_target { k; };
+	a -> { l m };
+	a -> subgraph named { n };
+	subgraph cluster_one_b {
+		b;
+	}
+}

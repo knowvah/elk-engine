@@ -43,8 +43,15 @@ const JS_SUFFIX = '.js';
  *   OperationCanceledManager; text-follow-ups D7)
  * - org.antlr.runtime -> no directory (G6: lexer/parser are hand-written)
  * Only the graph.text, graph.json.text and core.debug.grandom bundles require Xtext; src/index.ts and src/layout.ts stay exempt.
+ * alg.graphviz.dot joins them (graphviz-dot D9): plugins/org.eclipse.elk.alg.graphviz.dot/META-INF/MANIFEST.MF:9-17 has
+ * `Require-Bundle: org.eclipse.xtext;bundle-version="2.9.0", ... org.eclipse.xtext.util`.
  */
-const XTEXT_CLIENT_BUNDLES: readonly string[] = ['src/graph/text', 'src/graph/json/text', 'src/core/debug/grandom'];
+const XTEXT_CLIENT_BUNDLES: readonly string[] = [
+  'src/graph/text',
+  'src/graph/json/text',
+  'src/core/debug/grandom',
+  'src/alg/graphviz/dot',
+];
 
 const committed: BundleDeps = JSON.parse(readFileSync(join(REPO_ROOT, COMMITTED_JSON_RELATIVE), 'utf8')) as BundleDeps;
 
@@ -439,6 +446,11 @@ describe('graphviz bundles (AD-17)', () => {
     expect(checkFile(`${DOT_DIR}/X.ts`, "import { Y } from '../layouter/Y.js';", committed)).toEqual([
       `${DOT_DIR}/X.ts -> ${LAYOUTER_DIR}/Y.ts: ${DOT_DIR} may not import ${LAYOUTER_DIR}`,
     ]);
+  });
+
+  it('lets alg.graphviz.dot import src/xtext (MANIFEST.MF Require-Bundle: org.eclipse.xtext)', () => {
+    const imp = "import { Token } from '../../../../xtext/parser/Token.js';";
+    expect(checkFile(`${DOT_DIR}/parser/GraphvizDotLexer.ts`, imp, committed)).toEqual([]);
   });
 
   it('leaves out-of-scope alg.libavoid unmapped', () => {

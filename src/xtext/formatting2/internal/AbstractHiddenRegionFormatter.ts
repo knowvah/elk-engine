@@ -9,6 +9,7 @@ import { HIGH_PRIORITY, LOW_PRIORITY, type IHiddenRegionFormatter } from '../IHi
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/internal/AbstractHiddenRegionFormatter.java
  */
 export abstract class AbstractHiddenRegionFormatter implements IHiddenRegionFormatter {
+  abstract autowrap(): void;
   abstract getRequest(): FormatterRequest;
   abstract setPriority(priority: number): void;
   abstract noIndentation(): void;

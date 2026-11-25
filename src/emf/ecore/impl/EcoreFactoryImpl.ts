@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
+import { checkCast, isString } from '../../../java/lang/JavaCast.js';
+import { JavaClass } from '../../../java/lang/JavaClass.js';
 import { toString as doubleToString } from '../../../java/lang/DoubleToString.js';
 import { parseDouble } from '../../../java/lang/JavaDouble.js';
 import { valueOf as integerValueOf } from '../../../java/lang/JavaInteger.js';
@@ -57,7 +59,8 @@ export class EcoreFactoryImpl implements EFactory {
 
   /** @see org.eclipse.emf.ecore.impl.EcoreFactoryImpl#convertEStringToString(EDataType, Object) */
   convertEStringToString(_metaObject: EDataType, instanceValue: unknown): string | null {
-    return instanceValue as string | null; // Java `(String) instanceValue`; EString values are strings
+    // Java `(String) instanceValue`: a checkcast, so a non-String throws ClassCastException (graphviz-dot-lexer.json conv/FLOAT/toString/002)
+    return checkCast(instanceValue, isString, JavaClass.String.javaName);
   }
 
   /** @see org.eclipse.emf.ecore.impl.EcoreFactoryImpl#createEIntFromString(EDataType, String) */

@@ -2636,6 +2636,69 @@ the maintainer ruled the reference platform for JVM measurements.
 itself, which this mission does not re-record, extend or edit. Mission layered-stress-cases appended those four texts later
 (issue #58's ruling); the runner still throws on any other text the snapshot lacks.
 
+## Graphviz DOT language (issue #95, step 2) {#graphviz-dot}
+
+Port: `src/alg/graphviz/dot` (`alg.graphviz.dot`: the DOT model, a hand-written lexer and parser, the writer with
+Xtext's autowrap at 255 columns, `DotExporter` and `DotImporter`; internal entry point `GraphvizDot`: `load`,
+`serialize`; design and runbook in [graphviz-dot.md](architecture/graphviz-dot.md)). The bundle starts no process and
+computes no layout, so there is no golden: the evidence is JVM vectors, recorded before the code, plus a local export
+sweep. Running Graphviz is `alg.graphviz.layouter` (#95 step 3, not ported); the end-to-end suite of AD-17 belongs to
+that step and is the only place where AD-4's 1e-6 bar will not apply.
+
+**What is compared.** Vectors are recorded by `tools/vectors/dot-vectors.sh` into
+`test/golden/refs/java/graphviz-dot-*.json` (AD-13). Every row is replayed; each replay asserts its row count against
+the ref.
+
+- `graphviz-dot-jdk.json`: 701 rows (`StringTokenizer` 187, `Float.parseFloat`/`valueOf` 167 as raw float bits,
+  `Float.toString` 304, `String.trim` 24, `Boolean.valueOf` 19), all exact; exception messages of the `tokenizer` and
+  `parseFloat` families are JDK text and compare by class.
+- `graphviz-dot-lexer.json`: 284 token rows (type, text, line, column, offsets, channel) and 106 converter rows, all
+  exact.
+- `graphviz-dot-parse.json`: 75 cases (61 scenarios, 14 real Graphviz outputs): the model dump compares exactly,
+  partial models after error recovery included; the 31 cases with syntax errors are held to presence and line
+  (known divergence #1, as for `.elkt`), and the replay also asserts message, offset and length, which match today.
+  No value-conversion diagnostic is reachable from text.
+- `graphviz-dot-write.json`: 443 rows (27 scenarios, 14 fixtures, 402 built models), each in three forms (formatted,
+  unformatted, `save`), byte for byte; 28 rows are serializer exceptions, compared by class and message. All 18
+  `autowrap` and 115 `width` rows (lines around the 255-column limit) match. The `attached` fields (a parsed model
+  written with its node model, which keeps comments and source line breaks) are recorded and not asserted: the port
+  has no node-model region access (as G1 for `.elkt`).
+- `graphviz-dot-export.json`: 82 `DotExporter.transform` rows (15 scenarios under 32 property sets; text byte for
+  byte, the target model exactly, the source graph after `transform` within 1e-6) and 30 `transferLayout` rows (14 on
+  the real output of Graphviz 16.1.2 for dot, neato, fdp, twopi and circo; the ElkGraph within 1e-6); 7 rows record an
+  exception. 55 of the 112 rows come from the recorder's copy of `LayoutDotExporter`; they replay through a test-only
+  subclass of the port and become the evidence of that class in step 3.
+- `graphviz-dot-import.json`: 14 rows: the imported graphs with every property, the log messages, and the DOT model
+  and text after `transferLayout` on a fixed fake layout; 5 exceptions.
+
+The Graphviz outputs under `tools/vectors/dot-graphviz-output/` are inputs: the JVM records what ELK does with them,
+so the Graphviz version enters no comparison.
+
+**No pin stamp.** The six refs carry no `oracle` field: their recorders do not call `elkCommit()` while issue #173
+(the frozen count of stamping recorders) is open. `dot-vectors.sh` still refuses to run unless `oracle-build.json`
+names `tools/oracle/ELK_COMMIT`. Provenance: oracle `8bca22f4afa3371562d2f702d59929818f7f7b71` with patches
+0001-0004, JDK 21.0.1, arm64 (`plans/graphviz-dot/decision-journal.md`).
+
+**Local export sweep.** `tools/oracle/dot-export-sweep.sh` (CoreOptions-only registry) and
+`test/corpus/dot-export-sweep.test.ts`, over the 898 elk-models `.elkt` under default exporter properties, run
+2026-11-24:
+
+| Indicator     | Result  | Meaning                                                                                                                                                                 |
+| ------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| text-equal    | 898/898 | 822 texts byte-identical; in 76 models the oracle throws `NullPointerException` in `transform` (an edge label without `font.size`) and the port fails in the same stage |
+| reparse-equal | 822/822 | loading the oracle's text gives the oracle's parse: no error, the same model, equal to the exported model                                                               |
+
+The sweep is not run in CI (it needs the models and the oracle); the test skips there.
+
+**Upstream quirks kept.** Listed in [graphviz-dot.md § 10](architecture/graphviz-dot.md#quirks): the
+`NullPointerException` above, `createString`'s replacement of every character above 126, raw `DotID` output that does
+not reparse, the unmatched quoted `comment` in `transferLayout`, and the importer's shared padding object.
+
+**Upstream typos.** None found in the bundle's human-readable text, so nothing is listed under "upstream typos".
+
+**Regenerate.** `tools/vectors/dot-vectors.sh test/golden/refs/java` (`ELK_VECTORS_CACHE=off` for a cold run); a
+differing rerun is a defect to diagnose against the oracle, never a ref to accept.
+
 ## Temporary gaps
 
 Known differences from the Java after mission 3 (core metadata), each with the mission that closes

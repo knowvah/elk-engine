@@ -1,0 +1,8 @@
+digraph G {
+  rankdir = LR
+  size="7,7";
+  "x y" = 1.5;
+  007 = -0
+  a = "";
+  subgraph s { color = blue; b }
+}

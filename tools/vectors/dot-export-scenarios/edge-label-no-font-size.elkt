@@ -1,0 +1,5 @@
+node a
+node b
+edge a -> b {
+  label "no font size"
+}

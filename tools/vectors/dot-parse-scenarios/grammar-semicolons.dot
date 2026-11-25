@@ -1,0 +1,2 @@
+graph g { a; b c ; d -- e; f [x=1]; graph [y=2]; z = w; subgraph { k; }; { l };
+ m }

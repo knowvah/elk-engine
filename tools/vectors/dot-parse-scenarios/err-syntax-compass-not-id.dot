@@ -1,0 +1,7 @@
+digraph G {
+  a:p:node;
+  b:p:"s";
+  c:p:1;
+  e:p:^s;
+  d:p:n
+}

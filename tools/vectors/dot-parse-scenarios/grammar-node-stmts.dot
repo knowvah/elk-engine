@@ -1,0 +1,12 @@
+digraph G {
+  a
+  b;
+  c [];
+  d [shape=box];
+  e [shape=box, color=red];
+  f [shape=box color=red];
+  g [shape=box, color=red style=filled, width=0.5];
+  h [fixedsize];
+  i [fixedsize, shape];
+  j [a=1,b=2,c=3]
+}

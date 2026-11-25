@@ -1,0 +1,4 @@
+digraph G {
+  a [label="ends with \\"];
+  b
+}

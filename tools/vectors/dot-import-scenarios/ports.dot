@@ -1,0 +1,8 @@
+digraph {
+	a:p -> b:q:n;
+	a:p:n -> c;
+	a:n -> c:s;
+	a:p -> b:q;
+	x:r:e -> y:r:e;
+	b:"quoted port" -> a:p;
+}

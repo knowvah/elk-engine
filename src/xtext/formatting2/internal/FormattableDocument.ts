@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { EObject } from '../../../emf/ecore/EObject.js';
 import type { AbstractFormatter2 } from '../AbstractFormatter2.js';
+import { FormatterPreferenceKeys } from '../FormatterPreferenceKeys.js';
 import type { FormatterRequest } from '../FormatterRequest.js';
 import type { HiddenRegionFormatterInit } from '../IHiddenRegionFormatter.js';
 import type { IFormattableDocument, RegionPair } from '../IFormattableDocument.js';
@@ -21,11 +22,8 @@ import { getReplacerRegion } from '../ITextReplacer.js';
 /**
  * The formatting commands over a text region, collected as replacers and rendered to text replacements.
  *
- * Ported from `createReplacements` (124-170) without the autowrap bookkeeping (`wrappable`, `wrapped`,
- * `needsAutowrap`, `canAutowrap`): `wrappable` only becomes non-null for a context with `canAutowrap() >= 0`,
- * which needs a formatting with an autowrap trigger, and `ElkGraphFormatter` never creates one (the autowrap
- * commands are not ported, see `IHiddenRegionFormatter`). Not ported either: `applyTextReplacements` (no
- * caller), `formatConditionally`, `withReplacerFilter`, `toString` (debug), `getPreferences`.
+ * Not ported: `applyTextReplacements` (no caller), `formatConditionally`, `withReplacerFilter`, `toString`
+ * (debug), `getPreferences`.
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/internal/FormattableDocument.java
  */
@@ -102,13 +100,69 @@ export abstract class FormattableDocument implements IFormattableDocument {
     return region === null ? null : region.getPreviousHiddenRegion();
   }
 
+  /**
+   * Runs the replacers in order. The last context that can autowrap is remembered (`wrappable`); when the line
+   * before a later replacer is too long, the chain is rewound to it, it is set to autowrap, and the replacers
+   * run again from there.
+   */
   protected createReplacements(previous: ITextReplacerContext): ITextReplacerContext {
+    const maxLineWidth = this.getRequest().getPreferences().getTypedPreference(FormatterPreferenceKeys.maxLineWidth);
     let context = previous.withDocument(this);
-    for (const replacer of this.getReplacers()) {
+    let wrappable: ITextReplacerContext | null = null;
+    // Sets.newHashSet: the replacers do not override equals/hashCode, so membership is identity
+    const wrapped = new Set<ITextReplacer>();
+    let replacers = this.getReplacers()[Symbol.iterator]();
+    for (let next = replacers.next(); next.done !== true; next = replacers.next()) {
+      let replacer = next.value;
       context = context.withReplacer(replacer);
-      context = replacer.createReplacements(context);
+      if (wrappable !== null && context.isWrapSincePrevious()) {
+        wrappable = null;
+      }
+      if (wrappable !== null && this.needsAutowrap(wrappable, context, maxLineWidth!)) {
+        // Xtext TODO: raise report if replacer claims it can do autowrap but then doesn't
+        while (context !== wrappable) {
+          context = context.getPreviousContext()!;
+        }
+        replacer = context.getReplacer()!;
+        replacers = this.getReplacers().iteratorAfter(replacer);
+        context.setAutowrap(true);
+        wrappable = null;
+      }
+      const nextContext = replacer.createReplacements(context);
+      wrappable = this.nextWrappable(wrappable, context, replacer, wrapped);
+      context = nextContext;
     }
     return context.withDocument(previous.getDocument());
+  }
+
+  /**
+   * The tail of the loop of `createReplacements` (lines 147-165): the wrap candidate after `replacer` ran in
+   * `context`. A line break in the region drops a candidate; otherwise a context that can autowrap and has not
+   * wrapped becomes the candidate, unless the current candidate's region plus trigger ends at or after its own.
+   */
+  private nextWrappable(
+    wrappable: ITextReplacerContext | null,
+    context: ITextReplacerContext,
+    replacer: ITextReplacer,
+    wrapped: Set<ITextReplacer>,
+  ): ITextReplacerContext | null {
+    if (wrappable !== null && context.isWrapInRegion()) {
+      return null;
+    }
+    const canAutowrap = context.canAutowrap();
+    if (canAutowrap !== null && canAutowrap >= 0 && !context.isAutowrap() && !wrapped.has(replacer)) {
+      let can = true;
+      if (wrappable !== null) {
+        const lastEndOffset = wrappable.canAutowrap()! + wrappable.getReplacer()!.getRegion().getEndOffset();
+        const thisEndOffset = canAutowrap + context.getReplacer()!.getRegion().getEndOffset();
+        can = lastEndOffset < thisEndOffset;
+      }
+      if (can) {
+        wrapped.add(replacer);
+        return context;
+      }
+    }
+    return wrappable;
   }
 
   protected createTextReplacerSet(): TextSegmentSet<ITextReplacer> {
@@ -167,6 +221,22 @@ export abstract class FormattableDocument implements IFormattableDocument {
       }
     }
     return object;
+  }
+
+  /**
+   * Whether the line before `context`'s replacer is longer than `maxLineWidth`. The second test can only return
+   * `false` either way; Java keeps it with a commented-out line-break search after it.
+   */
+  protected needsAutowrap(
+    wrappable: ITextReplacerContext,
+    context: ITextReplacerContext,
+    maxLineWidth: number,
+  ): boolean {
+    if (context.getLeadingCharsInLineCount() > maxLineWidth) return true;
+    const offset = wrappable.getReplacer()!.getRegion().getOffset();
+    const length = context.getReplacer()!.getRegion().getEndOffset() - offset;
+    if (length > wrappable.canAutowrap()!) return false;
+    return false;
   }
 
   renderToTextReplacements(): ITextReplacement[] {

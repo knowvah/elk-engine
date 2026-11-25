@@ -1,0 +1,15 @@
+direction: RIGHT
+spacing.edgeLabel: 3
+node a {
+  layout [ size: 30, 30 ]
+}
+node b {
+  layout [ size: 30, 30 ]
+}
+edge a -> b {
+  spacing.edgeLabel: 3
+  label "right" { font.^size: 10 }
+}
+edge b -> a {
+  label "left" { font.^size: 7 edgeLabels.placement: TAIL }
+}

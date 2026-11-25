@@ -17,8 +17,8 @@ const HEX_BITS_PER_DIGIT = 4n;
 const EMPTY_STRING_MESSAGE = 'empty String';
 const MULTIPLE_POINTS_MESSAGE = 'multiple points';
 
-const DECIMAL_PATTERN = /^([0-9]*)(?:\.([0-9]*))?([eE][+-]?[0-9]+)?[fFdD]?$/u;
-const HEX_PATTERN = /^([0-9a-fA-F]*)(?:\.([0-9a-fA-F]*))?[pP]([+-]?[0-9]+)[fFdD]?$/u;
+export const DECIMAL_PATTERN = /^([0-9]*)(?:\.([0-9]*))?([eE][+-]?[0-9]+)?[fFdD]?$/u;
+export const HEX_PATTERN = /^([0-9a-fA-F]*)(?:\.([0-9a-fA-F]*))?[pP]([+-]?[0-9]+)[fFdD]?$/u;
 const SIGNIFICAND_RUN = /^[0-9.]*/u;
 
 const scratch = new DataView(new ArrayBuffer(DOUBLE_BYTES));

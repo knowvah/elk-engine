@@ -1,0 +1,103 @@
+digraph {
+	graph [bb="0,116,165,0",
+		compound=true,
+		nodesep=0.2777777777777778,
+		rankdir=TB,
+		ranksep=0.2777777777777778,
+		splines=spline
+	];
+	node [fixedsize=true,
+		label="\N",
+		shape=box
+	];
+	edge [dir=none];
+	subgraph cluster2 {
+		graph [bb="8,108,74,32",
+			nodesep=0.2777777777777778,
+			rankdir=TB,
+			ranksep=0.2777777777777778,
+			splines=spline
+		];
+		node [fixedsize=true,
+			shape=box
+		];
+		edge [dir=none];
+		node3	[height=0.27778,
+			pos="31,50",
+			width=0.41667];
+		node4	[height=0.27778,
+			pos="31,90",
+			width=0.41667];
+		dummy5	[height=0.02,
+			pos="66,50",
+			style=invis,
+			width=0.01];
+		node3 -> node4	[comment=edge4,
+			pos="31,60.199 31,66.085 31,73.701 31,79.622"];
+	}
+	subgraph cluster6 {
+		graph [bb="82,103,157,29",
+			nodesep=0.2777777777777778,
+			rankdir=TB,
+			ranksep=0.2777777777777778,
+			splines=spline
+		];
+		node [fixedsize=true,
+			shape=box
+		];
+		edge [dir=none];
+		subgraph cluster7 {
+			graph [bb="90,63,136,37",
+				nodesep=0.2777777777777778,
+				rankdir=TB,
+				ranksep=0.2777777777777778,
+				splines=spline
+			];
+			node [fixedsize=true,
+				shape=box
+			];
+			edge [dir=none];
+			node8	[height=0.13889,
+				pos="103,50",
+				width=0.13889];
+			dummy9	[height=0.02,
+				pos="128,50",
+				style=invis,
+				width=0.01];
+		}
+		node10	[height=0.13889,
+			pos="103,90",
+			width=0.13889];
+		dummy11	[height=0.02,
+			pos="149,50",
+			style=invis,
+			width=0.01];
+		dummy9 -> node10	[comment=edge6,
+			ltail=cluster7,
+			pos="120.11,63 115.26,70.362 109.35,79.355 105.89,84.604"];
+		node10 -> node8	[comment=edge8,
+			pos="103,84.692 103,77.396 103,62.689 103,55.359"];
+	}
+	node1	[height=0.27778,
+		pos="67,10",
+		width=0.27778];
+	node1 -> node3	[comment=edge1,
+		pos="58.285,20.199 52.709,26.085 45.494,33.701 39.884,39.622"];
+	dummy5 -> node10	[comment=edge2,
+		ltail=cluster2,
+		pos="73.997,59.213 81.581,67.002 92.689,78.41 98.719,84.604"];
+	dummy5 -> dummy11	[comment=edge3,
+		lhead=cluster6,
+		ltail=cluster2,
+		pos="73.996,38.845 76.272,36.203 78.97,33.458 82.004,31.057"];
+	node3 -> dummy9	[comment=edge5,
+		lhead=cluster7,
+		pos="40.559,39.586 47.022,33.502 56.15,26.614 66,24.5 84.251,20.583 89.749,20.583 108,24.5 112.77,25.523 114.52,25.591 118,29 120.29,\
+31.241 122.12,34.11 123.56,37.002"];
+	dummy9 -> dummy5	[comment=edge7,
+		lhead=cluster2,
+		ltail=cluster7,
+		pos="123.56,37.002 122.12,34.11 120.29,31.241 118,29 110.56,21.715 105.18,22.314 95,24.5 86.494,26.326 79.16,32.853 73.995,38.846"];
+	node8 -> node1	[comment=edge9,
+		pos="98.818,44.585 93.189,38.644 83.039,27.931 75.715,20.199"];
+}

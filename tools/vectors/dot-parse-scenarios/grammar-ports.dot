@@ -1,0 +1,11 @@
+digraph G {
+  a:n;
+  a:p:ne;
+  a:"port name":s;
+  a:1:_;
+  a:p:c;
+  a:p:xyz;
+  a:-1.5:w;
+  "a":"b";
+  a:p:Graph -> b:q:NODE
+}

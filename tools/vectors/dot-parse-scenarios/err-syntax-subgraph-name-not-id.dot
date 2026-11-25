@@ -1,0 +1,6 @@
+digraph G {
+  subgraph "quoted" { a }
+  subgraph 1 { b }
+  subgraph ^t { e }
+  subgraph c { d }
+}
