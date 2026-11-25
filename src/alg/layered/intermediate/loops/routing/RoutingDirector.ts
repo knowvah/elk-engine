@@ -28,7 +28,9 @@ const CONNECTED_PORT_PENALTY = 3;
  * self loop types (see the method documentations for how we do so).
  *
  * Deviations: Java `assert` statements are `devAssert` calls. The `default` branch of the `switch` over the loop type
- * and of the missing-side `switch` (Java `assert false`) is unreachable; in the three-sided case it throws. `determineLoopRoutes` was split (`determineLoopRoute`) for the complexity limit.
+ * and of the missing-side `switch` (Java `assert false`) is unreachable, as is the end of `computeMissingPortSide`
+ * (issue #115); each goes on as the Java does without `-ea`. `determineLoopRoutes` was split (`determineLoopRoute`)
+ * for the complexity limit.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/loops/routing/RoutingDirector.java
  */
@@ -173,12 +175,18 @@ export class RoutingDirector {
 
   /** Three-sided self loops only have one possible way of being routed, so that's easy. */
   private determineThreeSideLoopRoutes(slLoop: SelfHyperLoop): void {
-    let leftmostSide: PortSide;
-    let rightmostSide: PortSide;
+    let leftmostSide: PortSide | null = null;
+    let rightmostSide: PortSide | null = null;
 
     // Determine the leftmost and rightmost of the three port sides (we cannot simply sort the port sides since
     // loops can span the WEST-NORTH corner)
-    switch (this.computeMissingPortSide(slLoop)) {
+    const missingSide = this.computeMissingPortSide(slLoop);
+    if (missingSide === null) {
+      // Java: `switch` on a null enum is a NullPointerException before any arm; a TS `switch` would run `default`
+      throw new TypeError('The missing port side of a three-sided self loop is null.');
+    }
+
+    switch (missingSide) {
       case PortSide.NORTH:
         leftmostSide = PortSide.EAST;
         rightmostSide = PortSide.WEST;
@@ -200,15 +208,15 @@ export class RoutingDirector {
         break;
 
       default:
-        // Java: then `lowestPortOnSide(slLoop, null)` fails; unreachable
+        // Java: goes on with both sides null (only `UNDEFINED` gets here, which `computeMissingPortSide` skips)
         devAssert(() => false);
-        throw new Error('A three-sided self loop has exactly one of the four sides missing.');
+        break;
     }
 
     this.assignLeftmostRightmostPorts(slLoop, leftmostSide, rightmostSide);
   }
 
-  private computeMissingPortSide(slLoop: SelfHyperLoop): PortSide {
+  private computeMissingPortSide(slLoop: SelfHyperLoop): PortSide | null {
     const sides = slLoop.getSLPortsBySide().keySet();
 
     // SUPPRESS CHECKSTYLE NEXT MagicNumber
@@ -223,7 +231,7 @@ export class RoutingDirector {
 
     // This cannot happen
     devAssert(() => false);
-    throw new Error('A three-sided self loop has exactly one of the four sides missing.');
+    return null;
   }
 
   // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -272,9 +280,15 @@ export class RoutingDirector {
    * Assigns's the loop's leftmost and rightmost ports by taking the lowest-ID port on the given leftmost side and the
    * highest-ID port on the given rightmost side.
    */
-  private assignLeftmostRightmostPorts(slLoop: SelfHyperLoop, leftmostSide: PortSide, rightmostSide: PortSide): void {
-    slLoop.setLeftmostPort(this.lowestPortOnSide(slLoop, leftmostSide));
-    slLoop.setRightmostPort(this.highestPortOnSide(slLoop, rightmostSide));
+  private assignLeftmostRightmostPorts(
+    slLoop: SelfHyperLoop,
+    leftmostSide: PortSide | null,
+    rightmostSide: PortSide | null,
+  ): void {
+    // Java passes a null side on (`:210`, `:280`): the multimap has no ports for it, so `lowestPortOnSide` throws its
+    // NoSuchElementException
+    slLoop.setLeftmostPort(this.lowestPortOnSide(slLoop, leftmostSide!));
+    slLoop.setRightmostPort(this.highestPortOnSide(slLoop, rightmostSide!));
   }
 
   /** Returns the port with the lowest ID on the given side (`Stream.min(...).get()`). */

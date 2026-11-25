@@ -4238,3 +4238,48 @@ https://github.com/knowvah/elk-engine/issues/114#issuecomment-7154636091; its la
 
 **Open.** #180 (`follow-up`): `InternalNodeModelUtils.java:46-48` throws `new AssertionError()` in its constructor and the port's
 constructor is empty. It builds no stand-in, so it is outside #114. No `needs-ruling` issue was filed and no row is a partial.
+
+## Revision 2026-11-25 (self-loop-assert-arms)
+
+Queue mission for issue #115, on `chore/issue-queue` (plan, journal and evidence in `plans/self-loop-assert-arms/`). The
+dev-assert mission (#45, D5.4) restored six Java `assert false` arms of the self-loop routing code in front of a
+`throw new Error(...)` the port already had. In each, the Java returns a value or goes on, so a JVM without `-ea` does not
+throw there. This mission removes the six throws. No ref, vector, golden, oracle patch or pin changed. Oracle state: `8bca22f4`
++ patches 0001-0004 (built 2026-11-25T00:05:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over alg.layered is empty.
+
+**1. The arms.** Each keeps its `devAssert(() => false)`, so with assertions on it throws the `AssertionError` first.
+
+| # | Java | After the assert, as the Java without `-ea` |
+| - | ---- | ------------------------------------------- |
+| 96 | `OrthogonalSelfLoopRouter.java:180` (`placeLabels`) | `break`: the label position is left as it is |
+| 98 | `OrthogonalSelfLoopRouter.java:304-305` (`computeBaselinePosition`) | `return -1` |
+| 99 | `OrthogonalSelfLoopRouter.java:367` (`addOuterBendPoint`) | `break`, then the result is added, a null included |
+| 100 | `OrthogonalSelfLoopRouter.java:441-442` (`getBaseVector`) | `return null` |
+| 105 | `RoutingDirector.java:207` (`determineThreeSideLoopRoutes`) | `break`, then `assignLeftmostRightmostPorts(slLoop, null, null)` |
+| 108 | `RoutingDirector.java:227-228` (`computeMissingPortSide`) | `return null` |
+
+**2. The nulls.** They flow as in the Java, and a dereference is a `TypeError` at the step of the Java
+`NullPointerException`. A Java `switch` on a null enum throws before any arm and a TS `switch (null)` runs `default`, so
+`determineThreeSideLoopRoutes` throws a `TypeError` in front of its `switch` for a null missing side. With both sides null the
+Java does not throw an NPE, as #115 says, but `NoSuchElementException` (`RoutingDirector.java:288`: Guava's `get(null)` is an
+empty list); the port's `lowestPortOnSide` already did the same. No bounds check was added in front of the two reads by ordinal
+(`:145`, `:429`): for `UNDEFINED` with an empty row the JVM throws `ArrayIndexOutOfBoundsException` there and JS reads
+`undefined` (`docs/translation-rules.md` § 6.7 ports a check only where ELK catches the exception).
+
+**3. Reachability.** No valid graph reaches any arm, so no row is a deviation and no golden was needed. Row 98: the callers
+pass the four constants. Rows 99 and 100: `SelfHyperLoop.computePortsPerSide` throws `IllegalArgumentException` for an
+`UNDEFINED` port side, in both runtimes, and no processor between `SELF_LOOP_PORT_RESTORER` and `SELF_LOOP_ROUTER` changes the
+side of an existing port. Row 96: `LabelPlacer` assigns only the four sides, and a side never set fails at `labelSide.ordinal()` first. Rows 105 and
+108: a `THREE_SIDES` loop has a key set of three of the four sides, so exactly one is missing.
+
+**4. Evidence and tests.** A throwaway JVM probe (reflection on the oracle jars, under `$TMPDIR`, not committed) ran each arm
+with and without `-ea`, and agrees with the table above. 17 additive tests, written before the change and red on the old throws:
+per row one inside `withAssertions(false, …)` and one with `assertionErrorOf`. No existing expected value changed.
+`plans/dev-assert/inventory.md` has an appended `## Superseded by #115` section (138 restored, 0 in front of a kept throw, 5
+comments naming an issue), and `docs/translation-rules.md` carries the same counts.
+
+**5. Gates.** Queue gates 1-7 green on the final tree: coverage 1,258 files, 51,964 tests, 98.88 / 97.05 / 98.67 / 98.92; CodeQL
+with no new accepted entry; `test/golden/refs/` against the base untouched. Comment on #115:
+https://github.com/knowvah/elk-engine/issues/115#issuecomment-7155350018; its labels are unchanged.
+
+**Open.** Nothing. No `needs-ruling` or `follow-up` issue was filed, and no row is a partial.

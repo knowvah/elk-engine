@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: EPL-2.0
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { assertionErrorOf } from '../../../../../../test/helpers/assertion-error-of.js';
 import { SelfLoopTestGraphCreator as Creator } from '../../../../../../test/helpers/SelfLoopTestGraphCreator.js';
+import { withAssertions } from '../../../../../../test/helpers/with-assertions.js';
 import { PortSide } from '../../../../../core/options/PortSide.js';
 import { EnumSet } from '../../../../../java/util/EnumSet.js';
+import { NoSuchElementException } from '../../../../../java/util/NoSuchElementException.js';
 import { LGraph } from '../../../graph/LGraph.js';
 import type { LNode } from '../../../graph/LNode.js';
 import type { SelfHyperLoop } from '../SelfHyperLoop.js';
@@ -154,5 +157,106 @@ describe('RoutingDirector', () => {
     route(node);
 
     expect(node.getPorts().map((port) => port.id)).toEqual([0, 1, 2, 3]);
+  });
+});
+
+/** The private methods of the Java class around its two `assert false` arms; Java tests would use reflection. */
+interface DirectorArms {
+  determineThreeSideLoopRoutes(slLoop: SelfHyperLoop): void;
+  computeMissingPortSide(slLoop: SelfHyperLoop): PortSide | null;
+  assignLeftmostRightmostPorts(
+    slLoop: SelfHyperLoop,
+    leftmostSide: PortSide | null,
+    rightmostSide: PortSide | null,
+  ): void;
+}
+
+function arms(director: RoutingDirector): DirectorArms {
+  return director as unknown as DirectorArms;
+}
+
+/**
+ * A loop with ports on all four sides, its ports per side computed: no side is missing. The dispatch of
+ * `determineLoopRoutes` never hands such a loop to the three-sided methods, so the tests below call them directly.
+ */
+function fourSidedLoop(): SelfHyperLoop {
+  const node = newNode(1, 1, 1, 1);
+  const ports = node.getPorts();
+  Creator.edge(ports[0]!, ports[1]!);
+  Creator.edge(ports[1]!, ports[2]!);
+  Creator.edge(ports[2]!, ports[3]!);
+  const slLoop = SelfLoopHolder.install(node).getSLHyperLoops()[0]!;
+  slLoop.computePortsPerSide();
+  return slLoop;
+}
+
+/**
+ * The two `assert false` arms of `RoutingDirector.java` that no valid graph reaches (`:207`, `:227-228`; issue #115).
+ * Every expected value is what the Java does after the `assert false` on a JVM without `-ea`; the second test of each
+ * pair pins the `AssertionError` of a JVM under `-ea`.
+ */
+describe('RoutingDirector: no side is missing (Java computeMissingPortSide, :227-228)', () => {
+  it('returns null, as a JVM without -ea does', () => {
+    const slLoop = fourSidedLoop();
+
+    expect(withAssertions(false, () => arms(new RoutingDirector()).computeMissingPortSide(slLoop))).toBeNull();
+  });
+
+  it('throws the AssertionError of a JVM under -ea', () => {
+    const slLoop = fourSidedLoop();
+
+    expect(assertionErrorOf(() => arms(new RoutingDirector()).computeMissingPortSide(slLoop)).message).toBe('');
+  });
+
+  it('is a TypeError at the switch of determineThreeSideLoopRoutes, before any arm, as the Java NPE (:185)', () => {
+    const slLoop = fourSidedLoop();
+    const director = new RoutingDirector();
+    const assign = vi.spyOn(arms(director), 'assignLeftmostRightmostPorts');
+
+    expect(() => withAssertions(false, () => arms(director).determineThreeSideLoopRoutes(slLoop))).toThrow(TypeError);
+
+    expect(assign).not.toHaveBeenCalled();
+    expect(slLoop.getLeftmostPort()).toBeNull();
+    expect(slLoop.getRightmostPort()).toBeNull();
+  });
+
+  it('is the AssertionError of computeMissingPortSide under -ea, before the switch', () => {
+    const slLoop = fourSidedLoop();
+    const director = new RoutingDirector();
+    const assign = vi.spyOn(arms(director), 'assignLeftmostRightmostPorts');
+
+    expect(assertionErrorOf(() => arms(director).determineThreeSideLoopRoutes(slLoop)).message).toBe('');
+    expect(assign).not.toHaveBeenCalled();
+  });
+});
+
+describe('RoutingDirector: the default arm of determineThreeSideLoopRoutes (Java :207)', () => {
+  /** A director whose `computeMissingPortSide` returns the one non-null side outside the four arms. */
+  function directorMissingUndefined(): { director: RoutingDirector; assign: ReturnType<typeof vi.spyOn> } {
+    const director = new RoutingDirector();
+    vi.spyOn(arms(director), 'computeMissingPortSide').mockReturnValue(PortSide.UNDEFINED);
+    return { director, assign: vi.spyOn(arms(director), 'assignLeftmostRightmostPorts') };
+  }
+
+  it('goes on with both sides null, as a JVM without -ea does: no port is on a null side (:210, :288)', () => {
+    const slLoop = fourSidedLoop();
+    const { director, assign } = directorMissingUndefined();
+
+    expect(() => withAssertions(false, () => arms(director).determineThreeSideLoopRoutes(slLoop))).toThrow(
+      new NoSuchElementException('No value present'),
+    );
+
+    expect(assign).toHaveBeenCalledTimes(1);
+    expect(assign).toHaveBeenCalledWith(slLoop, null, null);
+    expect(slLoop.getLeftmostPort()).toBeNull();
+    expect(slLoop.getRightmostPort()).toBeNull();
+  });
+
+  it('throws the AssertionError of a JVM under -ea and assigns nothing', () => {
+    const slLoop = fourSidedLoop();
+    const { director, assign } = directorMissingUndefined();
+
+    expect(assertionErrorOf(() => arms(director).determineThreeSideLoopRoutes(slLoop)).message).toBe('');
+    expect(assign).not.toHaveBeenCalled();
   });
 });

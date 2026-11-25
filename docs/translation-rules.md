@@ -510,8 +510,9 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 - Site: `assert e;` -> `devAssert(() => e);` and `assert e : m;` -> `devAssert(() => e, () => m);` at the Java
   statement's position, `e` translated like the code around it. A thunk only reads. After `assert false`, what
   follows in the Java stays as it is. CLAUDE.md row confirmed: `ElkSpacings.java:80`. HIGH.
-- Outcome (issues #45 and #127, `plans/dev-assert/inventory.md`): of the 143 statements, 132 are restored, 6 are
-  restored in front of a `throw` the port already had in place of `assert false; return x;`, and 5 stay comments
+- Outcome (issues #45, #127 and #115, `plans/dev-assert/inventory.md`): of the 143 statements, 138 are restored, none
+  of them in front of a `throw` the Java does not have (#115 let the six self-loop arms return or go on as
+  `assert false; return x;` does without `-ea`), and 5 stay comments
   naming an issue, because the Java assert itself fires under `-ea` on a layout ELK runs:
   `BoxLayoutProvider.java:738, 754` and `SingleEdgeGraphWrapper.java:193` are upstream defects (#112; knowvah/elk#27 and
   #28), and `ThresholdStrategy.java:395, 403` wait for a diagnosis (#128).

@@ -40,8 +40,12 @@ type InlineLabel = { readonly labelSide: PortSide; readonly lSize: KVector };
  * AD-10 (W6): this class has no hashed container of its own; it iterates `SelfHyperLoop.getSLEdges()` (`:69`), the
  * insertion-ordered `Set` that holds the Java `HashSet` (identity-hashed keys).
  *
- * Deviations: the `default` arms that only assert (`placeLabels`, `addOuterBendPoint`, `getBaseVector`) call
- * `devAssert(() => false)` and then throw (the Java `getBaseVector` would return `null` and fail at the caller). The nested enum lives in its own file (`EdgeRoutingDirection`). Split for
+ * The `default` arms that only assert (`placeLabels`, `addOuterBendPoint`, `getBaseVector`) call
+ * `devAssert(() => false)` and then go on as the Java does without `-ea`: `getBaseVector` returns `null`, which
+ * `addOuterBendPoint` adds to the bend points and `cornerBendPoint` dereferences (a `TypeError` where the Java throws
+ * a `NullPointerException`). No valid graph reaches them (issue #115).
+ *
+ * Deviations: the nested enum lives in its own file (`EdgeRoutingDirection`). Split for
  * the complexity and file size limits: the loop body of `routeSelfLoops` is `routeSelfLoop`; the `switch` of
  * `placeLabels` is `offsetLabels`; the corner loop body of `addCornerBendPoints` is `cornerBendPoint`, its inline label
  * locals are `inlineLabelOf` and the `if` chain on them is `reserveInlineLabelSpace`; the "Routing Slot Positions"
@@ -155,6 +159,7 @@ export class OrthogonalSelfLoopRouter extends AbstractSelfLoopRouter {
     // Find the baseline of the routing slot (we need to offset this by the spacing to be left between label and
     // edge)
     const labelSide = slLabels.getSide()!;
+    // Java: a slot past the row is an ArrayIndexOutOfBoundsException; this read is `undefined` (rules § 6.7, #115)
     const labelPosition = routingSlotPositions[labelSide.ordinal()]![slLoop.getRoutingSlot(labelSide)]!;
     let inline = false;
     for (const label of slLabels.getLLabels()) {
@@ -201,7 +206,7 @@ export class OrthogonalSelfLoopRouter extends AbstractSelfLoopRouter {
 
       default:
         devAssert(() => false);
-        throw new Error(`Unexpected label side ${String(labelSide)}`); // Java: assert false
+        break;
     }
   }
 
@@ -272,23 +277,25 @@ export class OrthogonalSelfLoopRouter extends AbstractSelfLoopRouter {
 
     // Now take care of the port anchor
     const anchor = lPort.getPosition().clone().add(lPort.getAnchor());
+    // `result` is null only for a side outside the four (`getBaseVector`), which takes the `default` arm
     switch (lPort.getSide()) {
       case PortSide.NORTH:
       case PortSide.SOUTH:
-        result.x += anchor.x;
+        result!.x += anchor.x;
         break;
 
       case PortSide.EAST:
       case PortSide.WEST:
-        result.y += anchor.y;
+        result!.y += anchor.y;
         break;
 
       default:
         devAssert(() => false);
-        throw new Error(`Unexpected port side ${String(lPort.getSide())}`); // Java: assert false
+        break;
     }
 
-    bendPoints.add(result);
+    // Java adds the result as it is, a null included (`LinkedList.add(null)`)
+    bendPoints.add(result!);
   }
 
   private addCornerBendPoints(
@@ -333,17 +340,18 @@ export class OrthogonalSelfLoopRouter extends AbstractSelfLoopRouter {
   ): KVector {
     const [currPortSide, nextPortSide] = portSides;
 
-    // Compute the coordinates contributes by the current and next port sides
+    // Compute the coordinates contributes by the current and next port sides. Java dereferences both below, so a null
+    // one (a side outside the four) is a NullPointerException there and a TypeError here.
     const currPortSideComponent = this.getBaseVector(
       currPortSide,
       slLoop.getRoutingSlot(currPortSide),
       routingSlotPositions,
-    );
+    )!;
     const nextPortSideComponent = this.getBaseVector(
       nextPortSide,
       slLoop.getRoutingSlot(nextPortSide),
       routingSlotPositions,
-    );
+    )!;
     // If the label is inline, we need to reserve space for each side to accommodate it.
     if (inlineLabel !== null) {
       this.reserveInlineLabelSpace(currPortSide, nextPortSide, inlineLabel, [
@@ -385,7 +393,8 @@ export class OrthogonalSelfLoopRouter extends AbstractSelfLoopRouter {
     }
   }
 
-  private getBaseVector(portSide: PortSide, routingSlot: number, routingSlotPositions: number[][]): KVector {
+  private getBaseVector(portSide: PortSide, routingSlot: number, routingSlotPositions: number[][]): KVector | null {
+    // Java: a slot past the row is an ArrayIndexOutOfBoundsException; this read is `undefined` (rules § 6.7, #115)
     const position = routingSlotPositions[portSide.ordinal()]![routingSlot]!;
 
     switch (portSide) {
@@ -399,7 +408,7 @@ export class OrthogonalSelfLoopRouter extends AbstractSelfLoopRouter {
 
       default:
         devAssert(() => false);
-        throw new Error(`Unexpected port side ${String(portSide)}`); // Java: assert false; return null
+        return null;
     }
   }
 
