@@ -74,6 +74,10 @@ frozen: a failing test means the implementation is wrong.
 or golden), STOP. Journal the case in `decision-journal.md` and wait for the
 user. Never loosen a tolerance, delete a case, or regenerate a ref to get green.
 
+**Counts are not frozen** (AD-13 amendment, 2026-11-26): an assertion that
+counts or lists evidence (rows in a ref, pinned row ids, stamping recorders)
+may change with the evidence, journaled with old value, new value and reason.
+
 ## Translation Rules
 
 Full list: [`docs/translation-rules.md`](docs/translation-rules.md). Core rows:
