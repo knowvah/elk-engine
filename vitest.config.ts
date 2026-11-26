@@ -13,6 +13,10 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
     passWithNoTests: true,
+    // Ported JUnit tests have no timeout (plain `@Test`), and some run seconds under coverage, so vitest's 5 s default
+    // fails them as the suite grows (`NetworkSimplexTest.testDeltas`, 4.2 s on CI before; #164). 60 s is the explicit
+    // timeout the suite's slow tests already pass, and still stops a hang.
+    testTimeout: 60_000,
     // Java `assert` statements are enabled for the suite, as in ELK's Tycho build (dev-assert D4).
     setupFiles: ['test/setup/dev-assertions.ts'],
     coverage: {
