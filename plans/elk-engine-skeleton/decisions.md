@@ -283,3 +283,17 @@ Recorded by mission deferred-bundles-acceptance (`plans/deferred-bundles-accepta
 the ruling into the ADR, CLAUDE.md, `docs/architecture/inventory.md` and `docs/architecture/port-map.md`, and added both Graphviz
 suffixes to `IN_SCOPE_SUFFIXES` (`tools/bundle-deps.ts`), so `test/architecture/bundle-deps.json` maps `src/alg/graphviz/dot` and
 `src/alg/graphviz/layouter`, pinned by the block `graphviz bundles (AD-17)` in `test/architecture/module-boundaries.fitness.test.ts`.
+
+## AD-13 amendment (2026-11-26)
+
+Maintainer ruling of 2026-11-26: "Test counts are never frozen." AD-13 above is unchanged for every expected value that describes
+what the port computes; this amendment says which assertions are not such values.
+
+1. **Inventory assertions are not frozen.** An assertion that counts or lists evidence (rows in a ref, row ids in a pinned list,
+   stops in a group, recorders that stamp the pin, tests a predicate selects) may be raised or lowered to match evidence a change
+   adds or removes, with no STOP. The change journals the old value, the new value and the reason.
+2. **Behaviour stays frozen.** Coordinates, sizes, hashes, ids, orders, exception classes and messages, and tolerances keep AD-13's
+   STOP rule. Removing a row or a case to get green is still a STOP: point 1 covers the count that follows a row a change is allowed
+   to make, not the row.
+
+The ruling answers the count questions of #156, #161, #165 and #173 (question 3), and is the queue's standing ruling R1.
