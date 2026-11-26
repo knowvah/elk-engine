@@ -129,6 +129,8 @@ A Pages deploy failure leaves the previous deployment live; nothing is torn down
   - The language switcher links each locale's home page (`themeConfig.i18nRouting: false`). With corresponding-page
     links, every English-only page had one dead link per locale.
 - The generated API reference gets its heading ids from `referenceHeadingSlug` in `config.ts`, the rule its generator
-  writes link anchors with; every other page uses `headingSlug` (GitHub's rule).
+  writes link anchors with; every other page uses `headingSlug`: GitHub's rule for letters, numbers, marks and
+  connector punctuation (`_` is kept, so `## PARALLEL_NODE` is `#parallel_node`), with every whitespace character turned
+  into `-`, where GitHub drops non-ASCII whitespace (issue #94).
 - **External links** are checked weekly by the `Links` workflow (`npm run docs:linkcheck:external`), never on pull
   requests. A failure there is triaged as a follow-up; GitHub `blob/main` links to files not merged yet report 404.

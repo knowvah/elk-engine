@@ -1,0 +1,8 @@
+digraph G {
+	a [label="Alpha", pos="1,2", width=0.5, height=0.25];
+	b [label=Beta];
+	c;
+	a -> b [label="ab", headlabel="head", taillabel="tail"];
+	b -> c;
+	a -> c [label="  spaced  "];
+}

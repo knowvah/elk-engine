@@ -1,0 +1,9 @@
+/* leading */ digraph /* type */ G /* name */ { // open
+  a /* between */ -> /* op */ b // trailing
+  # preproc line mid-file
+  c [ /* in list */ x /* k */ = /* v */ 1 /* end */ ] ; # hash after statement
+  d#glued
+  e // comment then id on next line
+  f
+}  // after graph
+# final line without newline

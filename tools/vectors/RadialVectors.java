@@ -59,7 +59,7 @@
 //             findRoot/radius code before the first processor; NodeMicroLayout the micro layout). Where the recursive engine
 //             also throws it is the same class, message and frame (checked); the empty graph does not throw in the engine.
 //
-// DUMP (stop sections and full): every double is a 16-hex-digit lowercase string, Long.toHexString(Double.doubleToRawLongBits(d))
+// DUMP (stop sections and full): every double is a 16-hex-digit lowercase string, Long.toHexString(Double.doubleToLongBits(d))
 //   zero-padded (a NaN anywhere fails the recording); ids as exported (strings); all lists are in the traversal order below.
 //   Traversal: nodes in pre-order (the root first, then each child in list order, recursing into inner children); ports of the
 //   nodes in that order; labels: for every node in that order its node labels (nested labels after their owner), then its ports'
@@ -214,11 +214,12 @@ public class RadialVectors {
     // ------------------------------------------------------------------------------------------------------------
     // JSON helpers
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new Bug("NaN in a recorded value");
         }
-        return "\"" + String.format("%016x", Double.doubleToRawLongBits(d)) + "\"";
+        return "\"" + String.format("%016x", Double.doubleToLongBits(d)) + "\"";
     }
 
     static String str(String s) {

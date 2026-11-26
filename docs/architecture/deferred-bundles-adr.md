@@ -2,7 +2,12 @@
 
 # ADR: deferred bundles (alg.libavoid, alg.graphviz.dot, alg.graphviz.layouter)
 
-**Status:** Proposed (2026-11-13). Acceptance: #88
+**Status:** Accepted, amended (ruling 2026-11-14, confirmed 2026-11-23). Proposed 2026-11-13. Issue: #88
+
+The maintainer accepted this ADR with one amendment: `alg.libavoid` is out of scope, as recommended, and the two Graphviz
+bundles are **in scope**, against the recommendation. [Ruling](#ruling-2026-11-14) states what was decided and
+[Consequences](#consequences) what follows; Context, Decision and the evidence summary are the Proposed analysis, kept as
+written.
 
 ## Context
 
@@ -21,6 +26,8 @@ The rules a verdict has to fit:
 - **YAGNI** and **AD-14.** Nothing the Java does not have; an idiomatic wrapper is a separate later layer.
 
 ## Decision
+
+_The Proposed analysis of 2026-11-13, unchanged. The [ruling](#ruling-2026-11-14) overrides its two Graphviz rows._
 
 | Bundle                  | Recommendation | Option chosen                                                             | Deciding evidence                             |
 | ----------------------- | -------------- | ------------------------------------------------------------------------- | --------------------------------------------- |
@@ -55,35 +62,80 @@ the place is a package of its own that depends on both engines (AD-14's later la
 route needs no locked rule amended. Doing it inside this package would need "Zero runtime dependencies" and AD-4 amended;
 this ADR does not propose that.
 
+## Ruling (2026-11-14)
+
+Maintainer ruling on issue #88, 2026-11-14, confirmed there on 2026-11-23 ("good to go"): accept the ADR **amended**.
+
+| Bundle                  | Recommendation | Ruling           | Where the work lives                                                    |
+| ----------------------- | -------------- | ---------------- | ----------------------------------------------------------------------- |
+| `alg.libavoid`          | no-go          | **out of scope** | nowhere: not ported                                                     |
+| `alg.graphviz.dot`      | no-go          | **in scope**     | issue #95, step 2                                                       |
+| `alg.graphviz.layouter` | no-go          | **in scope**     | issue #95, step 3; the runner API is step 4, the adapter (outside) is 5 |
+
+**`alg.libavoid`: out of scope**, "as the ADR recommends".
+
+**`alg.graphviz.dot` and `alg.graphviz.layouter`: go**, "inside `@knowvah/elk-engine`, ported faithfully with `GraphvizTool`'s
+process replaced by an injected runner. The same functionality then comes from `@knowvah/dot-engine` through a small adapter
+outside this package, so zero runtime dependencies and browser safety hold. The ADR's objections assumed a delegate inside the
+package; with the runner as a parameter there is none." The runner takes DOT text and the algorithm and returns DOT text
+(#95); it is the one point where `GraphvizLayoutProvider` touches Graphviz (`GraphvizTool.java:182-211`). The analysis above
+weighed "skip", a line-by-line "port" and "delegate" (dot-engine as a dependency of this package); it did not weigh a port
+whose one Graphviz call is a parameter, which is the shape the ruling chooses. How the runner is injected is not ruled: it is
+new API, to settle with the maintainer under #95.
+
+**AD-4 exception, one suite only.** "The export, DOT parse and `transferLayout` are deterministic ELK Java and meet AD-4
+exactly. Only an end-to-end suite (pinned Graphviz 16.1.0 against the dot-engine adapter) uses dot-engine's bar, as a stated
+AD-4 exception for that suite." The bar's numbers are in #95: ±0.01 pt for `dot`, ±0.5 pt for `neato` and `fdp`.
+
+**The evidence still holds at the current pin.** It was gathered at `8aaa3c14`; the pin is now `8bca22f4`.
+`git -C "$ELK_SOURCE_DIR" log --oneline 8aaa3c14..8bca22f4 -- plugins/org.eclipse.elk.alg.libavoid
+plugins/org.eclipse.elk.alg.graphviz.dot plugins/org.eclipse.elk.alg.graphviz.layouter` prints nothing, and `git diff --quiet`
+over the same commits and paths exits 0 (2026-11-24): the three bundles are identical at both commits, so every line citation
+into them is valid at the pin.
+
+The ruling is recorded as AD-17 in `plans/elk-engine-skeleton/decisions.md`.
+
 ## Consequences
 
-**On acceptance** (none of this is done by the mission that wrote the ADR):
+**Done on acceptance** (mission `deferred-bundles-acceptance`, issue #88, 2026-11-24; it ports nothing):
 
-- CLAUDE.md § ELK Source Map moves the three bundles from "Deferred" to "Out of scope", with the reasons above. The three
-  `.ide` bundles stay deferred; this ADR does not cover them.
-- An AD-17 row recording the three verdicts is appended to `plans/elk-engine-skeleton/decisions.md`, and the rows in
-  [inventory.md](inventory.md) and [port-map.md](port-map.md) change from `Deferred` to `Out`.
-- `test/architecture/bundle-deps.json` and `tools/bundle-deps.ts` do not change: no bundle is adopted. No follow-up mission
-  is needed, and roadmap row 11 closes.
-- When `shared.test` is ported, its manifest entry for `alg.graphviz.layouter` is not carried: none of its four classes
-  uses the bundle (S-4a).
+- AD-17 is appended to `plans/elk-engine-skeleton/decisions.md`: the ruling's four points, and the amended bundle-scope
+  table.
+- CLAUDE.md § ELK Source Map lists `alg.graphviz.dot` and `alg.graphviz.layouter` under "In scope" and `alg.libavoid` under
+  "Out of scope". The three `.ide` bundles stay deferred; this ADR does not cover them.
+- The rows in [inventory.md](inventory.md) and the scope paragraph of [port-map.md](port-map.md) say the same, as do the
+  triage table of [elk-upgrade.md](elk-upgrade.md) and the source list of [melk-codegen.md](melk-codegen.md).
+- `IN_SCOPE_SUFFIXES` (`tools/bundle-deps.ts:30-49`) holds both Graphviz suffixes, and `test/architecture/bundle-deps.json`,
+  regenerated by `tools/bundle-deps.ts --write`, maps `src/alg/graphviz/dot` (requires `src/core`, `src/graph`) and
+  `src/alg/graphviz/layouter` (requires `src/alg/graphviz/dot`, `src/core`, `src/graph`). The layouter's optional
+  `core.service` requirement is out of scope and is not in the table: what the Java takes from it has to be replaced, not
+  imported. The block `graphviz bundles (AD-17)` in `test/architecture/module-boundaries.fitness.test.ts` pins both entries.
+- Roadmap row 11 closes.
 
-**If the maintainer rules "go" for a bundle instead**, the follow-up is: add its suffix to `IN_SCOPE_SUFFIXES`
-(`tools/bundle-deps.ts:30-47`), regenerate `bundle-deps.json` with `tools/bundle-deps.ts`, add a mapping test like the
-`grammar bundles (conformance-corpus D0)` block, and add a roadmap row. `alg.graphviz.layouter` cannot be adopted without
-`alg.graphviz.dot` (GL-2).
+**Left to issue #95** (steps 2 to 5; step 1 is the list above):
 
-**Enforced now.** "Deferred" already means "cannot be ported by accident" (S-13). In
+- The port of `alg.graphviz.dot` (the DOT model, a hand-written parser for its grammar, the serializer, `DotExporter` and the
+  transforms) and of `alg.graphviz.layouter` (`GraphvizLayoutProvider`, `LayoutDotExporter`, `GraphvizException`,
+  `Graphviz.melk`), with the Eclipse-only parts journaled as omissions.
+- How the runner is injected. It is new API, settled with the maintainer; module-level mutable state is not an option
+  (AD-8).
+- The dot-engine adapter, outside this package, which needs knowvah/dot-engine#220 (`-y`).
+- The end-to-end suite and its entry in `docs/conformance.md` as the AD-4 exception; pinning Graphviz in the oracle build.
+- When `shared.test` is ported, its manifest entry for `alg.graphviz.layouter` is still not carried on S-4a's ground: none
+  of its four classes uses the bundle.
+
+**Enforced now.** A bundle that is not in the table cannot be ported by accident (S-13). In
 `test/architecture/module-boundaries.fitness.test.ts`, `src tree respects bundle boundaries › has no unmapped directories`
-(`:323`) fails on any file under `src/` whose directory `bundle-deps.json` does not map, and its rule is self-checked by
-`flags files in directories that belong to no bundle` (`:307`). `regeneration › regenerated deps equal the committed file`
-(`:350`) ties the table to `IN_SCOPE_SUFFIXES`; since issue #89 it runs whenever the ELK checkout contains the pin, at any
-`HEAD`, and is skipped only without such a checkout.
-No new test is needed.
+(`:333`) fails on any file under `src/` whose directory `bundle-deps.json` does not map, and its rule is self-checked by
+`flags files in directories that belong to no bundle` (`:317`). `regeneration › regenerated deps equal the committed file`
+(`:360`) ties the table to `IN_SCOPE_SUFFIXES`; since issue #89 it runs whenever the ELK checkout contains the pin, at any
+`HEAD`, and is skipped only without such a checkout. Since the acceptance, `graphviz bundles (AD-17)` also pins that
+`src/alg/libavoid/` and a file directly under `src/alg/graphviz/` stay unmapped, and that `src/alg/graphviz/dot` may not
+import `src/alg/graphviz/layouter`.
 
-**Revisit when** a pin move (roadmap row 13) changes one of the bundles or gives one an in-scope caller or test; a consumer
-asks for Graphviz layouts on ElkGraphs or for DOT import and export; elk-models gains a model that names one of these
-algorithms; or dot-engine's conformance bar or API changes what GL-12 says.
+**Revisit `alg.libavoid` when** a pin move (roadmap row 13) changes the bundle or gives it an in-scope caller or test; a
+consumer asks for libavoid routing on ElkGraphs; or elk-models gains a model that names its algorithm. The Graphviz triggers
+of the Proposed text are moot: both bundles are in scope.
 
 ## Evidence summary
 

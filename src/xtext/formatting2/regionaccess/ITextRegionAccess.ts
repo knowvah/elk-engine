@@ -15,7 +15,7 @@ export interface IFormattedResource {
 
 /**
  * The text produced by the writer and the regions in it. `regionForLineAtOffset` and `regionForOffset` are not
- * ported (line regions serve comment replacers/autowrap; nothing reaches `regionForOffset`).
+ * ported (line regions serve comment replacers; nothing reaches `regionForOffset`).
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/regionaccess/ITextRegionAccess.java
  */

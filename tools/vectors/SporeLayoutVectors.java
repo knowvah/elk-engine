@@ -9,7 +9,7 @@
 //
 // ===== OUTPUT CONTRACT (everything a TypeScript replay needs; no need to read the recorder body) =====
 // File <outDir>/spore-layout.json (2-space top level, ONE compact JSON row per line, trailing newline, strict JSON, under 16 MiB):
-//   { jdk, oracle, seed, stopNames, rowCounts: { full, stops, throws, minst, jitter, objects }, tieSummary, optionCoverage, rows: [row...] }
+//   { jdk, oracle, seed, stopNames, rowCounts: { full, stops, throws, minst, jitter, shift, objects }, tieSummary, optionCoverage, rows: [row...] }
 //   row = { id, group, input, expected }, ids unique and stable: "<group>/<alg>/<shape>/<factor>" with alg in overlap | compaction
 //   (minst rows add "/i<iteration>"; throws rows are "throws/<alg>/<name>").
 //   input = the PREPARED graph (elk.algorithm and the factor applied) exported by ElkGraphJson.forGraph(root).omitLayout(false)
@@ -22,7 +22,7 @@
 //     monitor) with SporeMetaDataProvider + SporeCompactionOptions + SporeOverlapRemovalOptions, ForceMetaDataProvider + ForceOptions and
 //     LayeredMetaDataProvider + LayeredOptions registered (underlyingLayoutAlgorithm names force, layered or an unknown id).
 //
-// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToRawLongBits(d)) zero-padded; a NaN anywhere fails the
+// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToLongBits(d)) zero-padded; a NaN anywhere fails the
 //   recording. Integers are JSON numbers. Points are [hexX, hexY]; boxes [x, y, w, h] in hex. Node indices i refer to Graph.vertices
 //   (the children of the root in child order; the import stop lists their ids). A tree is nested [i, child, child, ...] in
 //   Tree.children order; a leaf is [i].
@@ -97,7 +97,7 @@
 // group jitter (PK4): ElkGraphImporter.java:178 (shiftUntilUnique, :263-268) shifts a node centre by (random.nextDouble() - 0.5) * 0.001
 //   while it equals a key already in the value-hashed nodeMap; random is seeded from randomSeed (default 1) since eclipse-elk/elk#1242
 //   (it was an unseeded Math.random() before, and runsAgree false). Every planned row is first run through the importer alone (after any underlying layout) and the jitter
-//   guard counts the vertices whose Node.originalVertex differs (raw bits) from the child's x + width / 2, y + height / 2; full,
+//   guard counts the vertices whose Node.originalVertex differs (Double.doubleToLongBits) from the child's x + width / 2, y + height / 2; full,
 //   stops and minst rows must count 0 (a planned full row that counts more becomes a jitter row; a planned minst/throws row fails the
 //   recording). expected = { algorithm, invariants: { nodeCount, jitterNodes, overlapFree, maxDisplacementBound, runs, runsAgree } }
 //   over JITTER_RUNS engine runs (half on the re-imported input, half on the original): nodeCount = children; jitterNodes = vertices
@@ -105,7 +105,16 @@
 //   by more than OVERLAP_EPS in both axes, the same in every run (else the recording fails); maxDisplacementBound = a bound computed
 //   from the INPUT alone (a run-derived bound is not stable across recordings): 4 * sum over children in child order of (width +
 //   height) + (children's bounding box width) + (bounding box height), in that order; the recording fails when a child's (x, y)
-//   moved farther (Euclidean, Math.hypot) in any run; runsAgree = all runs gave the same ELK dump.
+//   moved farther (Euclidean, Math.hypot) in any run; runsAgree = all runs gave the same ELK dump. The exact values of these
+//   scenarios (the shifted centres and everything after them) are the shift rows.
+//
+// group shift (issue #106, additive like objects: in rowCounts, not in tieSummary or optionCoverage): the jitter scenarios again,
+//   exact. Since the shift is seeded (randomSeed, default 1) a run that reaches shiftUntilUnique is deterministic, so each scenario
+//   is also recorded as a stops row: id "shift/<alg>/<shape>/<factor>", expected = { algorithm, jitterNodes, tieOrder, stops } with
+//   the stops of group stops, jitterNodes > 0 in the row and in its import stop (a planned shift row that counts 0 fails the
+//   recording), v of the import stop = the SHIFTED Node.originalVertex, and the end stop = the ELK dump. The row goes through
+//   every check of a stops row: the round trip, the stepwise end against the engine run on a fresh import, and the two builds.
+//   No row sets randomSeed 0 (ElkGraphImporter.java:132-133: an unseeded new Random(), which cannot be exact).
 //
 // group objects (T13b, appended after every other row; no graph): what the public JDK/ELK equality API returns for operands the
 //   input describes. id "objects/<call>/<scenario>", alg none. input = { call, objects: { <name>: spec }, args: [name|null, name|null] }
@@ -229,7 +238,9 @@ public class SporeLayoutVectors {
     static final List<String> GROUPS = List.of(FULL, STOPS, THROWS, MINST, JITTER);
     /** The additive group (T13b): JDK/ELK equality semantics, no graph. Not part of GROUPS (coverage and tieSummary stay as they were). */
     static final String OBJECTS = "objects";
-    static final List<String> ROW_GROUPS = List.of(FULL, STOPS, THROWS, MINST, JITTER, OBJECTS);
+    /** The additive group of issue #106: the jitter scenarios as exact stops rows. Not part of GROUPS either. */
+    static final String SHIFT = "shift";
+    static final List<String> ROW_GROUPS = List.of(FULL, STOPS, THROWS, MINST, JITTER, SHIFT, OBJECTS);
     static final String ROOT_ID = "root";
     static final double LABEL_CHAR_WIDTH = 6.5, LABEL_HEIGHT = 13.0;
     static final String S_UNDERLYING = "underlying", S_IMPORT = "import", S_SCANLINE = "scanline", S_TRIANGULATION = "triangulation",
@@ -397,6 +408,7 @@ public class SporeLayoutVectors {
                     throw new Bug("jitter scenario " + s.id + " did not reach the shiftUntilUnique loop");
                 }
                 rows.addAll(r);
+                rows.addAll(stable(s, f, SHIFT));
             }
         }
         rows.addAll(objectsRows());
@@ -618,7 +630,11 @@ public class SporeLayoutVectors {
         if (viaImport.jitterNodes != viaOriginal.jitterNodes) {
             throw new Bug("row " + base + ": the jitter guard differs between the re-imported and the original graph");
         }
-        if (viaImport.jitterNodes > 0) {
+        boolean shift = group.equals(SHIFT); // the exact twin of a jitter row: it takes every check below
+        if (shift && viaImport.jitterNodes == 0) {
+            throw new Bug("row " + base + " is planned shift but did not reach the shiftUntilUnique loop");
+        }
+        if (viaImport.jitterNodes > 0 && !shift) {
             if (!group.equals(FULL) && !group.equals(STOPS)) {
                 throw new Bug("row " + base + " is planned " + group + " but reached the shiftUntilUnique loop");
             }
@@ -659,15 +675,15 @@ public class SporeLayoutVectors {
                         + engineImport.body);
             }
         }
-        if (record) {
+        if (record && !shift) { // shift is not in GROUPS: optionCoverage stays as it was
             countCoverage(group, alg, original);
         }
         String head = "{\"algorithm\": " + q(alg) + ", \"jitterNodes\": " + viaImport.jitterNodes + ", ";
         return switch (group) {
             case FULL -> List.of(row(FULL + "/" + base, FULL, input, head + "\"tieOrder\": " + viaImport.tieOrder() + ", "
                     + engineImport.body + "}", alg, viaImport));
-            case STOPS -> List.of(row(STOPS + "/" + base, STOPS, input, head + "\"tieOrder\": " + viaImport.tieOrder() + ", \"stops\": "
-                    + list(viaImport.stops) + "}", alg, viaImport));
+            case STOPS, SHIFT -> List.of(row(group + "/" + base, group, input, head + "\"tieOrder\": " + viaImport.tieOrder()
+                    + ", \"stops\": " + list(viaImport.stops) + "}", alg, viaImport));
             case THROWS -> List.of(row(THROWS + "/" + base, THROWS, input, head + engineImport.body + "}", alg, viaImport));
             default -> minstRows(base, input, head, viaImport);
         };
@@ -963,15 +979,16 @@ public class SporeLayoutVectors {
                 + (applied ? ", " + dumpBody(layout) : "") + "}");
     }
 
-    /** Vertices whose originalVertex is not the child's centre: the shiftUntilUnique loop of the import shifted them. */
+    /** Vertices whose originalVertex is not the child's centre: the shiftUntilUnique loop of the import shifted them. Compared by
+     * Double.doubleToLongBits, so a NaN equals a NaN whichever its sign bit (issue #72). */
     static int jitterCount(ElkNode layout, Graph graph) {
         int count = 0;
         for (int i = 0; i < graph.vertices.size(); i++) {
             ElkNode c = layout.getChildren().get(i);
             double cx = c.getX() + c.getWidth() / 2, cy = c.getY() + c.getHeight() / 2;
             KVector v = graph.vertices.get(i).originalVertex;
-            if (Double.doubleToRawLongBits(cx) != Double.doubleToRawLongBits(v.x)
-                    || Double.doubleToRawLongBits(cy) != Double.doubleToRawLongBits(v.y)) {
+            if (Double.doubleToLongBits(cx) != Double.doubleToLongBits(v.x)
+                    || Double.doubleToLongBits(cy) != Double.doubleToLongBits(v.y)) {
                 count++;
             }
         }
@@ -1994,11 +2011,12 @@ public class SporeLayoutVectors {
         return sb.toString();
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new IllegalStateException("NaN in a recorded value");
         }
-        return "\"" + String.format("%016x", Double.doubleToRawLongBits(d)) + "\"";
+        return "\"" + String.format("%016x", Double.doubleToLongBits(d)) + "\"";
     }
 
     static String q(String s) {

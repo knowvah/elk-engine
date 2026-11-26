@@ -1,0 +1,40 @@
+node a {
+  layout [ position: 0, 0 size: 20, 20 ]
+}
+node b {
+  layout [ position: 100, 50 size: 20, 20 ]
+}
+node C {
+  layout [ position: 200, 200 size: 100, 100 ]
+  node c1 {
+    layout [ position: 10, 10 size: 20, 20 ]
+  }
+  node c2 {
+    layout [ position: 60, 60 size: 20, 20 ]
+  }
+  edge c1 -> c2 {
+    layout [ start: 30, 20 end: 60, 70 bends: 45, 20 | 45, 70 ]
+  }
+}
+edge bent : a -> b {
+  layout [ start: 20, 10 end: 100, 60 bends: 60, 10 | 60.5, 60.25 ]
+}
+edge startOnly : b -> a {
+  layout [ start: 100.125, 55 ]
+}
+edge endOnly : a -> b {
+  layout [ end: 0.0000001, 0 ]
+}
+edge zeros : b -> a {
+  layout [ start: 0, 0 end: 0, 0 ]
+}
+edge two : a -> b {
+  layout [
+    section s1 [ start: 1, 2 end: 3, 4 bends: 2, 2 ]
+    section s2 [ start: 5, 6 end: 7, 8 ]
+  ]
+}
+edge none : b -> a
+edge cross : a -> C.c1 {
+  layout [ start: 20, 20 end: 210, 210 ]
+}

@@ -5,6 +5,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { CANONICAL_NAN_HEX, NEGATIVE_NAN } from './double-hex.js';
 import {
   PROCESSOR_STEPS,
   STEP_APPLY,
@@ -14,6 +15,7 @@ import {
   decodeHex,
   decodeHexPair,
   encodeHex,
+  encodeHexPair,
   familyOf,
   isFullRow,
   isStopsRow,
@@ -215,5 +217,13 @@ describe('rejections', () => {
 
   it('points at the landed ref', () => {
     expect(mrTreeRefPath().endsWith(path.join('test', 'golden', 'refs', 'java', 'mrtree.json'))).toBe(true);
+  });
+});
+
+describe('NaN sign (issue #72)', () => {
+  it('encodes both NaN signs as the one canonical NaN', () => {
+    expect(encodeHex(NEGATIVE_NAN)).toBe(CANONICAL_NAN_HEX);
+    expect(encodeHex(NaN)).toBe(CANONICAL_NAN_HEX);
+    expect(encodeHexPair(NEGATIVE_NAN, -0)).toEqual([CANONICAL_NAN_HEX, '8000000000000000']);
   });
 });

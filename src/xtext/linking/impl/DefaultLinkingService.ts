@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { EObject } from '../../../emf/ecore/EObject.js';
+import { AssertionError } from '../../../java/lang/AssertionError.js';
 import type { IQualifiedNameConverter } from '../../naming/IQualifiedNameConverter.js';
 import type { ICrossReferenceNode } from '../../nodemodel/ICrossReferenceNode.js';
 import type { EClassRef, EReferenceInfo } from '../../scoping/EReferenceInfo.js';
@@ -52,12 +53,10 @@ export class DefaultLinkingService extends AbstractLinkingService {
     const scope = this.getScope(context, reference);
     // the Java AssertionError for a null scope; the type excludes null, JS callers may not
     if ((scope as IScope | null) === null) {
-      const assertion = new Error(
+      throw new AssertionError(
         `Scope provider ${this.#scopeProvider.constructor.name} must not return null for context ${String(context)}, ` +
           `reference ${reference.name}! Consider to return IScope.NULLSCOPE instead.`,
       );
-      assertion.name = 'AssertionError';
-      throw assertion;
     }
     const qualifiedLinkName = this.#qualifiedNameConverter.toQualifiedName(crossRefString);
     const description = scope.getSingleElement(qualifiedLinkName);

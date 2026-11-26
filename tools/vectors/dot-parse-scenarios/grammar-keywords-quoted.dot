@@ -1,0 +1,1 @@
+digraph "digraph" { "node" -> "edge"; "graph" ["strict"="subgraph"]; "node" = "edge" }

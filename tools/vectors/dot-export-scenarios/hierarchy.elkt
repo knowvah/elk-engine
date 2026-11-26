@@ -1,0 +1,37 @@
+hierarchyHandling: INCLUDE_CHILDREN
+org.eclipse.elk.padding: "[top=10.0,left=20.0,bottom=30.0,right=40.0]"
+node x {
+  layout [ position: 5, 5 size: 20, 20 ]
+}
+node A {
+  layout [ position: 50, 10 size: 200, 120 ]
+  org.eclipse.elk.padding: "[top=7.0,left=3.0,bottom=7.0,right=3.0]"
+  node a1 {
+    layout [ position: 10, 10 size: 30, 20 ]
+    label "a one"
+  }
+  node a2 {
+    layout [ position: 60.5, 40 size: 30, 20 ]
+  }
+  edge a1 -> a2
+}
+node B {
+  layout [ position: 300, 20 size: 150, 150 ]
+  node b1 {
+    layout [ position: 5, 5 size: 100, 100 ]
+    node bb {
+      layout [ position: 2, 3 size: 10, 10 ]
+    }
+  }
+  node b2 {
+    layout [ size: 10, 10 ]
+  }
+  edge b1 -> b2
+  edge b2 -> b1.bb
+}
+edge x -> A.a1
+edge A.a1 -> B.b1
+edge B.b1 -> A
+edge A -> B.b2
+edge A -> B
+edge B.b1.bb -> x

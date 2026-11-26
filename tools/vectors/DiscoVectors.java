@@ -28,7 +28,7 @@
 //     LayeredMetaDataProvider + LayeredOptions registered (componentLayoutAlgorithm names force, layered or an unknown id).
 //   Every row's expected carries "layoutNode": "<id>".
 //
-// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToRawLongBits(d)) zero-padded; a NaN anywhere fails
+// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToLongBits(d)) zero-padded; a NaN anywhere fails
 //   the recording. Integers are JSON numbers. Ids are strings as exported. Points are [hexX, hexY]; boxes [x, y, w, h] in hex.
 //
 // ELK DUMP (the shape of every ElkGraph snapshot: group full, the applyLayout stop and the split stop's afterComponentLayout):
@@ -1838,11 +1838,12 @@ public class DiscoVectors {
         return sb.toString();
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new IllegalStateException("NaN in a recorded value");
         }
-        return "\"" + String.format("%016x", Double.doubleToRawLongBits(d)) + "\"";
+        return "\"" + String.format("%016x", Double.doubleToLongBits(d)) + "\"";
     }
 
     static String q(String s) {

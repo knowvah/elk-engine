@@ -108,7 +108,7 @@
 //
 // C4 values (7a): {t:"bool",v}, {t:"int",v}, {t:"string",v}, {t:"double",v:"<Double.toString>"}, {t:"enum",c,n},
 //   {t:"set",c,items}, {t:"list",c,items}, {t:"obj",c,fields}, {ref:"<path>"} an LGraph element, {elk:"<id>"} an
-//   ElkGraphElement, null. Doubles elsewhere (the full dump) are 16 lowercase hex digits of the raw bits.
+//   ElkGraphElement, null. Doubles elsewhere (the full dump) are 16 lowercase hex digits of Double.doubleToLongBits (issue #72).
 //
 // Rows. models/<model>/<target or root>/<stop>/<variant>: every vendored model at every hierarchy level with edges.
 //   P3 x {LAYER_SWEEP, MEDIAN_LAYER_SWEEP, INTERACTIVE, NONE} with default options on every level; every processor stop
@@ -375,11 +375,12 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
         }
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new Bug("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static void str(StringBuilder sb, String s) {
@@ -2545,7 +2546,7 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
     //   {"id":..,"model":..,"target":<id|null>,"prefix":[...],"options":{...},"sha256":"<hex>"}
     //   sha256 = SHA-256 (UTF-8) of canonical(orderCanonical(expected)): "edges" and "changed" sorted by "path"
     //   (layers/layerless/hidden keep their order, "ports" is a map: its keys are sorted); every C4 value rewritten
-    //   (recursively): {t:int|double} -> {t:"number", v:<16 hex digits of the raw bits as a double>}, {t:enum} -> c cut
+    //   (recursively): {t:int|double} -> {t:"number", v:<16 hex digits of Double.doubleToLongBits as a double>}, {t:enum} -> c cut
     //   to the segment after the last '.' or '$', {t:set} -> likewise (an empty set: c null); then JSON with object
     //   keys sorted recursively, no whitespace, strings as JSON.stringify writes them. The TS twin is
     //   test/helpers/layered-order-sweep.ts (the 7b canonical form plus ports).
@@ -2713,7 +2714,7 @@ cb807106bcc45392159b3639411327ff7d42f0de23c379d8247e5d769c68e747  repo:test/gold
                 Object x = m.get("v");
                 double d = x instanceof Number n ? n.doubleValue() : parseDoubleArg("value", (String) x);
                 out.put("t", "number");
-                out.put("v", String.format("%016x", Double.doubleToRawLongBits(d)));
+                out.put("v", String.format("%016x", Double.doubleToLongBits(d)));
                 return out;
             }
             m.forEach((k, x) -> out.put(k, c4Free(x)));

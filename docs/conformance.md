@@ -179,6 +179,21 @@ Consequences: element ids, element counts, edge-section topology, and
 bend-point counts are exact because ids and array lengths are exact;
 coordinates and sizes get `1e-6`. `formatDiffs` prints at most 20 diffs.
 
+**One canonical NaN (issues #53 and #72).** The comparator above reads numbers, so one NaN equals another. The JVM
+vector refs and the sweep hashes compare a double by its bits instead, written as 16 hex digits, and there the JVM has two
+encodings of a computed NaN that differ only in the top (sign) bit: `7ff8000000000000` and `fff8000000000000`. Which one
+a computation gives depends on whether the interpreter or compiled code ran it, so the oracle does not reproduce it
+against itself: in the loops sweep (7g, T19) the raw bits of one case changed from run to run while no other value did
+(issue #53). Every layout comparison therefore encodes NaN in one canonical form, `Double.doubleToLongBits`
+(`7ff8000000000000`), on both sides: the recorders and sweep hashers in `tools/vectors/` call it, and the port's helpers
+call `canonicalHex` (`test/helpers/double-hex.ts`), which is built on the vector-proven `doubleToLongBits` shim. Every
+non-NaN value keeps its raw IEEE bits, so `-0.0`, the infinities and the subnormals still compare bit for bit. Most
+recorders also still reject a NaN ("NaN in a recorded value"), so their refs hold none; the layout refs with NaN rows are
+`force.json`, `spore-layout.json` and `mrtree-units.json`. The JDK shim vectors (`JavaVectors.java`,
+`CoreJdkVectors.java`: `hash.json`, `numeric.json`, `lang.json`, `text.json`) stay raw, because there the raw bits are
+the behaviour under test. `test/architecture/canonical-nan.fitness.test.ts` fails when a raw encoder
+(`doubleToRawLongBits`, or a `DataView.setFloat64` encoder on the port side) appears outside its allowlist.
+
 **Known-divergences policy.** A divergence is never absorbed by raising `tol`
 or editing a golden (AD-13). Each one is recorded here with its cause and the
 test or fixture it affects. Accepted classes:
@@ -189,6 +204,18 @@ test or fixture it affects. Accepted classes:
   is specified to use `StrictMath.log`, so `src/java/util/Random.ts` carries a
   `StrictMath.log`-exact implementation instead of `Math.log`. Prefer a
   bit-exact port of the `StrictMath` algorithm over widening tolerance.
+  The **AD-4 amendment of 2026-11-13** (maintainer ruling; appended to `plans/elk-engine-skeleton/decisions.md`,
+  [issue #74](https://github.com/knowvah/elk-engine/issues/74)) bounds how far such a difference may carry:
+  1. **The conformance bar stays 1e-6.** Every comparison, comparator and test keeps the 1e-6 absolute tolerance. Nothing is loosened.
+  2. A case that misses 1e-6 is accepted as a known divergence **only if both hold**:
+     - **Mechanism:** a demonstrated platform floating-point difference: a last-ulp difference between HotSpot `Math.*` (trig, `exp`, `log`, `pow` and the like) and V8, shown with the actual values per the diagnosis artifact (CLAUDE.md, `rules/diagnosis.md`). An unexplained delta is never accepted on size alone.
+     - **Bound:** its effect on every position and size in the layout (nodes, ports, labels, bend points, junction points, edge sections) stays **at or below 0.01 px** absolute, measured against the oracle.
+  3. A last-ulp case whose effect exceeds 0.01 px, or which flips a discrete decision (an ordering, a branch, an element count), is **not** accepted. It is a defect to fix or a STOP for a ruling.
+  4. Each known-divergence entry records its mechanism, its measured maximum positional delta, and the test that pins both. No global tolerance or comparator change; the pin is per case.
+
+  The audited entries, each with its mechanism, measured delta and pin, are the table
+  [Last-ulp `Math.*` entries](#last-ulp-entries) below.
+
 - **Identity-hash iteration (AD-10).** Iterating a `HashMap`/`HashSet` keyed by
   identity-hashed objects is non-deterministic in Java itself. Journal the site
   and port with insertion order; goldens must not depend on it. Value-hashed
@@ -212,6 +239,33 @@ Concrete entries (add one only with the user's approval):
 | #   | Divergence               | Cause                                                                       | Scope                                                                                                                                                 | Approved             |
 | --- | ------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | 1   | Parse-error message text | ANTLR messages are artifacts of the generated parser, which is never ported | Invalid grammar input (`.elkt`, `.elkj`, `.elkr`): only the _presence_ of a parse failure must match, not the message. Valid input must match exactly | D8, user, 2026-10-11 |
+
+### Last-ulp `Math.*` entries (AD-4 amendment) {#last-ulp-entries}
+
+The audit of issue #74 (mission last-ulp-bar, 2026-11-24): every place this repository records a last-ulp or platform `Math.*`
+difference, with its class under the amendment. `accepted`: the 1e-6 comparison reports the case, the mechanism is demonstrated
+and every position and size is within 0.01 px. `inside 1e-6`: not bit-identical, but the 1e-6 comparison reports nothing, so
+the case needs no acceptance; it is measured and pinned all the same. `no divergence`: nothing differs on the reference
+platform (macOS arm64, JDK 21.0.1), so there is no delta to bound. No entry is above the bar, none lies between 1e-6 and
+0.01 px, and none flips a discrete decision.
+
+The delta is the maximum absolute difference from the oracle over every position and size of the output: `x`, `y`, `width` and
+`height` of the graph, nodes, ports and labels, every section start, end, bend and junction point, and layout options whose
+value is a size (`childAreaHeight`, `childAreaWidth`, `radius`); for a step dump, every recorded double. The mechanism rows are
+recorded evidence: `tools/vectors/LastUlpVectors.java` evaluates HotSpot's `Math` (first call and after 1,336,000 calls) and
+`StrictMath` on each input of the divergent calls and writes `test/golden/refs/java/last-ulp.json`. HotSpot gives the same bits
+interpreted and compiled on all 334 inputs, and V8 has the bits of `StrictMath` on all of them. The pin is
+`test/golden/last-ulp-divergences.test.ts`: per entry the mechanism rows, the bound (computed delta ≤ measured ≤ 0.01), no
+discrete difference, and the cause (with HotSpot's recorded bits substituted on the divergent inputs the port's output equals
+the oracle's bit for bit).
+
+| Entry                                                                                                                  | Class         | Mechanism                                                                                                                                                                                                                                                                                                                                                       | Measured maximum positional delta                                                                                                                                                                                                                                                                                                      | Pin                                                                                 | Approved                                        |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------- |
+| E1: radial sweep case `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2` ([8a](#alg-trees-divergences)) | accepted      | `Math.sin` at `EadesRadial.java:102`. HotSpot is one ulp above `StrictMath` and V8 in magnitude on 3 of the 7 `sin` inputs of the layout (`3ff88c45f46b0994`, `3ff9b7b0b41d509e`, `4012fee9d7296ab4`); for 1.6073462520335293 HotSpot gives 0.9993321258384178 (`3feffa875dca2e60`), V8 and `StrictMath` 0.9993321258384177 (`…2e5f`). The 7 `cos` inputs agree | 4.55e-13 px, at `layoutOptions.childAreaHeight` (`"2561.1171089266686"` against `"2561.117108926668"`, the one diff the 1e-6 comparison reports, because option strings compare exactly); 18 of 56 numbers are not bit-identical; no discrete difference                                                                               | `last-ulp-divergences.test.ts`, `E1` (cold and warm oracle runs of `last-ulp.json`) | maintainer, issue #68 item B, 2026-11-13        |
+| E2: disco `getOrthogonalPoints`, the `import` stops of six rows of `disco.json` ([8b](#alg-force-disco-divergences))   | inside 1e-6   | `Math.sin` and `Math.cos` at `ElkGraphTransformer.java:636-639`. Of the 160 distinct inputs per function in the 88 stops rows, HotSpot is one ulp from `StrictMath` and V8 on 9 `cos` and 5 `sin` (listed in the test)                                                                                                                                          | 8.53e-14 px, an edge contour point of `bends/default`, `bends/thickMixed` and `bends/junctions`; 32 fields in the `import` stops of `multi6/spacing60` (1), `multi6/combo2` (1), `bends/default` (9), `bends/thickness3` (4), `bends/thickMixed` (8), `bends/junctions` (9); every later stop and all 92 `full` rows are bit-identical | `last-ulp-divergences.test.ts`, `E2`                                                | not needed: the 1e-6 comparison reports nothing |
+| E3: `Math.log` at `EadesModel.java:100` (force)                                                                        | no divergence | The port calls `JavaMath.log`, a bit-exact `StrictMath.log`; on the reference platform HotSpot's `Math.log` equals `StrictMath.log` on all 20,014 `log` rows of `force.json` (FD3). x86_64 is unverified and is not the reference platform                                                                                                                      | none to measure                                                                                                                                                                                                                                                                                                                        | the `log` rows of `force.json` (`ForceVectors.java`)                                | n/a                                             |
+| E4: `Random.nextGaussian`                                                                                              | no divergence | The Javadoc specifies `StrictMath.log` and `StrictMath.sqrt`; `src/java/lang/JavaMath.ts` `log` is that algorithm, bit for bit                                                                                                                                                                                                                                  | none to measure                                                                                                                                                                                                                                                                                                                        | the `Random` vectors (`random.json`)                                                | n/a                                             |
+| E5: the other 31 [non-strict Math call sites](#math-call-sites)                                                        | no divergence | none observed: no golden, vector or sweep case shows a last-ulp difference at these sites, and the full TS sweep of 2026-11-13 (18,930 cases) has no last-ulp effect but E1. Seven of the sites are reached by unit tests only. The other 5 of the 36 rows are E1 and E2                                                                                        | none to measure                                                                                                                                                                                                                                                                                                                        | `math-call-sites.fitness.test.ts` pins the set of sites                             | n/a                                             |
 
 ### Non-strict Math call sites (AD-4 known-divergences list) {#math-call-sites}
 
@@ -265,8 +319,9 @@ this file.
 There is no `StrictMath.ts`. `src/java/lang/JavaMath.ts` `log` is the bit-exact `StrictMath.log` shim and its callers
 (`Random.nextGaussian`, `EadesModel`) are not `Math.log` sites; every site above ports a Java `Math` call, and 8b measured V8
 equal to `StrictMath` on all 160 `sin` and 160 `cos` inputs while HotSpot's `Math` differs from both, so a fdlibm port of
-`sin`, `cos` or `atan2` would not match the oracle any better (TP7). Measuring each site's delta against the 0.01 px bar is
-issue #74's audit.
+`sin`, `cos` or `atan2` would not match the oracle any better (TP7). The audit against the 0.01 px bar (issue #74) is the table
+[Last-ulp `Math.*` entries](#last-ulp-entries): the two sites with an observed difference measure 4.55e-13 px and 8.53e-14 px,
+and the other 31 rows have no observed difference to measure.
 
 **Verdicts.** Each case gets one verdict from two separate JVM runs of the oracle (D4, D5, OR-2):
 
@@ -290,7 +345,8 @@ the parity report): `random` (default `randomSeed` 0 is unseeded on nested compo
 seeds only the root, D2, kept by user decision). spore was a second source until the `8bca22f4`
 pin (#104): its jitter of coincident centres is seeded since
 [eclipse-elk/elk#1242](https://github.com/eclipse-elk/elk/pull/1242) (`randomSeed`, default 1), and
-only a seed of 0 draws from an unseeded generator (`ElkGraphImporter.java:133`). The exporter's
+only a seed of 0 draws from an unseeded generator (`ElkGraphImporter.java:133`). The seeded shift
+is recorded with exact values in the `shift` rows of `spore-layout.json` (#106). The exporter's
 `_g<random>` id renames are not a source: the seam patch fixes them.
 
 **Known flicker: `sporeOverlap` verdicts (#79, #86).** The two-run check calls a case deterministic
@@ -902,7 +958,9 @@ Mission 6a ported `alg.common` except `nodespacing/**` and `NodeMicroLayout` (AC
 - **Iterative traversals (AC6).** `NetworkSimplex.tightTreeDFS` and `postorderTraversal` are explicit-stack loops; the
   behaviour is identical and proven against a verbatim recursive reference (`NetworkSimplexTree.test.ts`). The tree
   algorithms' sites are listed under [alg-trees.md § 7](architecture/alg-trees.md#alg-trees-recursion), the component
-  searches of force, stress and disco under [alg-force-disco.md § 5](architecture/alg-force-disco.md#alg-force-disco-recursion).
+  searches of force, stress and disco under [alg-force-disco.md § 5](architecture/alg-force-disco.md#alg-force-disco-recursion),
+  the spore tree walks (`DepthFirstCompaction`, `GrowTreePhase`, `MinSTPhase`) under
+  [alg-packing.md § 3.4](architecture/alg-packing.md#alg-packing-recursion).
 - **Exception class where Java dereferences null.** `SVGImage.addElementStr` after `removeGroup` of the current group:
   `IllegalStateException` (Java NPE; T2). Disconnected input to `NetworkSimplex` (`feasibleTree`): `TypeError` (Java
   NPE; T7). A null quadrant or `xMin` in `RectilinearConvexHull` and a null `lastX` in its event handler:
@@ -1635,9 +1693,9 @@ section states the state after 7g.
   under `inputs/loops/` and their manifest rows, and appends keys to `layered-label-metrics.json`.
 
 **Known divergences.** None numeric beyond the maintainer's rulings: issue #53 (the NaN-canonical sweep hash amends W5's
-raw IEEE hex for NaN only; the landed sweeps are untouched) and issue #54 (the port keeps insertion order for the spline
-segment's representative edge, as the flagged oracle does). The ELK oddities the port copies are drafted in the journal's
-T22 row (issue #56).
+raw IEEE hex for NaN only; the landed sweeps were untouched in 7g and moved to the same form under issue #72, section 2)
+and issue #54 (the port keeps insertion order for the spline segment's representative edge, as the flagged oracle does).
+The ELK oddities the port copies are drafted in the journal's T22 row (issue #56).
 
 **Upstream typos (CLAUDE.md carve-out).** None: the journal records no prose typo in the 7g sources.
 
@@ -1986,11 +2044,14 @@ vertiflex:
   (`shapes/binary4-sym`, `i30/four-parents-big-12`) match.
 - The last-ulp `Math.sin` case in the sweep: `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`. HotSpot's
   `Math.sin(1.6073462520335293)` is ...4178, V8 and `StrictMath` give ...4177 (`EadesRadial.java:102`); the only difference
-  is the string `layoutOptions.childAreaHeight` ("2561.1171089266686" against "2561.117108926668"); geometry agrees within 1e-13
+  the 1e-6 comparison reports is the string `layoutOptions.childAreaHeight` ("2561.1171089266686" against "2561.117108926668"),
   and no discrete decision flips. Known-divergences list of AD-4, accepted by the maintainer (issue #68 item B) under this
-  bar: the positional effect stays at or below 0.01 px. Here the effect is one numeric option string and no coordinate moves
-  by more than 1e-13. The comparator does not read numeric option strings within a tolerance. The 0.01 px bar is the general
-  one for last-ulp math divergences; the AD-4 amendment and the audit of the other entries are issue #74.
+  bar: the positional effect stays at or below 0.01 px. The comparator does not read numeric option strings within a
+  tolerance. The 0.01 px bar is the general one for last-ulp math divergences (AD-4 amendment, § 2). Audited for issue #74:
+  HotSpot differs from `StrictMath` and V8 on 3 of the 7 `sin` inputs of this layout, by one ulp; the measured maximum
+  positional delta is 4.55e-13 px (the option string; no coordinate or size moves further, and 18 of the 56 numbers are not
+  bit-identical); the oracle gives the same output cold and warm. Recorded in `test/golden/refs/java/last-ulp.json` and pinned
+  by `test/golden/last-ulp-divergences.test.ts` (entry E1 of [Last-ulp `Math.*` entries](#last-ulp-entries)).
 - Seven sweep cases whose option keys belonged to providers unported at 8a: `hierarchicalLayoutMixing` (mrtree) and
   `interactiveRectpacking_{hierarchy,oneBigNode}` (each algorithm), `missing layoutOptions.desiredPosition` and
   `desiredEdgeLength` (rectpacking and force). Ruled a harness limit (issue #68 item A); all seven are `ok` since row 9
@@ -2125,7 +2186,9 @@ null` and `adjacentNodes != null` false arms are dead (`U` rows 10-14).
   replayed the 491 distinct call inputs of the 88 disco runs in the oracle JVM (21.0.1, arm64): `atan2` (171 inputs) is
   bit-identical in V8, `Math` and `StrictMath`; V8 equals `StrictMath` on all 160 `cos` and all 160 `sin` inputs; HotSpot's
   `Math.cos` differs from it on 9 and `Math.sin` on 5, by one ulp. No tolerance was loosened; no contour cell flips in any
-  row.
+  row. Audited for issue #74: the measured maximum delta is 8.53e-14 px; the 14 inputs and HotSpot's values are recorded in
+  `test/golden/refs/java/last-ulp.json` and pinned by `test/golden/last-ulp-divergences.test.ts` (entry E2 of
+  [Last-ulp `Math.*` entries](#last-ulp-entries)). The case is inside 1e-6, so it needs no acceptance under the AD-4 amendment.
 - `layoutOptions.debug.discoGraph` (issue #71 item 1, `needs-ruling`): the oracle writes the `Object.toString()` of the
   `DCGraph` (`DisCoLayoutProvider.java:86`; no `toString`), `...DCGraph@1` under `-XX:hashCode=2`; the port writes
   `[object Object]`. In all 20 disco goldens and every disco sweep row that lays out (819 of 906; 1,503 occurrences). The
@@ -2182,7 +2245,9 @@ providers are registered explicitly, not by `getInstance()` (PK8); `SporeMetaDat
 
   Two of the counts are the result of additive extensions (rows appended at the end of the scenario lists; every earlier row
   byte-identical as JSON text and in the same order): `rectpacking.json` 1,343 to 1,356 and `spore-layout.json` 274 to 276
-  (T14b: arms no row reached), then 276 to 339 (the `objects` group).
+  (T14b: arms no row reached), then 276 to 339 (the `objects` group). The table keeps the counts of that mission. Since then
+  `spore-layout.json` went to 340 rows with the `8bca22f4` pin (one throws row became a full row and its stops row) and to 344
+  with the `shift` group of issue #106 (4 rows between the `jitter` and `objects` rows; the 340 earlier rows byte-identical).
 
 - Replays: `RectPackingVectors.test.ts` (at T12, before the extension: 552 full rows with 66,304 doubles bit-exact, 145 stops
   rows with 1,069 stops and 132,339 doubles bit-exact, 6 throws; now 558, 151, 7, and the sort group), `SporeLayoutVectors.test.ts`
@@ -2213,8 +2278,11 @@ providers are registered explicitly, not by `getInstance()` (PK8); `SporeMetaDat
 
 - Coverage, each bundle from its own tests: rectpacking 99.38 % statements, 98.12 % branches (418 of 426), 98.46 % functions;
   spore 99.21 %, 100 % (85 of 85); topdownpacking 98.61 %, 96.42 % (54 of 56); the whole project at the batch 5 gate 98.92 / 96.99 /
-  98.84 / 98.92 (statements / branches / functions / lines) over 49,156 tests. `plans/alg-packing/unreached.md` lists 18 `U` rows and
-  one arm neither reached nor proven dead (`Compaction.java:364`, issue #81).
+  98.84 / 98.92 (statements / branches / functions / lines) over 49,156 tests. `plans/alg-packing/unreached.md` lists 18 `U` rows; the
+  one arm mission 8c could not close (`Compaction.java:364`, issue #81) is proven dead at the `8bca22f4` pin and is `U` row 19
+  of that file's addendum of 2026-11-24. The `rows.size() > nextRowIndex` false arm of `placeBelow` and `placeBeside`
+  (`Compaction.java:325`, `:416`, issue #107), unreached since eclipse-elk/elk#1239, is proven dead at the same pin and is `U`
+  row 20 of the addendum (#107). `U` rows 19 and 20 close the bundle's open arms.
 
 ### Upstream quirks kept (mission 8c) {#alg-packing-quirks}
 
@@ -2255,7 +2323,8 @@ spore:
 - `ElkGraphImporter.java:178`, `:263-268` `shiftUntilUnique`: `(random.nextDouble() - 0.5) * 0.001` shifts a centre that equals
   one already in `nodeMap`. `random` is seeded with `randomSeed` (`:131-136`; default 1, a seed of 0 is the unseeded generator)
   since [eclipse-elk/elk#1242](https://github.com/eclipse-elk/elk/pull/1242), followed since the `8bca22f4` pin (#104). Until
-  then it was an unseeded `Math.random()` (PK4, the policy of the one-argument `Collections.shuffle`).
+  then it was an unseeded `Math.random()` (PK4, the policy of the one-argument `Collections.shuffle`). The 4 `shift` rows of
+  `spore-layout.json` record this shift with exact values: the `import` stop holds the shifted centres (#106).
 - `ElkGraphImporter.java:233-253` `updateGraph`: a centre that equals one already in the new map is shifted with
   `shiftUntilUnique` and its node translated by the shift
   ([eclipse-elk/elk#1244](https://github.com/eclipse-elk/elk/pull/1244), followed since the `8bca22f4` pin). Until then two nodes
@@ -2321,19 +2390,43 @@ topdownpacking:
   overlap and an input-derived displacement bound; the TS test checks the same over three runs. Since the `8bca22f4` pin
   `runsAgree` is recorded `true` and the three runs give one dump. Exact values for the seeded shift come from the rows
   `full/overlap/scanlineHitboxes/default` and `stops/overlap/scanlineHitboxes/default` (the `updateGraph` shift, replayed at raw
-  bits), the ported `RandomSeedTest` and the 1,812 sweep cases; exact `jitter` rows are proposed in a follow-up issue.
+  bits), the ported `RandomSeedTest`, the 1,812 sweep cases, and the `shift` rows below.
+- **Shift rows (#106).** The group `shift` records the four jitter scenarios again with exact values
+  (`shift/{overlap,compaction}/{corpus,dup5}/default`), in the shape of a `stops` row: the `import` stop with the shifted
+  `originalVertex` values (11 of 12 centres in the corpus inputs, 1 of 5 in `dup5`), every stop after it, and the `end` stop with
+  the ELK dump. The recorder puts each row through its round-trip, stepwise-against-engine and build-twice checks. The port
+  replays all 4 rows through the providers (1,357 doubles compared, all raw-bit identical) and through the stepwise importer
+  (raw-bit equality asserted). The group is additive: the `jitter` rows and the other 336 rows are byte-identical, and `rowCounts.shift` is the one header change.
 - **The flag-gated chain row.** `full/compaction/chain2000/default` (a 2,000-node path, `DepthFirstCompaction` cubic) runs only with
   `SPORE_CHAIN_FULL=1`; with the flag it equals the oracle row (8,004 doubles), measured at 321 s under vitest. The explicit-stack
   conversions of `DepthFirstCompaction.compactTree` and `GrowTreePhase.growAt` (PK6) are proven against verbatim recursive copies
-  (`*.explicit-stack.test.ts`); beyond 2,000 nodes the port's stack limit is below the oracle's at the unconverted sites (issue #76,
-  `follow-up`).
+  (`*.explicit-stack.test.ts`).
+- **Recursion beyond 2,000 nodes (issue #76).** The six remaining spore tree walks (`DepthFirstCompaction.getMinUnderlap`,
+  `minUnderlapWithSubtree`, `translateSubtree` and `drawTree`, `GrowTreePhase.drawTree`, `MinSTPhase.addNode`) are explicit-stack
+  loops (AC6), each proven against a verbatim recursive twin. On the recorder's chain a warmed oracle completes sporeOverlap at
+  9,750 nodes and sporeCompaction at 4,000; the port completes both on Node's default stack, byte-identical to the unconverted
+  port on a raised stack and to the oracle. `ShrinkTreeCompactionPhase.draw` (debug mode only) stays verbatim. The loop form of
+  `minUnderlapWithSubtree` costs 20 to 30 % of time on the compaction chain (issue #175, `follow-up`). See
+  [alg-packing.md § 3.4](architecture/alg-packing.md#alg-packing-recursion).
 - **Upstream defects the ports copy.** Issue #73 (the `absorbBlocks` hang; fixed upstream by eclipse-elk/elk#1239 and in the
   port since the `8bca22f4` pin), issue #80
   (`needs-ruling`, seven further defects: the `AreaApproximation.java:98` NPE, the unused visitor and its reversed `endsWith`,
   `RectRow.removeBlock`, the stale parent row, dead `calculateBlockStacks` and `copyPosition`, spore's overwritten margins,
   `ScanlineOverlapCheck.java:166`); drafts for upstream, nothing filed upstream.
-- **Open arm.** `Compaction.java:364` (`placeBeside`, `shouldRowHeigthBeReevalauted && nextBlockHeight > nextBlock.getMinHeight()`)
-  is neither reached by any row nor proven dead (issue #81, `follow-up`).
+- **Dead arm (issue #81).** `Compaction.java:364` (`placeBeside`, `shouldRowHeigthBeReevalauted && nextBlockHeight > nextBlock.getMinHeight()`)
+  is proven dead at the `8bca22f4` pin: `U` row 19 of `plans/alg-packing/unreached.md`. With `rowHeightReevaluation` on, every
+  block starts with at most one rect, and since eclipse-elk/elk#1239 the `nextBlock` of `placeBeside` is always the first block of
+  the next row, so it holds one rect, whose height at any width is its minimum height. Support: 1,000,000 seeded inputs through
+  an instrumented copy of the port (no multi-rect `nextBlock`, no arm hit), 1,200 of them equal to the oracle at 1e-6
+  (`plans/rectpacking-open-arm/evidence.md`). The port keeps the `if` verbatim.
+- **Dead arm (issue #107).** `Compaction.java:325` (`placeBelow`) and `:416` (`placeBeside`), the false arm of
+  `if (rows.size() > nextRowIndex)` (the port's shared `CompactionPlacement.ts:55`), are proven dead at the `8bca22f4` pin for
+  both values of `rowHeightReevaluation`: `U` row 20 of `plans/alg-packing/unreached.md`. Both guards run only when
+  `wasFromNextRow` holds. Since eclipse-elk/elk#1239 that means `getNextBlock` took the next row's first block, which needs
+  `nextRowIndex < rows.size()`, and nothing shortens the list before the guard. Support: 1,000,000 seeded inputs, 500,000 per
+  flag value, through an instrumented copy of the port (no false-arm hit, no invariant violation), and 1,200 of them, 600 per flag value, are equal to the oracle at 1e-6. With the line of
+  #1239 removed from that copy, the two `staleParentRow` inputs reach the arm again
+  (`plans/rectpacking-next-row-arm/evidence.md`). The port keeps the `if` verbatim.
 
 **Landed shim fixed at the origin.** `src/java/util/JavaObjects.ts` `equals` called `a.equals(b)` without an identity test. The JVM's
 `Objects.equals` is true for one and the same object, so a vector with a NaN component (not equal to itself under
@@ -2459,8 +2552,9 @@ null` at `ModelOrderCycleBreaker.java:70`. Under `hierarchyHandling: INCLUDE_CHI
      the importer under `INCLUDE_CHILDREN`.
 2. **A known last-ulp `Math.sin` divergence (issue #68 item B, accepted).** `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2`
    is the one `mismatch`, options-only: `layoutOptions.childAreaHeight` is `"2561.1171089266686"` in the oracle and
-   `"2561.117108926668"` in the port. It is already listed in § Known divergences (mission 8a) and annotated `#68`; the 0.01 px
-   audit is issue #74.
+   `"2561.117108926668"` in the port. It is already listed in § Known divergences (mission 8a) and annotated `#68`; the audit
+   of issue #74 measured it at 4.55e-13 px, under the 0.01 px bar (entry E1 of
+   [Last-ulp `Math.*` entries](#last-ulp-entries)).
 3. **Spore jitter (issue #79, oracle nondeterminism, not a port defect).** `ElkGraphImporter.java:167-169` (spore) shifts
    coincident centres by `(Math.random() - 0.5) * 0.001`, unseeded. In this oracle sweep the four cases of #79 are
    `nondeterministic` (their two oracle runs differed), so they are `excluded`. Two further cases have verdict `throws`,
@@ -2561,6 +2655,69 @@ the maintainer ruled the reference platform for JVM measurements.
 `layered-label-metrics.json` lacks (issue #58, unchanged, and the runner still throws naming a missing text); the snapshot
 itself, which this mission does not re-record, extend or edit. Mission layered-stress-cases appended those four texts later
 (issue #58's ruling); the runner still throws on any other text the snapshot lacks.
+
+## Graphviz DOT language (issue #95, step 2) {#graphviz-dot}
+
+Port: `src/alg/graphviz/dot` (`alg.graphviz.dot`: the DOT model, a hand-written lexer and parser, the writer with
+Xtext's autowrap at 255 columns, `DotExporter` and `DotImporter`; internal entry point `GraphvizDot`: `load`,
+`serialize`; design and runbook in [graphviz-dot.md](architecture/graphviz-dot.md)). The bundle starts no process and
+computes no layout, so there is no golden: the evidence is JVM vectors, recorded before the code, plus a local export
+sweep. Running Graphviz is `alg.graphviz.layouter` (#95 step 3, not ported); the end-to-end suite of AD-17 belongs to
+that step and is the only place where AD-4's 1e-6 bar will not apply.
+
+**What is compared.** Vectors are recorded by `tools/vectors/dot-vectors.sh` into
+`test/golden/refs/java/graphviz-dot-*.json` (AD-13). Every row is replayed; each replay asserts its row count against
+the ref.
+
+- `graphviz-dot-jdk.json`: 701 rows (`StringTokenizer` 187, `Float.parseFloat`/`valueOf` 167 as raw float bits,
+  `Float.toString` 304, `String.trim` 24, `Boolean.valueOf` 19), all exact; exception messages of the `tokenizer` and
+  `parseFloat` families are JDK text and compare by class.
+- `graphviz-dot-lexer.json`: 284 token rows (type, text, line, column, offsets, channel) and 106 converter rows, all
+  exact.
+- `graphviz-dot-parse.json`: 75 cases (61 scenarios, 14 real Graphviz outputs): the model dump compares exactly,
+  partial models after error recovery included; the 31 cases with syntax errors are held to presence and line
+  (known divergence #1, as for `.elkt`), and the replay also asserts message, offset and length, which match today.
+  No value-conversion diagnostic is reachable from text.
+- `graphviz-dot-write.json`: 443 rows (27 scenarios, 14 fixtures, 402 built models), each in three forms (formatted,
+  unformatted, `save`), byte for byte; 28 rows are serializer exceptions, compared by class and message. All 18
+  `autowrap` and 115 `width` rows (lines around the 255-column limit) match. The `attached` fields (a parsed model
+  written with its node model, which keeps comments and source line breaks) are recorded and not asserted: the port
+  has no node-model region access (as G1 for `.elkt`).
+- `graphviz-dot-export.json`: 82 `DotExporter.transform` rows (15 scenarios under 32 property sets; text byte for
+  byte, the target model exactly, the source graph after `transform` within 1e-6) and 30 `transferLayout` rows (14 on
+  the real output of Graphviz 16.1.2 for dot, neato, fdp, twopi and circo; the ElkGraph within 1e-6); 7 rows record an
+  exception. 55 of the 112 rows come from the recorder's copy of `LayoutDotExporter`; they replay through a test-only
+  subclass of the port and become the evidence of that class in step 3.
+- `graphviz-dot-import.json`: 14 rows: the imported graphs with every property, the log messages, and the DOT model
+  and text after `transferLayout` on a fixed fake layout; 5 exceptions.
+
+The Graphviz outputs under `tools/vectors/dot-graphviz-output/` are inputs: the JVM records what ELK does with them,
+so the Graphviz version enters no comparison.
+
+**No pin stamp.** The six refs carry no `oracle` field: their recorders do not call `elkCommit()` while issue #173
+(the frozen count of stamping recorders) is open. `dot-vectors.sh` still refuses to run unless `oracle-build.json`
+names `tools/oracle/ELK_COMMIT`. Provenance: oracle `8bca22f4afa3371562d2f702d59929818f7f7b71` with patches
+0001-0004, JDK 21.0.1, arm64 (`plans/graphviz-dot/decision-journal.md`).
+
+**Local export sweep.** `tools/oracle/dot-export-sweep.sh` (CoreOptions-only registry) and
+`test/corpus/dot-export-sweep.test.ts`, over the 898 elk-models `.elkt` under default exporter properties, run
+2026-11-24:
+
+| Indicator     | Result  | Meaning                                                                                                                                                                 |
+| ------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| text-equal    | 898/898 | 822 texts byte-identical; in 76 models the oracle throws `NullPointerException` in `transform` (an edge label without `font.size`) and the port fails in the same stage |
+| reparse-equal | 822/822 | loading the oracle's text gives the oracle's parse: no error, the same model, equal to the exported model                                                               |
+
+The sweep is not run in CI (it needs the models and the oracle); the test skips there.
+
+**Upstream quirks kept.** Listed in [graphviz-dot.md § 10](architecture/graphviz-dot.md#quirks): the
+`NullPointerException` above, `createString`'s replacement of every character above 126, raw `DotID` output that does
+not reparse, the unmatched quoted `comment` in `transferLayout`, and the importer's shared padding object.
+
+**Upstream typos.** None found in the bundle's human-readable text, so nothing is listed under "upstream typos".
+
+**Regenerate.** `tools/vectors/dot-vectors.sh test/golden/refs/java` (`ELK_VECTORS_CACHE=off` for a cold run); a
+differing rerun is a defect to diagnose against the oracle, never a ref to accept.
 
 ## Temporary gaps
 

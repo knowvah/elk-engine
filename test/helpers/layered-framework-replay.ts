@@ -30,15 +30,14 @@ import type { LPort } from '../../src/alg/layered/graph/LPort.js';
 import { ElkGraphTransformer } from '../../src/alg/layered/graph/transform/ElkGraphTransformer.js';
 import { RuntimeException } from '../../src/java/lang/RuntimeException.js';
 import { EnumSet } from '../../src/java/util/EnumSet.js';
-import { doubleToRawLongBits, longBitsToDouble } from '../../src/java/lang/JavaDouble.js';
+import { longBitsToDouble } from '../../src/java/lang/JavaDouble.js';
 import { compareLayout, formatDiffs } from '../golden/compare-json.js';
+import { canonicalHex } from './double-hex.js';
 
 const VECTORS_URL = new URL('../golden/refs/java/layered-framework.json', import.meta.url);
 /** AD-4: absolute tolerance on numbers. */
 export const TOLERANCE = 1e-6;
 const LAYERED_PROBE_OPTION = 'org.eclipse.elk.layered.spacing.baseValue';
-const HEX_DIGITS = 16;
-const HEX_RADIX = 16;
 const MAX_VALUE_DEPTH = 8;
 
 export type Hex = string;
@@ -158,9 +157,9 @@ export function decodeHex(hex: Hex): number {
   return longBitsToDouble(BigInt.asIntN(64, BigInt(`0x${hex}`)));
 }
 
-/** A double to its 16 lowercase hex digits of raw bits. */
+/** A double to its 16 lowercase hex digits: raw bits, every NaN canonical (`Double.doubleToLongBits`, issue #72). */
 export function encodeHex(value: number): Hex {
-  return BigInt.asUintN(64, doubleToRawLongBits(value)).toString(HEX_RADIX).padStart(HEX_DIGITS, '0');
+  return canonicalHex(value);
 }
 
 /** L5: registers the layered metadata once per module registry (the service keeps core and labels only). */

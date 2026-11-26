@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { EndLabelPostprocessor } from '../../src/alg/layered/intermediate/EndLabelPostprocessor.js';
 import { InternalProperties } from '../../src/alg/layered/options/InternalProperties.js';
+import { canonicalHex } from './double-hex.js';
 import { registerLayered } from './layered-framework-replay.js';
 import { labelsRefPath } from './layered-labels-replay-rows.js';
 import { registerTwinHook, reverseNodeMapProperty, unregisterTwinHook } from './layered-loops-replay-ops.js';
@@ -166,11 +167,7 @@ function hexToDouble(hex: string): number {
   return new DataView(new BigUint64Array([BigInt(`0x${hex}`)]).buffer).getFloat64(0, true);
 }
 
-function doubleToHex(value: number): string {
-  const view = new DataView(new ArrayBuffer(8));
-  view.setFloat64(0, value);
-  return view.getBigUint64(0).toString(16).padStart(16, '0');
-}
+const doubleToHex = (value: number): string => canonicalHex(value);
 
 describe('a perturbed row', () => {
   it('reports a full-row mismatch naming the element and field', () => {

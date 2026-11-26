@@ -12,6 +12,7 @@
 | [elk-text.md](elk-text.md)                           | ELK Text (`.elkt`) port, the Xtext subset, runbook and deferrals                                                                                  |
 | [elk-json-text.md](elk-json-text.md)                 | ELK Textual JSON (`.elkj`) port, lazy linking, runbook and deferrals                                                                              |
 | [grandom.md](grandom.md)                             | grandom (`.elkr`) random graph generator port, evidence and runbook                                                                               |
+| [graphviz-dot.md](graphviz-dot.md)                   | Graphviz DOT language port (`alg.graphviz.dot`): model, parser, writer with autowrap, `DotExporter`/`DotImporter`, evidence and runbook           |
 | [core-engine.md](core-engine.md)                     | Layout engine and the fixed, box and random providers (mission 5a)                                                                                |
 | [melk-codegen.md](melk-codegen.md)                   | The `.melk` generator, pending types, lazy constants, regeneration                                                                                |
 | [complexity.md](complexity.md)                       | The complexity gate that measures every function (`npm run complexity`)                                                                           |
@@ -102,6 +103,12 @@ and parser on the same Xtext subset (`src/xtext`), and `RandomGraphGenerator` tu
 ElkGraphs with the exact JVM `Random` sequence. Seeded output is byte-exact against the oracle and reproduces
 the nine `test/corpus/generated/*.json` files; unseeded paths (edge label text, cross-hierarchy shuffle, a
 missing seed) are checked by invariants only. The entry point is internal; see [grandom.md](grandom.md).
+
+Graphviz DOT (`alg.graphviz.dot`, `GraphvizDot`): DOT text parses into the DOT model through a hand-written lexer and
+parser on the same Xtext subset, and the model serializes back with lines wrapped at 255 columns (Xtext's autowrap
+path in `src/xtext/formatting2`). `DotExporter` turns an ElkGraph into a DOT model and reads a laid-out DOT model
+back; `DotImporter` is the reverse. Nothing runs Graphviz here: that is `alg.graphviz.layouter`, not ported yet
+(#95). The entry point is internal; see [graphviz-dot.md](graphviz-dot.md).
 
 ## Tech stack
 

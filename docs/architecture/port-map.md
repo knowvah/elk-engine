@@ -99,7 +99,8 @@ matter:
 
 Bundle resolution is `bundleOf` in `test/architecture/module-boundaries.fitness.test.ts`: the
 longest `tsDir` in `test/architecture/bundle-deps.json` that is a path prefix of the file. That file
-lists the 13 in-scope `tsDir`s, so this map and it agree.
+lists the 18 in-scope `tsDir`s: the 13 of the Summary table, the three grammar bundles added by D0 and the two Graphviz
+bundles adopted by AD-17 (`alg.graphviz.dot` ported, `alg.graphviz.layouter` not yet).
 
 ## AD-12 generated artifacts
 
@@ -572,6 +573,29 @@ New TS directories with no Java package (melk codegen (AD-12) only): `src/alg/ve
 
 JUnit: no test plugin in the ELK `test/` tree.
 
+## `alg.graphviz.dot` → `src/alg/graphviz/dot/` {#alg-graphviz-dot}
+
+4 hand-written package directories upstream (root, `formatting2`, `serializer`, `transform`; plus `src-gen` with the
+EMF model `dot`, the generated parser, sequencers and grammar access), 16 Java + 1 Xtend files + 1 `.xtext` grammar,
+2,728 + 119 LOC (`plugins/org.eclipse.elk.alg.graphviz.dot/src`). Not in the Summary totals: adopted by AD-17 (issue
+#88). `src/alg/graphviz/dot` is an Xtext client bundle: it is listed in `XTEXT_CLIENT_BUNDLES` in
+`test/architecture/module-boundaries.fitness.test.ts` and may import `src/core`, `src/graph` and `src/xtext`.
+
+| Java package (`org.eclipse.elk.alg.graphviz.dot` omitted)       | TS directory     | Strategy                                                                                                                                           |
+| --------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| (root) `GraphvizDot.xtext`, `src-gen` `parser.antlr`            | `parser`         | `.xtext` → hand-written lexer and recursive-descent parser with ANTLR 3 recovery (D4); the generated parser is the edge-case spec, not ported      |
+| (root) `GraphvizDotRuntimeModule`, `GraphvizDotStandaloneSetup` | `GraphvizDot.ts` | not ported as such; plain construction in the internal entry point (D5), which also stands in for `transform.DotResourceSetProvider`               |
+| (root) `GraphvizDotActivator`, `...ExecutableExtensionFactory`  | none             | not ported: OSGi activation and Eclipse extension glue                                                                                             |
+| `dot`, `dot.impl`, `dot.util` (`src-gen`)                       | `dot`            | EMF-generated model → classes on the `src/emf` containment types with the generated `eGet`/`eIsSet`; `DotAdapterFactory` and reflection not ported |
+| `services` (`src-gen`)                                          | `services`       | `GraphvizDotGrammarAccess` → the element ids the writer names                                                                                      |
+| `serializer`                                                    | `serializer`     | Java → hand port; the generated sequencers are replaced by grammar-specific ones (D2)                                                              |
+| `formatting2`                                                   | `formatting2`    | Xtend → hand port, line by line, over `src/xtext/formatting2` with its autowrap path (D3)                                                          |
+| `transform`                                                     | `transform`      | Java → hand port; `DotExporter` and `DotImporter` are split into parts at method boundaries (one public class each)                                |
+
+Status: ported (mission graphviz-dot, #95 step 2); design, evidence and runbook in [graphviz-dot.md](graphviz-dot.md).
+There is no JUnit plugin; the evidence is six JVM vector files and a local export sweep over elk-models
+([graphviz-dot.md](graphviz-dot.md#evidence)). 53 TS source files and 26 test files.
+
 ## Test support plugins
 
 Not attached to a bundle; they hold shared test infrastructure and cross-bundle integration tests.
@@ -617,16 +641,20 @@ ported (mission 4c, [section above](#graphjsontext--srcgraphjsontext)); `core.de
 Mission mapping: `graph.text` is roadmap 4b, `graph.json.text` 4c, `core.debug.grandom` 4d
 (`plans/roadmap.md`, Revision 2026-10-11); the grandom mission brief is labelled 4f
 (`plans/grandom/`). `bundle-deps.json` gained `graph.text` in mission 4b, `graph.json.text` in 4c and
-`core.debug.grandom` in 4f.
+`core.debug.grandom` in 4f. It gained `alg.graphviz.dot` (`src/alg/graphviz/dot/`) and `alg.graphviz.layouter`
+(`src/alg/graphviz/layouter/`) under issue #88 (mission deferred-bundles-acceptance, AD-17), before any file of either
+bundle was ported; the ports are issue #95 (`alg.graphviz.dot`: mission graphviz-dot, [section above](#alg-graphviz-dot)).
 
 ## Out of scope or deferred (not rows above)
 
 `core.service`, `core.ui`, `core.meta`, `core.meta.ui`, `conn.gmf`, `graph.text.ui`,
-`graph.json.text.ui`, `core.debug.grandom.ui` (out of scope); `alg.libavoid`, `alg.graphviz.dot`,
-`alg.graphviz.layouter`, `graph.text.ide`, `graph.json.text.ide`, `core.debug.grandom.ide`
-(deferred); `core.debug`, `alg.disco.debug` (reference only: read for ideas, never ported).
-A decision for the three deferred algorithm bundles (`alg.libavoid`, `alg.graphviz.dot`, `alg.graphviz.layouter`) is
-proposed in the [deferred-bundles ADR](deferred-bundles-adr.md); they stay deferred until the maintainer rules on it.
+`graph.json.text.ui`, `core.debug.grandom.ui`, `alg.libavoid` (out of scope); `graph.text.ide`,
+`graph.json.text.ide`, `core.debug.grandom.ide` (deferred); `core.debug`, `alg.disco.debug`
+(reference only: read for ideas, never ported).
+The maintainer accepted the [deferred-bundles ADR](deferred-bundles-adr.md) amended (ruling of 2026-11-14 on issue #88,
+recorded as AD-17): `alg.libavoid` is out of scope; `alg.graphviz.dot` and `alg.graphviz.layouter` are in scope, with
+`GraphvizTool`'s process replaced by an injected runner. `alg.graphviz.dot` is ported ([section above](#alg-graphviz-dot)); `alg.graphviz.layouter` is not ported yet and has
+no rows in this map (issue #95, step 3).
 `core.meta` contains the `.melk` compiler whose behavior the `tools/melk/` generator reproduces
 (AD-12); it is read as a reference only. `graph.text`, `graph.json.text` and `core.debug.grandom`
 are in scope per D0 (`plans/conformance-corpus/decisions.md`); see the next section.

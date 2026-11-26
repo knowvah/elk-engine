@@ -18,6 +18,7 @@ import type { ElkEdge } from '../../src/graph/ElkEdge.js';
 import type { ElkGraphElement } from '../../src/graph/ElkGraphElement.js';
 import type { ElkNode } from '../../src/graph/ElkNode.js';
 import type { ElkShape } from '../../src/graph/ElkShape.js';
+import { canonicalHex } from './double-hex.js';
 import { canonicalHash } from './layered-phase-sweep.js';
 import { findImportTarget } from './layered-framework-replay.js';
 import { loadInput } from './layered-phase-replay-rows.js';
@@ -26,8 +27,6 @@ export { isOk, isThrows, readSweep, STATUS_REFUSED, STATUS_TIMEOUT, type SweepLi
 
 export const KIND_LEVEL = 'level';
 export const KIND_MODEL = 'model';
-const HEX_DIGITS = 16;
-const FLOAT64_BYTES = 8;
 const MODEL_EXTENSION = '.json';
 
 /** The fields every replayable line (ok or throws) of the pipeline sweep carries. */
@@ -50,11 +49,9 @@ export interface PipelineSweepThrows extends PipelineSweepCase {
   readonly message: string;
 }
 
-/** The 16 lowercase hex digits of the raw IEEE-754 bits of a double. */
+/** The 16 lowercase hex digits of the IEEE-754 bits of a double, every NaN canonical as the recorder's `hx` writes it (issue #72). */
 export function hex(value: number): string {
-  const view = new DataView(new ArrayBuffer(FLOAT64_BYTES));
-  view.setFloat64(0, value);
-  return view.getBigUint64(0).toString(HEX_DIGITS).padStart(HEX_DIGITS, '0');
+  return canonicalHex(value);
 }
 
 type Dump = { [key: string]: unknown };

@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import type { EObject } from '../../../emf/ecore/EObject.js';
 import { dotConverter, NODE_REFERENCE, Node } from '../../../../test/helpers/xtext/ScopeFixture.js';
+import { AssertionError } from '../../../java/lang/AssertionError.js';
 import { IllegalArgumentException } from '../../../java/lang/IllegalArgumentException.js';
 import type { IValueConverterService } from '../../conversion/IValueConverterService.js';
 import type { ICrossReferenceNode } from '../../nodemodel/ICrossReferenceNode.js';
@@ -67,6 +68,21 @@ describe('DefaultLinkingService', () => {
         name: 'AssertionError',
         message: expect.stringContaining('must not return null for context') as string,
       }) as Error,
+    );
+  });
+
+  it('DefaultLinkingService.java:109-113: the null-scope failure is a java.lang.AssertionError with the Java text', () => {
+    let thrown: unknown = null;
+    try {
+      service(null).getLinkedObjects(context, NODE_REFERENCE, node('b'));
+    } catch (e) {
+      thrown = e;
+    }
+    expect(thrown).toBeInstanceOf(AssertionError);
+    // the scope provider of `service` is an object literal, whose class is `Object`
+    expect((thrown as AssertionError).message).toBe(
+      `Scope provider Object must not return null for context ${String(context)}, reference ${NODE_REFERENCE.name}! ` +
+        'Consider to return IScope.NULLSCOPE instead.',
     );
   });
 

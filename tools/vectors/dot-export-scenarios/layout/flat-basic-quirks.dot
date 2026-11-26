@@ -1,0 +1,18 @@
+digraph {
+	bb="0,0,999,999";
+	graph [bb="1,2", bb="a,b,c,d"];
+	graph [bb="0,0,200.5,100.25", bb="0,0,1,1"];
+	node1 [pos="10,20!", width=0.5, height=0.25];
+	node2 [pos="30.5,40.25", width=abc, height=0.5];
+	node3 [pos="50,60"];
+	node3 [pos="70,80", width=1];
+	node99 [pos="1,1", width=1, height=1];
+	node4 [pos="1,2,3", width="0.5 extra", height=""];
+	node1 -> node2 [pos="e,1,2 3,4 5,6 7,8", comment=edge1, pos="e,11,12 13,14 15,16 17,18"];
+	node1 -> node3 [comment=edge2, pos=""];
+	node2 -> node3 [comment=edge3, pos="e,10,20"];
+	node3 -> node4 [comment=edge4, pos="s,1,1 s,2,2 e,abc e,4,4 5,5 6,6 7,7;;8,8"];
+	node3 -> node4 [pos="1,1 2,2"];
+	node3 -> node4 [comment=edge99, pos="1,1 2,2"];
+	node1 -> node2 [comment="edge1", pos="9,9 8,8"];
+}

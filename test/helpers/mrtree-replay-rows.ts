@@ -10,8 +10,9 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { repoRoot } from '../corpus/corpus.js';
+import { canonicalHex } from './double-hex.js';
 
-/** 16 lowercase hex digits of `Double.doubleToRawLongBits`. */
+/** 16 lowercase hex digits of `Double.doubleToLongBits` (NaN canonical, issue #72). */
 export type Hex = string;
 export type HexPair = readonly [Hex, Hex];
 
@@ -160,8 +161,6 @@ export const isThrowsRow = (row: MrTreeRow): row is ThrowsRow => row.group === T
 // ------------------------------------------------------------------------------------------------------------
 // hex doubles
 
-const HEX_RADIX = 16;
-const HEX_DIGITS = 16;
 const HEX_PATTERN = /^[0-9a-f]{16}$/;
 const BYTES = 8;
 
@@ -175,11 +174,9 @@ export function decodeHex(hex: Hex): number {
   return view.getFloat64(0);
 }
 
-/** A double to its 16 lowercase hex digits of raw bits (NaN is canonicalised by the engine, as the recorder rejects it). */
+/** A double to its 16 lowercase hex digits: raw bits, every NaN canonical (`Double.doubleToLongBits`, issue #72; the recorder rejects a NaN). */
 export function encodeHex(value: number): Hex {
-  const view = new DataView(new ArrayBuffer(BYTES));
-  view.setFloat64(0, value);
-  return view.getBigUint64(0).toString(HEX_RADIX).padStart(HEX_DIGITS, '0');
+  return canonicalHex(value);
 }
 
 export const decodeHexPair = (pair: HexPair): [number, number] => [decodeHex(pair[0]), decodeHex(pair[1])];

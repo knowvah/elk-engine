@@ -6,8 +6,8 @@
 //                                        its ports' labels; then the labels of every contained edge), edges (per node in order its
 //                                        contained edges that have a section), props (only SET properties, per node in the order
 //                                        root, radius, orderId, targetAngle, childAreaWidth, childAreaHeight, position), margins and
-//                                        padding per node (`getProperty`, an unset option reads its default). Doubles are 16-hex raw
-//                                        bits (`doubleToRawLongBits`); an Integer (`orderId`) is a plain number; ElkNode values are ids.
+//                                        padding per node (`getProperty`, an unset option reads its default). Doubles are 16-hex
+//                                        bits (`doubleToLongBits`: raw, NaN canonical); an Integer (`orderId`) is a plain number; ElkNode values are ids.
 //   applyRadialStop(graph, stop, fixed)  makes the re-imported `input` graph equal to a recorded stop: node geometry, the dumped
 //                                        properties (set when the stop lists them, removed when it does not), edge sections (rebuilt
 //                                        from the stop; edges the stop does not list lose theirs) and, from `fixed` (the first stop of
@@ -35,7 +35,8 @@ import type { ElkShape } from '../../src/graph/ElkShape.js';
 import { ElkGraphJson } from '../../src/graph/json/ElkGraphJson.js';
 import type { IProperty } from '../../src/graph/properties/IProperty.js';
 import { ElkGraphUtil } from '../../src/graph/util/ElkGraphUtil.js';
-import { doubleToRawLongBits, longBitsToDouble } from '../../src/java/lang/JavaDouble.js';
+import { longBitsToDouble } from '../../src/java/lang/JavaDouble.js';
+import { canonicalHex } from './double-hex.js';
 import {
   fixedSectionsOf,
   type FixedSection,
@@ -53,13 +54,11 @@ import {
 } from './radial-replay-rows.js';
 
 export const DEFAULT_TOLERANCE = 1e-6;
-const HEX_RADIX = 16;
-const HEX_DIGITS = 16;
 const RADIAL_PROBE_OPTION = 'org.eclipse.elk.radial.rotate';
 
-/** A double to its 16 lowercase hex digits of raw bits. */
+/** A double to its 16 lowercase hex digits: raw bits, every NaN canonical (`Double.doubleToLongBits`, issue #72). */
 export function encodeHex(value: number): Hex {
-  return BigInt.asUintN(64, doubleToRawLongBits(value)).toString(HEX_RADIX).padStart(HEX_DIGITS, '0');
+  return canonicalHex(value);
 }
 
 /** The double of 16 hex digits of raw bits. */

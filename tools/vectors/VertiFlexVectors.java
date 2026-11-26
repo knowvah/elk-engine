@@ -24,7 +24,7 @@
 //     .layout(root, monitor) with the VertiFlex provider registered (VertiFlexMetaDataProvider + VertiFlexOptions). NodeMicroLayout
 //     is part of the provider (unless omitNodeMicroLayout), so it is part of the run.
 //
-// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToRawLongBits(d)) zero-padded (JavaVectors.hex);
+// Numbers: every double is 16 lowercase hex digits, Long.toHexString(Double.doubleToLongBits(d)) zero-padded (raw bits, issue #72);
 //   a NaN anywhere fails the recording. Integers are JSON numbers. Ids are strings as exported.
 //
 // DUMP (the same entry shapes in full and in stops); element lists are in traversal order: the root's children in model order (node
@@ -1518,11 +1518,12 @@ public class VertiFlexVectors {
         return sb.toString();
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new IllegalStateException("NaN in a recorded value");
         }
-        return "\"" + String.format("%016x", Double.doubleToRawLongBits(d)) + "\"";
+        return "\"" + String.format("%016x", Double.doubleToLongBits(d)) + "\"";
     }
 
     static String q(String s) {

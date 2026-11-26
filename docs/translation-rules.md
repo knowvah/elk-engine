@@ -46,6 +46,8 @@ from the Javadoc/JLS only (AD-9). See also [overview](architecture/overview.md),
 | `assert`                   | disabled by default                              | dev-only helper          | 6.8  |
 | streams                    | eager vs lazy; `parallelStream`                  | arrays, sequential       | 6.9  |
 | `Double.toString`, concat  | Java format                                      | `Double.toString` shim   | 7    |
+| `Float.parseFloat`, text   | correctly rounded from text, not via `double`    | `JavaFloat`              | 1.6  |
+| `StringTokenizer`          | Javadoc: tokens between single-char delimiters   | `java/util` shim         | 7    |
 | Xtend `==`, `?.`, `=>`     | `equals`, null-safe, `with`                      | see table                | 8    |
 | `Rectangle2D`              | Javadoc outcodes and intersects                  | `Rectangle2D` shim       | 12   |
 | `Pattern` (narrow)         | quote, `\b`, `[\h\v]*`; else throws              | `Pattern` shim           | 12   |
@@ -166,6 +168,12 @@ cite 'alg.layered/src/.../p4nodes/NetworkSimplexPlacer.java:333'   # double offs
 - Shim `src/java/lang/Float32.ts`: `fromDouble` (narrowing; `numeric.json` `d2f`, 72 rows) and
   `add sub mul div` (`Math.fround(a op b)`; `f32`, 2704 rows). Also `roundFloat`; `random.json`
   `nextFloat` values are float bits widened to double. HIGH.
+- Float text (graphviz-dot D10): `Float.parseFloat` and `Float.valueOf(String)` round the decimal or hex text to
+  binary32 directly; `(float) Double.parseDouble(s)` rounds twice and differs on 15 of 167 recorded inputs (for
+  example `1.00000017881393432617187499`). `Float.toString` prints the shortest decimal that rounds to the float
+  (`7.2000003`, not the double text). Sites: `alg.graphviz.dot/src/.../transform/DotImporter.java:206, 250, 302` and
+  `DotExporter.java:439`. Shim `src/java/lang/JavaFloat.ts` (`parseFloat`, `toString`), written from the Javadoc
+  (AD-9); `graphviz-dot-jdk.json` `parseFloat` 167 rows as raw bits, `floatToString` 304 rows. HIGH.
 
 ### 1.7 `char`
 
@@ -502,8 +510,9 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
 - Site: `assert e;` -> `devAssert(() => e);` and `assert e : m;` -> `devAssert(() => e, () => m);` at the Java
   statement's position, `e` translated like the code around it. A thunk only reads. After `assert false`, what
   follows in the Java stays as it is. CLAUDE.md row confirmed: `ElkSpacings.java:80`. HIGH.
-- Outcome (issues #45 and #127, `plans/dev-assert/inventory.md`): of the 143 statements, 132 are restored, 6 are
-  restored in front of a `throw` the port already had in place of `assert false; return x;`, and 5 stay comments
+- Outcome (issues #45, #127 and #115, `plans/dev-assert/inventory.md`): of the 143 statements, 138 are restored, none
+  of them in front of a `throw` the Java does not have (#115 let the six self-loop arms return or go on as
+  `assert false; return x;` does without `-ea`), and 5 stay comments
   naming an issue, because the Java assert itself fires under `-ea` on a layout ELK runs:
   `BoxLayoutProvider.java:738, 754` and `SingleEdgeGraphWrapper.java:193` are upstream defects (#112; knowvah/elk#27 and
   #28), and `ThresholdStrategy.java:395, 403` wait for a diagnosis (#128).
@@ -554,6 +563,12 @@ with `PATTERN='\b(Lists|Maps|Sets|Iterables|Iterators|Strings|DoubleMath|Joiner|
   (`...DCGraph@1` under `-XX:hashCode=2`); the port cannot reproduce it (issue #71).
 - Parsing: `Integer.valueOf` (`core/src/.../data/LayoutOptionData.java:245`) rejects `"1.0"`:
   `JavaInteger.valueOf` (`text.json` `integerValueOf`, 33 rows); `Double.parseDouble` see 6.7.
+- `java.util.StringTokenizer` (`alg.graphviz.dot/src/.../transform/DotExporter.java:652, 736, 947, 950`): the
+  two-argument constructor, `hasMoreTokens` and `nextToken` only (the members the transforms call); delimiters are
+  single UTF-16 units and are never returned; `nextToken` on an exhausted tokenizer throws
+  `NoSuchElementException`. Shim `src/java/util/StringTokenizer.ts` (`graphviz-dot-jdk.json` `tokenizer`, 187
+  rows). `Boolean.valueOf(String)` is `s != null && s.equalsIgnoreCase("true")`: `src/java/lang/JavaBoolean.ts`
+  (`booleanValueOf`, 19 rows).
 - JSON numbers (Gson): integral doubles print as `100.0` in Java, `100` in JS. The oracle
   comparison is numeric (AD-4), so only parse differences matter: ids parsed as double then
   `intValue()` (`graph.json/src/.../JsonAdapter.xtend:46`) lose precision above 2^53 (MEDIUM).
@@ -653,7 +668,7 @@ D4 for exactly these surfaces). Rows add to sections 5 and 10. Design and eviden
 | `Resource.getEObject(fragment)` with a multi-segment path                        | reflective segment lookup                                                        | throws `UnsupportedOperationException`; `.elkj` fragments are `\|n` indices                                                                                                                                                                                                                                | `src/emf/ecore/resource/impl/ResourceImpl.ts`                                                         |
 | `ResourceImpl` subclass                                                          | `getResource(uri, true)` loads on demand                                         | a subclass must mark itself loaded, or the call reaches `demandLoad`                                                                                                                                                                                                                                       | `src/emf/ecore/resource/impl/ResourceImpl.ts`                                                         |
 | `String.split` on a proxy fragment                                               | Java regex split                                                                 | the existing Xtext `Strings.split` port (trailing empties dropped), as Java imports `org.eclipse.xtext.util.Strings`                                                                                                                                                                                       | `src/xtext/linking/lazy/LazyURIEncoder.ts`                                                            |
-| `CyclicLinkingException`, `OperationCanceledError`                               | `AssertionError`, `java.lang.Error` subclasses                                   | extend JS `Error` (unshimmed per D10); Java's cyclic-counter leak on throw is ported faithfully; registered in `exception-hierarchy.fitness.test.ts`                                                                                                                                                       | `src/xtext/linking/lazy/` (`CyclicLinkingException`), `src/xtext/service/` (`OperationCanceledError`) |
+| `CyclicLinkingException`, `OperationCanceledError`                               | `AssertionError`, `java.lang.Error` subclasses                                   | `CyclicLinkingException` extends the `AssertionError` shim and keeps its own class name; `OperationCanceledError` extends JS `Error` (no `java.lang.Error` class, dev-assert D3); Java's cyclic-counter leak on throw is ported faithfully; registered in `exception-hierarchy.fitness.test.ts`            | `src/xtext/linking/lazy/` (`CyclicLinkingException`), `src/xtext/service/` (`OperationCanceledError`) |
 | `EValidatorRegistrar.register` with no registered validator                      | `validator == null`: fresh composite, `initDefaults` adds one `EObjectValidator` | ported branch; `.elkt` passes a non-null default (two validators), `.elkj` passes `null` (one)                                                                                                                                                                                                             | `src/xtext/validation/EValidatorRegistrar.ts`                                                         |
 | `EFactory.createFromString` / `convertToString` for `EInt`, `EDouble`, `EString` | datatype conversion of a terminal's text                                         | `EDataType`, `EPackage`, `EFactory`, `EcorePackage` (`Literals.EINT/EDOUBLE/ESTRING`, `eINSTANCE`) and `EcoreFactoryImpl` dispatch on `getName()` (the port's `EDataType` has no classifier id); reuses `JavaInteger`, `JavaDouble`, `DoubleToString`; only these three datatypes (text-follow-ups T4, D6) | `src/emf/ecore/impl/EcoreFactoryImpl.ts`                                                              |
 | `org.eclipse.core.runtime.OperationCanceledException`                            | Equinox class Xtext's `OperationCanceledManager` imports                         | own directory `src/equinox/core/runtime/` (a third-party subset, importable by `src/xtext`; imports only `src/equinox` and `src/java`)                                                                                                                                                                     | `src/equinox/core/runtime/OperationCanceledException.ts`                                              |

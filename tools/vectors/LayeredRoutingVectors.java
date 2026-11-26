@@ -37,7 +37,7 @@
 //   accepts SEVEN_B..SEVEN_E members, runPhase also "P5_EDGE_ROUTING" with an EdgeRouting name, plus ["call", "<Class>.<method>", <arg>...].
 //
 // expected = 7d's { layers, layerless, hidden, edges, ports, changed } (+ dump on step rows under ten nodes) plus geometry (N3, R3;
-//   doubles as 16 hex digits of the raw bits): { nodes: { "<node path>": { pos, size, margin } }, layers: [[w, h]], ports?, labels?
+//   doubles as 16 hex digits of Double.doubleToLongBits): { nodes: { "<node path>": { pos, size, margin } }, layers: [[w, h]], ports?, labels?
 //   (only for the stops LABEL_AND_NODE_SIZE_PROCESSOR and HIERARCHICAL_PORT_DUMMY_SIZE_PROCESSOR or a graph with a flexible node),
 //   graph: { size: [w, h], offset: [x, y] }, edges: { "<edge path>": { bendPoints: [[x, y]], junctionPoints?: [[x, y]] } } (every edge
 //   of the traversal, in the order of expected.edges; junctionPoints only when LayeredOptions.JUNCTION_POINTS is set),
@@ -383,11 +383,12 @@ b6ced8d3f6be2d7f744b6d3496d6c76167ba6ba91b2d7ab9992e5bbc160db031  repo:test/gold
         }
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new Bug("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static void str(StringBuilder sb, String s) {

@@ -1,0 +1,8 @@
+digraph G {
+  graph [rankdir=LR];
+  node [shape=box, fixedsize=true];
+  edge [dir=none]
+  node []
+  graph [bb="0,0,62,116" splines=true]
+  edge [label]
+}

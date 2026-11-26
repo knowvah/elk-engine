@@ -13,7 +13,7 @@ export const DEFAULT_MAX_LINE_WIDTH = 120;
 export class FormatterPreferenceKeys {
   static readonly lineSeparator: StringKey = new StringKey('line.separator', DEFAULT_LINE_SEPARATOR);
   static readonly indentation: StringKey = new StringKey('indentation', DEFAULT_INDENTATION);
-  /** Deprecated in Xtext; only the autowrap code (not ported) reads it. */
+  /** Deprecated in Xtext; only `TextReplacerContext.logicalLength` (autowrap line widths) reads it. */
   static readonly indentationLength: IntegerKey = new IntegerKey('indentation.length', DEFAULT_INDENTATION_LENGTH);
   static readonly tabWidth: IntegerKey = new IntegerKey('tab.width', DEFAULT_TAB_WIDTH);
   static readonly maxLineWidth: IntegerKey = new IntegerKey('line.width.max', DEFAULT_MAX_LINE_WIDTH);

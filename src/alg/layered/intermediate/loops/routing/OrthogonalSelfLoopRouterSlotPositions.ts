@@ -17,7 +17,7 @@ type SlotSpacings = {
  * This file holds the "Routing Slot Positions" section of `OrthogonalSelfLoopRouter.java` (`:209-308`), moved out of the
  * class for the file size limit: the private methods are module functions with the Java names and bodies (`this` is not
  * used by them). The Java `assert` (`:245`) is a `devAssert` and the `default` arm of `computeBaselinePosition` (Java
- * `assert false; return -1`, `:304`) calls `devAssert(() => false)` and then throws.
+ * `assert false; return -1`, `:304-305`) calls `devAssert(() => false)` and then returns -1, as the Java does.
  *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/loops/routing/OrthogonalSelfLoopRouter.java
  */
@@ -103,9 +103,15 @@ function computePositions(
  * Based on the margin area, this computes the offset from the node origin to add to escape the area occupied by
  * ports.
  *
+ * Exported for the test of the `default` arm only: `computePositions` passes the four sides, so nothing else reaches it.
+ *
  * @see org.eclipse.elk.alg.layered/src/org/eclipse/elk/alg/layered/intermediate/loops/routing/OrthogonalSelfLoopRouter.java
  */
-function computeBaselinePosition(slHolder: SelfLoopHolder, portSide: PortSide, nodeSelfLoopDistance: number): number {
+export function computeBaselinePosition(
+  slHolder: SelfLoopHolder,
+  portSide: PortSide,
+  nodeSelfLoopDistance: number,
+): number {
   const lNode = slHolder.getLNode();
   const lMargins = lNode.getMargin();
 
@@ -120,6 +126,6 @@ function computeBaselinePosition(slHolder: SelfLoopHolder, portSide: PortSide, n
       return -lMargins.left - nodeSelfLoopDistance;
     default:
       devAssert(() => false);
-      throw new Error(`Unexpected port side ${String(portSide)}`); // Java: assert false; return -1
+      return -1;
   }
 }

@@ -32,7 +32,7 @@ export type RadialRowGroup = (typeof RADIAL_ROW_GROUPS)[number];
 export const FIXED_SECTIONS = ['ports', 'labels', 'margins', 'padding'] as const;
 export type FixedSection = (typeof FIXED_SECTIONS)[number];
 
-/** A 16-hex-digit lowercase string: `Long.toHexString(Double.doubleToRawLongBits(d))` zero-padded. */
+/** A 16-hex-digit lowercase string: `Long.toHexString(Double.doubleToLongBits(d))` zero-padded (NaN canonical, issue #72). */
 export type Hex = string;
 export type HexQuad = readonly [Hex, Hex, Hex, Hex];
 /** `[id, x, y, width, height]`: a node, port or label. */

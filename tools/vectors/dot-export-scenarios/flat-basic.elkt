@@ -1,0 +1,16 @@
+node a {
+  layout [ size: 30, 20 ]
+  label "Alpha"
+}
+node b {
+  layout [ size: 40.5, 15.25 ]
+  label "Beta"
+}
+node c {
+  layout [ size: 25, 25 ]
+}
+node d
+edge a -> b
+edge b -> c
+edge a -> c
+edge c -> d

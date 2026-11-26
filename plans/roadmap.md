@@ -3688,3 +3688,651 @@ with no failed assertion, and passed unchanged once it ran without `nice`. Nothi
 
 **Open.** #167 (`needs-ruling`): the depth check, now with the two visited-mark loops of #70 named. #170 (`follow-up`):
 heap and time at depth. #76 (spore) is the last issue under the same ruling.
+
+## Revision 2026-11-24 (canonical-nan)
+
+Queue mission for issue #72, on `chore/issue-queue` (plan and journal in `plans/canonical-nan/`). The maintainer's ruling of
+2026-11-13 on #53 gave the port one canonical NaN, `Double.doubleToLongBits` (`7ff8000000000000`), for every layout
+comparison: the JVM gives a computed NaN either sign bit, by interpreted or compiled code, so the oracle does not reproduce
+a NaN's raw bits against itself. The loops sweep (7g), `LayeredCompoundVectors` (7h) and `ForceVectors` (8b) already hashed
+NaN that way; this mission moved every other layout recorder, sweep hasher and port-side helper. No landed ref, vector,
+golden or assertion changed, no `src/` production file changed, and no oracle patch or pin changed. Oracle: `8bca22f4` +
+patches 0001-0004 (built 2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` is empty.
+
+**1. The audit.** 32 JVM sites in 24 recorder files and 16 TS sites turn a layout double into bits.
+
+| Side | Class | Sites | Action |
+| ---- | ----- | ----- | ------ |
+| JVM | guarded (`hex` throws "NaN in a recorded value" first) | 20 | moved behind the guard; the guard stays |
+| JVM | raw (pipeline sweep `hx`, `MrTreeUnitVectors.hex`, `RectPackingVectors.positions`, `SporeLayoutVectors.jitterCount`) | 4 | moved |
+| JVM | by-construction (the C4 number of the phase, order, placement and routing sweep hashes, parsed from `Double.toString` text) | 4 | moved |
+| JVM | canonical already | 4 | kept; the raw call inside `ForceVectors.hex`'s ternary moved |
+| TS | raw or by-construction (`DataView` or `doubleToRawLongBits` encoders) | 12 | call `canonicalHex` |
+| TS | canonical already (`force-replay-rows`, `layered-loops-sweep`) | 2 | kept; they reuse the shared constant |
+| TS | not a double (`hexOfLong` of a `Random.nextLong`) | 1 | none |
+| TS | NaN as text, JDK vector (`AggregatedMatchDecider.test.ts`, stream-sum.json) | 1 | allowlisted |
+
+`JavaVectors.java` and `CoreJdkVectors.java` (JDK shim vectors) stay raw: there the raw bits are the behaviour under test.
+
+**2. The canonical form on both sides.** JVM: 31 calls in 23 files went from `doubleToRawLongBits` to `doubleToLongBits`,
+and the headers name the call. TS: `test/helpers/double-hex.ts` holds the one encoder, `canonicalHex`, over the
+vector-proven `doubleToLongBits` shim, with `CANONICAL_NAN_HEX` and the sign fixture `NEGATIVE_NAN`. V8 keeps a NaN's sign
+bit and `-NaN` has it set, so the raw TS encoders could emit `fff8…` too. Each changed helper has a test that both NaN signs
+encode or hash alike and that `-0.0`, the infinities and finite values keep their raw bits.
+
+**3. Nothing recorded changed.** At the base all 22 layout recorders reproduced their 29 ref files byte for byte (21 cold,
+one cache hit). After the move all 22 ran cold and reproduced them again, so no ref was regenerated. All eight oracle
+sweeps (pipeline, labels, loops, compound, order, placement, routing, phase) were rerun: every one of 67,111 result lines
+is identical to the copy taken before the change, the phase sweep's 595 timeouts included. The TS sweep tests pass at the
+default strides, and the four that hash layout output pass at stride 1 with 0 mismatches (pipeline 6,646, labels 935,
+loops 2,997, compound 1,164 hash-equal cases). The layout refs with NaN rows are `force.json` (6,440), `spore-layout.json`
+(56) and `mrtree-units.json` (72), all `7ff8…`.
+
+**4. The guard and the docs.** `test/architecture/canonical-nan.fitness.test.ts` fails when `doubleToRawLongBits` appears
+in any Java under `tools/`, or `doubleToRawLongBits` or `setFloat64(` in a TS test or helper outside `src/java/`, apart
+from five allowlisted files with reasons; put back by hand, a raw call in `DiscoVectors.java` failed it. `docs/conformance.md`
+section 2 states the rule, the reason and the JDK shim exception.
+
+**5. Decisions.** The recorders' NaN guards stay (D3): the mission swaps the encoder behind them and removes none, as the
+ruling on #123 (2026-11-20) also has it. D2 against D5: `ForceVectors.hex`'s ternary would have needed an allowlist entry,
+so its raw call moved instead (same output, proven by the rerun). The fitness test scans all of `test/` and every
+`src/**/*.test.ts` outside the shim, wider than the brief's `test/helpers/` and `src/alg/`.
+
+**Gates.** Queue gates 1-7 green on the final tree: coverage 1,219 files, 50,645 tests passed and 83 skipped, 98.81 / 97.01
+/ 98.57 / 98.86. The planning baseline (50,718 tests) described the tree before the queue branch was rebased onto main;
+the suite on an exact copy of the base tree gives 1,214 files and 50,611 passed, so this mission adds 5 files and 34
+tests and loses none.
+
+**Open.** Nothing from this mission: no `needs-ruling` issue, no partial, no follow-up. #135 and #143 touch the same
+recorders and are unchanged by it.
+
+## Revision 2026-11-24 (last-ulp-bar)
+
+Queue mission for issue #74, on `chore/issue-queue` (plan and journal in `plans/last-ulp-bar/`). The maintainer ruled on
+2026-11-13 (#68 item B, made general) that the bar for last-ulp math divergences is 0.01 px: "we pursue perfection but accept
+deltas because the algos for trig functions work that way." This mission wrote that rule down as an amendment to AD-4,
+audited every existing last-ulp entry against it, and gave each one recorded oracle evidence and a pinning test. The 1e-6
+tolerance, the comparator, every landed ref, golden and assertion and every `src/` file are unchanged. Oracle: `8bca22f4` +
+patches 0001-0004 (built 2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over core, alg.radial and
+alg.disco is empty.
+
+**1. The rule.** `plans/elk-engine-skeleton/decisions.md` ends with `## AD-4 amendment (2026-11-13)`: the four points of #74,
+copied unchanged, after an untouched AD-4 (the old 14,435 bytes are byte-identical). The conformance bar stays 1e-6. A case
+the 1e-6 comparison reports is a known divergence only with a demonstrated last-ulp difference between HotSpot `Math.*` and
+V8 and an effect at or below 0.01 px on every position and size; a larger effect or a flipped discrete decision is a defect
+or a STOP; each entry records its mechanism, its measured delta and its pin. `CLAUDE.md` (Verification) and
+`docs/conformance.md` § 2 state it.
+
+**2. The audit.** Five entries; none fails the bar, none lies between 1e-6 and 0.01 px, none flips a discrete decision.
+
+| Entry | Class | Mechanism | Measured maximum delta |
+| ----- | ----- | --------- | ---------------------- |
+| E1 radial `retarget/radial/default/tests/layered/splines/sloppy_overlaps_2` (#68 B) | accepted | `Math.sin` at `EadesRadial.java:102`: HotSpot one ulp from `StrictMath` and V8 on 3 of 7 inputs | 4.55e-13 px (one option string is the only 1e-6 diff) |
+| E2 disco `getOrthogonalPoints`, six `import` stops | inside 1e-6 | `Math.sin`/`Math.cos` at `ElkGraphTransformer.java:636-639`: one ulp on 5 and 9 of 160 inputs | 8.53e-14 px (32 fields) |
+| E3 `Math.log` at `EadesModel.java:100` | no divergence | bit-exact `JavaMath.log`; HotSpot equals `StrictMath.log` on the reference platform | none |
+| E4 `Random.nextGaussian` | no divergence | Javadoc-specified `StrictMath.log`, ported bit for bit | none |
+| E5 the other 31 non-strict Math call sites | no divergence | none observed | none |
+
+**3. The evidence.** A new recorder, `tools/vectors/LastUlpVectors.java` (script `last-ulp-vectors.sh`), writes the new ref
+`test/golden/refs/java/last-ulp.json`: HotSpot `Math` on the first call and after 1,336,000 calls against `StrictMath` on the
+334 inputs of the two divergent call sites (`tools/vectors/last-ulp-inputs.txt`, collected on the TS side), and the oracle's
+layout of the radial case, cold and after 3,000 further layouts. Two cold recordings are byte-identical. HotSpot gives the
+same bits interpreted and compiled on every input, and the cold and warm layouts are the same string, equal to the sweep
+cache: for `sin` and `cos` the oracle reproduces itself. V8 has the bits of `StrictMath` on all 334 inputs.
+
+**4. The pin.** `test/golden/last-ulp-divergences.test.ts` (19 tests): per entry the mechanism rows (V8 equals `StrictMath`;
+HotSpot differs on exactly the listed inputs, by one ulp), the bound (computed delta ≤ measured ≤ 0.01 px), no discrete
+difference (the 1e-6 comparison reports exactly the one option string for E1 and nothing for E2), and the cause: with
+HotSpot's recorded bits substituted on the divergent inputs, the port's output equals the oracle's bit for bit. A walker
+self-check finds a planted 0.02 px in an option string, a bend point and a hex double. `docs/conformance.md` § 2 has the
+table "Last-ulp `Math.*` entries"; the three sentences that deferred the audit to #74 now give its result.
+
+**5. Decisions.** D0-D7 as planned, with two departures, both journaled. The recorder does not stamp the ref with the pinned
+commit: `test/architecture/elk-pin.fitness.test.ts` pins the number of stamping recorders at 41 and that count is not
+edited (AD-13), so `last-ulp.json` has no `oracle` field (#173). `docs/architecture/elk-upgrade.md` § 7.1 gained the row
+the runbook inventory test requires for a new recorder script. T2 and T3 were done by the orchestrator, not by subagents.
+
+**Gates.** Queue gates 1-7 green on the final tree: coverage 1,220 files, 50,664 tests passed and 83 skipped, 98.81 / 97.01
+/ 98.57 / 98.86 (the planning baseline on the base: 1,219 files, 50,645 passed; the mission adds one file and 19 tests and
+loses none); CodeQL with no new accepted entry; `test/golden/refs/` against the base differs only by the added
+`java/last-ulp.json`.
+
+**Open.** #173 (`needs-ruling`): may the stamping-recorder count go from 41 to 42, or does `last-ulp.json` stay unstamped.
+#174 (`follow-up`): 12 stale TS lines in the math-call-sites table, and "within 1e-13" in `tools/corpus/ts-findings.json`
+and `docs/parity-report.md` (measured 4.55e-13). A wording note on point 2 of the rule is in the report on #74: E1 has no
+number beyond 1e-6; it is reported because an option string compares exactly.
+
+## Revision 2026-11-24 (spore-recursion-depth)
+
+Queue mission for issue #76, on `chore/issue-queue` (plan and journal in `plans/spore-recursion-depth/`). Mission 8c (PK6)
+converted two spore recursions and kept six verbatim; beyond about 2,000 levels those six overflowed V8's stack on chains
+the oracle lays out. The maintainer ruled on #76: "We should make these explicit stack loops if we get the same
+output/results", the ruling #67 and #70 carried out before; #76 was the last issue under it. No landed ref, vector, golden
+or assertion changed, and no oracle patch or pin changed. Oracle: `8bca22f4` + patches 0001-0004 (built
+2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over core, alg.common and alg.spore is empty.
+
+**1. The oracle's depth, measured again.** The input is the recorder's chain (`SporeLayoutVectors.java:1870-1877`), whose
+spanning tree is a path. A cold JVM throws `StackOverflowError` on the 2,000-node sporeCompaction chain; a JVM that first
+runs shallower chains completes it, so the ladders start at 250 or 500 (the brief's started at 2,000). sporeOverlap: 9,750
+completes and 10,000 throws, in three ladders. sporeCompaction: 4,000 completes in two ladders (806 s and 903 s); 5,000
+throws in one and ran into the probe's one-hour case limit in the other. The unconverted port overflowed at 2,500 for both.
+
+**2. Six recursions are explicit-stack loops (AC6)**, each proven against a verbatim recursive twin on 120 to 200 seeded
+trees over five shapes, with a 20,000-node path that was red before the change:
+
+| Bundle | Site | Frame |
+| ------ | ---- | ----- |
+| alg.common | `DepthFirstCompaction.getMinUnderlap`, `minUnderlapWithSubtree` | tree, running `minUnderlap`, next child; the child starts from the parent's running value and returns through `Math.min(minUnderlap, result)`; the `break` ends the frame's loop |
+| alg.common | `DepthFirstCompaction.translateSubtree`, `drawTree` | tree and next child, pre-order |
+| spore | `GrowTreePhase.drawTree` | tree and next child, pre-order |
+| spore | `MinSTPhase.addNode` (also through `MaxSTPhase`) | node tree, vector tree, next child |
+
+All six call `checkStackDepth` after each frame push, as every #67 and #70 loop does; none can run without end (the trees
+are acyclic). `compactTree` and `growAt`, the PK6 loops, are unchanged; a comment on #167 names the new call sites for its
+question 3. `ShrinkTreeCompactionPhase.draw` stays verbatim: it runs only in debug mode, where the JVM writes an SVG file
+per step.
+
+**3. Results are the same.** On Node's default stack the port completes sporeOverlap at 9,750 (35 s) and sporeCompaction
+at 3,000 (591 s) and 4,000 (107 min), each byte-identical to the unconverted port on a raised stack
+(`node --stack-size=7000`) and to the oracle's output. All 1,812 spore cases of the corpus sweep have the same category
+and detail before and after. The landed replays pass unchanged, and the flag-gated `full/compaction/chain2000/default`
+still equals its row.
+
+**4. Time.** The compaction chain is cubic to about 3,200 nodes and far steeper beyond, where its far ends stop touching
+and the walk takes the `r.distance` arm; a port run at 4,000 takes 105 minutes, above the mission's 90-minute cap, so
+nothing between 4,000 and 5,000 was run and the oracle's limit there is not narrowed. The loop form of
+`minUnderlapWithSubtree`, which runs about n³/6 activations on a path, costs 20 to 30 % more time than the recursion on
+that chain, whatever the frame layout; the corpus sweep does not show it. Both are #175 (`follow-up`).
+
+**5. Docs.** `docs/architecture/alg-packing.md` § 3.4 keeps the PK6 probe as history and adds the sites, the ladders, the
+results, the time cost and the depth check; § 5 lists #175 in place of #76. `docs/conformance.md`: the AC6 bullet points at
+§ 3.4, and a new bullet states the result. `plans/alg-packing/decision-journal.md` has one closing row.
+
+**6. Gates.** Queue gates 1-7 green on the final tree: coverage 1,222 files, 50,706 tests, 98.82 / 97.01 / 98.57 / 98.86
+(a first run, started beside the mission's own long runs at `nice` 10, failed on the layered phase sweep's 900 s timeout
+with 0 mismatches; the second, without `nice`, passed unchanged); CodeQL with no new accepted entry; `test/golden/refs/`
+against the base untouched.
+
+**Open.** #175 (`follow-up`): time at depth. #167 (`needs-ruling`): the depth check's model, and whether `compactTree` and
+`growAt` gain it. No `needs-ruling` issue was filed and no row is a partial.
+
+## Revision 2026-11-24 (rectpacking-open-arm)
+
+Queue mission for issue #81, on `chore/issue-queue` (plan, journal and evidence in `plans/rectpacking-open-arm/`). Mission 8c
+left one rectpacking arm neither reached nor proven dead: `Compaction.java:364-365`, the early `return false` of
+`placeBeside` (`CompactionPlacement.ts:117-118`). Result: **proven dead at the pin** (branch D3 of the brief). No `src/` file,
+landed ref, vector, golden or assertion changed, and no oracle patch or pin. Oracle: `8bca22f4` + patches 0001-0004 (built
+2026-11-21T05:47:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over alg.rectpacking is empty.
+
+**1. Why it was open.** 8c measured at `8aaa3c14`. The pin `8bca22f4` carries eclipse-elk/elk#1239 (`3f5e4f97`), which makes
+`placeBeside` set the parent row of the block it moves (`Compaction.java:413`). Before it, a block already in the current row,
+possibly holding several rects, could read as `wasFromNextRow` and reach `placeBeside`; the arm needs such a block.
+
+**2. The proof**, from the Java at the pin (`evidence.md` § 2; one journal row per lemma). With `rowHeightReevaluation` off the
+first operand of the `if` is false. With it on:
+
+| Lemma | Claim | Java |
+| ----- | ----- | ---- |
+| L1 | `InitialPlacement.place` gives every block at most one rect (the planning hypothesis said exactly one: the first block can be empty) | `InitialPlacement.java:71-81`, `RowFillingAndCompaction.java:96`, `:105-106` |
+| L2 | only a block of the row being compacted gains rects | `InitialPlacement.java:105`, `:110`, `Compaction.java:266`, `:113`, `:59-69` |
+| L3 | a row above `rowIdx` holds only blocks `place` built | `InitialPlacement.java:64`, `:85`, `Compaction.java:132`, `:328`, `:419`, `RowFillingAndCompaction.java:99`, `:117` |
+| L4 | a block's parent row is the row that holds it, so the `nextBlock` of `placeBeside` is the first block of the next row: one rect | `Block.java:89`, `Compaction.java:101`, `:152`, `:219`, `:324`, `:413` |
+| L5 | a one-rect block is as high at any width as its `minHeight`, for every height (NaN, infinities, negative) | `Block.java:188`, `:258`, `:268-269`, `:285`, `:293` |
+
+Every "only" claim has an `ast-grep` enumeration over the bundle with a positive control (`evidence.md` § 3).
+
+**3. Support.** A scratch copy of the port with probes in `placeBeside` and at every block step of `compact`, six child
+processes under a 10 s kill timer per input:
+
+| Run | Result |
+| --- | ------ |
+| 1,000,000 seeded inputs, flag on (2 to 14 nodes; negative, zero and positive spacing; `inNewRow`; both width strategies) | 4,717,461 `placeBeside` calls, 1,418,504 with `shouldRowHeigthBeReevalauted`; 0 multi-rect `nextBlock`s, 0 invariant violations, 0 arm hits, 0 timeouts |
+| 1,200 of those inputs on the oracle and on the unmodified port | 1,200 equal at 1e-6 (largest difference 0) |
+| Controls | a forged two-rect `nextBlock` takes the arm; a planted hang is killed and the run resumes; with the flag off the multi-rect detector fires (3,855 of 22,249 calls) |
+| The line of #1239 removed from the copy, 40,000 inputs | 86 multi-rect `nextBlock`s with the flag on, 58 hangs (#73): the source of the 299 that 8c counted. Port evidence; no oracle was built at `8aaa3c14` |
+
+**4. Records.** `plans/alg-packing/unreached.md` gains `## Addendum 2026-11-24 (#81)` with `U` row 19, which supersedes its
+"Neither reached nor proven dead" row; `plans/alg-packing/decision-journal.md` has one closing row. `docs/conformance.md` and
+`docs/architecture/alg-packing.md` (§ 2, § 5) call the arm dead at the pin. The port keeps the Java's `if` verbatim, and
+nothing is filed upstream (dead code). Comment on #81:
+https://github.com/knowvah/elk-engine/issues/81#issuecomment-7144882798; its labels are unchanged.
+
+**5. Gates.** Queue gates 1-7 green on the final tree: coverage 1,222 files, 50,706 tests, 98.82 / 97.01 / 98.57 / 98.86 (a
+first run at `nice` 10 failed on five test timeouts and no assertion while other sessions drove the load average to 263;
+the second, without `nice`, passed unchanged); CodeQL with no new accepted entry; `test/golden/refs/` against the base
+untouched.
+
+**Open.** #107 (`follow-up`, not worked here): by L4, `rows.size() > nextRowIndex` is always true at `Compaction.java:325` and
+`:416`, so its proof can start from this mission's invariant. No `needs-ruling` or `follow-up` issue was filed and no row is
+a partial.
+
+## Revision 2026-11-24 (deferred-bundles-acceptance)
+
+Queue mission for issue #88, on `chore/issue-queue` (plan and journal in `plans/deferred-bundles-acceptance/`). Roadmap row 11
+ended on 2026-11-13 with a **Proposed** ADR recommending no-go for `alg.libavoid`, `alg.graphviz.dot` and
+`alg.graphviz.layouter`. The maintainer accepted it **amended** on 2026-11-14 (confirmed 2026-11-23), and this mission wrote
+that ruling into the repository. It ported nothing: no `src/` file, landed ref, vector, golden or assertion changed, and no
+oracle patch or pin. Oracle: not used (no JVM run). `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over the three bundles is
+empty, as is `8aaa3c14..8bca22f4`, so the ADR's evidence holds at the pin.
+
+**1. The ruling (AD-17).** Appended to `plans/elk-engine-skeleton/decisions.md`:
+
+| Bundle | ADR recommended | Ruling | Work |
+| ------ | --------------- | ------ | ---- |
+| `alg.libavoid` | no-go | out of scope | none |
+| `alg.graphviz.dot` | no-go | in scope | #95 step 2 |
+| `alg.graphviz.layouter` | no-go | in scope, `GraphvizTool`'s process replaced by an injected runner | #95 steps 3-4 |
+
+Zero runtime dependencies and browser-safe `src/` hold: the same functionality comes from `@knowvah/dot-engine` through an
+adapter outside this package (#95 step 5, needs knowvah/dot-engine#220). AD-4 gains one stated exception, for one suite: the
+end-to-end suite (ELK with a pinned Graphviz 16.1.0 against elk-engine plus the adapter) uses dot-engine's bar, ±0.01 pt for
+`dot` and ±0.5 pt for `neato` and `fdp`. Export, DOT parse and `transferLayout` stay at 1e-6. The exception enters
+`docs/conformance.md` with the suite, not before.
+
+**2. Row 11 closes.** Its exit was "ADR with go/no-go per bundle; fitness test updated". The ADR
+(`docs/architecture/deferred-bundles-adr.md`) now reads **Accepted, amended**, with a `## Ruling (2026-11-14)` section and
+current consequences; its Proposed analysis is kept as written. The fitness test is updated (point 4).
+
+**3. Where the scope is stated.** CLAUDE.md (§ Mission: AD-1…AD-17; § Verification: one sentence on the exception; § ELK
+Source Map: the two Graphviz bundles under "In scope", `alg.libavoid` under "Out of scope", "Deferred" holds only the three
+`.ide` bundles). `docs/architecture/inventory.md`: 18 In, 3 Deferred, 2 Reference, 9 Out (= 32); the in-scope total is 18
+bundles, 143,647 LOC, of which the two Graphviz bundles (4,471) are not ported. `docs/architecture/port-map.md`: the scope
+paragraph, the mission-mapping note and the `tsDir` count. Outside the brief's file table, because they state the scope too:
+the triage table of `docs/architecture/elk-upgrade.md` § 3 and the `.melk` source list of
+`docs/architecture/melk-codegen.md`.
+
+**4. The bundle table has 18 keys** (16 before). `IN_SCOPE_SUFFIXES` (`tools/bundle-deps.ts`) gained `alg.graphviz.dot` and
+`alg.graphviz.layouter`; `test/architecture/bundle-deps.json` was regenerated by `npx tsx tools/bundle-deps.ts --write` and
+gained exactly:
+
+| Key | `requires` |
+| --- | ---------- |
+| `src/alg/graphviz/dot` | `src/core`, `src/graph` |
+| `src/alg/graphviz/layouter` | `src/alg/graphviz/dot`, `src/core`, `src/graph` |
+
+The block `graphviz bundles (AD-17)` in `test/architecture/module-boundaries.fitness.test.ts` (7 cases, written and seen red
+before the suffixes changed) pins both entries, layouter → dot allowed, dot → layouter forbidden, and `src/alg/libavoid/`
+and a file directly under `src/alg/graphviz/` unmapped. The layouter's optional `core.service` requirement is out of scope
+and absent from the table.
+
+**5. Gates.** Queue gates 1-7 green on the final tree: format, typecheck, complexity (no violation;
+1,379 files, 10,760 functions); coverage 1,222 files, 50,713 tests passed and 83 skipped, 98.82 / 97.01 / 98.57 / 98.86
+(statements / branches / functions / lines); docs build; CodeQL with no new accepted entry; `test/golden/refs/` against the
+base untouched. The first coverage run failed on one timeout and no assertion: `test/corpus/phase-sweep.test.ts` ran
+1,032.8 s against its 900 s limit while other sessions drove the load average of this 12-core machine to 138-170, having
+printed `mismatches=0`; alone it passes in 293 s, and the same timeout is in two earlier logs of today. The rerun passed
+with no code change (journal, T3 `diagnosis`).
+
+**Open, all under #95** (`queue:ready`, not worked here): the two ports (steps 2-3); **how the runner is injected** (step 4),
+which is new API and waits for the maintainer, with module-level mutable state ruled out by AD-8; the adapter (step 5);
+pinning Graphviz in the oracle build and the end-to-end suite with its `docs/conformance.md` entry. Comments:
+https://github.com/knowvah/elk-engine/issues/88#issuecomment-7147101143 and
+https://github.com/knowvah/elk-engine/issues/95#issuecomment-7147102268. No `needs-ruling` or `follow-up` issue was filed, no label was changed and no row is a partial.
+
+## Revision 2026-11-24 (heading-slug-underscore)
+
+Queue mission for issue #94, part 2, on `chore/issue-queue` (plan and journal in `plans/heading-slug-underscore/`). The docs
+site's heading ids outside the API reference come from `headingSlug` (`docs-site/.vitepress/config.ts`). It dropped
+connector punctuation, so a heading naming a Java identifier lost its underscores: `## PARALLEL_NODE` got the id
+`parallelnode`, where GitHub gives `parallel_node`. The maintainer ruled on 2026-11-20: keep `_` and the rest of Unicode
+category Pc, as GitHub does; keep `-` for non-ASCII whitespace, unlike GitHub; the one pinned row may change. No `src/`
+file, ref, vector or golden changed. Oracle: not used (no JVM run); `oracle-build.json` names the pin `8bca22f4` and
+patches `0001`-`0004`, and `git -C ~/git/knowvah/elk log 8bca22f4..HEAD -- plugins/` is empty.
+
+**1. The rule.** `NOT_SLUG_CHARS` gained `\p{Pc}`: `/[^\p{L}\p{N}\p{M}\p{Pc}\s-]/gu`. Nothing else in `headingSlug` changed.
+Pc is ten code points at Node 26.3.1's Unicode 17.0 (U+005F, U+203F, U+2040, U+2054, U+FE33, U+FE34, U+FE4D, U+FE4E,
+U+FE4F, U+FF3F); github-slugger 2.0.0 keeps all ten, and after the change the site agrees with it on all ten. The mechanism
+was the missing class: `_` is in none of L, N, M, whitespace or `-`, so the replace removed it. The reference pages are
+untouched: `pageHeadingSlug` sends `reference/…` to `referenceHeadingSlug` (`PARALLEL_NODE` → `parallel-node`, as its links
+are written).
+
+**2. One ruled expected-value change (AD-13).** `test/docs/site-config.test.ts:74`,
+`pageHeadingSlug('PARALLEL_NODE', 'guide/getting-started.md')`: `'parallelnode'` → `'parallel_node'`. No other existing
+assertion or title changed.
+
+**3. New rows**, written and seen red before the regex changed (5 failed of 26: the changed row and the four Pc rows):
+
+| Heading | Id | Expected value from |
+| ------- | -- | ------------------- |
+| `snake_case heading` | `snake_case-heading` | github-slugger |
+| `PARALLEL_NODE` | `parallel_node` | github-slugger |
+| `a‿b` | `a‿b` | github-slugger |
+| `a＿b` | `a＿b` | github-slugger |
+| `1. Oracle` | `1-oracle` | github-slugger and the site |
+| `A — B` | `a--b` | github-slugger and the site |
+| `a b` | `a-b` | the site (ruling: keep `-`) |
+| `foo bar` | `foo-bar` | the site (ruling: keep `-`) |
+
+**4. No published id changed.** The heading ids of the built site were listed before and after the rule change: 871 ids on
+177 pages outside `reference/`, and 6,038 ids on all 252 pages; both lists are identical. No landed heading holds a Pc
+character. `npm run docs:linkcheck`: 515 links, 0 broken. The comments that called the rule "exactly as GitHub" (the
+`headingSlug` and `pageHeadingSlug` doc comments, `docs-site/.vitepress/README.md`, the test header) now state the ruled
+rule and its two known differences from GitHub.
+
+**5. Part 1 of #94** (the size of the search index with the API reference in it) was closed by ruling on 2026-11-20: leave
+it; `reference/` stays in local search (DP6). No change here.
+
+**6. Gates.** Queue gates 1-7 green: format, typecheck, complexity (no violation; 1,379 files, 10,760 functions); coverage
+1,222 files (1,213 passed, 9 skipped), 50,711 tests passed and 92 skipped with the nine sweep directories off, 98.82 / 97.01
+/ 98.57 / 98.86 (statements / branches / functions / lines); docs build with 201 typedoc warnings, as at the base; CodeQL
+with no new accepted entry; `test/golden/refs/` against the base untouched.
+
+**Open.** #176 (`follow-up`, not queued): outside whitespace and Pc, `headingSlug` and github-slugger 2.0.0 still differ on
+7,355 code points of U+0020-U+2FFFF (15,845 of all Unicode). Three causes, measured: github-slugger keeps no `No`
+(`²`, `½`: 915, a class difference); it keeps the 130 circled and squared Latin letters (`So` with the `Alphabetic`
+property), which the site drops; and its fixed list is built from Unicode 13.0 data, which fits the letters, marks and
+digits it drops and Node's Unicode 17.0 classes keep. On all 871 landed headings the two rules agree. No `needs-ruling` issue was filed,
+no stop condition fired and no row is a partial.
+
+## Revision 2026-11-24 (graphviz-dot)
+
+Queue mission for issue #95, step 2, on `chore/issue-queue` (plan and journal in `plans/graphviz-dot/`). It ported the whole
+`alg.graphviz.dot` bundle ("ELK Graphviz Dot Language Parser") to `src/alg/graphviz/dot/`. Step 1 landed with #88 (Revision
+`deferred-bundles-acceptance` above). Steps 3 to 5 and the end-to-end suite are not part of it: step 4 (how the Graphviz runner
+is injected) waits for the maintainer on #177, step 3 needs that seam, step 5 is blocked by knowvah/dot-engine#220. Oracle
+`8bca22f4afa3371562d2f702d59929818f7f7b71` with patches 0001-0004, JDK 21.0.1, arm64; no oracle patch, no pin change, no
+landed ref, vector, golden or assertion changed. `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over the bundle, `core` and
+`graph` is empty.
+
+**1. What landed.** 53 source files and 26 test files under `src/alg/graphviz/dot/`:
+
+| Part | Files | Java source |
+| ---- | ----- | ----------- |
+| DOT model | `dot/` (11 classes, 3 enums, `DotFactory`, `DotPackage`, `util/DotSwitch`) | the EMF-generated model, on the `src/emf` containment types with the generated `eGet`/`eIsSet` |
+| Lexer and parser | `parser/` | `GraphvizDot.xtext`; hand-written, with ANTLR 3 recovery as the recorded rows need it; Xtext's default terminal converters |
+| Writer | `services/`, `serializer/`, `formatting2/` | grammar-specific sequencers (as G1 for `.elkt`), `GraphvizDotFormatter` line by line, `GraphvizDotSerializer` at 255 columns |
+| Entry point | `GraphvizDot.ts` (`load`, `serialize`) | stands in for `DotResourceSetProvider` and the `XtextResource`; internal, nothing exported |
+| Transforms | `transform/` | `DotExporter` (982 lines), `DotImporter` (699), `Attributes`, `Command`, `NeatoModel`, `OverlapMode`, the transformation data types |
+
+Outside the bundle: Xtext's **autowrap path** in `src/xtext/formatting2` (what `autowrap()` with no argument reaches; the
+`.elkt`, `.elkj` and grandom writers never autowrap and their refs did not move); the shims `src/java/util/StringTokenizer.ts`,
+`src/java/lang/JavaFloat.ts` (`parseFloat`, correctly rounded and not through a double; `toString`) and `JavaBoolean.ts`, from
+the Javadoc only (AD-9); one fix in `src/emf` (`convertEStringToString` now casts to `String` as EMF does, found by a converter
+row). Omitted with a journal row each: the OSGi activator, the Guice modules and standalone setup, the generated ANTLR parser and
+sequencers, `DotAdapterFactory` and the reflective EMF members.
+
+**2. Evidence, recorded before the code (AD-13).** Six JVM refs by `tools/vectors/dot-vectors.sh`, every row replayed, each
+replay asserting its row count:
+
+| Ref | Rows | Result |
+| --- | ---- | ------ |
+| `graphviz-dot-jdk.json` | 701 (tokenizer 187, parseFloat 167, floatToString 304, trim 24, booleanValueOf 19) | exact |
+| `graphviz-dot-lexer.json` | 284 token rows, 106 converter rows | exact |
+| `graphviz-dot-parse.json` | 75 cases (61 scenarios, 14 real Graphviz outputs) | model dumps exact, partial models included; the 31 syntax-error cases are held to presence and line and also match in message, offset and length |
+| `graphviz-dot-write.json` | 443 (27 scenarios, 14 fixtures, 402 built; 133 around the 255-column limit; 28 exceptions) | byte for byte in the three forms |
+| `graphviz-dot-export.json` | 112 (82 `transform`, 30 `transferLayout`; 14 on Graphviz 16.1.2 output of five algorithms) | text byte for byte, graphs within 1e-6 |
+| `graphviz-dot-import.json` | 14 | graphs, messages, model and text after `transferLayout` |
+
+The refs carry no pin stamp (the six recorders do not call `elkCommit()` while #173 is open). The Graphviz outputs are inputs:
+the JVM records what ELK does with them. **Local export sweep** over the 898 elk-models `.elkt`
+(`tools/oracle/dot-export-sweep.sh`, `test/corpus/dot-export-sweep.test.ts`): text-equal 898/898 (822 byte-identical, 76 where
+the oracle throws `NullPointerException` for an edge label without `font.size` and the port fails in the same stage);
+reparse-equal 822/822. There is no JUnit plugin for either Graphviz bundle and no DOT file in elk-models, so there is no
+ported suite and no golden.
+
+**3. Not as planned.**
+
+- D9 said the layouter's manifest has no Xtext require; it has one (`MANIFEST.MF:11`). The test that would have forbidden
+  `src/alg/graphviz/layouter` importing `src/xtext` was not written; #178 names the line.
+- T5 grew with the recorded JDK ref: `Float.parseFloat` is not `(float) Double.parseDouble` (15 of 167 rows differ), so a
+  float parser and `Float.toString` were needed besides `StringTokenizer`.
+- The model sits on the `src/emf` containment classes, not plain arrays: `DotImporter` reads `eContainer()` and the
+  formatter walks `eContents()`.
+- The recorder for `LayoutDotExporter` is a copy of that class inside the recorder (the layouter jar is not in the oracle
+  record); its 55 rows replay through a test-only subclass of the port.
+- The sweep's port side is a corpus test, not a `tools/` comparer; `docs/architecture/elk-upgrade.md` and
+  `docs/translation-rules.md` changed too (the runbook must name every recorder and sweep script).
+- `build.sh --record-only` changed the salt of every vector cache: the next run of each recorder is cold (#179).
+
+**4. Gates.** Queue gates 1-7 green on the final tree: format, typecheck, complexity (no violation); coverage 1,257 test files (1,248 passed, 9 skipped with the nine phase sweep directories off), 51,919 tests passed and 92 skipped, 98.85 / 97.01 / 98.63 / 98.90 (statements / branches / functions / lines);
+docs build; CodeQL with no new accepted entry (12 findings of the new recorders and one test were fixed, not accepted);
+`tools/vectors/dot-vectors.sh`, `elkt-vectors.sh`, `regen-elkt-refs.sh` and five other recorders rerun with
+`git diff --exit-code test/golden/refs/` clean apart from the six new refs.
+
+**Open.** #177 (`needs-ruling`, filed at planning): the runner seam of step 3. #178 (`follow-up`): the layouter port, step 5
+and the end-to-end suite, `Blocked by #177`. #179 (`follow-up`): the vector cache after a record-only. #173 (`needs-ruling`)
+has a comment naming the six non-stamping recorders. No `needs-ruling` issue was filed by the execution, no stop condition
+halted a part, and no row is a partial.
+
+## Revision 2026-11-24 (spore-jitter-exact)
+
+Queue mission for issue #106, on `chore/issue-queue` (plan and journal in `plans/spore-jitter-exact/`). Mission 8c left the
+spore jitter of coincident centres with invariants only (PK4), because the shift was an unseeded `Math.random()`. Since
+eclipse-elk/elk#1242 and the `8bca22f4` pin the shift draws from a `Random` seeded by `randomSeed` (default 1), and #106 asked
+for exact rows. Result: **4 exact rows recorded and replayed at raw bits; no `src/` change.** Oracle: `8bca22f4` + patches
+0001-0004 (built 2026-11-25T00:05:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over alg.spore and alg.common is empty.
+No oracle patch, pin, landed row, count or assertion changed.
+
+**1. The rows.** `tools/vectors/SporeLayoutVectors.java` has a new additive group, `shift`: the four jitter scenarios again
+(`shift/{overlap,compaction}/{corpus,dup5}/default`) in the shape of a `stops` row, from the `import` stop with the shifted
+`originalVertex` values to the `end` stop with the ELK dump.
+
+| Row | Shifted centres | Stops |
+| --- | --------------: | ----: |
+| `shift/overlap/corpus/default` | 11 of 12 | 18 (3 overlap iterations) |
+| `shift/compaction/corpus/default` | 11 of 12 | 5 |
+| `shift/overlap/dup5/default` | 1 of 5 | 8 |
+| `shift/compaction/dup5/default` | 1 of 5 | 5 |
+
+The group is in `ROW_GROUPS` and not in `GROUPS`, as `objects` was (T13b), so `tieSummary` and `optionCoverage` are
+byte-equal. A converted `jitter` group or twins in `full` and `stops` would have moved frozen counts in six test files
+(AD-13); the 4 `jitter` rows keep their invariants form.
+
+**2. Evidence.**
+
+- The recorder's exact checks ran on a shifted input for the first time (round trip, stepwise end against the engine run,
+  two builds) and all passed on the first run: the stepwise importer and the engine draw the same sequence.
+- `test/golden/refs/java/spore-layout.json`: 340 to 344 rows, 3,156,771 to 3,196,430 bytes. A script compared the row
+  strings by id against the base: 340 byte-identical, in the same order; the header differs by `"shift": 4` in `rowCounts`
+  alone. A cold rerun of the recorder (`ELK_VECTORS_CACHE=off`) is `cmp`-identical to the committed ref.
+- The port replays the 4 rows through the providers (every stop, the engine's end dump, `jitterNodes`, the tie summary) and
+  through the stepwise importer: 1,357 doubles compared, all raw-bit identical, 0 within 1e-6. The file's tally went from
+  87,851 to 89,208, still with none inexact. A wrong seed in the port fails all 8 exact tests.
+- 14 new tests in new `describe` blocks (`SporeLayoutVectors.test.ts` 5, `ElkGraphImporter.test.ts` 9); the rows helper
+  knows the group. The spore replays went from 849 to 863 passed.
+
+**3. Records.** `docs/architecture/alg-packing.md` (§ 2, § 3.2, § 5) and `docs/conformance.md` describe the `shift` group and
+no longer call exact rows open; the two 8c ref tables keep their snapshot counts, with the later counts in a sentence after
+each. `plans/alg-packing/decision-journal.md` has one closing row. `.agent-notes/spore-jitter-exact.md` has three
+observations. A comment on #106 reports the result; its labels are unchanged.
+
+**4. Gates.** Queue gates 1-7 green on the final tree: format, typecheck, complexity (no violation); coverage 1,257 test files
+passed with every sweep directory on, 51,943 tests passed and 83 skipped, 98.85 / 97.02 / 98.63 / 98.90 (statements /
+branches / functions / lines); docs build; CodeQL with no new accepted entry; refs against the base differ in
+`java/spore-layout.json` alone. The coverage gate needed three runs: twice `test/corpus/phase-sweep.test.ts` passed its
+comparison (0 mismatches) and then exceeded its 900 s limit while other sessions held the load between 90 and 190; nothing
+was changed between the runs.
+
+**Open.** Nothing from this mission: no `needs-ruling` or `follow-up` issue was filed, no stop condition fired on a row, and
+no row is a partial. Rows with a non-default `randomSeed` were out of scope; `randomSeed` 0 is the unseeded generator and
+cannot have exact rows.
+
+## Revision 2026-11-24 (rectpacking-next-row-arm)
+
+Queue mission for issue #107, on `chore/issue-queue` (plan, journal and evidence in `plans/rectpacking-next-row-arm/`). Since
+eclipse-elk/elk#1239, no recorded row had reached the false arm of `if (rows.size() > nextRowIndex)` in `placeBelow`
+(`Compaction.java:325`) and `placeBeside` (`:416`), the port's shared `removeFromNextRow` (`CompactionPlacement.ts:55`). Result:
+**proven dead at the pin** (branch D3 of the brief). No `src/` file, landed ref, vector, golden or assertion changed, and no
+oracle patch or pin. Oracle: `8bca22f4` + patches 0001-0004 (built 2026-11-25T00:05:58Z); `git -C ~/git/knowvah/elk log
+8bca22f4..HEAD` over alg.rectpacking is empty.
+
+**1. Why it was open.** Until `e7eaea57` the rows `stops/arm/staleParentRow*` reached the arm. A block that `placeBeside` had
+moved kept its old parent row, so a block of the current row read as `wasFromNextRow` after the next row was gone. #1239 added
+`nextBlock.setParentRow(row)` (`:413`).
+
+**2. The proof**, from the Java at the pin (`evidence.md` § 2; one journal row per lemma). The guard reads neither the flag
+`rowHeightReevaluation` nor any number, so the proof covers both flag values:
+
+| Lemma | Claim | Java |
+| ----- | ----- | ---- |
+| N0 | invariant **I** of #81 (a block's parent row is the row that holds it) uses no flag fact | `InitialPlacement.java:72-80`, `Compaction.java:101`, `:126-137`, `:323-326`, `:412-417` |
+| N1 | `wasFromNextRow` means `getNextBlock` took its next-row arm, which needs `nextRowIndex < rows.size()` | `Compaction.java:101`, `:216-219` |
+| N2 | nothing shortens the list or moves `nextRowIndex` before the guard (`final` parameters, no alias, `:132` followed by `continue`, `placeBelow` writes only when it returns true) | `:54`, `:58`, `:132-137`, `:149`, `:311-333`, `InitialPlacement.java:64`, `:85`, `RowFillingAndCompaction.java:96`, `:105`, `:171` |
+| N3 | `:325` runs only under `if (wasFromNextRow)` | `:322` |
+| N4 | `placeBeside` has one call, under `if (wasFromNextRow)` | `:152`, `:158` |
+
+Every "only" claim has an `ast-grep` enumeration over the bundle with a positive control (`evidence.md` § 3); #81's
+enumerations E2, E3, E6 and E8 give the same hit lists at the pin.
+
+**3. Support.** A scratch copy of the port with probes at both guards, at every block step and after `getNextBlock`. #81's
+generator and watchdog search were reused unchanged:
+
+| Run | Result |
+| --- | ------ |
+| 1,000,000 seeded inputs, 500,000 per flag value | guard calls: `placeBelow` 200,405 (on) and 186,741 (off), `placeBeside` 455,108 and 311,450; 0 false-arm hits, 0 violations of **I**, N1 or N2, 0 timeouts, 0 throws |
+| 1,200 of those inputs (600 per flag value) on the oracle and on the unmodified port | 1,200 equal at 1e-6 (largest difference 0); the comparator control flags a 0.001 move |
+| Mutant: `CompactionPlacement.ts:176` (#1239's line) removed | both `staleParentRow` inputs take the false arm in `placeBeside` again |
+| Side count of `Compaction.java:127` | both arms reached (false 491,141 with the flag on, 5,329 off): no follow-up |
+
+**4. Records.** `plans/alg-packing/unreached.md` gains `## Addendum 2026-11-24 (#107)` with `U` row 20; the T14 row for the
+`staleParentRow` rows stays as the record of the reach before #1239. `plans/alg-packing/decision-journal.md` has one closing row.
+`docs/conformance.md` and `docs/architecture/alg-packing.md` (§ 2, § 5) call the arm dead at the pin. The port keeps the Java's
+`if` verbatim, and nothing is filed upstream (dead code). Comment on #107:
+https://github.com/knowvah/elk-engine/issues/107#issuecomment-7153425136; its labels are unchanged.
+
+**5. Gates.** Queue gates 1-7 green on the final tree: coverage 1,257 files, 51,943 tests, 98.85 / 97.02 / 98.63 / 98.9; CodeQL
+with no new accepted entry; `test/golden/refs/` against the base untouched.
+
+**Open.** Nothing from this mission: no `needs-ruling` or `follow-up` issue was filed and no row is a partial. With `U` rows 19
+and 20 the rectpacking bundle has no open arm.
+
+## Revision 2026-11-25 (assertion-error-shim)
+
+Queue mission for issue #114, on `chore/issue-queue` (plan, journal and evidence in `plans/assertion-error-shim/`). The dev-assert
+mission (#45) added the `java.lang.AssertionError` shim and left three older stand-ins alone. This mission moves them onto the
+shim, and a fourth that the Java enumeration found. No ref, vector, golden, oracle patch or pin changed, and no oracle output was
+used (D6). Oracle state: `8bca22f4` + patches 0001-0004 (built 2026-11-25T00:05:58Z); `git -C ~/git/knowvah/elk log
+8bca22f4..HEAD` over alg.layered is empty.
+
+**1. The sites.**
+
+| Site | Java | Before | After |
+| ---- | ---- | ------ | ----- |
+| `DefaultLinkingService.getLinkedObjects`, null scope | `DefaultLinkingService.java:109-113` | plain `Error`, `name = 'AssertionError'` | `throw new AssertionError(<same message>)` |
+| `CyclicLinkingException` | `LazyLinkingResource.java:62-71` | `extends Error`, `name = 'AssertionError'` | `extends AssertionError`, `name = 'CyclicLinkingException'` |
+| `SplinesMath` constructor | `SplinesMath.java:53-55` | no constructor | private constructor with the Java `throw` (not `devAssert`: the Java throws unconditionally) |
+| `LazyLinkingResource.getDiagnosticList`, unexpected severity | `LazyLinkingResource.java:423` | `throw new Error(<message>)` | `throw new AssertionError(<same message>)` |
+
+**2. The fourth site.** A search for `name = 'AssertionError'` finds a stand-in only when it sets the name. The Java was
+enumerated too: every `AssertionError` in ELK at the pin and in the source bundles of Xtext, EMF, Gson, Guava and Equinox (p2
+cache), matched against the Java files `src/` cites and the classes it ports. `LazyLinkingResource.java:423` was the one plain
+`Error` standing in for an `AssertionError`. Its `name` changes from `Error` to `AssertionError`; no shipped language reaches the
+arm (the one diagnostic provider in `src/` builds `ERROR` messages only).
+
+**3. The name of `CyclicLinkingException`** (#114 left it open). It is the class name, as at the 41 other `this.name` sites. No
+test pinned the old name. No `src/` reader of a caught error's name can receive the exception: it crosses only the frames between
+two nested resolutions, because the frame that owns the triple catches it (`LazyLinkingResource.ts:255`), and the scope providers
+of both languages resolve no cross-reference. The two readers the brief names model Java calls that print the runtime class
+(`AbstractScope.java:246`, `getSimpleName()`; `RegionTraceMissingException`, `cause.toString()`).
+
+**4. Tests.** One expected value changed, the fitness row #114 names: `[CyclicLinkingException, AssertionError]`. The "under
+Exception" case skips the `AssertionError` family, which checks the same rows as before, and asserts that
+`CyclicLinkingException` is not an `Exception`. Four additive tests pin the class and the Java message at each site.
+`docs/translation-rules.md` (the `CyclicLinkingException`, `OperationCanceledError` row) says what each class extends.
+
+**5. Gates.** Queue gates 1-7 green on the final tree: coverage 1,257 files, 51,947 tests, 98.85 / 97.02 / 98.63 / 98.9; CodeQL
+with no new accepted entry; `test/golden/refs/` against the base untouched. The first coverage run failed on one wall-clock
+timeout (`test/corpus/phase-sweep.test.ts`, 933 s against its 900 s limit, `mismatches=0`, load 57 to 141 from other sessions);
+the rerun passed with nothing changed. Comment on #114:
+https://github.com/knowvah/elk-engine/issues/114#issuecomment-7154636091; its labels are unchanged.
+
+**Open.** #180 (`follow-up`): `InternalNodeModelUtils.java:46-48` throws `new AssertionError()` in its constructor and the port's
+constructor is empty. It builds no stand-in, so it is outside #114. No `needs-ruling` issue was filed and no row is a partial.
+
+## Revision 2026-11-25 (self-loop-assert-arms)
+
+Queue mission for issue #115, on `chore/issue-queue` (plan, journal and evidence in `plans/self-loop-assert-arms/`). The
+dev-assert mission (#45, D5.4) restored six Java `assert false` arms of the self-loop routing code in front of a
+`throw new Error(...)` the port already had. In each, the Java returns a value or goes on, so a JVM without `-ea` does not
+throw there. This mission removes the six throws. No ref, vector, golden, oracle patch or pin changed. Oracle state: `8bca22f4`
++ patches 0001-0004 (built 2026-11-25T00:05:58Z); `git -C ~/git/knowvah/elk log 8bca22f4..HEAD` over alg.layered is empty.
+
+**1. The arms.** Each keeps its `devAssert(() => false)`, so with assertions on it throws the `AssertionError` first.
+
+| # | Java | After the assert, as the Java without `-ea` |
+| - | ---- | ------------------------------------------- |
+| 96 | `OrthogonalSelfLoopRouter.java:180` (`placeLabels`) | `break`: the label position is left as it is |
+| 98 | `OrthogonalSelfLoopRouter.java:304-305` (`computeBaselinePosition`) | `return -1` |
+| 99 | `OrthogonalSelfLoopRouter.java:367` (`addOuterBendPoint`) | `break`, then the result is added, a null included |
+| 100 | `OrthogonalSelfLoopRouter.java:441-442` (`getBaseVector`) | `return null` |
+| 105 | `RoutingDirector.java:207` (`determineThreeSideLoopRoutes`) | `break`, then `assignLeftmostRightmostPorts(slLoop, null, null)` |
+| 108 | `RoutingDirector.java:227-228` (`computeMissingPortSide`) | `return null` |
+
+**2. The nulls.** They flow as in the Java, and a dereference is a `TypeError` at the step of the Java
+`NullPointerException`. A Java `switch` on a null enum throws before any arm and a TS `switch (null)` runs `default`, so
+`determineThreeSideLoopRoutes` throws a `TypeError` in front of its `switch` for a null missing side. With both sides null the
+Java does not throw an NPE, as #115 says, but `NoSuchElementException` (`RoutingDirector.java:288`: Guava's `get(null)` is an
+empty list); the port's `lowestPortOnSide` already did the same. No bounds check was added in front of the two reads by ordinal
+(`:145`, `:429`): for `UNDEFINED` with an empty row the JVM throws `ArrayIndexOutOfBoundsException` there and JS reads
+`undefined` (`docs/translation-rules.md` § 6.7 ports a check only where ELK catches the exception).
+
+**3. Reachability.** No valid graph reaches any arm, so no row is a deviation and no golden was needed. Row 98: the callers
+pass the four constants. Rows 99 and 100: `SelfHyperLoop.computePortsPerSide` throws `IllegalArgumentException` for an
+`UNDEFINED` port side, in both runtimes, and no processor between `SELF_LOOP_PORT_RESTORER` and `SELF_LOOP_ROUTER` changes the
+side of an existing port. Row 96: `LabelPlacer` assigns only the four sides, and a side never set fails at `labelSide.ordinal()` first. Rows 105 and
+108: a `THREE_SIDES` loop has a key set of three of the four sides, so exactly one is missing.
+
+**4. Evidence and tests.** A throwaway JVM probe (reflection on the oracle jars, under `$TMPDIR`, not committed) ran each arm
+with and without `-ea`, and agrees with the table above. 17 additive tests, written before the change and red on the old throws:
+per row one inside `withAssertions(false, …)` and one with `assertionErrorOf`. No existing expected value changed.
+`plans/dev-assert/inventory.md` has an appended `## Superseded by #115` section (138 restored, 0 in front of a kept throw, 5
+comments naming an issue), and `docs/translation-rules.md` carries the same counts.
+
+**5. Gates.** Queue gates 1-7 green on the final tree: coverage 1,258 files, 51,964 tests, 98.88 / 97.05 / 98.67 / 98.92; CodeQL
+with no new accepted entry; `test/golden/refs/` against the base untouched. Comment on #115:
+https://github.com/knowvah/elk-engine/issues/115#issuecomment-7155350018; its labels are unchanged.
+
+**Open.** Nothing. No `needs-ruling` or `follow-up` issue was filed, and no row is a partial.
+
+## Revision 2026-11-25 (corpus-sweeps-asserts)
+
+Queue mission for issue #116, on `chore/issue-queue` (plan, journal and census in `plans/corpus-sweeps-asserts/`). It ran the
+thirteen vitest corpus sweeps with the restored Java asserts on, at stride 1 where a sweep has a stride, on the tree of
+`fb4b906a`. **No `AssertionError` fired**, so there was no site to triage and nothing under `src/` or `test/` changed. No ref,
+vector, golden, oracle patch or pin changed. Oracle state: `8bca22f4` + patches 0001-0004 (built 2026-11-25T00:05:58Z);
+`git -C ~/git/knowvah/elk log 8bca22f4..HEAD -- plugins/` is empty. The recorded sweep data was used as it was (2026-11-24 for
+the eight layered family caches); patch 0004 changes one `alg.common/spore` class that only `alg.spore` uses.
+
+**1. The sweeps.** All thirteen exit 0, none skipped. "Sites" is the number of `devAssert` call sites the sweep evaluates with
+assertions on (from the probe of point 3).
+
+| Sweep | Checked | Ok matched | Throws matched | `AssertionError` | Sites |
+| ----- | ------- | ---------- | -------------- | ---------------- | ----- |
+| `labels` | 950 of 1,105 | 935 | 15 (class compared) | 0 | 44 |
+| `label-sizing` | 759 models, 21,753 labels | all | none | 0 | 1 |
+| `loops` | 3,073 | 2,997 | 76 (presence only) | 0 | 61 |
+| `phase` | 30,265 of 32,652 | 27,617 | 2,648 (class compared) | 0 | 16 |
+| `pipeline` | 6,646 of 7,246 | 6,646 | none | 0 | 25 |
+| `compound` | 1,169 | 1,164 | 5 (presence only) | 0 | 52 |
+| `order` | 6,280 of 6,728 | 6,280 | none | 0 | 19 |
+| `placement` | 1,970 of 8,410 | 1,970 | none | 0 | 23 |
+| `routing` | 6,280 of 6,728 | 6,280 | none | 0 | 22 |
+| `json` | 550 models | 550 | none | 0 | 1 |
+| `elkj` | 378 converted files, five indicators | all | none | 0 | 1 |
+| `elkt` | 898 `.elkt` and 550 `.json`, five indicators | all | none | 0 | 1 |
+| `dot-export` | 898 models | 822 texts | 76 (stage and class compared) | 0 | 1 |
+
+The cases a sweep does not check are the oracle recorders' refusals and timeouts, as `docs/conformance.md` lists them.
+
+**2. The hidden path.** `loops` and `compound` accept any port exception on a case the oracle threw on, so a port
+`AssertionError` there shows only in the `throw-pairs:` summary. Both lines are in the journal verbatim: 48 `TypeError` for a
+Java NPE or index error and 28 `IllegalStateException` in `loops`, five `TypeError` in `compound`, no `AssertionError`.
+
+**3. What a green sweep covers.** A temporary probe (never committed; its shape is in `census.md` § 4) counted every
+`devAssert` evaluated with assertions on, by calling site: 45,661,377 evaluations, 0 fired. The sweeps reach **79 of the 140**
+`devAssert(` lines of `src/` (78 of 125 under `src/alg/layered`). The four format sweeps and `label-sizing` reach one site,
+`InstancePool.ts:37`: they lay nothing out, so they say almost nothing about the asserts. 61 lines are never evaluated with
+assertions on: 47 layered and 14 in other bundles (#137); `census.md` § 3 lists them. `withEndLabelRule` (#127) runs 145
+layouts with assertions off, 135 in `labels` and 10 in `compound`; the #32 site, `EndLabelPreprocessorPlacement.ts:117`, is
+never evaluated with assertions on by any sweep (input for #138).
+
+**4. Gates.** Queue gates 1-7 green on the final tree: coverage 1,258 files, 51,964 tests, 98.88 / 97.05 / 98.67 / 98.92; docs
+build with 200 typedoc warnings as at the base; CodeQL with no new accepted entry; `test/golden/refs/` against the base
+untouched.
+
+**Open.** One `follow-up`, #181: make the `loops` and `compound` sweeps fail on a port `AssertionError` where the oracle
+threw something else (a pass-rule change, so the maintainer's decision). No `needs-ruling`. Residual, unchanged by this mission:
+the five comment sites (`Not a devAssert yet`) wait on knowvah/elk#27 (#4, #5), knowvah/elk#28 (#114) and #128
+(`ThresholdStrategy.java:395`, `:403`); #137 covers the non-layered algorithms; #138 the breadth of the end-label rule; #139 the
+sweep cache key. Found on the way: the red sweeps of #151 and #152 come from caches in the main checkout that predate the pin
+move; the evidence is in a comment on each.

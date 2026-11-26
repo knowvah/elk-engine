@@ -19,12 +19,13 @@ function addOptional(first: number | null, second: number | null): number | null
 }
 
 /**
- * The properties of one hidden-region formatting and their conflict-resolving merge. The autowrap properties
- * are not ported (see `IHiddenRegionFormatter`); `toString` (debug printer) is not ported.
+ * The properties of one hidden-region formatting and their conflict-resolving merge. Not ported: the `onAutowrap`
+ * property and its merge (always `null`, see `IHiddenRegionFormatting`) and `toString` (debug printer).
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/internal/HiddenRegionFormatting.java
  */
 export class HiddenRegionFormatting implements IHiddenRegionFormatting {
+  private autowrap: number | null = null;
   private readonly formatter: AbstractFormatter2;
   private indentationDecrease: number | null = null;
   private indentationIncrease: number | null = null;
@@ -37,6 +38,10 @@ export class HiddenRegionFormatting implements IHiddenRegionFormatting {
 
   constructor(formatter: AbstractFormatter2) {
     this.formatter = formatter;
+  }
+
+  getAutowrap(): number | null {
+    return this.autowrap;
   }
 
   getFormatter(): AbstractFormatter2 {
@@ -106,11 +111,16 @@ export class HiddenRegionFormatting implements IHiddenRegionFormatting {
       this.merge(this.getNewLineDefault(), other.getNewLineDefault(), strategy, 'newLineDefault'),
     );
     this.setNewLinesMax(this.merge(this.getNewLineMax(), other.getNewLineMax(), strategy, 'newLineMax'));
+    this.setAutowrap(this.merge(this.getAutowrap(), other.getAutowrap(), strategy, 'autowrap'));
     this.setNoIndentation(this.merge(this.getNoIndentation(), other.getNoIndentation(), strategy, 'noIndentation'));
     // the priority itself is never null; Java boxes it through the same generic merge
     this.setPriority(this.merge(this.getPriority(), other.getPriority(), strategy, 'priority')!);
     this.setIndentationIncrease(addOptional(this.getIndentationIncrease(), other.getIndentationIncrease()));
     this.setIndentationDecrease(addOptional(this.getIndentationDecrease(), other.getIndentationDecrease()));
+  }
+
+  setAutowrap(value: number | null): void {
+    this.autowrap = value;
   }
 
   setIndentationDecrease(indentation: number | null): void {

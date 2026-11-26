@@ -1,0 +1,11 @@
+graph g
+node a {
+  layout [ size: 10, 10 ]
+}
+node p {
+  node q {
+    layout [ size: 10, 10 ]
+  }
+}
+edge a -> g
+edge g -> a

@@ -1,0 +1,7 @@
+digraph {
+	graph [bb="0,0,100,100"];
+	node1 [pos="10,10"];
+	subgraph cluster99 {
+		node3 [pos="20,20"];
+	}
+}

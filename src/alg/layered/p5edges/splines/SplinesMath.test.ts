@@ -12,6 +12,7 @@ import { isCallRow, loadRoutingRows, type CallRow } from '../../../../../test/he
 import { SPLINES_MATH_CALLERS } from '../../../../../test/helpers/layered-spline-callers.js';
 import { LayoutMetaDataService } from '../../../../core/data/LayoutMetaDataService.js';
 import { KVector } from '../../../../core/math/KVector.js';
+import { AssertionError } from '../../../../java/lang/AssertionError.js';
 import { IntermediateProcessorStrategy } from '../../intermediate/IntermediateProcessorStrategy.js';
 import { SplinesMath } from './SplinesMath.js';
 
@@ -116,5 +117,18 @@ describe('SplinesMath constants', () => {
     expect(SplinesMath.THREE_HALF_PI).toBe(SplinesMath.HALF_PI * 3);
     expect(SplinesMath.TWO_PI).toBe(2.0 * Math.PI);
     expect(SplinesMath.THREE).toBe(3);
+  });
+});
+
+describe('SplinesMath constructor', () => {
+  it('SplinesMath.java:53-55: the hidden constructor throws an AssertionError', () => {
+    let thrown: unknown = null;
+    try {
+      Reflect.construct(SplinesMath as unknown as new () => object, []);
+    } catch (e) {
+      thrown = e;
+    }
+    expect(thrown).toBeInstanceOf(AssertionError);
+    expect((thrown as AssertionError).message).toBe('Instantiating utility class SplinesMath.');
   });
 });

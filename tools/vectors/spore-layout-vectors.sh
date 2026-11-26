@@ -3,7 +3,7 @@
 # Records the JVM behaviour of org.eclipse.elk.alg.spore (mission 8c alg-packing, T2, PK1, PK4, PK5, PK6, AD-13): sporeOverlap
 # (OverlapRemovalLayoutProvider) and sporeCompaction (ShrinkTreeLayoutProvider) stop by stop (underlying, import, scanline,
 # triangulation, tree, grow, update, compaction, end), the full run, every throw path an input reaches, the NaiveMinST tie order
-# (minst) and the Math.random() jitter invariants (jitter). Runs tools/vectors/SporeLayoutVectors.java as a single-file source program
+# (minst), the jitter invariants (jitter) and the same scenarios exact, since the centre shift is seeded (shift, issue #106). Runs tools/vectors/SporeLayoutVectors.java as a single-file source program
 # against the source-built oracle jars (AD-3) plus the third-party bundles. ORIGIN: tools/vectors/disco-vectors.sh. Invoked as
 #   java -cp <classpath> SporeLayoutVectors.java <outDir> <tools/vectors dir>
 # and writes <outDir>/spore-layout.json itself (the repository copy lives in test/golden/refs/java/spore-layout.json). The row format,

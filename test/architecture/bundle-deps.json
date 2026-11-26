@@ -24,6 +24,21 @@
         "src/graph"
       ]
     },
+    "src/alg/graphviz/dot": {
+      "bundle": "org.eclipse.elk.alg.graphviz.dot",
+      "requires": [
+        "src/core",
+        "src/graph"
+      ]
+    },
+    "src/alg/graphviz/layouter": {
+      "bundle": "org.eclipse.elk.alg.graphviz.layouter",
+      "requires": [
+        "src/alg/graphviz/dot",
+        "src/core",
+        "src/graph"
+      ]
+    },
     "src/alg/layered": {
       "bundle": "org.eclipse.elk.alg.layered",
       "requires": [

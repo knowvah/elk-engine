@@ -50,9 +50,10 @@ describe('docs-site config: what the link check depends on (DP5)', () => {
 });
 
 // The generated API reference (typedoc-vitepress-theme) writes its link anchors with VitePress's default slug rule,
-// while the rest of the site uses GitHub's rule (`headingSlug`). The expected values below are the outputs of the
-// theme's own `slugifyAnchor` (tools/typedoc/node_modules/typedoc-vitepress-theme/dist/utils/utils.js) for the same
-// inputs, recorded before `referenceHeadingSlug` was written.
+// while the rest of the site uses `headingSlug` (GitHub's rule as ruled in #94: see the next block). The expected
+// values below are the outputs of the theme's own `slugifyAnchor`
+// (tools/typedoc/node_modules/typedoc-vitepress-theme/dist/utils/utils.js) for the same inputs, recorded before
+// `referenceHeadingSlug` was written.
 describe('heading ids of the generated API reference (DP5)', () => {
   it.each([
     ['PARALLEL_NODE', 'parallel-node'],
@@ -71,9 +72,29 @@ describe('heading ids of the generated API reference (DP5)', () => {
 
   it('uses the reference rule under reference/ and the GitHub rule everywhere else', () => {
     expect(pageHeadingSlug('PARALLEL_NODE', 'reference/classes/TopdownNodeTypes.md')).toBe('parallel-node');
-    expect(pageHeadingSlug('PARALLEL_NODE', 'guide/getting-started.md')).toBe('parallelnode');
+    expect(pageHeadingSlug('PARALLEL_NODE', 'guide/getting-started.md')).toBe('parallel_node');
     expect(pageHeadingSlug('1. Oracle', 'conformance.md')).toBe('1-oracle');
     expect(pageHeadingSlug('1. Oracle', 'de/conformance.md')).toBe('1-oracle');
+  });
+});
+
+// Issue #94 (ruling of 2026-11-20): outside the reference, a heading keeps connector punctuation (Unicode Pc: `_`,
+// U+203F, U+FF3F and the like), as github-slugger does, so a heading that names a Java identifier keeps its
+// underscores. Non-ASCII whitespace still becomes `-`, where GitHub drops it. The expected values of the first six
+// rows are the outputs of github-slugger 2.0.0's `slug()`; those of the last two are the site's own values before
+// the rule changed, which the ruling keeps. All were recorded before `\p{Pc}` joined the kept classes.
+describe('heading ids outside the API reference (issue #94)', () => {
+  it.each([
+    ['snake_case heading', 'snake_case-heading'],
+    ['PARALLEL_NODE', 'parallel_node'],
+    ['a\u203fb', 'a\u203fb'],
+    ['a\uff3fb', 'a\uff3fb'],
+    ['1. Oracle', '1-oracle'],
+    ['A \u2014 B', 'a--b'],
+    ['a\u00a0b', 'a-b'],
+    ['foo\u2003bar', 'foo-bar'],
+  ])('slugs %j as %j', (heading, slug) => {
+    expect(pageHeadingSlug(heading, 'guide/getting-started.md')).toBe(slug);
   });
 });
 

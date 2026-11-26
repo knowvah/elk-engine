@@ -2,6 +2,7 @@
 import { KVector } from '../../../../core/math/KVector.js';
 import { PortSide } from '../../../../core/options/PortSide.js';
 import * as Iterables from '../../../../guava/Iterables.js';
+import { AssertionError } from '../../../../java/lang/AssertionError.js';
 import type { LNode } from '../../graph/LNode.js';
 import type { LPort } from '../../graph/LPort.js';
 
@@ -52,8 +53,8 @@ function formatOneDecimal(value: number): string {
 }
 
 /**
- * Utility class for mathematical calculations related to splines. The Java constructor only throws (an `AssertionError`
- * "Instantiating utility class SplinesMath.") and has no caller, so none is ported.
+ * Utility class for mathematical calculations related to splines. The private constructor is ported: it throws an
+ * `AssertionError`, as the Java does, and has no caller.
  *
  * Overloads (docs/translation-rules.md 6.5): `intersect` (four vectors, or two vectors and two directions) and
  * `innerAngle` (two vectors, or two directions) are told apart by the argument types, `convertKVectorToString` by
@@ -75,6 +76,15 @@ export class SplinesMath {
   static readonly TWO_PI: number = TWO_PI;
   /** The constant 3. */
   static readonly THREE: number = THREE;
+
+  /**
+   * Private default constructor to prevent instantiating this class.
+   *
+   * @see SplinesMath.java:53
+   */
+  private constructor() {
+    throw new AssertionError('Instantiating utility class SplinesMath.');
+  }
 
   /**
    * Calculates the intersection point of two lines, each given by a point and a direction (radians), or by two points

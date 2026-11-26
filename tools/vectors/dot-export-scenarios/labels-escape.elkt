@@ -1,0 +1,38 @@
+node quote {
+  layout [ size: 50, 20 ]
+  label "say \"hi\""
+}
+node backslash {
+  layout [ size: 50, 20 ]
+  label "C:\\dir\\file"
+}
+node newline {
+  layout [ size: 50, 20 ]
+  label "line one\nline two\r\nline three\ttab"
+}
+node nonAscii {
+  layout [ size: 50, 20 ]
+  label "caf\u00e9 \u2192 \ud83d\ude00 del\u007f tilde~ ctl\u0001x"
+}
+node multi {
+  layout [ size: 50, 20 ]
+  label "first"
+  label "second"
+}
+node emptyFirst {
+  layout [ size: 50, 20 ]
+  label ""
+  label "second"
+}
+node keyword {
+  layout [ size: 50, 20 ]
+  label "digraph"
+}
+node spaces {
+  layout [ size: 50, 20 ]
+  label "  padded  "
+}
+node none {
+  layout [ size: 50, 20 ]
+}
+edge quote -> backslash

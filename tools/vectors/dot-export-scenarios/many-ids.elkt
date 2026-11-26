@@ -1,0 +1,32 @@
+node n10 { layout [ size: 10, 10 ] }
+node _x { layout [ size: 10, 10 ] }
+node A { layout [ size: 10, 10 ] }
+node ^node { layout [ size: 10, 10 ] }
+node zz9 { layout [ size: 10, 10 ] }
+node a_b_c { layout [ size: 10, 10 ] }
+node Q { layout [ size: 10, 10 ] }
+node n2 { layout [ size: 10, 10 ] }
+node n1 { layout [ size: 10, 10 ] }
+node dup { layout [ size: 10, 10 ] }
+node dup { layout [ size: 11, 11 ] }
+node ^graph { layout [ size: 10, 10 ] }
+node longIdentifierWithManyCharacters0123456789 { layout [ size: 10, 10 ] }
+node G {
+  node g1 { layout [ size: 10, 10 ] }
+  node g2 { layout [ size: 10, 10 ] }
+  edge g1 -> g2
+}
+edge n10 -> _x
+edge _x -> A
+edge A -> ^node
+edge ^node -> zz9
+edge zz9 -> a_b_c
+edge a_b_c -> Q
+edge Q -> n2
+edge n2 -> n1
+edge n1 -> dup
+edge dup -> ^graph
+edge ^graph -> longIdentifierWithManyCharacters0123456789
+edge longIdentifierWithManyCharacters0123456789 -> G
+edge G -> n10
+edge G.g2 -> n1

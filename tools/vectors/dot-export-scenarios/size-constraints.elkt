@@ -1,0 +1,36 @@
+node minWithValue {
+  layout [ size: 10, 10 ]
+  nodeSize.constraints: MINIMUM_SIZE
+  nodeSize.minimum: "(50.0,30.5)"
+}
+node minNoValue {
+  layout [ size: 70, 80 ]
+  nodeSize.constraints: MINIMUM_SIZE
+  label "lbl" { layout [ position: 60, 70 size: 10, 5 ] }
+}
+node labelsOnly {
+  layout [ size: 33, 44 ]
+  nodeSize.constraints: NODE_LABELS
+  label "x" { layout [ position: 1, 2 size: 5, 5 ] }
+}
+node portsAndMin {
+  layout [ size: 0, 0 ]
+  nodeSize.constraints: "[PORTS, MINIMUM_SIZE]"
+  nodeSize.minimum: "(5.0,5.0)"
+  port p1 { layout [ size: 8, 8 ] ^port.side: NORTH }
+  port p2 { layout [ size: 8, 8 ] ^port.side: SOUTH }
+  port p3 { layout [ size: 6, 9.5 ] ^port.side: EAST }
+}
+node zeroSizePorts {
+  nodeSize.constraints: PORTS
+  port z1 { layout [ position: 0, 0 size: 4, 4 ] ^port.side: NORTH }
+  port z2 { layout [ position: 0, 0 size: 4, 4 ] ^port.side: WEST }
+}
+node explicitEmpty {
+  layout [ size: 21, 22 ]
+  nodeSize.constraints: "[]"
+}
+node padded {
+  layout [ position: 5, 5 size: 30, 30 ]
+  org.eclipse.elk.padding: "[top=1.5,left=2.0,bottom=3.0,right=4.0]"
+}

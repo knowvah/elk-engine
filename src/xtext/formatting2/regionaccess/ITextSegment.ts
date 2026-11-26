@@ -5,7 +5,7 @@ import type { ITextReplacement } from './ITextReplacement.js';
 
 /**
  * A region of the text of an {@link ITextRegionAccess}. `getLineRegions`, `merge` and `ILineRegion` are not
- * ported: they serve comment replacers and autowrap only.
+ * ported: they serve comment replacers only (autowrap measures lines through `textForOffset`).
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/formatting2/regionaccess/ITextSegment.java
  */

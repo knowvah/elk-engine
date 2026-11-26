@@ -1,0 +1,15 @@
+digraph {
+	bb="0,0,1,1";
+	graph [bb="0,0,500,500", rankdir=LR];
+	graph [bb="0,0,2,2"];
+	a [pos="10,10", width=1, height=1, pos="20,20"];
+	subgraph cluster_c {
+		graph [bb="1,1,2,2"];
+		bb="3,3,4,4";
+		b [pos="1,1"];
+		c;
+		b -> c [pos="1,1 2,2", lp="5,5", label=bc];
+	}
+	a -> b [pos="e,1,1 2,2", lp="3,3", head_lp="4,4", tail_lp="5,5", label=x, headlabel=y, taillabel=z];
+	a -> d -> e [pos="9,9 8,8"];
+}

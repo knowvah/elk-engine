@@ -1,0 +1,11 @@
+digraph {
+	graph [bb="0,0,160.5,150.75"];
+	node1 [pos="4.5,7.5", width=0.125, height=0.20833];
+	node2 [pos="116.5,6.5", width=0.45833, height=0.18056];
+	node3 [pos="20,120", width=0.55556, height=0.55556];
+	node1 -> node2 [comment=edge1, pos="s,9.1,7.3 e,99.9,7.7 40.3,7.1 70.7,7.6"];
+	node1 -> node3 [comment=edge2, pos="e,20.3333,100.1 4.5,15.1 10.25,50.5 15.125,80.75"];
+	node1 -> node2 [comment=edge3, pos="s,8.123456789,13.987654321 e,100.0000001,11.1 50,12"];
+	node2 -> node1 [comment=edge4, pos="e,3.3,-0.1 110,0 50,-10"];
+	node3 -> node1 [comment=edge5, pos="s,22.2,99.7 e,4.4,15.2 12,60"];
+}

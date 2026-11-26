@@ -28,7 +28,7 @@
 //
 // Canonical form (extends 7d's PlacementSweep.placementCanonical with R3's geometry.graph, geometry.edges and
 // geometry.splines, which are plain members of expected.geometry): `edges` and `changed` sorted by path, int / double
-// values as the raw IEEE-754 bits in hex, enum and set classes by their last segment, object keys sorted, no whitespace.
+// values as the hex of Double.doubleToLongBits (NaN canonical, #72), enum and set classes by their last segment, object keys sorted, no whitespace.
 // The geometry hex doubles are already canonical.
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -225,7 +225,7 @@ public class LayeredRoutingSweep extends LayeredRoutingVectors {
             Object x = m.get("v");
             double d = x instanceof Number n ? n.doubleValue() : parseDoubleArg((String) x);
             out.put("t", "number");
-            out.put("v", String.format("%016x", Double.doubleToRawLongBits(d)));
+            out.put("v", String.format("%016x", Double.doubleToLongBits(d)));
             return out;
         }
         m.forEach((k, x) -> out.put(k, c4Free(x)));

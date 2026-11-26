@@ -71,8 +71,9 @@ test -> test : output == committed file (freshness)
 CI has no `../elk` checkout (C9). The 13 `.melk` files (3,647 lines, EPL-2.0) are copied to
 `tools/melk/sources/<Name>.melk`; `tools/melk/sources/manifest.json` records each file's upstream
 path (relative to `$ELK_SOURCE_DIR`) and git blob sha at the pinned commit
-(`tools/oracle/ELK_COMMIT`). Excluded: `Libavoid.melk`, `Graphviz.melk`, `Gmf.melk` (deferred
-bundles).
+(`tools/oracle/ELK_COMMIT`). Excluded: `Libavoid.melk` and `Gmf.melk` (out-of-scope bundles), and
+`Graphviz.melk`, whose bundle `alg.graphviz.layouter` is in scope by AD-17 but not ported yet: it
+joins the copies with the port (issue #95).
 
 - `tools/melk/sync-sources.sh` refreshes the copies with `git show <sha>:<path>`, so working-tree
   edits and CRLF in `$ELK_SOURCE_DIR` do not leak in, and rewrites the manifest.

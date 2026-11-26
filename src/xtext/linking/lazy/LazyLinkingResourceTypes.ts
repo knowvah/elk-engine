@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import type { EObject } from '../../../emf/ecore/EObject.js';
+import { AssertionError } from '../../../java/lang/AssertionError.js';
 import type { INode } from '../../nodemodel/INode.js';
 import type { EReferenceInfo } from '../../scoping/EReferenceInfo.js';
 import type { LazyProxyInformation } from './ILazyLinkingResource.js';
@@ -41,17 +42,17 @@ export function tripleEquals(a: LazyProxyInformation, b: LazyProxyInformation): 
 }
 
 /**
- * `LazyLinkingResource.CyclicLinkingException` (Java `AssertionError`, whose JS counterpart is `Error`).
- * Exposed at module level instead of as a static nested class.
+ * `LazyLinkingResource.CyclicLinkingException`, an `AssertionError` as in Java: outside `Exception`, so a ported
+ * `catch (Exception e)` does not catch it. Exposed at module level instead of as a static nested class.
  *
  * @see org.eclipse.xtext/src/org/eclipse/xtext/linking/lazy/LazyLinkingResource.java:62-71
  */
-export class CyclicLinkingException extends Error {
+export class CyclicLinkingException extends AssertionError {
   readonly triple: LazyProxyInformation;
 
   constructor(detailMessage: string, triple: LazyProxyInformation) {
     super(detailMessage);
-    this.name = 'AssertionError';
+    this.name = 'CyclicLinkingException';
     this.triple = triple;
   }
 }

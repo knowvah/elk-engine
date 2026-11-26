@@ -1,0 +1,424 @@
+# SPDX-License-Identifier: EPL-2.0
+# Cases for DotLexerVectors.java (format: see that file's header). Escapes: \n \r \t \\ \uXXXX; "<null>" = null.
+#   lex <family> <escaped text>            -> one tokens row, id "<family>/<nnn>" (nnn counts per family, from 001)
+#   conv <rule> <op> <escaped input>       -> one converters row, id "conv/<rule>/<op>/<nnn>"
+# The text of a lex row is everything after "lex <family> " (it may be empty or start with a space).
+#
+# Lexer families: keywords, numbers, strings, html, comments, precline, ids, punct, whitespace, lines, samples,
+# boundaries. Converter rules: ID STRING INT FLOAT DotID PREC_LINE ML_COMMENT SL_COMMENT WS, and an unknown name.
+
+# ---- keywords: the 16 literals, case variants, near misses, keywords glued to other tokens ----
+lex keywords strict
+lex keywords graph
+lex keywords digraph
+lex keywords subgraph
+lex keywords node
+lex keywords edge
+lex keywords {
+lex keywords }
+lex keywords ;
+lex keywords =
+lex keywords [
+lex keywords ]
+lex keywords ,
+lex keywords :
+lex keywords ->
+lex keywords --
+lex keywords Strict
+lex keywords STRICT
+lex keywords Graph
+lex keywords GRAPH
+lex keywords Digraph
+lex keywords DiGraph
+lex keywords DIGRAPH
+lex keywords Subgraph
+lex keywords SUBGRAPH
+lex keywords Node
+lex keywords NODE
+lex keywords Edge
+lex keywords EDGE
+lex keywords graphs
+lex keywords digraph1
+lex keywords _node
+lex keywords nodes
+lex keywords nod
+lex keywords subgrap
+lex keywords edge_
+lex keywords stric
+lex keywords graph{
+lex keywords node[shape=box]
+lex keywords strict digraph G {}
+lex keywords subgraph cluster_0 { }
+lex keywords graph node edge digraph subgraph strict
+
+# ---- numbers: INT ('-'? digits) against FLOAT ('-'? digits* '.' digits+), signs, glued tokens ----
+lex numbers 0
+lex numbers 1
+lex numbers 007
+lex numbers -0
+lex numbers -1
+lex numbers -007
+lex numbers 1.5
+lex numbers -1.5
+lex numbers .5
+lex numbers -.5
+lex numbers 1.
+lex numbers -1.
+lex numbers 10.
+lex numbers 1.5.2
+lex numbers 1..2
+lex numbers ..5
+lex numbers .
+lex numbers -.
+lex numbers .a
+lex numbers -.a
+lex numbers -
+lex numbers - 1
+lex numbers --1
+lex numbers -->
+lex numbers ->1
+lex numbers -1-2
+lex numbers 1-2
+lex numbers 1--2
+lex numbers 1->2
+lex numbers -a
+lex numbers -x
+lex numbers - -
+lex numbers ---
+lex numbers ----
+lex numbers -->-
+lex numbers 1e5
+lex numbers 1E5
+lex numbers 1.5e3
+lex numbers 1.5e-3
+lex numbers 1a
+lex numbers 1_0
+lex numbers 0x1F
+lex numbers 12345678901234567890
+lex numbers 2147483648
+lex numbers -2147483649
+lex numbers 1.000000000000000000001
+lex numbers 0.5,0.75
+lex numbers 27,90
+lex numbers 1 2 3
+
+# ---- strings: escaped quotes, backslashes, raw newlines, unterminated, single quotes ----
+lex strings "a"
+lex strings ""
+lex strings "a b"
+lex strings "a\\"b"
+lex strings "a\\\\"
+lex strings "a\\\\"b"
+lex strings "a\\\\\\"b"
+lex strings "\\""
+lex strings "\\"
+lex strings "\\\\"
+lex strings "a\\nb"
+lex strings "a\\tb"
+lex strings "\\N"
+lex strings "\\x"
+lex strings "C:\\path\\"
+lex strings "C:\\path\\" x
+lex strings "line\nbreak"
+lex strings "cr\rbreak"
+lex strings "crlf\r\nbreak"
+lex strings "continued \\\nline"
+lex strings "unterminated
+lex strings "unterminated\nnext line
+lex strings "a" "b"
+lex strings "a""b"
+lex strings "a"b
+lex strings a"b"
+lex strings 'single quoted'
+lex strings 'a b'
+lex strings 'a'
+lex strings ''
+lex strings "it's"
+lex strings "\t tab"
+lex strings "caf\u00e9"
+lex strings "\ud83d\ude00"
+lex strings "a\u0000b"
+lex strings "a\\\\\\\\"
+lex strings "/* not a comment */"
+lex strings "# not a line"
+lex strings "// not a comment"
+lex strings "a" + "b"
+
+# ---- html: not a token in this grammar ----
+lex html <html>
+lex html <b>bold</b>
+lex html < >
+lex html <<table><tr><td>x</td></tr></table>>
+lex html label=<x>
+
+# ---- comments ----
+lex comments // x
+lex comments //
+lex comments // x\ny
+lex comments // x\r\ny
+lex comments // x\ry
+lex comments // x\r
+lex comments //\r
+lex comments /* x */
+lex comments /**/
+lex comments /*/
+lex comments /* x
+lex comments /* a */ b /* c */
+lex comments /* a\nb */c
+lex comments /** doc **/
+lex comments /* a */*/
+lex comments a//b
+lex comments a/*b*/c
+lex comments /
+lex comments a/b
+lex comments a / b
+lex comments ///
+lex comments //* x */
+lex comments /* // */ x
+
+# ---- precline: '#' up to and including the line end, anywhere on a line ----
+lex precline # x
+lex precline #
+lex precline # x\ny
+lex precline # x\r\ny
+lex precline # x\ry
+lex precline # x\r
+lex precline # x\n\ny
+lex precline a # x
+lex precline a#b
+lex precline a\n# y\nz
+lex precline #\n#\n
+lex precline  # indented
+lex precline "a" # x
+lex precline #line 1 "file.dot"
+lex precline a -> b # x\nc -> d
+
+# ---- ids: ASCII letters, '_', digits, '^', non-ASCII ----
+lex ids a
+lex ids A
+lex ids _
+lex ids _1
+lex ids A_z9
+lex ids a1b2
+lex ids ^id
+lex ids ^
+lex ids ^^a
+lex ids a^b
+lex ids ^node
+lex ids caf\u00e9
+lex ids \u00e9
+lex ids na\u00efve
+lex ids \u00c0b
+lex ids \u65e5\u672c
+lex ids \u0663
+lex ids \u1e9e
+lex ids \u00b5
+lex ids \ud83d\ude00
+lex ids a\ud83d\ude00b
+lex ids \ud800
+lex ids a$b
+lex ids a.b
+lex ids a@b
+lex ids a!b
+lex ids a\\b
+lex ids a|b
+lex ids a?b
+
+# ---- punct: sequences around ids ----
+lex punct a:b
+lex punct a:b:c
+lex punct a:n
+lex punct a : b : se
+lex punct [a=b,c=d;e]
+lex punct [a=b c=d]
+lex punct [a]
+lex punct []
+lex punct {}
+lex punct {;}
+lex punct a=b
+lex punct a = b
+lex punct ;;
+lex punct ,,
+lex punct a->b
+lex punct a--b
+lex punct a---b
+lex punct a-->b
+lex punct a->-b
+lex punct a<-b
+lex punct a=>b
+lex punct a->{b c}
+lex punct (a)
+lex punct a&b
+
+# ---- whitespace: WS members and non-members ----
+lex whitespace
+lex whitespace \t
+lex whitespace \n
+lex whitespace \r
+lex whitespace \r\n
+lex whitespace  \t\r\n
+lex whitespace a b
+lex whitespace a\tb
+lex whitespace a\u000bb
+lex whitespace a\u000cb
+lex whitespace a\u00a0b
+lex whitespace \ufeffa
+lex whitespace a\u2003b
+lex whitespace a\u0085b
+lex whitespace a\u2028b
+lex whitespace a\u0000b
+lex whitespace a\u0001b
+lex whitespace a\u007fb
+
+# ---- lines: line numbers after LF, CRLF and lone CR, inside multi-line tokens ----
+lex lines a\nb\r\nc\rd
+lex lines a\n\nb
+lex lines a\r\rb
+lex lines a\r\n\r\nb
+lex lines "x\ny" z
+lex lines "x\r\ny" z
+lex lines /* \n\n */ a
+lex lines /* \r\r */ a
+lex lines // x\na
+lex lines # x\r\nb
+lex lines \n\n\n"unterminated\nx
+lex lines a\n/* x
+
+# ---- samples: whole statements and Graphviz output shapes ----
+lex samples digraph G { a -> b [label="x"]; }
+lex samples strict graph { a -- b -- c }
+lex samples digraph { subgraph cluster_0 { a } -> b }
+lex samples graph [bb="0,0,62,116"];
+lex samples node [label="\\N"];
+lex samples a [height=0.5, pos="27,90", width=0.75];
+lex samples a -> b [pos="e,27,36.104 27,71.697 27,63.983 27,54.712 27,46.112"];
+lex samples a -> b [pos="e,1,2 3,4 \\\n5,6"];
+lex samples n1:p1:ne -> n2:sw
+lex samples a:"port name":_
+lex samples edge [dir=none]; node [shape=box, fixedsize=true];
+lex samples digraph G {\n\tgraph [rankdir=LR];\n\ta;\n}\n
+lex samples digraph G {\r\n\ta -> b;\r\n}\r\n
+lex samples graph G { a; } digraph H { b; }
+
+# ---- boundaries ----
+lex boundaries
+lex boundaries digr
+lex boundaries subgraph{
+lex boundaries strict
+lex boundaries -
+lex boundaries "
+lex boundaries '
+lex boundaries #
+lex boundaries /
+lex boundaries /*
+lex boundaries \u0000
+lex boundaries \u007f
+lex boundaries \uffff
+
+# ---- converters ----
+conv ID toValue a
+conv ID toValue _x1
+conv ID toValue ^a
+conv ID toValue ^
+conv ID toValue node
+conv ID toValue Graph
+conv ID toValue a b
+conv ID toValue
+conv ID toValue <null>
+conv ID toString str:a
+conv ID toString str:cluster_0
+conv ID toString str:node
+conv ID toString str:graph
+conv ID toString str:digraph
+conv ID toString str:subgraph
+conv ID toString str:strict
+conv ID toString str:edge
+conv ID toString str:Graph
+conv ID toString str:NODE
+conv ID toString str:n
+conv ID toString str:ne
+conv ID toString str:_
+conv ID toString str:a b
+conv ID toString str:1
+conv ID toString str:1a
+conv ID toString str:a-b
+conv ID toString str:"q"
+conv ID toString str:^a
+conv ID toString str:^
+conv ID toString str:->
+conv ID toString str:{
+conv ID toString str:;
+conv ID toString str:caf\u00e9
+conv ID toString str:
+conv ID toString <null>
+conv STRING toValue "a"
+conv STRING toValue ""
+conv STRING toValue "a\\"b"
+conv STRING toValue "a\\nb"
+conv STRING toValue "a\\\\"
+conv STRING toValue "a\\qb"
+conv STRING toValue "a\\u0041"
+conv STRING toValue "a\\u00"
+conv STRING toValue "a
+conv STRING toValue a
+conv STRING toValue
+conv STRING toValue 'a'
+conv STRING toString str:a
+conv STRING toString str:a b
+conv STRING toString str:a"b
+conv STRING toString str:a\nb
+conv STRING toString str:a\\b
+conv STRING toString str:caf\u00e9
+conv STRING toString str:
+conv STRING toString <null>
+conv INT toValue 0
+conv INT toValue 007
+conv INT toValue -0
+conv INT toValue -1
+conv INT toValue 2147483647
+conv INT toValue 2147483648
+conv INT toValue -2147483648
+conv INT toValue 99999999999
+conv INT toValue 1.5
+conv INT toValue
+conv INT toValue a
+conv INT toString int:0
+conv INT toString int:7
+conv INT toString int:-1
+conv INT toString int:-2147483648
+conv INT toString str:007
+conv INT toString <null>
+conv FLOAT toValue 1.5
+conv FLOAT toValue -.5
+conv FLOAT toValue x
+conv FLOAT toString str:1.5
+conv FLOAT toString double:1.5
+conv FLOAT toString str:a b
+conv DotID toValue a
+conv DotID toValue "a b"
+conv DotID toValue ""
+conv DotID toValue 007
+conv DotID toValue -0
+conv DotID toValue -.5
+conv DotID toValue 1.
+conv DotID toValue "a\\"b"
+conv DotID toValue <null>
+conv DotID toString str:a
+conv DotID toString str:a b
+conv DotID toString str:"a b"
+conv DotID toString str:1.5
+conv DotID toString str:-3
+conv DotID toString str:node
+conv DotID toString str:a"b
+conv DotID toString str:line\nbreak
+conv DotID toString str:
+conv DotID toString int:5
+conv DotID toString double:1.5
+conv DotID toString <null>
+conv PREC_LINE toValue # x\n
+conv PREC_LINE toString str:# x
+conv ML_COMMENT toValue /* x */
+conv SL_COMMENT toValue // x\n
+conv WS toValue  \t
+conv NoSuchRule toValue x
+conv NoSuchRule toString str:x

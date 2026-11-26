@@ -1,0 +1,35 @@
+digraph {
+	graph [bb="0,454.82,251.21,0",
+		overlap=prism,
+		sep="+10",
+		splines=spline,
+		start=random1
+	];
+	node [fixedsize=true,
+		label="\N",
+		shape=box
+	];
+	edge [dir=none,
+		len=0.2777777777777778
+	];
+	node1	[height=0.27778,
+		pos="15,444.82",
+		width=0.41667];
+	node2	[height=0.21181,
+		pos="230.96,412.64",
+		width=0.5625];
+	node3	[height=0.34722,
+		pos="94.675,238.34",
+		width=0.34722];
+	node4	[height=0.5,
+		pos="60.384,18",
+		width=0.75];
+	node1 -> node2	[comment=edge1,
+		pos="30.186,442.56 68.11,436.91 167.02,422.17 210.24,415.73"];
+	node1 -> node3	[comment=edge2,
+		pos="18.951,434.58 32.202,400.25 75.051,289.2 89.706,251.22"];
+	node2 -> node3	[comment=edge3,
+		pos="224.75,404.7 203.19,377.13 131.45,285.38 104.78,251.26"];
+	node3 -> node4	[comment=edge4,
+		pos="92.683,225.54 86.88,188.25 69.971,79.6 63.218,36.209"];
+}

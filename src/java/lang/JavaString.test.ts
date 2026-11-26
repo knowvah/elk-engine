@@ -117,3 +117,27 @@ describe('JavaString.equalsIgnoreCase', () => {
     expect(equalsIgnoreCase('ab', 'abc')).toBe(false);
   });
 });
+
+interface TrimRow {
+  readonly id: string;
+  readonly family: string;
+  readonly input: string;
+  readonly output: string;
+}
+
+const DOT_JDK_URL = new URL('../../../test/golden/refs/java/graphviz-dot-jdk.json', import.meta.url);
+const TRIM_FAMILY = 'trim';
+const dotJdk = JSON.parse(readFileSync(DOT_JDK_URL, 'utf8')) as {
+  readonly rowCounts: Readonly<Record<string, number>>;
+  readonly rows: readonly TrimRow[];
+};
+const trimRows = dotJdk.rows.filter((r) => r.family === TRIM_FAMILY);
+
+describe('JavaString.trim graphviz-dot vectors', () => {
+  it('replays every recorded String.trim row', () => {
+    expect(trimRows.length).toBe(dotJdk.rowCounts[TRIM_FAMILY]);
+    for (const row of trimRows) {
+      expect(trim(row.input), row.id).toBe(row.output);
+    }
+  });
+});

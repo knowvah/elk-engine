@@ -1,0 +1,4 @@
+digraph {
+	node1 [pos="10,10"];
+	edge1 [pos="1,1"];
+}

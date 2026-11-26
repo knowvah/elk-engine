@@ -1,0 +1,4 @@
+strict graph U {
+	a -- b -- c -- a;
+	d -- {e f};
+}

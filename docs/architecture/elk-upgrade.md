@@ -85,14 +85,14 @@ git -C "$ELK_SOURCE_DIR" diff --stat "$OLD" "$NEW" -- . ':!plugins' ':!test' ':!
 
 Triage the **net** diff, not the commit list: a change and its revert cancel. Give every changed path one class:
 
-| Class           | Paths                                                                                           | What it means for the move                                                                                                                                                                |
-| --------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| in-scope bundle | `plugins/org.eclipse.elk.<bundle>/` for a bundle of CLAUDE.md's "In scope" list                 | a Java diff to port (section 11), unless it is prose only. `.melk` files: section 6. `META-INF/MANIFEST.MF`: rerun `npx tsx tools/bundle-deps.ts --write` and read the diff               |
-| deferred bundle | `alg.libavoid`, `alg.graphviz.dot`, `alg.graphviz.layouter`, the three `.ide` bundles           | a revisit trigger of [deferred-bundles-adr.md](deferred-bundles-adr.md) when the change touches one of the three algorithm bundles or gives one an in-scope caller or test                |
-| out of scope    | `core.service`, `core.ui`, `core.meta*`, `conn.gmf`, the `.ui` bundles, CI, docs, release notes | nothing to port; note it                                                                                                                                                                  |
-| build           | `build/`, `pom.xml`, the target platform                                                        | a Tycho or Maven change: compare with `MAVEN_SERIES` and the comment above it in `tools/oracle/build.sh`. A target-platform change can move Guava, Gson, EMF or Xtext (section 7.3)       |
-| test bundle     | `test/org.eclipse.elk.*`                                                                        | a ported JUnit class changed: update its TS port from the Java (expected values come from the Java, AD-13), and rerun it on the oracle (section 10)                                       |
-| prose           | a description, label or message string nothing branches on                                      | the carve-out of CLAUDE.md: when upstream fixes a typo the port already corrects, the "upstream typos" entry of `docs/conformance.md` and the comment at the port site close (section 13) |
+| Class           | Paths                                                                                                           | What it means for the move                                                                                                                                                                                                                                                                                                  |
+| --------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| in-scope bundle | `plugins/org.eclipse.elk.<bundle>/` for a bundle of CLAUDE.md's "In scope" list                                 | a Java diff to port (section 11), unless it is prose only. `.melk` files: section 6. `META-INF/MANIFEST.MF`: rerun `npx tsx tools/bundle-deps.ts --write` and read the diff. `alg.graphviz.dot` is ported; `alg.graphviz.layouter` is in scope by AD-17 and not ported until #95, step 3: note its Java diffs on issue #95. |
+| deferred bundle | the three `.ide` bundles                                                                                        | nothing to port; note it                                                                                                                                                                                                                                                                                                    |
+| out of scope    | `core.service`, `core.ui`, `core.meta*`, `conn.gmf`, `alg.libavoid`, the `.ui` bundles, CI, docs, release notes | nothing to port; note it. A change to `alg.libavoid` that gives it an in-scope caller or test is a revisit trigger of [deferred-bundles-adr.md](deferred-bundles-adr.md)                                                                                                                                                    |
+| build           | `build/`, `pom.xml`, the target platform                                                                        | a Tycho or Maven change: compare with `MAVEN_SERIES` and the comment above it in `tools/oracle/build.sh`. A target-platform change can move Guava, Gson, EMF or Xtext (section 7.3)                                                                                                                                         |
+| test bundle     | `test/org.eclipse.elk.*`                                                                                        | a ported JUnit class changed: update its TS port from the Java (expected values come from the Java, AD-13), and rerun it on the oracle (section 10)                                                                                                                                                                         |
+| prose           | a description, label or message string nothing branches on                                                      | the carve-out of CLAUDE.md: when upstream fixes a typo the port already corrects, the "upstream typos" entry of `docs/conformance.md` and the comment at the port site close (section 13)                                                                                                                                   |
 
 List the changed `.java` files per in-scope bundle; this list drives section 11:
 
@@ -268,6 +268,7 @@ one recorder at a time beside the `elkj` lane, each started once the 1-minute lo
 | `tools/vectors/elkt-vectors.sh "$REFS"`                                                                 | `graph-text-lexer.json`, `-parse`, `-validate`, `-write`                                |                         | 8 s        |
 | `tools/vectors/elkj-vectors.sh "$REFS"`                                                                 | `graph-json-text-lexer.json`, `-parse`, `-validate`, `-write`, `-inverse`, `-roundtrip` |                         | 4 h 49 min |
 | `tools/vectors/elkr-vectors.sh "$REFS"`                                                                 | `grandom-lexer.json`, `-parse`, `-validate`, `-generate`                                |                         | 5 s        |
+| `tools/vectors/dot-vectors.sh "$REFS"`                                                                  | `graphviz-dot-jdk.json`, `-lexer`, `-parse`, `-write`, `-export`, `-import`             |                         | 16 s       |
 | `tools/vectors/comment-vectors.sh "$REFS"`                                                              | `comments.json`                                                                         |                         | 1 s        |
 | `tools/vectors/alg-common-vectors.sh "$REFS"`                                                           | `alg-common.json`                                                                       |                         | 2 s        |
 | `tools/vectors/node-micro-layout-vectors.sh "$REFS"`                                                    | `node-micro-layout.json`                                                                | yes                     | 3 s        |
@@ -288,6 +289,7 @@ one recorder at a time beside the `elkj` lane, each started once the 1-minute lo
 | `tools/vectors/vertiflex-vectors.sh "$REFS"`                                                            | `vertiflex.json`, `vertiflex-extra.json`                                                |                         | 6 s        |
 | `tools/vectors/force-vectors.sh "$REFS"`                                                                | `force.json`, `stress.json`                                                             |                         | 48 s       |
 | `tools/vectors/disco-vectors.sh "$REFS"`                                                                | `disco.json`                                                                            |                         | 7 s        |
+| `tools/vectors/last-ulp-vectors.sh "$REFS"`                                                             | `last-ulp.json` (HotSpot `Math` against `StrictMath`; reference platform only)          |                         | 5 s        |
 | `tools/vectors/rectpacking-vectors.sh "$REFS"`                                                          | `rectpacking.json`                                                                      | yes                     | 5 s        |
 | `tools/vectors/spore-layout-vectors.sh "$REFS"`                                                         | `spore-layout.json`                                                                     |                         | 68 s       |
 | `tools/vectors/topdownpacking-vectors.sh "$REFS"`                                                       | `topdownpacking.json`                                                                   |                         | 4 s        |
@@ -420,20 +422,21 @@ of any algorithm, or a changed count in any row of the report, is a content find
 **Phase and language sweeps.** Each writes a local directory that one test replays through the port; the test is skipped
 without it. Run the sweep, then the test.
 
-| Sweep                             | Output directory                                         | Override variable        | Consumer test                            | Wall  |
-| --------------------------------- | -------------------------------------------------------- | ------------------------ | ---------------------------------------- | ----- |
-| `tools/oracle/json-sweep.sh`      | `test/corpus/.json-sweep/`                               | none                     | `test/corpus/json-sweep.test.ts`         | 10 s  |
-| `tools/oracle/elkt-sweep.sh`      | `$ELK_ORACLE_DIR/sweep/elkt-<elkCommit>-<modelsCommit>/` | `ELKT_SWEEP_DIR`         | `test/corpus/elkt-sweep.test.ts`         | 7 min |
-| `tools/oracle/elkj-sweep.sh`      | `$ELK_ORACLE_DIR/sweep/elkj-<elkCommit>-<modelsCommit>/` | `ELKJ_SWEEP_DIR`         | `test/corpus/elkj-sweep.test.ts`         | 5.8 h |
-| `tools/oracle/phase-sweep.sh`     | `test/corpus/.phase-sweep/`                              | `PHASE_SWEEP_DIR`        | `test/corpus/phase-sweep.test.ts`        | 8 min |
-| `tools/oracle/order-sweep.sh`     | `test/corpus/.order-sweep/`                              | `ORDER_SWEEP_DIR`        | `test/corpus/order-sweep.test.ts`        | 38 s  |
-| `tools/oracle/placement-sweep.sh` | `test/corpus/.placement-sweep/`                          | `PLACEMENT_SWEEP_DIR`    | `test/corpus/placement-sweep.test.ts`    | 39 s  |
-| `tools/oracle/routing-sweep.sh`   | `test/corpus/.routing-sweep/`                            | `ROUTING_SWEEP_DIR`      | `test/corpus/routing-sweep.test.ts`      | 66 s  |
-| `tools/oracle/pipeline-sweep.sh`  | `test/corpus/.pipeline-sweep/`                           | `PIPELINE_SWEEP_DIR`     | `test/corpus/pipeline-sweep.test.ts`     | 54 s  |
-| `tools/oracle/labels-sweep.sh`    | `test/corpus/.labels-sweep/`                             | `LABELS_SWEEP_DIR`       | `test/corpus/labels-sweep.test.ts`       | 10 s  |
-| `tools/oracle/loops-sweep.sh`     | `test/corpus/.loops-sweep/`                              | `LOOPS_SWEEP_DIR`        | `test/corpus/loops-sweep.test.ts`        | 60 s  |
-| `tools/oracle/compound-sweep.sh`  | `test/corpus/.compound-sweep/`                           | `COMPOUND_SWEEP_DIR`     | `test/corpus/compound-sweep.test.ts`     | 15 s  |
-| the `--corpus` row of section 7.1 | `$ELK_ORACLE_DIR/sweep/label-sizing/`                    | `LABEL_SIZING_SWEEP_DIR` | `test/corpus/label-sizing-sweep.test.ts` | 4 s   |
+| Sweep                              | Output directory                                         | Override variable        | Consumer test                            | Wall  |
+| ---------------------------------- | -------------------------------------------------------- | ------------------------ | ---------------------------------------- | ----- |
+| `tools/oracle/json-sweep.sh`       | `test/corpus/.json-sweep/`                               | none                     | `test/corpus/json-sweep.test.ts`         | 10 s  |
+| `tools/oracle/elkt-sweep.sh`       | `$ELK_ORACLE_DIR/sweep/elkt-<elkCommit>-<modelsCommit>/` | `ELKT_SWEEP_DIR`         | `test/corpus/elkt-sweep.test.ts`         | 7 min |
+| `tools/oracle/elkj-sweep.sh`       | `$ELK_ORACLE_DIR/sweep/elkj-<elkCommit>-<modelsCommit>/` | `ELKJ_SWEEP_DIR`         | `test/corpus/elkj-sweep.test.ts`         | 5.8 h |
+| `tools/oracle/dot-export-sweep.sh` | `$ELK_ORACLE_DIR/sweep/dot-export/`                      | `DOT_EXPORT_SWEEP_DIR`   | `test/corpus/dot-export-sweep.test.ts`   | 2 min |
+| `tools/oracle/phase-sweep.sh`      | `test/corpus/.phase-sweep/`                              | `PHASE_SWEEP_DIR`        | `test/corpus/phase-sweep.test.ts`        | 8 min |
+| `tools/oracle/order-sweep.sh`      | `test/corpus/.order-sweep/`                              | `ORDER_SWEEP_DIR`        | `test/corpus/order-sweep.test.ts`        | 38 s  |
+| `tools/oracle/placement-sweep.sh`  | `test/corpus/.placement-sweep/`                          | `PLACEMENT_SWEEP_DIR`    | `test/corpus/placement-sweep.test.ts`    | 39 s  |
+| `tools/oracle/routing-sweep.sh`    | `test/corpus/.routing-sweep/`                            | `ROUTING_SWEEP_DIR`      | `test/corpus/routing-sweep.test.ts`      | 66 s  |
+| `tools/oracle/pipeline-sweep.sh`   | `test/corpus/.pipeline-sweep/`                           | `PIPELINE_SWEEP_DIR`     | `test/corpus/pipeline-sweep.test.ts`     | 54 s  |
+| `tools/oracle/labels-sweep.sh`     | `test/corpus/.labels-sweep/`                             | `LABELS_SWEEP_DIR`       | `test/corpus/labels-sweep.test.ts`       | 10 s  |
+| `tools/oracle/loops-sweep.sh`      | `test/corpus/.loops-sweep/`                              | `LOOPS_SWEEP_DIR`        | `test/corpus/loops-sweep.test.ts`        | 60 s  |
+| `tools/oracle/compound-sweep.sh`   | `test/corpus/.compound-sweep/`                           | `COMPOUND_SWEEP_DIR`     | `test/corpus/compound-sweep.test.ts`     | 15 s  |
+| the `--corpus` row of section 7.1  | `$ELK_ORACLE_DIR/sweep/label-sizing/`                    | `LABEL_SIZING_SWEEP_DIR` | `test/corpus/label-sizing-sweep.test.ts` | 4 s   |
 
 `tools/oracle/elkj-sweep.sh` runs for hours (its serializer kind; with `--jobs 6` it took 5 h 30 min of running time in
 the `e7eaea57` move, 5 h 31 min in the rehearsal before it, 5 h 47 min in the `8bca22f4` move while another session loaded
@@ -450,7 +453,8 @@ non-interactive run otherwise hides for passing tests:
 npx vitest run --silent=false test/corpus/json-sweep.test.ts test/corpus/elkt-sweep.test.ts test/corpus/elkj-sweep.test.ts \
   test/corpus/phase-sweep.test.ts test/corpus/order-sweep.test.ts test/corpus/placement-sweep.test.ts \
   test/corpus/routing-sweep.test.ts test/corpus/pipeline-sweep.test.ts test/corpus/labels-sweep.test.ts \
-  test/corpus/loops-sweep.test.ts test/corpus/compound-sweep.test.ts test/corpus/label-sizing-sweep.test.ts
+  test/corpus/loops-sweep.test.ts test/corpus/compound-sweep.test.ts test/corpus/label-sizing-sweep.test.ts \
+  test/corpus/dot-export-sweep.test.ts
 ```
 
 Then compare each sweep's results with the "before" side. The result files hold a hash or a status per case and no

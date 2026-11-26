@@ -234,3 +234,29 @@ Corrected status totals (143 statements):
 | `restored` | 132 | the 124 above, less 134 and 135, plus the ten of this section |
 | `restored (throw kept)` | 6 | unchanged |
 | comment naming an issue | 5 | 4, 5 (`BoxLayoutProvider.java:738`, `:754`; #112, knowvah/elk#27), 114 (`SingleEdgeGraphWrapper.java:193`; #112, knowvah/elk#28), 134, 135 (#128) |
+
+## Superseded by #115 (2026-11-25)
+
+The rows and sections above are not edited. Mission `self-loop-assert-arms` (issue #115) removed the six
+`throw new Error(...)`s that dev-assert D5.4 kept after `devAssert(() => false)`. Each arm now does what the Java
+statement after `assert false` does on a JVM without `-ea`, so the status `restored (throw kept)` of the rows below is
+superseded by this table. One pair of tests per row pins the Java statement with assertions off and the
+`AssertionError` with assertions on (`OrthogonalSelfLoopRouter.test.ts`, `RoutingDirector.test.ts`), and no valid
+graph reaches any of the arms (`plans/self-loop-assert-arms/decision-journal.md`, the `evidence` rows).
+
+| # | Java file:line | TS `devAssert` line | After it, as the Java | Status |
+| - | -------------- | ------------------- | --------------------- | ------ |
+| 96 | `alg.layered/…/intermediate/loops/routing/OrthogonalSelfLoopRouter.java:180` | `src/alg/layered/intermediate/loops/routing/OrthogonalSelfLoopRouter.ts:208` | `break` | restored |
+| 98 | `alg.layered/…/intermediate/loops/routing/OrthogonalSelfLoopRouter.java:304` | `src/alg/layered/intermediate/loops/routing/OrthogonalSelfLoopRouterSlotPositions.ts:128` | `return -1` | restored |
+| 99 | `alg.layered/…/intermediate/loops/routing/OrthogonalSelfLoopRouter.java:367` | `src/alg/layered/intermediate/loops/routing/OrthogonalSelfLoopRouter.ts:293` | `break`, then `bendPoints.add(result)` | restored |
+| 100 | `alg.layered/…/intermediate/loops/routing/OrthogonalSelfLoopRouter.java:441` | `src/alg/layered/intermediate/loops/routing/OrthogonalSelfLoopRouter.ts:410` | `return null` | restored |
+| 105 | `alg.layered/…/intermediate/loops/routing/RoutingDirector.java:207` | `src/alg/layered/intermediate/loops/routing/RoutingDirector.ts:212` | `break` with both sides null; a null selector is a `TypeError` before the `switch` (`:185-189`) | restored |
+| 108 | `alg.layered/…/intermediate/loops/routing/RoutingDirector.java:227` | `src/alg/layered/intermediate/loops/routing/RoutingDirector.ts:233` | `return null` | restored |
+
+Corrected status totals (143 statements):
+
+| Status | Sites | Rows |
+| ------ | ----- | ---- |
+| `restored` | 138 | the 132 of the section above, plus the six of this section |
+| `restored (throw kept)` | 0 | none |
+| comment naming an issue | 5 | unchanged: 4, 5, 114, 134, 135 |

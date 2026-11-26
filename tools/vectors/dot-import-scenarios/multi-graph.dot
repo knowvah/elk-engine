@@ -1,0 +1,10 @@
+digraph first {
+	a -> b;
+}
+graph second {
+	a -- b;
+	c;
+}
+strict digraph {
+	a;
+}

@@ -1,0 +1,29 @@
+node origin {
+  layout [ position: 0, 0 size: 10, 10 ]
+}
+node xonly {
+  layout [ position: 10, 0 size: 20, 10 ]
+}
+node yonly {
+  layout [ position: 0, 7.5 size: 10, 20 ]
+}
+node negative {
+  layout [ position: -3.25, -4 size: 0.1, 0.3 ]
+}
+node tiny {
+  layout [ position: 1, 1 size: 0.0000001, 0.00072 ]
+}
+node huge {
+  layout [ position: 123456789.125, 0.1 size: 720000000, 72 ]
+}
+node zeroWidth {
+  layout [ position: 2.5, 2.5 size: 0, 36 ]
+}
+node zeroHeight {
+  layout [ size: 36, 0 ]
+}
+node third {
+  layout [ position: 0.1, 0.2 size: 0.3, 0.7 ]
+}
+edge origin -> xonly
+edge yonly -> negative

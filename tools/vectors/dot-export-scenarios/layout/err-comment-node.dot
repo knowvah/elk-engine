@@ -1,0 +1,5 @@
+digraph {
+	node1 [pos="10,10"];
+	node2 [pos="50,50"];
+	node1 -> node2 [comment=node1, pos="1,1 2,2"];
+}

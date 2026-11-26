@@ -22,7 +22,7 @@
 //     throws   { id, status: "throws", kind, model, target, variant, class, message }   simple class name of the exception
 //     timeout  { id, status: "timeout" }                             not finished within CASE_TIMEOUT_SECONDS (20)
 //   Canonical form (7f's elkDump): a tree of the laid-out ElkGraph (node id, box, labels, ports, children, contained edges: sections
-//   with start, end and bend points, junction points, label boxes) where every x, y, width, height is the raw IEEE-754 bits of the double
+//   with start, end and bend points, junction points, label boxes) where every x, y, width, height is Double.doubleToLongBits of the double
 //   as 16 lowercase hex digits. The no-flag recording path above is untouched by these modes.
 //
 // ORIGIN (B7: single-file launchers share no code): the core is copied from tools/vectors/LayeredLabelsVectors.java (7f, T1, itself
@@ -72,7 +72,7 @@
 //   manager, which no vendored model can carry: they are scenarios only. A stop not in the plan skips the row (counted on stderr).
 //   expected as 7e/7f (layers, layerless, hidden, edges, ports, changed, geometry, dump under ten nodes) with ONE addition in this
 //   recorder: on the stops of this brief geometry also carries labels (path -> { pos }) as on the port-label stops, and a new key
-//   geometry.labelSizes (label path -> [width, height] as raw IEEE hex) holding the sizes a label manager or the switcher may change.
+//   geometry.labelSizes (label path -> [width, height] as the same hex) holding the sizes a label manager or the switcher may change.
 //
 // Group scenarios, id scenarios/<Class>/<name>[/<dir>...]: inline graphs (3-10 nodes) with the full step list derived from the assembled
 //   plan as in 7f (importGraph, normalise, then every plan member in order up to the stop; runProcessor for an intermediate member,
@@ -507,11 +507,12 @@ cc6fd0cd2c52fa5287330c66b5eff8a5b58e2982ca2ed2d1336b226efbeca834  repo:test/gold
         }
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new Bug("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static void str(StringBuilder sb, String s) {

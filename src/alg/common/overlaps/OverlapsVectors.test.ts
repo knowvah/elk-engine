@@ -4,7 +4,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { ElkRectangle } from '../../../core/math/ElkRectangle.js';
-import { doubleToRawLongBits, longBitsToDouble } from '../../../java/lang/JavaDouble.js';
+import { canonicalHex } from '../../../../test/helpers/double-hex.js';
+import { longBitsToDouble } from '../../../java/lang/JavaDouble.js';
 import { GreedyRectangleStripOverlapRemover } from './GreedyRectangleStripOverlapRemover.js';
 import { OverlapRemovalDirection, RectangleStripOverlapRemover } from './RectangleStripOverlapRemover.js';
 
@@ -23,7 +24,7 @@ interface OverlapsRow {
 }
 
 const toDouble = (hex: Hex): number => longBitsToDouble(BigInt.asIntN(64, BigInt(`0x${hex}`)));
-const toHex = (d: number): Hex => BigInt.asUintN(64, doubleToRawLongBits(d)).toString(16).padStart(16, '0');
+const toHex = (d: number): Hex => canonicalHex(d);
 
 const rows = (JSON.parse(readFileSync(VECTORS_URL, 'utf8')) as { overlaps: OverlapsRow[] }).overlaps;
 

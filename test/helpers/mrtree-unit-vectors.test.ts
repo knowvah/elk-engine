@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 import { describe, expect, it } from 'vitest';
+import { CANONICAL_NAN_HEX, NEGATIVE_NAN } from './double-hex.js';
 import {
   AVERAGE_GROUP,
   buildGraph,
@@ -79,5 +80,12 @@ describe('mrtree-units.json loader', () => {
     expect(row.input.length).toBeGreaterThan(0);
     expect(row.input.every((h) => /^[0-9a-f]{16}$/.test(h))).toBe(true);
     expect(row.expected.bits).toMatch(/^[0-9a-f]{16}$/);
+  });
+});
+
+describe('NaN sign (issue #72)', () => {
+  it('encodes both NaN signs as the one canonical NaN', () => {
+    expect(hexOf(NEGATIVE_NAN)).toBe(CANONICAL_NAN_HEX);
+    expect(hexOf(NaN)).toBe(CANONICAL_NAN_HEX);
   });
 });

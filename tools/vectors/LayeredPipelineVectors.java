@@ -21,7 +21,7 @@
 //     throws   { id, status: "throws", kind, model, target, routing | direction, class, message }   simple class name of the exception
 //     timeout  { id, status: "timeout" }                                  not finished within CASE_TIMEOUT_SECONDS
 //   Canonical form: a tree of the laid-out ElkGraph subtree (node, ports, labels, children, contained edges: sections with start, end and bend
-//   points, junction points) where every x, y, width, height is the raw IEEE-754 bits of the double as 16 lowercase hex digits (-0.0 differs
+//   points, junction points) where every x, y, width, height is Double.doubleToLongBits as 16 lowercase hex digits (NaN canonical, #72; -0.0 differs
 //   from 0.0). Children, ports, labels, edges keep model order. The refusal rule, the 20 s limit and the one-thread-per-case isolation are
 //   7e's (LayeredRoutingSweep.java).
 //
@@ -461,11 +461,12 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
         }
     }
 
+    /** 16 hex digits of Double.doubleToLongBits (raw bits; a NaN would be the canonical 7ff8000000000000, #72); the guard rejects a NaN. */
     static String hex(double d) {
         if (Double.isNaN(d)) {
             throw new Bug("NaN in a recorded value");
         }
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static void str(StringBuilder sb, String s) {
@@ -3413,8 +3414,10 @@ c14fe72a9889eb35ddbbf6134391679206729bcd89184c4781518ae5e4ec2311  repo:test/gold
         return out;
     }
 
+    /** The sweep hash hex: Double.doubleToLongBits, so every NaN is the canonical 7ff8000000000000 (issue #72, ruling #53: the
+     * sign bit of a computed NaN is not reproducible); every other value keeps its raw bits. */
     static String hx(double d) {
-        return String.format("%016x", Double.doubleToRawLongBits(d));
+        return String.format("%016x", Double.doubleToLongBits(d));
     }
 
     static List<Object> box(org.eclipse.elk.graph.ElkShape s) {

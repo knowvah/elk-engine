@@ -1,0 +1,25 @@
+digraph {
+	graph [bb="0,0,500,400", compound=true];
+	node1 [pos="20,380", width=0.27778, height=0.27778];
+	subgraph cluster2 {
+		graph [bb="40,200,260,330"];
+		node3 [pos="80,300", width=0.41667, height=0.27778];
+		node4 [pos="150,250.5", width=0.41667, height=0.27778];
+		dummy5 [pos="200,220", width=0, height=0];
+		node3 -> node4 [comment=edge4, pos="e,140,260 90,290 110,275"];
+	}
+	subgraph cluster6 {
+		graph [bb="280,20,480,300"];
+		subgraph cluster7 {
+			graph [bb="290,100,420,280"];
+			node8 [pos="350,200", width=0.13889, height=0.13889];
+			dummy9 [pos="400,150", width=0, height=0];
+		}
+		node10 [pos="450,50", width=0.13889, height=0.13889];
+		dummy11 [pos="460,40", width=0, height=0];
+		node10 -> node8 [comment=edge8, pos="e,355,205 445,55 400,130"];
+	}
+	node1 -> node3 [comment=edge1, pos="e,70,295 25,375 50,330"];
+	dummy5 -> node10 [comment=edge2, ltail=cluster2, pos="e,445,45 260,220 350,130"];
+	node8 -> node1 [comment=edge9, pos="e,25,375 345,205 200,300"];
+}

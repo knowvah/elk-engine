@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: EPL-2.0
 // Proof of the spore graph importer against spore-layout.json (mission 8c, T7): the `underlying`, `import`, `update` and `end` stops of every
-// stops row, the end dump and tie summary of every full row, the throws rows, and the PK4 invariants of the jitter rows. The two providers do
+// stops row, the end dump and tie summary of every full row, the throws rows, the PK4 invariants of the jitter rows, and the same four
+// stops of the shift rows (issue #106: the centres `shiftUntilUnique` moved, exact). The two providers do
 // not exist yet (T11), so `replayRow` drives their bodies step by step from the test (test/helpers/spore-replay-dump.ts).
 import { describe, expect, it } from 'vitest';
 import { RootSelection } from './options/RootSelection.js';
@@ -32,6 +33,7 @@ import {
   STEP_IMPORT,
   STEP_UNDERLYING,
   STEP_UPDATE,
+  stopOf,
   type FullRow,
   type SporeRow,
 } from '../../../test/helpers/spore-replay-rows.js';
@@ -170,6 +172,46 @@ describe('ElkGraphImporter: jitter rows (PK4, invariants only)', () => {
     // gives the same dump; until e7eaea57 an unseeded Math.random() made runsAgree false and every dump distinct (#104, D5.7)
     expect(invariants.runsAgree).toBe(true);
     expect(dumps.size).toBe(1);
+  });
+});
+
+describe('ElkGraphImporter: shift rows (underlying, import, update, end; issue #106)', () => {
+  const rows = loadSporeRows('shift');
+  /** The four jitter scenarios and how many centres `shiftUntilUnique` moved in each (`randomSeed` default 1). */
+  const SHIFTED: readonly (readonly [string, number])[] = [
+    ['shift/overlap/corpus/default', 11],
+    ['shift/compaction/corpus/default', 11],
+    ['shift/overlap/dup5/default', 1],
+    ['shift/compaction/dup5/default', 1],
+  ];
+
+  it('the ref has 4 shift rows', () => {
+    expect(rows.map((row) => [row.id, row.expected.jitterNodes])).toEqual(SHIFTED);
+  });
+
+  it.each(SHIFTED)('%s: every recorded field equals the port dump, %i centres shifted', TIMEOUT, (id, shifted) => {
+    const row = rows.find((r) => r.id === id)!;
+    const result = run(row);
+    const expected = onlySteps(row.expected.stops, STEPS);
+    const identical = expectSame(expected, onlySteps(result.stops, STEPS), id);
+    expect(expected.length).toBeGreaterThan(0);
+    expect(identical).toBeGreaterThan(0);
+    expect(result.jitterNodes).toBe(shifted);
+  });
+
+  it.each(SHIFTED)('%s: the recorded import stop holds %i vertices off their child centre', (id, shifted) => {
+    const row = rows.find((r) => r.id === id)!;
+    const stop = stopOf(row, STEP_IMPORT)!;
+    const children = row.input['children'] as { x: number; y: number; width: number; height: number }[];
+    // no underlying layout runs in these rows, so the child boxes of the input are those the importer reads
+    expect(stopOf(row, STEP_UNDERLYING)).toBeUndefined();
+    const moved = stop.nodes.filter((node, i) => {
+      const child = children[i]!;
+      const [vx, vy] = [decodeHex(node.v[0]), decodeHex(node.v[1])];
+      return vx !== child.x + child.width / 2 || vy !== child.y + child.height / 2;
+    });
+    expect(moved).toHaveLength(shifted);
+    expect(stop.jitterNodes).toBe(shifted);
   });
 });
 

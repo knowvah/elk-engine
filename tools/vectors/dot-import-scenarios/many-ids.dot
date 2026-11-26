@@ -1,0 +1,4 @@
+digraph {
+	n10; _x; A; "quoted id"; zz9; a_b_c; Q; n2; n1; 1; -2.5; .5; "café"; "é"; "with space"; "\"esc\"";
+	n10 -> _x -> A -> "quoted id" -> zz9 -> a_b_c -> Q -> n2 -> n1 -> 1 -> -2.5 -> .5 -> "café" -> "é" -> "with space" -> "\"esc\"";
+}

@@ -1,0 +1,33 @@
+digraph {
+	graph [bb="0,156.25,72.25,0",
+		nodesep=0.2777777777777778,
+		rankdir=TB,
+		ranksep=0.2777777777777778,
+		splines=spline
+	];
+	node [fixedsize=true,
+		label="\N",
+		shape=box
+	];
+	edge [dir=none];
+	node1	[height=0.27778,
+		pos="45.25,10",
+		width=0.41667];
+	node2	[height=0.21181,
+		pos="20.25,47.625",
+		width=0.5625];
+	node3	[height=0.34722,
+		pos="45.25,87.75",
+		width=0.34722];
+	node4	[height=0.5,
+		pos="45.25,138.25",
+		width=0.75];
+	node1 -> node2	[comment=edge1,
+		pos="38.682,20.36 34.399,26.462 28.908,34.287 25.037,39.804"];
+	node1 -> node3	[comment=edge2,
+		pos="47.28,20.351 48.403,26.008 49.684,33.382 50.25,40 51.266,51.874 49.497,65.41 47.789,74.85"];
+	node2 -> node3	[comment=edge3,
+		pos="24.835,55.618 28.388,61.035 33.389,68.661 37.552,75.01"];
+	node3 -> node4	[comment=edge4,
+		pos="45.25,100.49 45.25,106.32 45.25,113.48 45.25,119.93"];
+}
